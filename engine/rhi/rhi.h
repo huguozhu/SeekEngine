@@ -6,7 +6,7 @@ SEEK_NAMESPACE_BEGIN
 
 
 
-class RHI
+class RHIContext
 {
 public:
     virtual SResult Init() = 0;
@@ -18,6 +18,12 @@ public:
     virtual void* CreateSamplerState() = 0;
     virtual void* CreateRasterizerState() = 0;
     virtual void* CreateTexture() = 0;
+
+
+protected:
+    std::vector<IndexBufferPtr>     m_vIndexBuffers;
+    std::vector<VertexBufferPtr>    m_vVertexBuffers;
+    std::vector<FrameBufferPtr>     m_vFrameBuffers;
 
 };
 

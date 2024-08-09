@@ -66,3 +66,4 @@ set(SEEK_DEPENDENCIES_DIR        "${SEEK_ROOT_DIR}/dependencies")
 
 add_subdirectory(third_party)
 add_subdirectory(engine)
+add_subdirectory(samples)

@@ -5,7 +5,7 @@
 SEEK_NAMESPACE_BEGIN
 
 
-class VulkanRHI : public RHI
+class VulkanRHI : public RHIContext
 {
 
 };

@@ -1,12 +1,14 @@
 ############################################ SeekEngin source files ############################################
 set(ENGINE_CODE
+    ${SEEK_ENGINE_SOURCE_DIR}/seek_engine.h
+    
     # components
     #${SEEK_ENGINE_SOURCE_DIR}/components/entity.h
     #${SEEK_ENGINE_SOURCE_DIR}/components/entity.cpp
 
     # effect
-    ${SEEK_ENGINE_SOURCE_DIR}/effect/render_draw.h
-    ${SEEK_ENGINE_SOURCE_DIR}/effect/render_draw.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/draw_call.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/draw_call.cpp
 
     # kernel
     ${SEEK_ENGINE_SOURCE_DIR}/kernel/kernel.h
@@ -17,6 +19,8 @@ set(ENGINE_CODE
     
     # rhi
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/rhi.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/rhi_command.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/rhi_command.cpp
 
     # vulkan rhi
     ${SEEK_ENGINE_SOURCE_DIR}/vulkan_rhi/vulkan_rhi.h
@@ -25,7 +29,10 @@ set(ENGINE_CODE
 
     # resource
 
-    # util
+    # utils
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/error.h
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/log.h
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/log.cpp
 
     # scene_manager
 
@@ -36,6 +43,8 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/thread/semaphore.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/thread/thread.h
     ${SEEK_ENGINE_SOURCE_DIR}/thread/thread.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/thread/thread_manager.h
+    ${SEEK_ENGINE_SOURCE_DIR}/thread/thread_manager.cpp
 
     # wrapper
 )
