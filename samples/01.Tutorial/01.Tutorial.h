@@ -1,14 +1,14 @@
 #pragma once
+#include "app_framework.h"
 #include "seek_engine.h"
 
 USING_NAMESPACE_SEEK
 
-class Tutorial
+class Tutorial : public AppFramework
 {
 public:
     Tutorial();
-    virtual ~Tutorial();
-    SResult Run();
+    virtual ~Tutorial();   
 
 
 private:

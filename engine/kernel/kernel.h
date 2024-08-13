@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <map>
 
 #define SEEK_NAMESPACE_BEGIN     namespace seek_engine {
 #define SEEK_NAMESPACE_END       }
@@ -19,7 +20,7 @@ SEEK_NAMESPACE_BEGIN
 
 typedef uint32_t SResult;
 #define S_Success   0
-enum DVF_ERR_CODE // max error code is 255
+enum SEEK_ERR_CODE // max error code is 255
 {
     SEEK_ERR_UNKNOWN                 = 1,
     SEEK_ERR_INVALID_ARG             = 2,
@@ -38,23 +39,63 @@ enum DVF_ERR_CODE // max error code is 255
     SEEK_ERR_CODE_NUM,
 };
 
+#define DISALLOW_COPY_AND_ASSIGN(TypeName) \
+    TypeName           (const TypeName&) = delete; \
+    TypeName& operator=(const TypeName&) = delete;
+
 // Kernel
 CLASS_DECLARE(Context);
 
+// Scene Manager
+CLASS_DECLARE(SceneManager);
+
+// Component
+CLASS_DECLARE(Entity);
+CLASS_DECLARE(Component);
+CLASS_DECLARE(SceneComponent);
+CLASS_DECLARE(CameraComponent);
+CLASS_DECLARE(LightComponent);
+CLASS_DECLARE(DirectionalLightComponent);
+CLASS_DECLARE(SpotLightComponent);
+CLASS_DECLARE(PointLightComponent);
+CLASS_DECLARE(MeshComponent);
+CLASS_DECLARE(SkeletalMeshComponent);
+CLASS_DECLARE(SkyBoxComponent);
+CLASS_DECLARE(Sprite2DComponent);
+CLASS_DECLARE(ImageComponent);
+CLASS_DECLARE(SpringSkeletonComponent);
+CLASS_DECLARE(ParticleComponent);
+
+CLASS_DECLARE(KeyFrame);
+CLASS_DECLARE(TransformKeyFrame);
+CLASS_DECLARE(MorphTargetKeyFrame);
+CLASS_DECLARE(AnimationTrack);
+CLASS_DECLARE(TransformAnimationTrack);
+CLASS_DECLARE(MorphTargetAnimationTrack);
+CLASS_DECLARE(AnimationComponent);
+
 // RHI
-CLASS_DECLARE(IndexBuffer);
-CLASS_DECLARE(VertexBuffer);
-CLASS_DECLARE(RenderState);
-CLASS_DECLARE(RenderBuffer);
+CLASS_DECLARE(RHIContext);
 CLASS_DECLARE(FrameBuffer);
-CLASS_DECLARE(Program);
-CLASS_DECLARE(Shader);
-CLASS_DECLARE(Texture);
+CLASS_DECLARE(Material);
 CLASS_DECLARE(Mesh);
+CLASS_DECLARE(RenderBuffer);
+CLASS_DECLARE(Texture);
+CLASS_DECLARE(Sampler);
+CLASS_DECLARE(Shader);
+CLASS_DECLARE(Program);
+CLASS_DECLARE(RenderState);
+CLASS_DECLARE(RenderView);
+CLASS_DECLARE(TimerQuery);
 
 // Thread
 CLASS_DECLARE(Thread);
 CLASS_DECLARE(ThreadManager);
+
+// utils
+CLASS_DECLARE(Buffer);
+CLASS_DECLARE(BitmapBuffer);
+CLASS_DECLARE(Timer);
 
 
 template <typename T, typename... Args>

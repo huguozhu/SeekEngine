@@ -2,13 +2,30 @@
 set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/seek_engine.h
     
-    # components
-    #${SEEK_ENGINE_SOURCE_DIR}/components/entity.h
-    #${SEEK_ENGINE_SOURCE_DIR}/components/entity.cpp
+   # components
+    ${SEEK_ENGINE_SOURCE_DIR}/components/entity.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/entity.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/components/component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/mesh_component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/mesh_component.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/components/light_component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/light_component.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/components/scene_component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/scene_component.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/components/camera_component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/camera_component.cpp
+
 
     # effect
     ${SEEK_ENGINE_SOURCE_DIR}/effect/draw_call.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/draw_call.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/command_buffer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/command_buffer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/frame.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/frame.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/parameter.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/parameter.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/variable.h
 
     # kernel
     ${SEEK_ENGINE_SOURCE_DIR}/kernel/kernel.h
@@ -16,11 +33,59 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/kernel/context.cpp
 
     # math
+    ${SEEK_ENGINE_SOURCE_DIR}/math/vector.h
+    ${SEEK_ENGINE_SOURCE_DIR}/math/hash.h
+    ${SEEK_ENGINE_SOURCE_DIR}/math/rect.h
+    ${SEEK_ENGINE_SOURCE_DIR}/math/math_utility.h
+    ${SEEK_ENGINE_SOURCE_DIR}/math/math_utility.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/math/matrix.h
+    ${SEEK_ENGINE_SOURCE_DIR}/math/matrix.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/math/aabbox.h
+    ${SEEK_ENGINE_SOURCE_DIR}/math/aabbox.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/math/color.h
+    ${SEEK_ENGINE_SOURCE_DIR}/math/color.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/math/frustum.h
+    ${SEEK_ENGINE_SOURCE_DIR}/math/frustum.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/math/plane.h
+    ${SEEK_ENGINE_SOURCE_DIR}/math/plane.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/math/quad_mesh_process.h
+    ${SEEK_ENGINE_SOURCE_DIR}/math/quad_mesh_process.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/math/quaternion.h
+    ${SEEK_ENGINE_SOURCE_DIR}/math/quaternion.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/math/ray.h
+    ${SEEK_ENGINE_SOURCE_DIR}/math/ray.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/math/transform.h
+    ${SEEK_ENGINE_SOURCE_DIR}/math/transform.cpp
     
     # rhi
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/rhi.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/format.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/format.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/framebuffer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/framebuffer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/material.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/mesh.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/mesh.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/program.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/program.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/query.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/render_buffer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/render_definition.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/render_state.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/render_view.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/rhi_command.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/rhi_command.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/rhi_context.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/rhi_context.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/shader.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/shader.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/texture.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/viewport.h
+    
+
+    # d3d11_rhi
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_rhi_context.h
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_rhi_context.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_rhi_context_factory.cpp
 
     # vulkan rhi
     ${SEEK_ENGINE_SOURCE_DIR}/vulkan_rhi/vulkan_rhi.h
@@ -28,13 +93,40 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/vulkan_rhi/vulkan_rhi_factory.cpp
 
     # resource
+    ${SEEK_ENGINE_SOURCE_DIR}/resource/resource_mgr.h
+    ${SEEK_ENGINE_SOURCE_DIR}/resource/resource_mgr.cpp
 
     # utils
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/file_uid.h
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/util.h
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/util.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/buffer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/buffer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/compression.h
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/compression.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/dll_loader.h
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/dll_loader.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/utils/error.h
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/error.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/exposure.h
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/exposure.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/image_decode.h
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/image_decode.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/utils/log.h
     ${SEEK_ENGINE_SOURCE_DIR}/utils/log.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/safe_c.h
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/safe_c.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/timer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/timer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/zbase64.h
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/zbase64.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/file.h
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/seek_defs.h
+
 
     # scene_manager
+    ${SEEK_ENGINE_SOURCE_DIR}/scene_manager/scene_manager.h
+    ${SEEK_ENGINE_SOURCE_DIR}/scene_manager/scene_manager.cpp
 
     # thread    
     ${SEEK_ENGINE_SOURCE_DIR}/thread/mutex.h
@@ -62,4 +154,7 @@ endif()
 
 ############################################ seek static lib ############################################
 add_library(${SEEK_STATICLIB_NAME} STATIC ${ENGINE_CODE})
+project_base_prop(${SEEK_STATICLIB_NAME})
+
+
 target_include_directories(${SEEK_STATICLIB_NAME} PUBLIC ${SEEK_ENGINE_SOURCE_DIR})

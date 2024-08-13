@@ -19,19 +19,19 @@ static void TRACECALLBACK(TRACE_LEVEL level, const char* szLog)
     switch (level)
     {
         case LevelInfo:
-            fprintf(stdout, "[DVF][INFO] %s\n", szLog);
+            fprintf(stdout, "[SEEK][INFO] %s\n", szLog);
             break;
         case LevelWarning:
-            fprintf(stdout, "[DVF][WARNING] %s\n", szLog);
+            fprintf(stdout, "[SEEK][WARNING] %s\n", szLog);
             break;
         case LevelError:
-            fprintf(stdout, "[DVF][ERROR] %s\n", szLog);
+            fprintf(stdout, "[SEEK][ERROR] %s\n", szLog);
             break;
         default:
-            fprintf(stdout, "[DVF][UNKNOW] %s\n", szLog);
+            fprintf(stdout, "[SEEK][UNKNOW] %s\n", szLog);
             break;
     }
-#if defined(DVF_PLATFORM_LINUX)
+#if defined(SEEK_PLATFORM_LINUX)
     fflush(stdout);
 #endif
 }

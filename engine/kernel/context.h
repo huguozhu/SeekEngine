@@ -1,5 +1,8 @@
 #pragma once
 #include "kernel/kernel.h"
+#include "thread/semaphore.h"
+#include "rhi/rhi_context.h"
+#include "scene_manager/scene_manager.h"
 
 
 SEEK_NAMESPACE_BEGIN
@@ -30,16 +33,30 @@ public:
     Context();
     ~Context();
 
-    SResult                     Init(const RenderInitInfo& init_info);
-    void                        Uninit();
-    SResult                     Update();
-    SResult                     Render();
-    SResult                     BeginFrame();
-    SResult                     EndFrame();
+    SResult             Init(const RenderInitInfo& init_info);
+    void                Uninit();
+    SResult             Update();
+
+    SResult             BeginFrame();
+    SResult             RenderFrame();    
+    SResult             EndFrame();
+
+    bool                IsMultiThreaded() { return m_InitInfo.multi_thread; }
+
+    RHIContext&         RHIContextInstance() { return *m_pRHIContext; }
+    SceneManager&       SceneManagerInstance() { return *m_pSceneManager;}
 
 
 private:
-    ThreadManagerPtrUnique  m_pThreadManager;
+    bool                ApiSemWait(int32_t msecs = -1);
+
+private:
+    RenderInitInfo              m_InitInfo{};
+    Semaphore                   m_ApiSemaphore;
+    ThreadManagerPtrUnique      m_pThreadManager;
+    RHIContextPtrUnique         m_pRHIContext;
+    SceneManagerPtrUnique       m_pSceneManager;
+
 
 };
 

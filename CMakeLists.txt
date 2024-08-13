@@ -62,6 +62,18 @@ set(SEEK_TOOLS_DIR               "${SEEK_ROOT_DIR}/tools")
 set(SEEK_THIRDPARTY_DIR          "${SEEK_ROOT_DIR}/third_party")
 set(SEEK_DEPENDENCIES_DIR        "${SEEK_ROOT_DIR}/dependencies")
 
+set(SEEK_GENERATED_FILE_DIR      "${CMAKE_CURRENT_BINARY_DIR}/generated")
+set(SEEK_GENERATED_SHADER_DIR    "${SEEK_GENERATED_FILE_DIR}/shader")
+set(SEEK_GENERATED_DEPEND_DIR    "${SEEK_GENERATED_SHADER_DIR}/${SHADER_DEPEND_FILE_SUFFIX}")
+set(SEEK_GENERATED_META_DIR      "${SEEK_GENERATED_SHADER_DIR}/${SHADER_META_FILE_SUFFIX}")
+set(SEEK_GENERATED_TAG_DIR       "${SEEK_GENERATED_SHADER_DIR}/${SHADER_TAG_FILE_SUFFIX}")
+
+
+# global include path
+include_directories(${SEEK_ROOT_DIR})
+include_directories(${SEEK_ROOT_DIR}/common/include)
+include_directories(${SEEK_GENERATED_FILE_DIR})
+
 
 
 add_subdirectory(third_party)
