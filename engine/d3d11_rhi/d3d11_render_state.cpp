@@ -1,19 +1,19 @@
-#include "rendering_d3d11/d3d11_predeclare.h"
-#include "rendering_d3d11/d3d11_render_state.h"
-#include "rendering_d3d11/d3d11_render_context.h"
-#include "rendering_d3d11/d3d11_translate.h"
+#include "d3d11_rhi/d3d11_predeclare.h"
+#include "d3d11_rhi/d3d11_render_state.h"
+#include "d3d11_rhi/d3d11_rhi_context.h"
+#include "d3d11_rhi/d3d11_translate.h"
 
 #include "kernel/context.h"
 
-#define DVF_MACRO_FILE_UID 9     // this code is auto generated, don't touch it!!!
+#define SEEK_MACRO_FILE_UID 9     // this code is auto generated, don't touch it!!!
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
 D3D11RenderState::D3D11RenderState(Context* context, RasterizerStateDesc const& rs_desc,
     DepthStencilStateDesc const& ds_desc, BlendStateDesc const& bs_desc)
     : RenderState(context, rs_desc, ds_desc, bs_desc)
 {
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
     // Step1 : RasterizerState
@@ -104,15 +104,15 @@ D3D11RenderState::~D3D11RenderState()
     m_pD3D11BlendState.Reset();
 }
 
-DVFResult D3D11RenderState::Active()
+SResult D3D11RenderState::Active()
 {
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     if (m_pD3D11RasterizerState && m_pD3D11DepthStencilState && m_pD3D11BlendState)
     {
         rc.SetD3DRasterizerState(m_pD3D11RasterizerState.Get());
         rc.SetD3DDepthStencilState(m_pD3D11DepthStencilState.Get(), m_stRenderStateDesc.depthStencil.iFrontStencilRef);
         rc.SetD3DBlendState(m_pD3D11BlendState.Get(), m_stRenderStateDesc.blend.fBlendFactor, m_stRenderStateDesc.blend.iSampleMask);
-        return DVF_Success;
+        return S_Success;
     }
     else
     {
@@ -125,7 +125,7 @@ DVFResult D3D11RenderState::Active()
 D3D11Sampler::D3D11Sampler(Context* context, SamplerDesc const& desc)
     : Sampler(context, desc)
 {
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
     D3D11_SAMPLER_DESC d3d_sampler_desc;
@@ -160,7 +160,7 @@ D3D11Sampler::~D3D11Sampler()
 
 
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END
 
 
-#undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

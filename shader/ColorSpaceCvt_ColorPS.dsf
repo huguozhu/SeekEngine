@@ -1,0 +1,11 @@
+//STAGE:ps
+#include "ColorSpaceCvt_common.dsh"
+
+float4 main(
+	in float2 iTc : TEXCOORD,
+	float4 	 iPos : SV_POSITION) : SV_Target
+{
+	float4 tmp = global_params.color;
+
+	return run(iTc, iPos, tmp);
+}

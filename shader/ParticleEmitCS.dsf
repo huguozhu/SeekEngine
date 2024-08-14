@@ -1,0 +1,107 @@
+//STAGE:cs
+#include "ParticleCommon.dsh"
+
+#define EMIT_SHAPE_SPHERE 		0
+#define EMIT_SHAPE_BOX 			1
+#define MATH_PI					3.1415926
+
+cbuffer CEmitParam
+{
+	GpuEmitParam param;
+};
+RWStructuredBuffer<Particle> particle_datas;
+
+float3 randomPointOnSphere(float u, float v, float radius)
+{
+    float theta = 2 * MATH_PI * u;
+    float phi   = acos(2 * v - 1);
+    float x     = radius * sin(phi) * cos(theta);
+    float y     = radius * sin(phi) * sin(theta);
+    float z     = radius * cos(phi);
+    return float3(x, y, z);
+}
+uint PopDeadIndex()
+{
+	uint index;
+	InterlockedAdd(particle_counters[0].dead_count, -1, index);
+	return dead_indices[index - 1];
+}
+void PushAliveIndex(uint index)
+{
+	uint insert_index;
+	InterlockedAdd(particle_counters[0].alive_count[pre_sim_index], 1, insert_index);
+	alive_pre_simulate_indices[insert_index] = index;
+}
+[numthreads(PARTICLE_CS_X_SIZE, 1, 1)]
+void main(uint3 DTid : SV_DispatchThreadID,
+		uint  group_index	: SV_GroupIndex)
+{
+	uint index = DTid.x;
+	uint cur_random_index = 0;
+	if (index < particle_counters[0].emit_count)
+	{
+		uint particle_index = PopDeadIndex();
+		float3 position = param.position;
+		if (param.emit_shape == EMIT_SHAPE_SPHERE)
+		{
+			position += randomPointOnSphere(
+				GetRandomFloat(),
+				GetRandomFloat(),
+				param.sphere_radius * GetRandomFloat()
+				);
+		}
+		else if (param.emit_shape == EMIT_SHAPE_BOX)
+		{
+			float x = (GetRandomFloat() - 0.5) * param.box_size.x;
+			float y = (GetRandomFloat() - 0.5) * param.box_size.y;
+			float z = (GetRandomFloat() - 0.5) * param.box_size.z;
+			position += float3(x, y, z);
+		}
+
+
+
+		float3 direction = float3(1, 1, 0);
+		if (param.emit_direction_type == Emit_Direction_Type_Directional)
+		{
+			direction.x = GetRandomFloat() * (1.0 + param.direction_spread_percent) * param.direction.x;
+			direction.y = GetRandomFloat() * (1.0 + param.direction_spread_percent) * param.direction.y;
+			direction.z = GetRandomFloat() * (1.0 + param.direction_spread_percent) * param.direction.z;
+		}
+		else if (param.emit_direction_type == Emit_Direction_Type_BiDirectional)
+		{
+			float bi = GetRandomFloat() < 0.5 ? -1.0f : 1.0f;
+			direction.x = GetRandomFloat() * (1.0 + param.direction_spread_percent) * param.direction.x * bi;
+			direction.y = GetRandomFloat() * (1.0 + param.direction_spread_percent) * param.direction.y * bi;
+			direction.z = GetRandomFloat() * (1.0 + param.direction_spread_percent) * param.direction.z * bi;
+		} 
+		else if (param.emit_direction_type == Emit_Direction_Type_Uniform_2D)
+		{
+			direction = float3(GetRandomFloat() - 0.5, GetRandomFloat() - 0.5, GetRandomFloat() * 0.001);
+		}
+		else if (param.emit_direction_type == Emit_Direction_Type_Uniform_3D)
+		{
+			direction = float3(GetRandomFloat() - 0.5, GetRandomFloat() - 0.5,  GetRandomFloat() - 0.5);
+		}
+
+		direction = normalize(direction);
+		float initial_speed = param.min_init_speed + (param.max_init_speed - param.min_init_speed) * GetRandomFloat();
+        float duration_time = param.min_life_time  + (param.max_life_time  - param.min_life_time)  * GetRandomFloat();
+
+		particle_datas[particle_index].position = float4(position, 1.0);
+		particle_datas[particle_index].velocity.xyz = direction * initial_speed;
+		particle_datas[particle_index].life_time.xyz = float3(0.0, duration_time, 0.0);
+		
+		uint tex_clip_count = param.tex_rows_cols.x * param.tex_rows_cols.y;
+		if (param.tex_time_sampling_type == Tex_Time_Sampling_Type_Play_Once 	||
+		    param.tex_time_sampling_type == Tex_Time_Sampling_Type_Play_Loop	)
+		{
+				particle_datas[particle_index].tex_index = 0;
+		}
+		else if (param.tex_time_sampling_type == Tex_Time_Sampling_Type_Random_Still_Frame || 
+				 param.tex_time_sampling_type == Tex_Time_Sampling_Type_Random_Loop)
+		{
+			particle_datas[particle_index].tex_index = uint(GetRandomFloat() * tex_clip_count);
+		}
+		PushAliveIndex(particle_index);
+	}	
+}

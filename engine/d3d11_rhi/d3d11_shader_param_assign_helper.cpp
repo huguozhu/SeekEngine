@@ -1,10 +1,12 @@
-#include "rendering_d3d11/d3d11_shader_param_assign_helper.h"
+#include "d3d11_rhi/d3d11_shader_param_assign_helper.h"
+#include "utils/error.h"
+#include "utils/util.h"
 
-#define DVF_MACRO_FILE_UID 69     // this code is auto generated, don't touch it!!!
+#define SEEK_MACRO_FILE_UID 69     // this code is auto generated, don't touch it!!!
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
-DVFResult CBufferAssignHelper::ShaderParamAssign(void* dstBuf, const void* srcBuf, reflect::StructInfo const* structInfo, ID3D11ShaderReflectionType* structType, size_t structSize)
+SResult CBufferAssignHelper::ShaderParamAssign(void* dstBuf, const void* srcBuf, reflect::StructInfo const* structInfo, ID3D11ShaderReflectionType* structType, size_t structSize)
 {
     HRESULT hr;
 
@@ -52,12 +54,12 @@ DVFResult CBufferAssignHelper::ShaderParamAssign(void* dstBuf, const void* srcBu
             }
             case reflect::DataType::Struct:
             {
-                DVF_RETIF_FAIL(ShaderParamAssign(dst_buf, src_buf, memberInfo->struct_info, structType->GetMemberTypeByIndex(memberIdx), memberSize));
+                SEEK_RETIF_FAIL(ShaderParamAssign(dst_buf, src_buf, memberInfo->struct_info, structType->GetMemberTypeByIndex(memberIdx), memberSize));
                 break;
             }
             case reflect::DataType::Array:
             {
-                DVF_RETIF_FAIL(ShaderParamAssign(dst_buf, src_buf, &memberInfo->array_info, structType->GetMemberTypeByIndex(memberIdx), memberSize));
+                SEEK_RETIF_FAIL(ShaderParamAssign(dst_buf, src_buf, &memberInfo->array_info, structType->GetMemberTypeByIndex(memberIdx), memberSize));
                 break;
             }
             default:
@@ -68,10 +70,10 @@ DVFResult CBufferAssignHelper::ShaderParamAssign(void* dstBuf, const void* srcBu
         }
     }
 
-    return DVF_Success;
+    return S_Success;
 }
 
-DVFResult CBufferAssignHelper::ShaderParamAssign(void* dstBuf, const void* srcBuf, reflect::ArrayInfo const* arrayInfo, ID3D11ShaderReflectionType* arrayType, size_t arraySize)
+SResult CBufferAssignHelper::ShaderParamAssign(void* dstBuf, const void* srcBuf, reflect::ArrayInfo const* arrayInfo, ID3D11ShaderReflectionType* arrayType, size_t arraySize)
 {
     D3D11_SHADER_TYPE_DESC arrayTypeDesc;
     arrayType->GetDesc(&arrayTypeDesc);
@@ -83,7 +85,7 @@ DVFResult CBufferAssignHelper::ShaderParamAssign(void* dstBuf, const void* srcBu
 
     // the last element's padding is exclude from arraySize
     // the constant buffer
-    size_t element_stride = dvf_alignup(arraySize, 16) / arrayTypeDesc.Elements;
+    size_t element_stride = seek_alignup(arraySize, 16) / arrayTypeDesc.Elements;
     size_t element_size = arraySize - element_stride * (arrayTypeDesc.Elements - 1);
 
     for (size_t i = 0; i < arrayInfo->element_count; i++)
@@ -100,7 +102,7 @@ DVFResult CBufferAssignHelper::ShaderParamAssign(void* dstBuf, const void* srcBu
             }
             case reflect::DataType::Struct:
             {
-                DVF_RETIF_FAIL(ShaderParamAssign(member_dst, member_src, arrayInfo->struct_info, arrayType, element_size));
+                SEEK_RETIF_FAIL(ShaderParamAssign(member_dst, member_src, arrayInfo->struct_info, arrayType, element_size));
                 break;
             }
             default:
@@ -108,9 +110,9 @@ DVFResult CBufferAssignHelper::ShaderParamAssign(void* dstBuf, const void* srcBu
         }
     }
 
-    return DVF_Success;
+    return S_Success;
 }
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END
 
-#undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

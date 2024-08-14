@@ -1,0 +1,20 @@
+//STAGE:ps
+//PREDEFINE:HAS_TEX=0,1
+#if HAS_TEX	== 1
+#include "Common.dsh"
+Texture2D particle_tex;
+#endif
+float4 main(
+#if HAS_TEX	== 1
+	in float2 iTc 		: TEXCOORD,
+#endif
+	in float4 iColor	: COLOR) : SV_Target
+{
+#if HAS_TEX	== 1
+	float4 sColor = particle_tex.Sample(linear_sampler, iTc);
+	return iColor * sColor;
+#endif
+#if HAS_TEX	== 0
+	return iColor;
+#endif
+}

@@ -1,19 +1,4 @@
-﻿/*************************************************************************************************
-**
-**      Copyright (C) 2021. All rights reserved.
-**
-**      Name                   : d3d11_predeclare.h
-**
-**      Brief                  : predeclare in d3d11 rendering
-**
-**      Additional             : including Microsoft::WRL::ComPtr
-**
-**------------------------------------------------------------------------------------------------
-**
-**      History                : 2021-05-28  Created by Ted Hu
-**
-**************************************************************************************************/
-#pragma once
+﻿#pragma once
 
 #include <windows.h>
 #include <d3d11.h>
@@ -34,7 +19,7 @@
 
 #include "kernel/kernel.h"
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
 #ifndef SAFE_RELEASE
 #define SAFE_RELEASE(p)      { if (p) { (p)->Release(); (p)=NULL; } }
@@ -81,4 +66,4 @@ using ID3D11BlendStatePtr           = ComPtr<ID3D11BlendState>;
 using ID3D11SamplerStatePtr         = ComPtr<ID3D11SamplerState>;
 using ID3D11QueryPtr                = ComPtr<ID3D11Query>;
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END

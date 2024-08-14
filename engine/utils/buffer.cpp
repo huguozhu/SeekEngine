@@ -56,7 +56,7 @@ bool Buffer::Alloc(size_t size)
     Free();
 
     this->size = size;
-    this->bufsize = dvf_alignup(size, MEM_DEFAULT_ALIGN); // sometimes we may access overflow(like simd), so align size to meet these requirements
+    this->bufsize = seek_alignup(size, MEM_DEFAULT_ALIGN); // sometimes we may access overflow(like simd), so align size to meet these requirements
 
 #if defined(_WIN32)
     data = (uint8_t*)_aligned_malloc(this->bufsize, MEM_DEFAULT_ALIGN); // align mem address, so we can use some optimize algo(like simd)
@@ -78,7 +78,7 @@ bool Buffer::Expand(size_t size)
 {
     if (external_memory)
         return false;
-    size_t aligned_size = dvf_alignup(size, MEM_DEFAULT_ALIGN);
+    size_t aligned_size = seek_alignup(size, MEM_DEFAULT_ALIGN);
     if (aligned_size > bufsize)
         return Alloc(size);
     this->size = size;
@@ -177,7 +177,7 @@ void BitmapBuffer::UpdateSize(uint32_t width, uint32_t height, PixelFormat forma
     this->format = format;
     // we want each row address is align to MEM_DEFAULT_ALIGN
     // TODO: NumComponentBytes is 2 or 4, no need to align width to MEM_DEFAULT_ALIGN
-    this->rowPitch = dvf_alignup(width, MEM_DEFAULT_ALIGN) * Formatutil::NumComponentBytes(format);
+    this->rowPitch = seek_alignup(width, MEM_DEFAULT_ALIGN) * Formatutil::NumComponentBytes(format);
     this->size = this->rowPitch * this->height;
 }
 

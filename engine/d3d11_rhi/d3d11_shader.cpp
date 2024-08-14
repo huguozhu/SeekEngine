@@ -1,22 +1,21 @@
-#include "rendering_d3d11/d3d11_shader.h"
-#include "rendering_d3d11/d3d11_render_context.h"
-#include "rendering_d3d11/d3d11_translate.h"
-#include "rendering_d3d11/d3d11_texture.h"
-#include "rendering_d3d11/d3d11_render_state.h"
-#include "rendering_d3d11/d3d11_render_buffer.h"
-
-#include "effect/effect.h"
+#include "d3d11_rhi/d3d11_shader.h"
+#include "d3d11_rhi/d3d11_rhi_context.h"
+#include "d3d11_rhi/d3d11_translate.h"
+#include "d3d11_rhi/d3d11_texture.h"
+#include "d3d11_rhi/d3d11_render_state.h"
+#include "d3d11_rhi/d3d11_render_buffer.h"
 
 #include "math/math_utility.h"
 #include "kernel/context.h"
-#include "util/log.h"
+#include "utils/log.h"
+#include "utils/timer.h"
 
-#define DVF_MACRO_FILE_UID 2     // this code is auto generated, don't touch it!!!
+#define SEEK_MACRO_FILE_UID 2     // this code is auto generated, don't touch it!!!
 
 ID3D11UnorderedAccessView* null_uavs[128] = { nullptr };
 ID3D11ShaderResourceView*  null_srvs[128] = { nullptr };
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
 LPCSTR GetCompileShaderModel(ShaderType type)
 {
@@ -38,19 +37,19 @@ LPCSTR GetCompileShaderModel(ShaderType type)
     return nullptr;
 }
 
-DVFResult D3D11Shader::Active()
+SResult D3D11Shader::Active()
 {
     if (!m_bCompileReady)
     {
-        DVF_RETIF_FAIL(this->OnCompile());
+        SEEK_RETIF_FAIL(this->OnCompile());
         m_bCompileReady = true;
     }
 
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
     rc.SetD3DShader(m_eShaderType, (ID3D11DeviceChild*)m_pShader.Get());
 
-    return DVF_Success;
+    return S_Success;
 }
 
 void D3D11Shader::Deactive()
@@ -58,7 +57,7 @@ void D3D11Shader::Deactive()
 
 }
 
-DVFResult D3D11Shader::OnCompile()
+SResult D3D11Shader::OnCompile()
 {
     std::string macroStr;
     for (auto& m : m_vMacros)
@@ -66,7 +65,7 @@ DVFResult D3D11Shader::OnCompile()
     TIMER_BEG(t1);
     LOG_INFO("D3D11Shader::OnCompile() %s Macro(%s)", m_szEntryFuncName.c_str(), macroStr.c_str());
 
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
     ID3DBlob* pError = nullptr;
@@ -197,9 +196,9 @@ DVFResult D3D11Shader::OnCompile()
     SAFE_RELEASE(pError);
 
     TIMER_END(t1, "D3D11Shader::OnCompile()");
-    return DVF_Success;
+    return S_Success;
  }
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END
 
-#undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

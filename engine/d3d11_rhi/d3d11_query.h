@@ -1,10 +1,10 @@
 #pragma once
-#include "rendering/render_definition.h"
-#include "rendering_d3d11/d3d11_predeclare.h"
-#include "rendering/query.h"
+#include "rhi/render_definition.h"
+#include "d3d11_rhi/d3d11_predeclare.h"
+#include "rhi/query.h"
 #include "kernel/context.h"
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
 class D3D11TimerQuery : public TimerQuery
 {
@@ -50,4 +50,4 @@ private:
     Context* m_pContext = nullptr;
 };
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END

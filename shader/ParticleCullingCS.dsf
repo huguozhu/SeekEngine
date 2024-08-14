@@ -1,0 +1,69 @@
+//STAGE:cs
+#include "ParticleCommon.dsh"
+#include "Common.dsh"
+
+StructuredBuffer<Particle> particle_datas;
+RWStructuredBuffer<SortInfo>	sort_indices;
+RWStructuredBuffer<ParticleDrawArgs> draw_args;
+
+Texture2D size_over_life_tex;
+
+cbuffer CCullingParam
+{
+	GpuCullingParam param;
+};
+
+bool IsCameraVisible(float4 pos[4])
+{
+	for (uint i = 0; i<4; ++i)
+	{
+		float4 p = pos[i] / pos[i].w;
+		if ((p.x > -1 && p.x < 1) &&
+			(p.y > -1 && p.y < 1) &&
+			(p.z > 0  && p.z < 1) )
+		return true;
+	}
+	return false;
+}
+
+[numthreads(PARTICLE_CS_X_SIZE, 1, 1)]
+void main(uint3 DTid : SV_DispatchThreadID)
+{
+	uint index = DTid.x;
+	if (index >= particle_counters[0].simulate_count)
+		return;
+	
+	Particle particle = particle_datas[alive_post_simulate_indices[index]];
+	float4 quad_pos[4] = {
+		float4(-1, -1, 0.0, 1.0),
+		float4( 1,  1, 0.0, 1.0),
+		float4(-1,  1, 0.0, 1.0),
+		float4( 1, -1, 0.0, 1.0)
+	};
+
+	float life = particle.life_time.x / particle.life_time.y;
+	float2 tc_color = float2(life, 0.5);
+	float2 size = size_over_life_tex.SampleLevel(linear_sampler, tc_color, 0.0).rg;
+
+	quad_pos[0].xy *= size;
+	quad_pos[1].xy *= size;
+	quad_pos[2].xy *= size;
+	quad_pos[3].xy *= size;
+
+	float4 particle_view_pos = mul(float4(particle.position.xyz, 1.0), param.view_matrix);
+	
+	float4 pos[4];
+	pos[0] = mul(float4(quad_pos[0].xyz + particle_view_pos.xyz, 1.0), param.proj_matrix); 
+	pos[1] = mul(float4(quad_pos[1].xyz + particle_view_pos.xyz, 1.0), param.proj_matrix);
+	pos[2] = mul(float4(quad_pos[2].xyz + particle_view_pos.xyz, 1.0), param.proj_matrix);
+	pos[3] = mul(float4(quad_pos[3].xyz + particle_view_pos.xyz, 1.0), param.proj_matrix);
+	if (!IsCameraVisible(pos))
+		return;
+	
+	uint render_index;
+	InterlockedAdd(particle_counters[0].render_count, 1, render_index);
+	InterlockedAdd(draw_args[0].instance_count, 1);
+	GroupMemoryBarrierWithGroupSync();
+	sort_indices[render_index].particle_index = alive_post_simulate_indices[index];	
+	sort_indices[render_index].particle_depth = particle_view_pos[2];
+}

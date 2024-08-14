@@ -1,18 +1,3 @@
-/*************************************************************************************************
-**
-**      Copyright (C) 2021. All rights reserved.
-**
-**      Name                   : component.h
-**
-**      Brief                  : component base class
-**
-**      Additional             : None
-**
-**------------------------------------------------------------------------------------------------
-**
-**      History                : 2021-06-04  Created by Ted Hu
-**
-**************************************************************************************************/
 #pragma once
 
 #include "kernel/kernel.h"
@@ -31,7 +16,6 @@ enum class ComponentType : uint8_t
     Sprite2D,
     Image,
     Animation,
-    SpringSkeleton,
     ParticleSystem,
 };
 

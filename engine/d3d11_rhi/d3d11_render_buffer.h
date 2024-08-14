@@ -1,25 +1,10 @@
-﻿/*************************************************************************************************
-**
-**      Copyright (C) 2021. All rights reserved.
-**
-**      Name                   : d3d11_render_buffer.h
-**
-**      Brief                  : d3d11 vertex/index buffer
-**
-**      Additional             : None
-**
-**------------------------------------------------------------------------------------------------
-**
-**      History                : 2021-05-28  Created by Ted Hu
-**
-**************************************************************************************************/
-#pragma once
-#include "rendering/render_buffer.h"
-#include "rendering_d3d11/d3d11_predeclare.h"
+﻿#pragma once
+#include "rhi/render_buffer.h"
+#include "d3d11_rhi/d3d11_predeclare.h"
 
-#include "rendering/render_definition.h"
+#include "rhi/render_definition.h"
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
 /******************************************************************************
  * D3D11RenderBuffer
@@ -33,18 +18,18 @@ public:
         : RenderBuffer(context, size, flags), m_pD3DBuffer(resource) {}
     virtual ~D3D11RenderBuffer();
 
-    virtual DVFResult Create(RenderBufferData* buffer_data) override;
-    virtual DVFResult Update(RenderBufferData* buffer_data) override;
-    virtual DVFResult CopyBack(BufferPtr buffer, int start=0, int length=-1) override;
+    virtual SResult Create(RenderBufferData* buffer_data) override;
+    virtual SResult Update(RenderBufferData* buffer_data) override;
+    virtual SResult CopyBack(BufferPtr buffer, int start=0, int length=-1) override;
 
     ID3D11Buffer* GetD3DBuffer();
     ID3D11ShaderResourceView* GetD3DShaderResourceView();
     ID3D11UnorderedAccessView* GetD3DUnorderedAccessView();
 
 protected:
-    virtual DVFResult FillBufferDesc(D3D11_BUFFER_DESC& desc);
-    virtual DVFResult FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc);
-    virtual DVFResult FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc);
+    virtual SResult FillBufferDesc(D3D11_BUFFER_DESC& desc);
+    virtual SResult FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc);
+    virtual SResult FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc);
 
 protected:
     ID3D11BufferPtr m_pD3DBuffer = nullptr;
@@ -62,7 +47,7 @@ class D3D11VertexBuffer : public D3D11RenderBuffer
 public:
     D3D11VertexBuffer(Context* context, uint32_t size, ResourceFlags flags);
 protected:
-    DVFResult FillBufferDesc(D3D11_BUFFER_DESC& desc) override;
+    SResult FillBufferDesc(D3D11_BUFFER_DESC& desc) override;
 };
 using D3D11VertexBufferPtr = std::shared_ptr<D3D11VertexBuffer>;
 
@@ -75,7 +60,7 @@ class D3D11IndexBuffer : public D3D11RenderBuffer
 public:
     D3D11IndexBuffer(Context* context, uint32_t size, ResourceFlags flags);
 protected:
-    DVFResult FillBufferDesc(D3D11_BUFFER_DESC& desc) override;
+    SResult FillBufferDesc(D3D11_BUFFER_DESC& desc) override;
 };
 using D3D11IndexBufferPtr = std::shared_ptr<D3D11IndexBuffer>;
 
@@ -88,7 +73,7 @@ class D3D11ConstantBuffer : public D3D11RenderBuffer
 public:
     D3D11ConstantBuffer(Context* context, uint32_t size, ResourceFlags flags);
 protected:
-    DVFResult FillBufferDesc(D3D11_BUFFER_DESC& desc) override;
+    SResult FillBufferDesc(D3D11_BUFFER_DESC& desc) override;
 };
 using D3D11ShaderBufferPtr = std::shared_ptr<D3D11ConstantBuffer>;
 
@@ -102,9 +87,9 @@ public:
     D3D11StructuredBuffer(Context* context, uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride);
 
 protected:
-    DVFResult FillBufferDesc(D3D11_BUFFER_DESC& desc) override;
-    DVFResult FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc) override;
-    DVFResult FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc) override;
+    SResult FillBufferDesc(D3D11_BUFFER_DESC& desc) override;
+    SResult FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc) override;
+    SResult FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc) override;
 
 protected:
     uint32_t m_iStructureByteStride = 0;
@@ -121,12 +106,12 @@ public:
     D3D11ByteAddressBuffer(Context* context, uint32_t size, ResourceFlags flags);
 
 protected:
-    DVFResult FillBufferDesc(D3D11_BUFFER_DESC& desc) override;
-    DVFResult FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc) override;
-    DVFResult FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc) override;
+    SResult FillBufferDesc(D3D11_BUFFER_DESC& desc) override;
+    SResult FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc) override;
+    SResult FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc) override;
 
 };
 using D3D11ByteAddressBufferPtr = std::shared_ptr<D3D11ByteAddressBuffer>;
 
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END

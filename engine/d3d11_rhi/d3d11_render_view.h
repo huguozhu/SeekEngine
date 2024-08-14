@@ -1,26 +1,11 @@
-﻿/*************************************************************************************************
-**
-**      Copyright (C) 2021. All rights reserved.
-**
-**      Name                   : d3d11_render_view.h
-**
-**      Brief                  : d3d11 RenderTargetView/DepthStencilView
-**
-**      Additional             : None
-**
-**------------------------------------------------------------------------------------------------
-**
-**      History                : 2021-05-28  Created by Ted Hu
-**
-**************************************************************************************************/
-#pragma once
+﻿#pragma once
 #include "kernel/kernel.h"
 #include "math/vector.h"
-#include "rendering/render_view.h"
-#include "rendering/framebuffer.h"
-#include "rendering_d3d11/d3d11_predeclare.h"
+#include "rhi/render_view.h"
+#include "rhi/framebuffer.h"
+#include "d3d11_rhi/d3d11_predeclare.h"
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
 /******************************************************************************
 * D3D11RenderTarget
@@ -80,4 +65,4 @@ public:
     D3D11CubeDepthStencilView(Context* context, TexturePtr const& tex, CubeFaceType face);
 };
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END

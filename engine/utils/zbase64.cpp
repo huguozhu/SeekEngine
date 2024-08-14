@@ -151,7 +151,7 @@ SResult ZBase64::Decode(const char* srcData, int srcSize, char** out)
         switch (nCount) {
         default:
             free(outData);
-            return SEEK_Success;
+            return S_Success;
         case 2:
             outData[dstIdx++] = dstBit >> 10;
             break;
@@ -164,7 +164,7 @@ SResult ZBase64::Decode(const char* srcData, int srcSize, char** out)
     else if (srcIdx < srcSize) {
         if (0 != nCount) {
             free(outData);
-            return SEEK_Success;
+            return S_Success;
         }
     }
 

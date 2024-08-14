@@ -45,3 +45,28 @@ if(SEEK_WINDOWS_OPENGLES)
     target_link_libraries(glfw-static INTERFACE glfw)
     target_include_directories(glfw-static INTERFACE ${SEEK_THIRDPARTY_DIR}/glfw/include)
 endif()
+
+
+
+################################################ libpng ################################################
+add_library(libpng INTERFACE)
+target_include_directories(libpng INTERFACE ${SEEK_THIRDPARTY_DIR}/libpng/include)
+target_link_libraries(libpng INTERFACE ${SEEK_THIRDPARTY_DIR}/libpng/libs/${TARGET_PLATFORM}/libpng16_static.lib)
+
+################################################ turbojpeg ################################################
+add_library(turbojpeg INTERFACE)
+target_include_directories(turbojpeg INTERFACE ${SEEK_THIRDPARTY_DIR}/libjpeg-turbo/include)
+target_link_libraries(libpng INTERFACE ${SEEK_THIRDPARTY_DIR}/libjpeg-turbo/libs/${TARGET_PLATFORM}/turbojpeg-static.lib)
+
+################################################ rapidjson ################################################
+add_library(rapidjson INTERFACE)
+target_include_directories(rapidjson INTERFACE ${SEEK_THIRDPARTY_DIR}/rapidjson/include)
+
+################################################ eigen ################################################
+add_library(eigen INTERFACE)
+target_include_directories(eigen INTERFACE ${SEEK_THIRDPARTY_DIR}/eigen/include)
+
+################################################ zlib ################################################
+add_library(zlib INTERFACE)
+target_include_directories(zlib INTERFACE ${SEEK_THIRDPARTY_DIR}/zlib/include)
+target_link_libraries(zlib INTERFACE ${SEEK_THIRDPARTY_DIR}/zlib/libs/${TARGET_PLATFORM}/Zlib_19.lib)

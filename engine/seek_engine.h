@@ -8,7 +8,7 @@
 #include "kernel/context.h"
 
 // rhi
-#include "rhi/rhi.h"
+#include "rhi/rhi_context.h"
 #include "rhi/rhi_command.h"
 
 // thread

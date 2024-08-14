@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include "rendering/program.h"
+#include "rhi/program.h"
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
 class D3D11Program : public Program
 {
@@ -11,8 +11,8 @@ public:
     { }
     ~D3D11Program() = default;
 
-    DVFResult Active();
+    SResult Active();
     void Deactive();
 };
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END

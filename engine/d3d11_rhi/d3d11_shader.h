@@ -1,8 +1,8 @@
 ﻿#pragma once
-#include "rendering/shader.h"
-#include "rendering_d3d11/d3d11_predeclare.h"
+#include "rhi/shader.h"
+#include "d3d11_rhi/d3d11_predeclare.h"
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
 class D3D11Shader : public Shader
 {
@@ -15,9 +15,9 @@ public:
         m_pShader.Reset();
         m_pD3DVsCode.Reset();
     }
-    DVFResult               Active();
+    SResult               Active();
     void                    Deactive();
-    virtual DVFResult       OnCompile() override;
+    virtual SResult       OnCompile() override;
 
     //ID3DBlobPtr GetD3DVSCode() { return m_pD3DVsCode; }
     const void* GetBufferPointer()
@@ -41,4 +41,4 @@ private:
     ID3DBlobPtr             m_pD3DVsCode = nullptr;
 };
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END

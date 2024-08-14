@@ -1,16 +1,15 @@
-#include "rendering_d3d11/d3d11_predeclare.h"
-#include "rendering_d3d11/d3d11_rhi_context.h"
-#include "rendering_d3d11/d3d11_adapter.h"
-#include "rendering_d3d11/d3d11_window.h"
-#include "rendering_d3d11/d3d11_program.h"
-#include "rendering_d3d11/d3d11_mesh.h"
-#include "rendering_d3d11/d3d11_render_buffer.h"
-#include "rendering_d3d11/d3d11_render_state.h"
-#include "rendering_d3d11/d3d11_framebuffer.h"
-#include "rendering_d3d11/d3d11_translate.h"
-#include "rendering_d3d11/d3d11_texture.h"
-#include "effect/effect.h"
-#include "effect/technique.h"
+#include "d3d11_rhi/d3d11_predeclare.h"
+#include "d3d11_rhi/d3d11_rhi_context.h"
+#include "d3d11_rhi/d3d11_adapter.h"
+#include "d3d11_rhi/d3d11_window.h"
+#include "d3d11_rhi/d3d11_program.h"
+#include "d3d11_rhi/d3d11_mesh.h"
+#include "d3d11_rhi/d3d11_render_buffer.h"
+#include "d3d11_rhi/d3d11_render_state.h"
+#include "d3d11_rhi/d3d11_framebuffer.h"
+#include "d3d11_rhi/d3d11_translate.h"
+#include "d3d11_rhi/d3d11_texture.h"
+
 #include "rhi/mesh.h"
 #include "rhi/program.h"
 #include "utils/log.h"
@@ -862,14 +861,16 @@ void OutputD3D11DebugInfo()
     __dxgiInfoQueue->ClearStoredMessages(DXGI_DEBUG_ALL);
 }
 
-SEEK_NAMESPACE_END
-
 extern "C"
 {
-    void MakeD3D11RHIContext(dvf::Context* context, dvf::RHIContextPtrUnique& out)
+    void MakeD3D11RHIContext(Context* context, RHIContextPtrUnique& out)
     {
-        out = dvf::MakeUniquePtr<dvf::D3D11RHIContext>(context);
+        out = MakeUniquePtr<D3D11RHIContext>(context);
     }
 }
+
+SEEK_NAMESPACE_END
+
+
 
 #undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

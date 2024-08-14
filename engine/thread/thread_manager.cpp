@@ -8,7 +8,7 @@ static SResult RenderThread_Entry(Context* context, Thread* thread, void* user_d
 {
     Context* pContext = (Context*)user_data;
     pContext->BeginFrame();
-    pContext->Render();
+    pContext->RenderFrame();
     pContext->EndFrame();
     return S_Success;
 }

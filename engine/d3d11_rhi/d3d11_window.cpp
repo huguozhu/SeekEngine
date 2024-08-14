@@ -1,19 +1,19 @@
 
-#include "rendering_d3d11/d3d11_predeclare.h"
-#include "rendering_d3d11/d3d11_render_context.h"
-#include "rendering_d3d11/d3d11_window.h"
-#include "rendering_d3d11/d3d11_adapter.h"
-#include "rendering_d3d11/d3d11_texture.h"
+#include "d3d11_rhi/d3d11_predeclare.h"
+#include "d3d11_rhi/d3d11_rhi_context.h"
+#include "d3d11_rhi/d3d11_window.h"
+#include "d3d11_rhi/d3d11_adapter.h"
+#include "d3d11_rhi/d3d11_texture.h"
 
 #include "kernel/context.h"
 
-#include "util/log.h"
-#include "util/error.h"
+#include "utils/log.h"
+#include "utils/error.h"
 #include <dxgidebug.h>
 
-#define DVF_MACRO_FILE_UID 5     // this code is auto generated, don't touch it!!!
+#define SEEK_MACRO_FILE_UID 5     // this code is auto generated, don't touch it!!!
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 D3D11Window::D3D11Window(Context* context)
     : D3D11FrameBuffer(context)
 {
@@ -25,13 +25,13 @@ D3D11Window::~D3D11Window()
     Destroy();
 }
 
-DVFResult D3D11Window::Create(D3D11Adapter* adapter, std::string const& name, void* native_wnd)
+SResult D3D11Window::Create(D3D11Adapter* adapter, std::string const& name, void* native_wnd)
 {
     m_pAdapter = adapter;
     m_szName = name;
     m_hWnd = (HWND)native_wnd;
     do {
-        D3D11RenderContext& d3d11_rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+        D3D11RHIContext& d3d11_rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
         RECT rc;
         GetClientRect(m_hWnd, &rc);
         m_iLeft = rc.left;
@@ -108,7 +108,7 @@ DVFResult D3D11Window::Create(D3D11Adapter* adapter, std::string const& name, vo
         RenderViewPtr dsv = d3d11_rc.CreateDepthStencilView(pDepthStencilTex);
         this->AttachDepthStencilView(dsv);
 
-        return DVF_Success;
+        return S_Success;
     } while (0);
 
     Destroy();
@@ -125,17 +125,17 @@ void D3D11Window::Destroy()
     m_hWnd = nullptr;
 }
 
-DVFResult D3D11Window::SwapBuffers()
+SResult D3D11Window::SwapBuffers()
 {
     if (m_pSwapChain)
     {
         if (FAILED(m_pSwapChain->Present(0, 0)))
             return ERR_NOT_SUPPORT;
     }
-    return DVF_Success;
+    return S_Success;
 }
 
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END
 
-#undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

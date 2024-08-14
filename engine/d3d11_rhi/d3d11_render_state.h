@@ -1,24 +1,9 @@
-﻿/*************************************************************************************************
-**
-**      Copyright (C) 2021. All rights reserved.
-**
-**      Name                   : d3d11_render_state.h
-**
-**      Brief                  : d3d11 rendering state and d3d11 sampler
-**
-**      Additional             : None
-**
-**------------------------------------------------------------------------------------------------
-**
-**      History                : 2021-05-28  Created by Ted Hu
-**
-**************************************************************************************************/
-#pragma once
+﻿#pragma once
 
-#include "rendering_d3d11/d3d11_predeclare.h"
-#include "rendering/render_state.h"
+#include "d3d11_rhi/d3d11_predeclare.h"
+#include "rhi/render_state.h"
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
 class D3D11RenderState : public RenderState
 {
@@ -29,7 +14,7 @@ public:
         : D3D11RenderState(context, desc.rasterizer, desc.depthStencil, desc.blend)
     {}
     virtual ~D3D11RenderState() override;
-    DVFResult               Active();
+    SResult               Active();
 
     ID3D11RasterizerState* GetD3D11RasterizerState() const { return m_pD3D11RasterizerState.Get(); }
     ID3D11DepthStencilState* GetD3D11DepthStencilState() const { return m_pD3D11DepthStencilState.Get(); }
@@ -53,4 +38,4 @@ private:
 };
 
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END

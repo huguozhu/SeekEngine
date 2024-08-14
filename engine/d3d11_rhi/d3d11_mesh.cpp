@@ -1,19 +1,19 @@
-#include "rendering_d3d11/d3d11_predeclare.h"
-#include "rendering_d3d11/d3d11_mesh.h"
-#include "rendering_d3d11/d3d11_render_context.h"
-#include "rendering_d3d11/d3d11_render_buffer.h"
-#include "rendering_d3d11/d3d11_translate.h"
-#include "rendering_d3d11/d3d11_shader.h"
+#include "d3d11_rhi/d3d11_predeclare.h"
+#include "d3d11_rhi/d3d11_mesh.h"
+#include "d3d11_rhi/d3d11_rhi_context.h"
+#include "d3d11_rhi/d3d11_render_buffer.h"
+#include "d3d11_rhi/d3d11_translate.h"
+#include "d3d11_rhi/d3d11_shader.h"
 
-#include "rendering/program.h"
+#include "rhi/program.h"
 
 #include "kernel/context.h"
 
-#include "util/log.h"
+#include "utils/log.h"
 
-#define DVF_MACRO_FILE_UID 11     // this code is auto generated, don't touch it!!!
+#define SEEK_MACRO_FILE_UID 11     // this code is auto generated, don't touch it!!!
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
 #define MORPH_TARGET_USAGE_INDEX 1
 
@@ -30,7 +30,7 @@ D3D11Mesh::~D3D11Mesh()
     m_vD3DInputLayouts.clear();
 }
 
-DVFResult D3D11Mesh::Active(Program* program)
+SResult D3D11Mesh::Active(Program* program)
 {
     // Step1: Update Dirty Data
     uint32_t vertex_stream_count = this->NumVertexStream();
@@ -46,7 +46,7 @@ DVFResult D3D11Mesh::Active(Program* program)
 
     if (m_bDataDirty)
     {
-        D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
 
         m_vD3DInputElementDescs.clear();
         m_vD3DInputElementDescs.reserve(vertex_stream_count);
@@ -90,7 +90,7 @@ DVFResult D3D11Mesh::Active(Program* program)
         m_bDataDirty = false;
     }
 
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
 
     // Step2: Set Mesh Topology
@@ -117,11 +117,11 @@ DVFResult D3D11Mesh::Active(Program* program)
     // Step5: Set Vertex Buffer
     pDeviceContext->IASetVertexBuffers(0, (UINT)vbs.size(), &vbs[0], &strides[0], &offsets[0]);
 
-    return DVF_Success;
+    return S_Success;
 }
-DVFResult D3D11Mesh::Deactive() const
+SResult D3D11Mesh::Deactive() const
 {
-    return DVF_Success;
+    return S_Success;
 }
 ID3D11InputLayout* D3D11Mesh::GetInputLayout(Program* program) const
 {
@@ -134,7 +134,7 @@ ID3D11InputLayout* D3D11Mesh::GetInputLayout(Program* program) const
             return layout.second.Get();
     }
 
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
     D3D11Shader* vs_shader = (D3D11Shader*)(program->GetShader(ShaderType::Vertex));
     if (!vs_shader)
@@ -154,7 +154,7 @@ ID3D11InputLayout* D3D11Mesh::GetInputLayout(Program* program) const
     return out;
 }
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END
 
 
-#undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

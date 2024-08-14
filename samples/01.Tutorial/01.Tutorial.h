@@ -10,6 +10,8 @@ public:
     Tutorial();
     virtual ~Tutorial();   
 
+    virtual SResult         OnCreate() override;
+    virtual SResult         OnUpdate() override;
 
 private:
     ContextPtr    m_pContext;

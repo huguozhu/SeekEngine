@@ -11,8 +11,11 @@ SEEK_NAMESPACE_BEGIN
 enum class RHIType
 {
     Unknown,
+    D3D11,
     D3D12,
     Vulkan,
+    Metal,
+    GLES,
 };
 
 struct RenderInitInfo
@@ -42,6 +45,10 @@ public:
     SResult             EndFrame();
 
     bool                IsMultiThreaded() { return m_InitInfo.multi_thread; }
+    bool                IsDebug() { return m_InitInfo.debug; }
+    int32_t             GetPreferredAdapter()   const { return m_InitInfo.preferred_adapter; }
+    uint32_t            GetNumSamples()         const { return m_InitInfo.num_samples; }
+    RHIType             GetRHIType()            const { return m_InitInfo.rhi_type; }
 
     RHIContext&         RHIContextInstance() { return *m_pRHIContext; }
     SceneManager&       SceneManagerInstance() { return *m_pSceneManager;}

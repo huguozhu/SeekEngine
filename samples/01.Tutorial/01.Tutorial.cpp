@@ -13,6 +13,15 @@ Tutorial::~Tutorial()
     
 }
 
+SResult Tutorial::OnCreate()
+{
+    return S_Success;
+}
+SResult Tutorial::OnUpdate()
+{
+    return S_Success;
+}
+
 
 int main()
 {

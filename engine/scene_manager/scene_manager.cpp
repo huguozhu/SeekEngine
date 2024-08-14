@@ -2,16 +2,15 @@
 #include "kernel/context.h"
 #include "components/mesh_component.h"
 #include "components/camera_component.h"
-#include "components/image_component.h"
 #include "components/light_component.h"
-#include "components/skeletal_mesh_component.h"
 #include "components/entity.h"
 #include "math/math_utility.h"
 #include "math/frustum.h"
 #include "math/transform.h"
 #include "rhi/mesh.h"
-#include <algorithm>
 #include "rhi/render_buffer.h"
+#include "utils/timer.h"
+#include <algorithm>
 
 #define SEEK_MACRO_FILE_UID 39     // this code is auto generated, don't touch it!!!
 
@@ -65,43 +64,43 @@ void SceneManager::PrintSceneTree(SceneComponent* component, int level)
         case ComponentType::Mesh:
         case ComponentType::SkeletalMesh:
         {
-            MeshComponent* mesh_component = static_cast<MeshComponent*>(component);
-            SkeletalMeshComponent* skeletal_mesh_component = nullptr;
-            if (component->GetComponentType() == ComponentType::SkeletalMesh)
-                skeletal_mesh_component = static_cast<SkeletalMeshComponent*>(component);
+            //MeshComponent* mesh_component = static_cast<MeshComponent*>(component);
+            //SkeletalMeshComponent* skeletal_mesh_component = nullptr;
+            //if (component->GetComponentType() == ComponentType::SkeletalMesh)
+            //    skeletal_mesh_component = static_cast<SkeletalMeshComponent*>(component);
 
-            if (skeletal_mesh_component)
-            {
-                component_type = "SkeletalMesh";
-                other_infomation += "[" + std::to_string(skeletal_mesh_component->GetJointCount()) + " Joints]";
-            }
-            else
-            {
-                component_type = "Mesh";
-            }
+            //if (skeletal_mesh_component)
+            //{
+            //    component_type = "SkeletalMesh";
+            //    other_infomation += "[" + std::to_string(skeletal_mesh_component->GetJointCount()) + " Joints]";
+            //}
+            //else
+            //{
+            //    component_type = "Mesh";
+            //}
 
-            size_t mesh_count = mesh_component->NumMeshes();
-            for (size_t i = 0; i < mesh_count; i++)
-            {
-                MeshPtr pMesh = mesh_component->GetMeshByIndex(i);
-                if (pMesh)
-                {
-                    std::string s = "\tMesh " + std::to_string(i);
-                    if (pMesh->HasMorphTarget())
-                        s += " [" + std::to_string(pMesh->GetMorphInfo().morph_target_names.size()) + " Morph]";
-                    if (pMesh->GetMaterial())
-                        s += " [Material " + pMesh->GetMaterial()->name + "]";
-                    if(pMesh->GetSkinningJointBindSize() == SkinningJointBindSize::Four)
-                        s += " [4 Skinning Joints]";
-                    else if (pMesh->GetSkinningJointBindSize() == SkinningJointBindSize::Eight)
-                        s += " [8 Skinning Joints]";
-                    else if (pMesh->GetSkinningJointBindSize() == SkinningJointBindSize::Twelve)
-                        s += " [12 Skinning Joints]";
+            //size_t mesh_count = mesh_component->NumMeshes();
+            //for (size_t i = 0; i < mesh_count; i++)
+            //{
+            //    MeshPtr pMesh = mesh_component->GetMeshByIndex(i);
+            //    if (pMesh)
+            //    {
+            //        std::string s = "\tMesh " + std::to_string(i);
+            //        if (pMesh->HasMorphTarget())
+            //            s += " [" + std::to_string(pMesh->GetMorphInfo().morph_target_names.size()) + " Morph]";
+            //        if (pMesh->GetMaterial())
+            //            s += " [Material " + pMesh->GetMaterial()->name + "]";
+            //        if(pMesh->GetSkinningJointBindSize() == SkinningJointBindSize::Four)
+            //            s += " [4 Skinning Joints]";
+            //        else if (pMesh->GetSkinningJointBindSize() == SkinningJointBindSize::Eight)
+            //            s += " [8 Skinning Joints]";
+            //        else if (pMesh->GetSkinningJointBindSize() == SkinningJointBindSize::Twelve)
+            //            s += " [12 Skinning Joints]";
 
-                    //s += " [AABBox " + pMesh->GetAABBox().Str() + "]";
-                    wrap_informations.push_back(s);
-                }
-            }
+            //        //s += " [AABBox " + pMesh->GetAABBox().Str() + "]";
+            //        wrap_informations.push_back(s);
+            //    }
+            //}
 #if 0 // print mesh's aabox
             Matrix4 m = mesh_component->GetWorldMatrix();
             AABBox abox_m = Math::TransformAABBox(abox, m);
@@ -128,9 +127,6 @@ void SceneManager::PrintSceneTree(SceneComponent* component, int level)
             break;
         case ComponentType::SkyBox:
             component_type = "SkyBox";
-            break;
-        case ComponentType::SpringSkeleton:
-            component_type = "SpringSkeleton";
             break;
     }
 
@@ -296,11 +292,11 @@ void SceneManager::UpdateSkeletonMatrics()
 {
     for (MeshComponent* mesh_component : m_vMeshComponentList)
     {
-        if (mesh_component->GetComponentType() == ComponentType::SkeletalMesh)
-        {
-            SkeletalMeshComponent* skeletal_component = (SkeletalMeshComponent*)mesh_component;
-            skeletal_component->UpdateJointFinalMatrices();
-        }
+        //if (mesh_component->GetComponentType() == ComponentType::SkeletalMesh)
+        //{
+        //    SkeletalMeshComponent* skeletal_component = (SkeletalMeshComponent*)mesh_component;
+        //    skeletal_component->UpdateJointFinalMatrices();
+        //}
     }
 }
 
@@ -374,7 +370,7 @@ RenderBufferPtr& SceneManager::GetLightInfoCBuffer()
 {
     if (!m_LightInfoCBuffer)
     {
-        m_LightInfoCBuffer = m_pContext->RenderContextInstance().CreateConstantBuffer(sizeof(LightInfo) * MAX_LIGHT, RESOURCE_FLAG_CPU_WRITE);
+        m_LightInfoCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(sizeof(LightInfo) * MAX_LIGHT, RESOURCE_FLAG_CPU_WRITE);
     }
 
     LightInfo lightInfo[MAX_LIGHT];
@@ -387,14 +383,14 @@ RenderBufferPtr& SceneManager::GetLightInfoCBuffer()
         LightInfo& info = lightInfo[lightIndex++];
 
         float exposure = 1.0;
-        if (m_pContext->GetLightingMode() == LightingMode::PBR)
-        {
-            auto camera = GetActiveCamera();
-            if (camera)
-                exposure = GetActiveCamera()->GetExposure() * PBR_INTENSITY_COEFF;
-            else
-                LOG_ERROR("no active camera");
-        }
+        //if (m_pContext->GetLightingMode() == LightingMode::PBR)
+        //{
+        //    auto camera = GetActiveCamera();
+        //    if (camera)
+        //        exposure = GetActiveCamera()->GetExposure() * PBR_INTENSITY_COEFF;
+        //    else
+        //        LOG_ERROR("no active camera");
+        //}
 
         LightType type = light->GetLightType();
         info.color = light->GetColor().ToFloat3();
@@ -419,7 +415,7 @@ RenderBufferPtr& SceneManager::GetViewInfoCBuffer()
 {
     if (!m_ViewInfoCBuffer)
     {
-        m_ViewInfoCBuffer = m_pContext->RenderContextInstance().CreateConstantBuffer(sizeof(CameraInfo), RESOURCE_FLAG_CPU_WRITE);
+        m_ViewInfoCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(sizeof(CameraInfo), RESOURCE_FLAG_CPU_WRITE);
     }
 
     // TODO: current view camera can be changed, NOW assume it won't change

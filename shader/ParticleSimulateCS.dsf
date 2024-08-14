@@ -1,0 +1,106 @@
+//STAGE:cs
+#include "ParticleCommon.dsh"
+
+cbuffer CSimulateParam
+{
+	GpuSimulateParam param;
+};
+RWStructuredBuffer<Particle> particle_datas;
+
+
+void PushDeadIndex(uint index)
+{
+	uint insert_index;
+	InterlockedAdd(particle_counters[0].dead_count, 1, insert_index);
+	dead_indices[insert_index] = index;
+}
+void PushAliveIndex(uint index)
+{
+	uint insert_index;
+	InterlockedAdd(particle_counters[0].alive_count[post_sim_index], 1, insert_index);
+	alive_post_simulate_indices[insert_index] = index;
+}
+uint PopAliveIndex()
+{
+	uint index;
+	InterlockedAdd(particle_counters[0].alive_count[pre_sim_index], -1, index);
+	return alive_pre_simulate_indices[index - 1];
+}
+
+void ParticleReflect(uint particle_index)
+{
+	const float reflect_x = 3.2;
+	const float reflect_y = 1.8;
+	float reflect_x_0 = -reflect_x;
+	float reflect_x_1 =  reflect_x;
+	float reflect_y_0 = -reflect_y;
+	float reflect_y_1 =  reflect_y;
+	float particle_x = particle_datas[particle_index].position.x;
+	float particle_y = particle_datas[particle_index].position.y;
+	float3 surface_normal_x_0 = float3( 1.0,  0.0, 0.0);
+	float3 surface_normal_x_1 = float3(-1.0,  0.0, 0.0);
+	float3 surface_normal_y_0 = float3( 0.0,  1.0, 0.0);
+	float3 surface_normal_y_1 = float3( 0.0, -1.0, 0.0);
+	const float restitution = 1.0;
+	if (particle_x < reflect_x_0)
+	{				
+		if (dot(particle_datas[particle_index].velocity.xyz, surface_normal_x_0) < 0.0)
+			particle_datas[particle_index].velocity.xyz = reflect(particle_datas[particle_index].velocity.xyz, surface_normal_x_0) * restitution;
+	}
+	if (particle_x > reflect_x_1)
+	{				
+		if (dot(particle_datas[particle_index].velocity.xyz, surface_normal_x_1) < 0.0)
+			particle_datas[particle_index].velocity.xyz = reflect(particle_datas[particle_index].velocity.xyz, surface_normal_x_1) * restitution;
+	}
+
+	if (particle_y < reflect_y_0)
+	{				
+		if (dot(particle_datas[particle_index].velocity.xyz, surface_normal_y_0) < 0.0)
+			particle_datas[particle_index].velocity.xyz = reflect(particle_datas[particle_index].velocity.xyz, surface_normal_y_0) * restitution;
+	}
+	if (particle_y > reflect_y_1)
+	{				
+		if (dot(particle_datas[particle_index].velocity.xyz, surface_normal_y_1) < 0.0)
+			particle_datas[particle_index].velocity.xyz = reflect(particle_datas[particle_index].velocity.xyz, surface_normal_y_1) * restitution;
+	}
+}
+
+[numthreads(PARTICLE_CS_X_SIZE, 1, 1)]
+void main(uint3 DTid 		: SV_DispatchThreadID,
+		uint  group_index	: SV_GroupIndex)
+{
+	uint index = DTid.x;
+	uint cur_random_index = 0;
+	if (index < particle_counters[0].simulate_count)
+	{
+		uint particle_index = PopAliveIndex();
+		if (particle_datas[particle_index].life_time.x >= particle_datas[particle_index].life_time.y)
+		{			
+			PushDeadIndex(particle_index);
+		}
+		else
+		{
+			//ParticleReflect(particle_index);
+			particle_datas[particle_index].life_time.x += param.delta_time;
+			particle_datas[particle_index].velocity.xyz += param.gravity * param.delta_time;
+			particle_datas[particle_index].position.xyz += particle_datas[particle_index].velocity.xyz * param.delta_time;
+
+			uint tex_clip_count = param.tex_rows_cols.x * param.tex_rows_cols.y;
+			uint cur_tex_index = particle_datas[particle_index].tex_index;
+			float tex_change_interval_time = particle_datas[particle_index].life_time.x - particle_datas[particle_index].life_time.z;
+			if (tex_change_interval_time > 1.0 / param.tex_frames_per_sec)
+			{
+				particle_datas[particle_index].life_time.z = particle_datas[particle_index].life_time.x;
+				if (param.tex_time_sampling_type == Tex_Time_Sampling_Type_Play_Once)
+					particle_datas[particle_index].tex_index = (cur_tex_index+1 < tex_clip_count) ? cur_tex_index+1 : cur_tex_index;
+				else if (param.tex_time_sampling_type == Tex_Time_Sampling_Type_Play_Loop)
+					particle_datas[particle_index].tex_index = (cur_tex_index+1) % tex_clip_count;
+				else if (param.tex_time_sampling_type == Tex_Time_Sampling_Type_Random_Still_Frame) 
+					;		// nothing to do 
+				else if (param.tex_time_sampling_type == Tex_Time_Sampling_Type_Random_Loop)
+					particle_datas[particle_index].tex_index = uint(GetRandomFloat() * tex_clip_count);
+			}
+			PushAliveIndex(particle_index);			
+		}		
+	}	
+}

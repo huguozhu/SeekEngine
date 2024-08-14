@@ -1,0 +1,97 @@
+#pragma once
+
+#include "Common.dsh"
+
+#define COMBINE_REGISTER(type, number) type##number
+#define CB_REGISTER(number) COMBINE_REGISTER(b, number)
+
+struct ModelInfo
+{
+    // model space to NDC space
+    float4x4 mvpMatrix;
+    // model space to world space
+    float4x4 modelMatrix;
+    // model space to view space
+    float4x4 modelViewMatrix;
+    // convert normal in model space to world space
+    float4x4 normalMatrix;
+};
+
+cbuffer ModelInfo : register(CB_REGISTER(CB_BINDING_MODEL_INFO))
+{
+    ModelInfo modelInfo;
+};
+
+// view information based on current camera
+struct ViewInfo
+{
+    // view space to NDC space
+    float4x4 viewProjMatrix;
+    float3 cameraPositionWorld;
+    float nearPlane;
+    float farPlane;
+    float3 padding;
+};
+
+cbuffer ViewInfo : register(CB_REGISTER(CB_BINDING_VIEW_INFO))
+{
+    ViewInfo viewInfo;
+};
+
+
+struct MaterialInfo
+{
+    uint flags;
+    float3 albedoFactor;
+    float occlusionFactor;
+    float3 emissiveFactor;
+    float metallicFactor;
+    float roughnessFactor;
+    float2 padding0;
+};
+
+#define MATERIAL_ALBEDO_BIT                 0x00000001u
+#define MATERIAL_NORMAL_BIT                 0x00000002u
+#define MATERIAL_METALLIC_ROUGHNESS_BIT     0x00000004u
+#define MATERIAL_OCCLUSION_BIT              0x00000008u
+#define MATERIAL_EMISSIVE_BIT               0x00000010u
+
+bool HasMaterialAlbedo(in uint materialFlags)
+{
+    return (materialFlags & MATERIAL_ALBEDO_BIT) != 0u;
+}
+
+bool HasMaterialNormal(in uint materialFlags)
+{
+    return (materialFlags & MATERIAL_NORMAL_BIT) != 0u;
+}
+
+bool HasMaterialMetallocRoughness(in uint materialFlags)
+{
+    return (materialFlags & MATERIAL_METALLIC_ROUGHNESS_BIT) != 0u;
+}
+
+bool HasMaterialOcclusion(in uint materialFlags)
+{
+    return (materialFlags & MATERIAL_OCCLUSION_BIT) != 0u;
+}
+
+bool HasMaterialEmissive(in uint materialFlags)
+{
+    return (materialFlags & MATERIAL_EMISSIVE_BIT) != 0u;
+}
+
+cbuffer MaterialInfo : register(CB_REGISTER(CB_BINDING_MATERIAL_INFO))
+{
+    MaterialInfo materialInfo;
+};
+
+struct MorphTargetInfo
+{
+    float4 morphWeights[MAX_MORPH_SIZE];
+};
+
+cbuffer MorphTargetInfo : register(CB_REGISTER(CB_BINDING_MORPH_TARGET_INFO))
+{
+    MorphTargetInfo morphTargetInfo;
+};

@@ -1,13 +1,13 @@
-#include "rendering_d3d11/d3d11_predeclare.h"
-#include "rendering_d3d11/d3d11_framebuffer.h"
-#include "rendering_d3d11/d3d11_render_context.h"
-#include "rendering_d3d11/d3d11_render_view.h"
-#include "rendering_d3d11/d3d11_texture.h"
+#include "d3d11_rhi/d3d11_predeclare.h"
+#include "d3d11_rhi/d3d11_framebuffer.h"
+#include "d3d11_rhi/d3d11_rhi_context.h"
+#include "d3d11_rhi/d3d11_render_view.h"
+#include "d3d11_rhi/d3d11_texture.h"
 #include "kernel/context.h"
 
-#define DVF_MACRO_FILE_UID 3     // this code is auto generated, don't touch it!!!
+#define SEEK_MACRO_FILE_UID 3     // this code is auto generated, don't touch it!!!
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
 D3D11FrameBuffer::D3D11FrameBuffer(Context* context)
     : FrameBuffer(context)
@@ -20,10 +20,10 @@ D3D11FrameBuffer::~D3D11FrameBuffer()
     m_vD3dRednerTargets.clear();
 }
 
-DVFResult D3D11FrameBuffer::OnBind()
+SResult D3D11FrameBuffer::OnBind()
 {
-    DVFResult res = DVF_Success;
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    SResult res = S_Success;
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
 
     if (m_bViewDirty)
@@ -80,10 +80,10 @@ DVFResult D3D11FrameBuffer::OnBind()
     return res;
 }
 
-DVFResult D3D11FrameBuffer::OnUnbind()
+SResult D3D11FrameBuffer::OnUnbind()
 {
-    DVFResult res = DVF_Success;
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    SResult res = S_Success;
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
 
     Resolve();
@@ -92,12 +92,12 @@ DVFResult D3D11FrameBuffer::OnUnbind()
     return res;
 }
 
-DVFResult D3D11FrameBuffer::Resolve()
+SResult D3D11FrameBuffer::Resolve()
 {
     if (m_resolveFlag == RESOLVE_NONE)
-        return DVF_Success;
+        return S_Success;
 
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     for (uint8_t idx = 0; idx != MAX_COLOR_ATTACHMENTS; idx++)
     {
         if (NeedResolve(m_resolveFlag, (Attachment)idx))
@@ -117,9 +117,9 @@ DVFResult D3D11FrameBuffer::Resolve()
     }
 
     m_resolveFlag = RESOLVE_NONE;
-    return DVF_Success;
+    return S_Success;
 }
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END
 
-#undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

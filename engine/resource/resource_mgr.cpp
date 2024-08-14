@@ -90,15 +90,13 @@ std::string ResourceManager::GetShaderMetaPath(const std::string& shaderName)
 
 std::string ResourceManager::GetShaderCodePath(const std::string& shaderName)
 {
-    RenderAPI render_api = m_pContext->GetRenderAPI();
+    RHIType rhi_type = m_pContext->GetRHIType();
     std::string debug_dir_suffix = "";
-    //if (m_pContext->IsDebug())
-    //    debug_dir_suffix = SHADER_DEBUG_DIR_SUFFIX;
-    switch (render_api)
+    switch (rhi_type)
     {
-        case dvf::RenderAPI::D3D11:
+        case RHIType::D3D11:
             return std::string{ SEEK_GENERATED_SHADER_DIR } + "/hlsl" + debug_dir_suffix + "/" + shaderName + ".hlsl";
-        case dvf::RenderAPI::METAL:
+        case RHIType::Metal:
 #if defined(SEEK_PLATFORM_MAC)
             return std::string{ SEEK_GENERATED_SHADER_DIR } + "/msl_macos" + debug_dir_suffix + "/" + shaderName + ".msl";
 #elif defined(SEEK_PLATFORM_IOS)
@@ -107,25 +105,25 @@ std::string ResourceManager::GetShaderCodePath(const std::string& shaderName)
             LOG_ERROR("please use Metal on Apple's OS");
             return "";
 #endif
-        case dvf::RenderAPI::GLES:
+        case RHIType::GLES:
             return std::string{ SEEK_GENERATED_SHADER_DIR } + "/essl" + debug_dir_suffix + "/" + shaderName + ".glsl";
         default:
-            LOG_ERROR("unsupported RenderAPI %d", render_api);
+            LOG_ERROR("unsupported RHIType %d", rhi_type);
             return "";
     }
 }
 
 std::string ResourceManager::GetShaderReflectPath(const std::string& shaderName)
 {
-    RenderAPI render_api = m_pContext->GetRenderAPI();
+    RHIType render_api = m_pContext->GetRHIType();
     std::string debug_dir_suffix = "";
     //if (m_pContext->IsDebug())
     //    debug_dir_suffix = SHADER_DEBUG_DIR_SUFFIX;
     switch (render_api)
     {
-    case dvf::RenderAPI::D3D11:
+    case RHIType::D3D11:
         return std::string{ SEEK_GENERATED_SHADER_DIR } + "/hlsl" + debug_dir_suffix + "/" + shaderName + SHADER_REFLECT_FILE_SUFFIX;
-    case dvf::RenderAPI::METAL:
+    case RHIType::Metal:
 #if defined(SEEK_PLATFORM_MAC)
         return std::string{ SEEK_GENERATED_SHADER_DIR } + "/msl_macos" + debug_dir_suffix + "/" + shaderName + SHADER_REFLECT_FILE_SUFFIX;
 #elif defined(SEEK_PLATFORM_IOS)
@@ -134,10 +132,10 @@ std::string ResourceManager::GetShaderReflectPath(const std::string& shaderName)
         LOG_ERROR("please use Metal on Apple's OS");
         return "";
 #endif
-    case dvf::RenderAPI::GLES:
+    case RHIType::GLES:
         return std::string{ SEEK_GENERATED_SHADER_DIR } + "/essl" + debug_dir_suffix + "/" + shaderName + SHADER_REFLECT_FILE_SUFFIX;
     default:
-        LOG_ERROR("unsupported RenderAPI %d", render_api);
+        LOG_ERROR("unsupported RHIType %d", render_api);
         return "";
     }
 }
@@ -149,12 +147,12 @@ const std::string& ResourceManager::GetShaderLanguageStr()
     static const std::string metal_ios_shaderlanguage   = "msl_ios";
     static const std::string opengles_shaderlanguage    = "essl";
     static const std::string empty_str = "";
-    RenderAPI render_api = m_pContext->GetRenderAPI();
+    RHIType render_api = m_pContext->GetRHIType();
     switch (render_api)
     {
-        case dvf::RenderAPI::D3D11:
+        case RHIType::D3D11:
             return d3d11_shaderlanguage;
-        case dvf::RenderAPI::METAL:
+        case RHIType::Metal:
     #if defined(SEEK_PLATFORM_MAC)
             return metal_mac_shaderlanguage;
     #elif defined(SEEK_PLATFORM_IOS)
@@ -162,7 +160,7 @@ const std::string& ResourceManager::GetShaderLanguageStr()
     #else
             return empty_str;
     #endif
-        case dvf::RenderAPI::GLES:
+        case RHIType::GLES:
             return opengles_shaderlanguage;
         default:
             return empty_str;

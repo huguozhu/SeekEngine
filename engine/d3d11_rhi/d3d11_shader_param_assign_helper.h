@@ -1,13 +1,13 @@
 #ifndef d3d11_shader_param_assign_helper_h
 #define d3d11_shader_param_assign_helper_h
 
-#include "rendering/shader_param_assign_helper.h"
-#include "rendering_d3d11/d3d11_predeclare.h"
-#include "util/log.h"
+#include "rhi/shader_param_assign_helper.h"
+#include "d3d11_rhi/d3d11_predeclare.h"
+#include "utils/log.h"
 
-#define DVF_MACRO_FILE_UID 70     // this code is auto generated, don't touch it!!!
+#define SEEK_MACRO_FILE_UID 70     // this code is auto generated, don't touch it!!!
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
 // constant buffer assign helper class
 // CPU -> GPU
@@ -34,7 +34,7 @@ public:
     }
 
     template <typename T>
-    DVFResult AssignVariableByName(const char* varName, const T& var)
+    SResult AssignVariableByName(const char* varName, const T& var)
     {
         if (!m_cbuffer)
             return ERR_INVALID_INIT;
@@ -47,7 +47,7 @@ public:
     }
 
     template <typename T>
-    DVFResult AssignVariableByIndex(uint32_t idx, const T& var)
+    SResult AssignVariableByIndex(uint32_t idx, const T& var)
     {
         if (!m_cbuffer)
             return ERR_INVALID_INIT;
@@ -60,7 +60,7 @@ public:
     }
 
     template <typename T>
-    DVFResult AssignVariable(const T& var)
+    SResult AssignVariable(const T& var)
     {
         return AssignVariableByIndex(0, var);
     }
@@ -77,7 +77,7 @@ public:
 
 private:
     template <typename T>
-    DVFResult AssignVariable(ID3D11ShaderReflectionVariable* shaderVar, const T& var)
+    SResult AssignVariable(ID3D11ShaderReflectionVariable* shaderVar, const T& var)
     {
         D3D11_SHADER_VARIABLE_DESC varDesc;
         HRESULT hr = shaderVar->GetDesc(&varDesc);
@@ -86,7 +86,7 @@ private:
 
         if (!(varDesc.uFlags & D3D_SVF_USED)) {
             LOG_WARNING("variable %s is unused, no need to assign", varDesc.Name);
-            return DVF_Success;
+            return S_Success;
         }
 
         ID3D11ShaderReflectionType* varType = shaderVar->GetType();
@@ -127,19 +127,19 @@ private:
             }
             }
         }
-        return DVF_Success;
+        return S_Success;
     }
 
-    DVFResult ShaderParamAssign(void* dstBuf, const void* srcBuf, reflect::StructInfo const* structInfo, ID3D11ShaderReflectionType* structType, size_t structSize);
-    DVFResult ShaderParamAssign(void* dstBuf, const void* srcBuf, reflect::ArrayInfo const* arrayInfo, ID3D11ShaderReflectionType* arrayType, size_t arraySize);
+    SResult ShaderParamAssign(void* dstBuf, const void* srcBuf, reflect::StructInfo const* structInfo, ID3D11ShaderReflectionType* structType, size_t structSize);
+    SResult ShaderParamAssign(void* dstBuf, const void* srcBuf, reflect::ArrayInfo const* arrayInfo, ID3D11ShaderReflectionType* arrayType, size_t arraySize);
 
     ID3D11ShaderReflectionConstantBuffer* m_cbuffer = nullptr;
     D3D11_SHADER_BUFFER_DESC m_cbufferDesc = {};
     std::vector<uint8_t> m_shaderParamBuf;
 };
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END
 
 #endif /* d3d11_shader_param_assign_helper_h */
 
-#undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

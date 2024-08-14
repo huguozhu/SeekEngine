@@ -13,7 +13,7 @@
 
 SEEK_NAMESPACE_BEGIN
 
-inline FILE* dvf_fopen(const char* utf8FilePath, const char* mode)
+inline FILE* seek_fopen(const char* utf8FilePath, const char* mode)
 {
     if (!utf8FilePath || !mode)
         return nullptr;
@@ -31,22 +31,22 @@ inline FILE* dvf_fopen(const char* utf8FilePath, const char* mode)
 }
 
 #ifdef USE_GD_FILE
-    #define dvf_fclose      GDDynamic_fclose
-    #define dvf_fflush      GDDynamic_fflush
-    #define dvf_ftell       GDDynamic_ftell
-    #define dvf_fread       GDDynamic_fread
-    #define dvf_fseek       GDDynamic_fseek
+    #define seek_fclose      GDDynamic_fclose
+    #define seek_fflush      GDDynamic_fflush
+    #define seek_ftell       GDDynamic_ftell
+    #define seek_fread       GDDynamic_fread
+    #define seek_fseek       GDDynamic_fseek
 #else
-    #define dvf_fclose      fclose
-    #define dvf_fflush      fflush
-    #define dvf_ftell       ftell
-    #define dvf_fread       fread
-    #define dvf_fseek       fseek
+    #define seek_fclose      fclose
+    #define seek_fflush      fflush
+    #define seek_ftell       ftell
+    #define seek_fread       fread
+    #define seek_fseek       fseek
 #endif
 
 inline SResult read_file_content(const char* filePath, const char* mode, std::vector<uint8_t>& content)
 {
-    FILE* _file = dvf_fopen(filePath, mode);
+    FILE* _file = seek_fopen(filePath, mode);
     if (!_file)
 #ifdef USE_GD_FILE
         return ERR_FILE_NOT_FOUND; // Use line numbers to judge which fopen run
@@ -54,12 +54,12 @@ inline SResult read_file_content(const char* filePath, const char* mode, std::ve
         return ERR_FILE_NOT_FOUND;
 #endif
 
-    dvf_fseek(_file, 0, SEEK_END);
-    auto _size = dvf_ftell(_file);
-    dvf_fseek(_file, 0, SEEK_SET);
+    seek_fseek(_file, 0, SEEK_END);
+    auto _size = seek_ftell(_file);
+    seek_fseek(_file, 0, SEEK_SET);
     content.resize(_size);
-    dvf_fread((void*)content.data(), 1, _size, _file);
-    dvf_fclose(_file);
+    seek_fread((void*)content.data(), 1, _size, _file);
+    seek_fclose(_file);
     return S_Success;
 }
 

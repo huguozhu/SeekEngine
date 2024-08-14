@@ -1,0 +1,26 @@
+//STAGE:cs
+#include "ParticleCommon.dsh"
+
+StructuredBuffer<SortInfo>		sort_data_input;
+RWStructuredBuffer<SortInfo>	sort_data_output;
+
+cbuffer CSortParam
+{
+	GpuSortParam param;
+};
+
+groupshared SortInfo shared_data[TRANSPOSE_BLOCK_SIZE * TRANSPOSE_BLOCK_SIZE];
+
+[numthreads(TRANSPOSE_BLOCK_SIZE, TRANSPOSE_BLOCK_SIZE, 1)]
+void main(uint3 DTid : SV_DispatchThreadID,
+		  uint 	GI 	 : SV_GroupIndex)
+{	
+	uint index = DTid.y * param.matrix_width + DTid.x;
+    shared_data[GI].particle_index = sort_data_input[index].particle_index;
+	shared_data[GI].particle_depth = sort_data_input[index].particle_depth;
+    GroupMemoryBarrierWithGroupSync();
+
+    uint2 outPos = DTid.yx % param.matrix_height + DTid.xy / param.matrix_height * param.matrix_height;
+    sort_data_output[outPos.y * param.matrix_width + outPos.x].particle_index = shared_data[GI].particle_index;
+	sort_data_output[outPos.y * param.matrix_width + outPos.x].particle_depth = shared_data[GI].particle_depth;
+}

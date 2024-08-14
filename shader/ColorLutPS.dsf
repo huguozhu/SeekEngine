@@ -1,0 +1,32 @@
+//STAGE:ps
+#include "Common.dsh"
+
+Texture2D input_tex;
+Texture2D lut_tex;
+
+float4 main(
+	in float2 iTc : TEXCOORD,
+	float4 	 iPos : SV_POSITION) : SV_Target
+{
+	float4 sColor = input_tex.Sample(linear_sampler, iTc);
+
+	sColor = clamp(sColor, 0.0, 1.0);
+
+	float sChanB = sColor.b * 63.0;
+	float vCoord1 = floor(sChanB * 0.125);
+	float uCoord1 = floor(sChanB) - vCoord1 * 8.0;
+	uCoord1 = uCoord1 * 0.125 + 0.123046875 * sColor.r + 0.0009765625;
+	vCoord1 = vCoord1 * 0.125 + 0.123046875 * sColor.g + 0.0009765625;
+
+	float vCoord2 = floor(ceil(sChanB) / 7.999);
+	float uCoord2 = ceil(sChanB) - vCoord2 * 8.0;
+	uCoord2 = uCoord2 * 0.125 + 0.123046875 * sColor.r + 0.0009765625;
+	vCoord2 = vCoord2 * 0.125 + 0.123046875 * sColor.g + 0.0009765625;
+	
+	float4 color1 = lut_tex.Sample(linear_sampler, float2(uCoord1, vCoord1));
+	float4 color2 = lut_tex.Sample(linear_sampler, float2(uCoord2, vCoord2));
+
+	float4 tColor = lerp(color1, color2, frac(sChanB));
+	tColor.a = sColor.a;
+	return saturate(tColor);
+}

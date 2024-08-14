@@ -1,0 +1,76 @@
+
+// predefined ATTRIBUTE_BITS_SET
+//   0b0000000000000001
+//   0b0000000000000011
+
+// struct to hold all atributes for each vertex
+// at most, 16 attributes
+struct VSInput
+{
+#if HAS_ATTRIBUTE_POSITION
+    // Vertex position. In most cases, it's in model local space, but it can also in other spaces like world space, view space or clip space.
+    // Assume the position attribute is always exist. But it can have different meanings, because vertex position is not necessary.
+    float4 position     : POSITION;
+#endif // HAS_ATTRIBUTE_POSITION
+
+#if HAS_ATTRIBUTE_UV0
+    float2 texCoord0    : TEXCOORD0;
+#endif // HAS_ATTRIBUTE_UV0
+
+#if HAS_ATTRIBUTE_UV1
+    float2 texCoord1    : TEXCOORD1;
+#endif // HAS_ATTRIBUTE_UV1
+
+#if HAS_ATTRIBUTE_TANGENT
+    float4 tangent      : TANGENT;
+#endif // HAS_ATTRIBUTE_TANGENT
+
+#if HAS_ATTRIBUTE_BONE4
+    float4 blendWeight0 : BLENDWEIGHT0;
+    uint4  blendIndex0  : BLENDINDEX0;
+#endif // HAS_ATTRIBUTE_BONE4
+
+#if HAS_ATTRIBUTE_BONE8
+    float4 blendWeight1 : BLENDWEIGHT1;
+    uint4  blendIndex1  : BLENDINDEX1;
+#endif // HAS_ATTRIBUTE_BONE8
+
+// user defined attribute
+#if HAS_ATTRIBUTE_0
+    float4 attribute0 : ATTRIBUTE0;
+#endif // HAS_ATTRIBUTE_0
+
+#if HAS_ATTRIBUTE_1
+    float4 attribute1 : ATTRIBUTE1;
+#endif // HAS_ATTRIBUTE_1
+
+#if HAS_ATTRIBUTE_2
+    float4 attribute2 : ATTRIBUTE2;
+#endif // HAS_ATTRIBUTE_2
+
+#if HAS_ATTRIBUTE_3
+    float4 attribute3 : ATTRIBUTE3;
+#endif // HAS_ATTRIBUTE_3
+
+#if HAS_ATTRIBUTE_4
+    float4 attribute4 : ATTRIBUTE4;
+#endif // HAS_ATTRIBUTE_4
+
+#if HAS_ATTRIBUTE_5
+    float4 attribute5 : ATTRIBUTE5;
+#endif // HAS_ATTRIBUTE_5
+
+#if HAS_ATTRIBUTE_6
+    float4 attribute6 : ATTRIBUTE6;
+#endif // HAS_ATTRIBUTE_6
+
+#if HAS_ATTRIBUTE_7
+    float4 attribute7 : ATTRIBUTE7;
+#endif // HAS_ATTRIBUTE_7
+
+};
+
+uint GetVextexID()
+{
+    return SV_VertexID;
+}

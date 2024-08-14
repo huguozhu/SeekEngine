@@ -1,0 +1,26 @@
+//STAGE:cs
+#include "shared/Waves.h"
+cbuffer GlobalParams
+{
+    WavesGlobalParams global_params;
+};
+
+RWTexture2D<float> prev_positions;
+RWTexture2D<float> curr_positions;
+RWTexture2D<float> next_positions;
+
+[numthreads(1, 1, 1)]
+void main( uint3 DTid : SV_DispatchThreadID )
+{
+    uint x = DTid.x;
+    uint y = DTid.y;
+
+    next_positions[uint2(x, y)] =
+        global_params.wave_constant0 * prev_positions[uint2(x, y)] +
+        global_params.wave_constant1 * curr_positions[uint2(x, y)] +
+        global_params.wave_constant2 * (
+            curr_positions[uint2(x,  y+1)] +
+            curr_positions[uint2(x,  y-1)] +
+            curr_positions[uint2(x+1, y)] +
+            curr_positions[uint2(x-1, y)]);
+}

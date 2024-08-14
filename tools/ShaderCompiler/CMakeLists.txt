@@ -6,10 +6,8 @@ cmake_policy(SET CMP0054 NEW)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 11)
 
-include(conan_deps.cmake)
-
-if(NOT DEFINED DVF_ROOT_DIR)
-    message(FATAL_ERROR "must specify DVF_ROOT_DIR")
+if(NOT DEFINED SEEK_ROOT_DIR)
+    message(FATAL_ERROR "must specify SEEK_ROOT_DIR")
 endif()
 if(NOT DEFINED RAPIDJSON_INCLUDE_DIR)
     message(FATAL_ERROR "must specify RAPIDJSON_INCLUDE_DIR")
@@ -25,17 +23,14 @@ add_executable(ShaderCompiler ${SHADER_COMPILER_SRCS})
 target_compile_definitions(ShaderCompiler PRIVATE NOMINMAX)
 
 target_include_directories(ShaderCompiler PRIVATE
-    ${DVF_ROOT_DIR}
-    ${DVF_ROOT_DIR}/third_party/CLI11/include
+    ${SEEK_ROOT_DIR}
+    ${SEEK_ROOT_DIR}/third_party/CLI11/include
+    ${SEEK_ROOT_DIR}/third_party/shaderconductor/include
     ${CMAKE_CURRENT_BINARY_DIR}/../../generated
     ${RAPIDJSON_INCLUDE_DIR}
 )
 
-if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_link_libraries(shaderconductor::shaderconductor INTERFACE dl)
-endif()
-
-target_link_libraries(ShaderCompiler PRIVATE shaderconductor::shaderconductor)
+target_link_libraries(ShaderCompiler PRIVATE ${SEEK_THIRDPARTY_DIR}/shaderconductor/libs/${TARGET_PLATFORM}/ShaderConductor.lib)
 
 if(WIN32)
     target_link_libraries(ShaderCompiler PRIVATE d3dcompiler)
@@ -54,11 +49,13 @@ if(APPLE)
     )
 endif()
 
+message(FATAL_INFO "shaderconductor_LIB_DIRS ----- shaderconductor_LIB_DIRS")
+message(FATAL_INFO $<TARGET_FILE_DIR>)
+message(FATAL_INFO $<TARGET_FILE_DIR:ShaderCompiler>)
+set(shaderconductor_LIB_DIRS ${SEEK_THIRDPARTY_DIR}/shaderconductor/libs/${TARGET_PLATFORM})
 if(WIN32)
-
     add_custom_command(TARGET ShaderCompiler POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${shaderconductor_LIB_DIRS}/dxcompiler.dll      $<TARGET_FILE_DIR:ShaderCompiler>
         COMMAND ${CMAKE_COMMAND} -E copy_if_different ${shaderconductor_LIB_DIRS}/ShaderConductor.dll $<TARGET_FILE_DIR:ShaderCompiler>
     )
-
 endif()

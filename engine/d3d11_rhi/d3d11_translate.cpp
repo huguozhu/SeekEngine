@@ -1,8 +1,8 @@
-#include "rendering_d3d11/d3d11_translate.h"
+#include "d3d11_rhi/d3d11_translate.h"
 
-#include "util/log.h"
+#include "utils/log.h"
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
 const char* D3D11Translate::TranslateVertexElementUsageSemantic(VertexElementUsage usage)
 {
@@ -350,4 +350,4 @@ void D3D11Translate::TranslateResourceFlagsToD3D11Foramt(ResourceFlags flags, D3
 }
 
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END

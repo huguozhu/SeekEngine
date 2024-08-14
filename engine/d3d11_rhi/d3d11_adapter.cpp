@@ -1,9 +1,9 @@
-#include "rendering_d3d11/d3d11_predeclare.h"
-#include "rendering_d3d11/d3d11_predeclare.h"
-#include "rendering_d3d11/d3d11_adapter.h"
+#include "d3d11_rhi/d3d11_predeclare.h"
+#include "d3d11_rhi/d3d11_predeclare.h"
+#include "d3d11_rhi/d3d11_adapter.h"
 
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
 D3D11Adapter::D3D11Adapter(uint32_t adapter_no, IDXGIAdapter1* adapter)
     : m_iAdapterNo(adapter_no)
@@ -26,4 +26,4 @@ void D3D11Adapter::ResetAdapter(IDXGIAdapter1* adapter)
         ZeroMemory(&m_stAdapterDesc, sizeof(m_stAdapterDesc));
 }
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END

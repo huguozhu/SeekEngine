@@ -64,13 +64,14 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/framebuffer.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/material.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/mesh.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/mesh.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/mesh.cpp    
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/program.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/program.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/query.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/render_buffer.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/render_definition.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/render_state.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/render_state.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/render_view.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/rhi_command.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/rhi_command.cpp
@@ -78,14 +79,46 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/rhi_context.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/shader.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/shader.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/shader_param_assign_helper.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/texture.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/viewport.h
     
 
     # d3d11_rhi
+
+
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_adapter.h
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_adapter.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_framebuffer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_framebuffer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_mesh.h
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_mesh.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_predeclare.h
+
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_program.h
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_program.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_query.h
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_query.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_render_buffer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_render_buffer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_render_state.h
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_render_state.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_render_view.h
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_render_view.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_rhi_context.h
     ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_rhi_context.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_rhi_context_factory.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_shader.h
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_shader.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_shader_param_assign_helper.h
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_shader_param_assign_helper.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_texture.h
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_texture.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_translate.h
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_translate.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_window.h
+    ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_window.cpp
+
 
     # vulkan rhi
     ${SEEK_ENGINE_SOURCE_DIR}/vulkan_rhi/vulkan_rhi.h
@@ -142,19 +175,32 @@ set(ENGINE_CODE
 )
 source_group(TREE ${SEEK_ENGINE_SOURCE_DIR}/ FILES ${ENGINE_CODE})
 
-############################################ seek target ############################################
+############################################ seek_engine target ############################################
 set(SEEK_SHAREDLIB_NAME ${PROJECT_NAME} CACHE STRING "" FORCE)
 set(SEEK_STATICLIB_NAME ${PROJECT_NAME}-static CACHE STRING "" FORCE)
 
 if(TARGET_PLATFORM_WINDOWS)
     set(SEEK_BUILD_SHAREDLIB TRUE)
-    set(SEEK_STATICLIB_DEPENDENT_LIBS dxgi d3d12 d3dcompiler dxguid Windowscodecs Ws2_32 Winmm)    
+    set(SEEK_STATICLIB_DEPENDENT_LIBS dxgi d3d11 d3dcompiler dxguid Windowscodecs Ws2_32 Winmm)    
 endif()    
 
 
-############################################ seek static lib ############################################
+############################################ seek_engine static lib ############################################
 add_library(${SEEK_STATICLIB_NAME} STATIC ${ENGINE_CODE})
-project_base_prop(${SEEK_STATICLIB_NAME})
-
-
+target_link_libraries(${SEEK_STATICLIB_NAME} PUBLIC
+    turbojpeg
+    libpng
+    rapidjson
+    eigen
+    zlib
+)
 target_include_directories(${SEEK_STATICLIB_NAME} PUBLIC ${SEEK_ENGINE_SOURCE_DIR})
+
+
+
+############################################ seek_engine shared lib ############################################
+if(SEEK_BUILD_SHAREDLIB)
+    add_library(${SEEK_SHAREDLIB_NAME} SHARED ${SEEK_ENGINE_SOURCE_DIR}/fake.cpp)
+    target_link_libraries(${SEEK_SHAREDLIB_NAME} PUBLIC ${SEEK_STATICLIB_NAME})    
+    #target_include_directories(${SEEK_SHAREDLIB_NAME} PUBLIC ${SEEK_ENGINE_SOURCE_DIR})
+endif()

@@ -1,0 +1,42 @@
+#pragma once
+
+//PREDEFINE:MORPH_TYPE=0,1
+#include "Common.dsh"
+
+StructuredBuffer<float4> morph_input;
+
+cbuffer morph_weights
+{
+    float4 morph_weights[MAX_MORPH_SIZE];
+}
+
+cbuffer MORPH_SIZE
+{
+    uint MORPH_SIZE;
+}
+
+void CalcMorphTargetPosition(uint vertex_id, inout float4 pos)
+{
+#if MORPH_TYPE & MORPH_COMPONENT_POS
+    int startIdx = (int) vertex_id * MORPH_SIZE;
+    int i;
+    
+    for (i = 0; i < MORPH_SIZE; i++)
+    {
+        pos += morph_input[startIdx + i] * morph_weights[i].x;
+    }
+#endif
+}
+
+void CalcMorphTargetNormal(uint vertex_id, inout float4 normal)
+{
+#if MORPH_TYPE & MORPH_COMPONENT_NORMAL
+    int startIdx = (int)vertex_id * MORPH_SIZE * 2;
+    int i;
+    
+    for (i = 0; i < MORPH_SIZE; i++)
+    {
+        normal += morph_input[startIdx + i] * morph_weights[i].x;
+    }
+#endif
+}

@@ -1,0 +1,68 @@
+#pragma once
+
+#include "Common.dsh"
+#include "BRDF.dsh"
+
+float GetDistanceAttenuation(float3 distanceToLight, float falloffRadius)
+{
+	// Square Attenuation Algorithm from Filament: https://google.github.io/filament/Filament.html
+    float invRadius = 1.0 / falloffRadius;	
+    float distanceSquare = dot(distanceToLight, distanceToLight);
+    float factor = distanceSquare * invRadius * invRadius;
+    float smoothFactor = max(1.0 - factor * factor, 0.0);
+    return (smoothFactor * smoothFactor) / max(distanceSquare, 1e-4);
+}
+
+float GetSpotAngleAttenuation(float3 L, float3 lightDirection, float2 lightInOutCutoff)
+{
+    float theta = dot(lightDirection, -L);
+	return smoothstep(lightInOutCutoff.y, lightInOutCutoff.x, theta);
+}
+
+float3 CalcLightingPhong(MaterialParam materialParam, LightInfo lightInfo, float lightAttenuation,
+                           float3 N, float3 L, float3 V, float shadow)
+{
+    float3 albedo = materialParam.albedo;
+    float3 H = normalize(L + V);
+
+    // diffuse
+	float diffuse = max(dot(N, L), 0.0);
+	
+	// specular
+	float specular = pow(max(0.0, dot(H, N)), 16);
+
+    // 0.5 : specular strenght
+    return albedo * lightInfo.color * (diffuse + specular * 0.5) * (1.0 - shadow) * lightAttenuation * lightInfo.intensity;
+}
+
+// N, L, V must be normalized, and start point is fragment
+float3 CalcLightingBRDF(float3 albedo, float metallic, float roughness, float3 light_color, float light_intensity, float lightAttenuation, float3 N, float3 L, float3 V, float shadow)
+{
+	float NoL = max(dot(N, L), 0.0);
+	
+	float3 specular = CalcSpecularBRDF(L, N, V, albedo, metallic, roughness);    	
+	float3 diffuse = CalcDiffuseBRDF (L, N, V, albedo, metallic, roughness);		
+    
+    float3 Lo = ((diffuse + specular) * light_color * NoL) * (1.0 - shadow) * light_intensity * lightAttenuation;
+    return Lo;
+}
+
+float3 CalcLightingBRDF(MaterialParam materialParam, LightInfo lightInfo, float lightAttenuation,
+                           float3 N, float3 L, float3 V, float shadow)
+{
+    float3 albedo = materialParam.albedo;
+	float metallic = materialParam.metallic;
+	float roughness = materialParam.roughness;
+	return CalcLightingBRDF(albedo, metallic, roughness, lightInfo.color, lightInfo.intensity, lightAttenuation, N, L, V, shadow);
+}
+
+float3 CalcLightingIBL(MaterialParam materialParam, LightInfo lightInfo, float ambientOcclusion)
+{
+    return ambientOcclusion * materialParam.albedo * lightInfo.color;
+}
+
+void AddEmissive(float3 emissive, inout float3 color)
+{
+	// to do: calc camera's exposure
+	color.rgb += emissive;
+}

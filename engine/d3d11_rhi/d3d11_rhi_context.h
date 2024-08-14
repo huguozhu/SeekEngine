@@ -4,9 +4,9 @@
 #include "rhi/rhi_context.h"
 #include "rhi/render_definition.h"
 #include "rhi/render_buffer.h"
-#include "rendering_d3d11/d3d11_adapter.h"
-#include "rendering_d3d11/d3d11_query.h"
-#include "rendering_d3d11/d3d11_framebuffer.h"
+#include "d3d11_rhi/d3d11_adapter.h"
+#include "d3d11_rhi/d3d11_query.h"
+#include "d3d11_rhi/d3d11_framebuffer.h"
 #include "utils/dll_loader.h"
 #include <DXProgrammableCapture.h>
 

@@ -1,0 +1,18 @@
+//STAGE:vs
+#include "shared/SkyBox.h"
+
+cbuffer GlobalParams
+{
+    SkyBoxGlobalParams global_params;
+}
+
+void main(
+	in float3 iPos	: POSITION,
+	out float3 oTc	: TEXCOORD,
+	out float4 oPos	: SV_POSITION
+)
+{
+	float4 pos = float4(iPos, 1.0);
+	oTc = mul(pos, global_params.inv_mvp).xyz;
+	oPos = pos;
+}

@@ -41,7 +41,7 @@ enum TRACE_LEVEL
 typedef void(*FPTRACECALLBACK)(TRACE_LEVEL level, const char* szLog);
 typedef void(*FPMONITORCALLBACK)(const char* log);
 
-class dvfTrace
+class seekTrace
 {
 public:
     static void Config(FPTRACECALLBACK cb);
@@ -72,31 +72,31 @@ public:
 #define LOG_DEBUG(fmt, ...) \
 { \
     constexpr const char* base_name = file_name(__FILE__); \
-    dvfTrace::TraceLog(TRACE_LEVEL::LevelDebug, "[%s:" __LINE_STR__ " %s] " fmt, base_name, __func__, ##__VA_ARGS__); \
+    seekTrace::TraceLog(TRACE_LEVEL::LevelDebug, "[%s:" __LINE_STR__ " %s] " fmt, base_name, __func__, ##__VA_ARGS__); \
 }
 
 #define LOG_INFO(fmt, ...) \
 { \
     constexpr const char* base_name = file_name(__FILE__); \
-    dvfTrace::TraceLog(TRACE_LEVEL::LevelInfo, "[%s:" __LINE_STR__ " %s] " fmt, base_name, __func__, ##__VA_ARGS__); \
+    seekTrace::TraceLog(TRACE_LEVEL::LevelInfo, "[%s:" __LINE_STR__ " %s] " fmt, base_name, __func__, ##__VA_ARGS__); \
 }
 
 #define LOG_WARNING(fmt, ...) \
 { \
     constexpr const char* base_name = file_name(__FILE__); \
-    dvfTrace::TraceLog(TRACE_LEVEL::LevelWarning, "[%s:" __LINE_STR__ " %s] " fmt, base_name, __func__, ##__VA_ARGS__); \
+    seekTrace::TraceLog(TRACE_LEVEL::LevelWarning, "[%s:" __LINE_STR__ " %s] " fmt, base_name, __func__, ##__VA_ARGS__); \
 }
 
 #define LOG_ERROR(fmt, ...) \
 { \
     constexpr const char* base_name = file_name(__FILE__); \
-    dvfTrace::TraceLog(TRACE_LEVEL::LevelError, "[%s:" __LINE_STR__ " %s] " fmt, base_name, __func__, ##__VA_ARGS__); \
+    seekTrace::TraceLog(TRACE_LEVEL::LevelError, "[%s:" __LINE_STR__ " %s] " fmt, base_name, __func__, ##__VA_ARGS__); \
 }
 
 #define LOG_ERROR_PRIERR(ret, fmt, ...) \
 { \
     constexpr const char* base_name = file_name(__FILE__); \
-    dvfTrace::TraceLog(TRACE_LEVEL::LevelError, "[%s:" __LINE_STR__ "] [%s] " fmt PRIERR_FORMAT, base_name, __func__, ##__VA_ARGS__, PRIERR_VALUE(ret)); \
+    seekTrace::TraceLog(TRACE_LEVEL::LevelError, "[%s:" __LINE_STR__ "] [%s] " fmt PRIERR_FORMAT, base_name, __func__, ##__VA_ARGS__, PRIERR_VALUE(ret)); \
 }
 
 #endif

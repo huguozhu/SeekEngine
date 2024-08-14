@@ -37,12 +37,12 @@ static void TRACECALLBACK(TRACE_LEVEL level, const char* szLog)
 }
 
 static FPTRACECALLBACK g_pTraceObserver = TRACECALLBACK;
-void dvfTrace::Config(FPTRACECALLBACK cb)
+void seekTrace::Config(FPTRACECALLBACK cb)
 {
     g_pTraceObserver = cb;
 }
 
-void dvfTrace::TraceLog(TRACE_LEVEL level, const char* fmt, ...)
+void seekTrace::TraceLog(TRACE_LEVEL level, const char* fmt, ...)
 {
     if (!g_pTraceObserver) return;
 
@@ -58,7 +58,7 @@ void dvfTrace::TraceLog(TRACE_LEVEL level, const char* fmt, ...)
 
 void SetTraceCallBack(FPTRACECALLBACK cb)
 {
-    dvfTrace::Config(cb);
+    seekTrace::Config(cb);
 }
 SEEK_NAMESPACE_END
 

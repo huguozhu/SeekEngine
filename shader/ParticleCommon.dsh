@@ -1,0 +1,22 @@
+#include "shared/ParticleCommon.h"
+cbuffer CAliveIndices
+{
+	uint pre_sim_index;
+	uint post_sim_index;
+};
+RWStructuredBuffer<ParticleCounters> particle_counters;
+RWStructuredBuffer<uint>	dead_indices;
+RWStructuredBuffer<uint>	alive_pre_simulate_indices;
+RWStructuredBuffer<uint>	alive_post_simulate_indices;
+
+cbuffer CRandom_Floats
+{
+	float4 random_floats[RANDOM_FLOAT_NUM/4];
+}
+float _GetRandomFloat(uint particle_index, uint curent_float_index)
+{
+	uint index = (particle_index + curent_float_index) % RANDOM_FLOAT_NUM;
+	return random_floats[index/4][index%4];
+}
+
+#define GetRandomFloat() _GetRandomFloat(particle_index, cur_random_index++)

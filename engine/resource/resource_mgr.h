@@ -9,8 +9,8 @@
 #include <functional>
 // AGAIN!!! X11 define Bool as macro.
 #undef Bool
-//#include "tools/ShaderCompiler/shader_helper.h"
-//using namespace shadercompiler;
+#include "tools/ShaderCompiler/shader_helper.h"
+using namespace shadercompiler;
 
 SEEK_NAMESPACE_BEGIN
 
@@ -179,7 +179,7 @@ struct MetaShaderResource : public IResource
 
     SResult Load(const std::string& metaShaderName);
 
-    //shadercompiler::MetaInfo metaInfo;
+    shadercompiler::MetaInfo metaInfo;
 };
 CLASS_DECLARE(MetaShaderResource);
 
@@ -191,7 +191,7 @@ struct ShaderResource : public IResource
 
     SResult Load(const std::string& shaderName);
 
-   // shadercompiler::ReflectInfo     reflectInfo;
+    shadercompiler::ReflectInfo     reflectInfo;
     const void*                     sourceCode          = nullptr;
     size_t                          sourceCodeSize      = 0;
 };

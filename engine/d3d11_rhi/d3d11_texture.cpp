@@ -1,18 +1,18 @@
-#include "rendering_d3d11/d3d11_predeclare.h"
-#include "rendering_d3d11/d3d11_texture.h"
-#include "rendering_d3d11/d3d11_render_context.h"
-#include "rendering_d3d11/d3d11_translate.h"
-#include "rendering/format.h"
+#include "d3d11_rhi/d3d11_predeclare.h"
+#include "d3d11_rhi/d3d11_texture.h"
+#include "d3d11_rhi/d3d11_rhi_context.h"
+#include "d3d11_rhi/d3d11_translate.h"
+#include "rhi/format.h"
 #include "kernel/context.h"
 
 #include "math/math_utility.h"
-#include "util/log.h"
-#include "util/error.h"
-#include "util/buffer.h"
+#include "utils/log.h"
+#include "utils/error.h"
+#include "utils/buffer.h"
 
-#define DVF_MACRO_FILE_UID 12     // this code is auto generated, don't touch it!!!
+#define SEEK_MACRO_FILE_UID 12     // this code is auto generated, don't touch it!!!
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
 /******************************************************************************
 * D3D11Texture
@@ -33,7 +33,7 @@ ID3D11RenderTargetView* D3D11Texture::GetD3DRenderTargetView()
     if (m_pD3DRenderTargetView)
         return m_pD3DRenderTargetView.Get();
 
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
 
     D3D11_RENDER_TARGET_VIEW_DESC desc;
     this->FillRenderTargetViewDesc(desc);
@@ -52,7 +52,7 @@ ID3D11DepthStencilView* D3D11Texture::GetD3DDepthStencilView()
     if (m_pD3DDepthStencilView)
         return m_pD3DDepthStencilView.Get();
 
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
 
     D3D11_DEPTH_STENCIL_VIEW_DESC desc;
     this->FillDepthStencilViewDesc(desc);
@@ -77,7 +77,7 @@ ID3D11ShaderResourceView* D3D11Texture::GetD3DShaderResourceView()
         return nullptr;
     }
 
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
 
     D3D11_SHADER_RESOURCE_VIEW_DESC desc;
     this->FillShaderResourceViewDesc(desc);
@@ -107,7 +107,7 @@ ID3D11UnorderedAccessView* D3D11Texture::GetD3DUnorderedAccessView()
         return nullptr;
     }
 
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
 
     D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
     this->FillUnorderedAccessViewDesc(desc);
@@ -124,13 +124,13 @@ ID3D11UnorderedAccessView* D3D11Texture::GetD3DUnorderedAccessView()
     }
     return m_pD3DUnorderedAccessView.Get();
 }
-DVFResult D3D11Texture::GenerateMipMap()
+SResult D3D11Texture::GenerateMipMap()
 {
     ID3D11ShaderResourceView* pSrv = this->GetD3DShaderResourceView();
-    D3D11RenderContext* pRC = (D3D11RenderContext*)(&m_pContext->RenderContextInstance());
+    D3D11RHIContext* pRC = (D3D11RHIContext*)(&m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = pRC->GetD3D11DeviceContext();
     pDeviceContext->GenerateMips(pSrv);
-    return DVF_Success;
+    return S_Success;
 }
 void D3D11Texture::FillD3DTextureFlags(D3D11_USAGE& usage, UINT& bind_flags, UINT& cpu_access_flags, UINT& misc_flags)
 {
@@ -204,7 +204,7 @@ void D3D11Texture::FillD3DTextureFlags(D3D11_USAGE& usage, UINT& bind_flags, UIN
 }
 void D3D11Texture::FillTextureDesc(D3D11_TEXTURE2D_DESC& desc)
 {
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     D3D11_USAGE usage = D3D11_USAGE_DEFAULT;
     UINT bind_flags = 0;
     UINT cpu_access_flags = 0;
@@ -407,9 +407,9 @@ void D3D11Texture2D::FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS_VIEW_DES
     }
 }
 
-DVFResult D3D11Texture2D::Create(std::vector<BitmapBufferPtr> const& bitmap_datas)
+SResult D3D11Texture2D::Create(std::vector<BitmapBufferPtr> const& bitmap_datas)
 {
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
     D3D11_TEXTURE2D_DESC desc = { 0 };
@@ -441,9 +441,9 @@ DVFResult D3D11Texture2D::Create(std::vector<BitmapBufferPtr> const& bitmap_data
 
     _texture2d->GetDesc(&m_textureDesc);
     m_pTexture = std::move(_texture2d);
-    return DVF_Success;
+    return S_Success;
 }
-DVFResult D3D11Texture2D::Update(std::vector<BitmapBufferPtr> const& bitmap_datas)
+SResult D3D11Texture2D::Update(std::vector<BitmapBufferPtr> const& bitmap_datas)
 {
     if (!(m_desc.flags & RESOURCE_FLAG_CPU_WRITE))
         return ERR_INVALID_ARG;
@@ -451,7 +451,7 @@ DVFResult D3D11Texture2D::Update(std::vector<BitmapBufferPtr> const& bitmap_data
     if (!m_pTexture)
         return ERR_INVALID_ARG;
 
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
@@ -480,10 +480,10 @@ DVFResult D3D11Texture2D::Update(std::vector<BitmapBufferPtr> const& bitmap_data
     pDeviceContext->Unmap(m_pTexture.Get(), 0);
     // D3D_USAGE_DEFAULT can also be updated by UpdateSubResource, but it has no CPU access!
     // Now, we disable this usage
-    return DVF_Success;
+    return S_Success;
 }
 
-DVFResult D3D11Texture2D::CopyBack(const BitmapBufferPtr bitmap_data, Rect<uint32_t>* rect, CubeFaceType /*not used*/)
+SResult D3D11Texture2D::CopyBack(const BitmapBufferPtr bitmap_data, Rect<uint32_t>* rect, CubeFaceType /*not used*/)
 {
     if (!(m_desc.flags & RESOURCE_FLAG_COPY_BACK))
         return ERR_INVALID_ARG;
@@ -498,7 +498,7 @@ DVFResult D3D11Texture2D::CopyBack(const BitmapBufferPtr bitmap_data, Rect<uint3
         return ERR_INVALID_ARG;
     }
 
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
@@ -556,7 +556,7 @@ DVFResult D3D11Texture2D::CopyBack(const BitmapBufferPtr bitmap_data, Rect<uint3
     }
 
     pDeviceContext->Unmap(pCopyRes.Get(), 0);
-    return DVF_Success;
+    return S_Success;
 }
 
 void D3D11Texture2D::FillStageTextureDesc(D3D11_TEXTURE2D_DESC& desc)
@@ -576,9 +576,9 @@ void D3D11Texture2D::FillStageTextureDesc(D3D11_TEXTURE2D_DESC& desc)
         desc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
 }
 
-DVFResult D3D11Texture2D::Resolve()
+SResult D3D11Texture2D::Resolve()
 {
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
@@ -617,7 +617,7 @@ DVFResult D3D11Texture2D::Resolve()
 
         pDeviceContext->ResolveSubresource(m_pResolvedTexture.Get(), 0, m_pTexture.Get(), 0, m_eDxgiFormat);
     }
-    return DVF_Success;
+    return S_Success;
 }
 
 /******************************************************************************
@@ -636,7 +636,7 @@ ID3D11RenderTargetView* D3D11TextureCube::GetD3DRenderTargetView(CubeFaceType fa
     if (m_mCubeRTV[lod].empty())
         m_mCubeRTV[lod].resize((uint32_t)CubeFaceType::Num, nullptr);
         
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
     D3D11_RENDER_TARGET_VIEW_DESC desc;
@@ -656,7 +656,7 @@ ID3D11DepthStencilView* D3D11TextureCube::GetD3DDepthStencilView(CubeFaceType fa
     if (m_vCubeDSV[(uint32_t)face])
         return m_vCubeDSV[(uint32_t)face].Get();
 
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
     D3D11_DEPTH_STENCIL_VIEW_DESC desc;
@@ -720,7 +720,7 @@ void D3D11TextureCube::FillTextureDesc(D3D11_TEXTURE2D_DESC& desc)
     desc.ArraySize = 6;
     desc.MiscFlags |= D3D11_RESOURCE_MISC_TEXTURECUBE;
 }
-DVFResult D3D11TextureCube::CopyBack(BitmapBufferPtr bitmap_data, Rect<uint32_t>* rect, CubeFaceType face)
+SResult D3D11TextureCube::CopyBack(BitmapBufferPtr bitmap_data, Rect<uint32_t>* rect, CubeFaceType face)
 {
     if (!(m_desc.flags & RESOURCE_FLAG_COPY_BACK) || !m_pTexture)
         return ERR_INVALID_ARG;
@@ -731,7 +731,7 @@ DVFResult D3D11TextureCube::CopyBack(BitmapBufferPtr bitmap_data, Rect<uint32_t>
         return ERR_INVALID_ARG;
     }
 
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
     ID3D11Device* pDevice = rc.GetD3D11Device();
     pDeviceContext->Flush();
@@ -761,14 +761,14 @@ DVFResult D3D11TextureCube::CopyBack(BitmapBufferPtr bitmap_data, Rect<uint32_t>
     }
 
     pDeviceContext->Unmap(m_pTexture.Get(), (uint32_t)face);
-    return DVF_Success;
+    return S_Success;
 }
-DVFResult D3D11TextureCube::CreateCube(std::vector<BitmapBufferPtr>* bitmap_datas)
+SResult D3D11TextureCube::CreateCube(std::vector<BitmapBufferPtr>* bitmap_datas)
 {
     if (bitmap_datas && bitmap_datas->size() != (uint32_t)CubeFaceType::Num)
         return ERR_INVALID_ARG;
 
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
 
@@ -796,7 +796,7 @@ DVFResult D3D11TextureCube::CreateCube(std::vector<BitmapBufferPtr>* bitmap_data
         LOG_ERROR("Create D3D11 Texture Failed");
         return ERR_INVALID_ARG;
     }
-    return DVF_Success;
+    return S_Success;
 }
 
 /******************************************************************************
@@ -806,9 +806,9 @@ D3D11Texture3D::D3D11Texture3D(Context* context, const Texture::Desc& tex_desc)
     :D3D11Texture(context, tex_desc)
 {
 }
-DVFResult D3D11Texture3D::Create(std::vector<BitmapBufferPtr> const& bitmap_datas)
+SResult D3D11Texture3D::Create(std::vector<BitmapBufferPtr> const& bitmap_datas)
 {
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
     D3D11_TEXTURE3D_DESC desc = { 0 };
@@ -839,11 +839,11 @@ DVFResult D3D11Texture3D::Create(std::vector<BitmapBufferPtr> const& bitmap_data
     }
 
     m_pTexture = std::move(_texture3d);
-    return DVF_Success;
+    return S_Success;
 }   
 void D3D11Texture3D::FillTexture3DDesc(D3D11_TEXTURE3D_DESC& desc)
 {
-    D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     D3D11_USAGE usage = D3D11_USAGE_DEFAULT;
     UINT bind_flags = 0;
     UINT cpu_access_flags = 0;
@@ -896,6 +896,6 @@ void D3D11Texture3D::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC&
     desc.Texture2D.MostDetailedMip = 0;
     desc.Texture2D.MipLevels = m_desc.num_mips;
 }
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END
 
-#undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

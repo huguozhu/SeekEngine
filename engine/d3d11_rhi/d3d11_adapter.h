@@ -1,23 +1,8 @@
-﻿/*************************************************************************************************
-**
-**      Copyright (C) 2021. All rights reserved.
-**
-**      Name                   : d3d11_adapter.h
-**
-**      Brief                  : implement d3d11 adapter
-**
-**      Additional             : None
-**
-**------------------------------------------------------------------------------------------------
-**
-**      History                : 2021-05-28  Created by Ted Hu
-**
-**************************************************************************************************/
-#pragma once
+﻿#pragma once
 
 #include "kernel/kernel.h"
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
 static const uint32_t INVALID_ADAPTER_INDEX = (uint32_t)-1;
 
@@ -38,4 +23,4 @@ private:
 using D3D11AdapterPtr = std::shared_ptr<D3D11Adapter>;
 
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END

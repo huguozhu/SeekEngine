@@ -1,14 +1,14 @@
-#include "rendering_d3d11/d3d11_render_view.h"
-#include "rendering_d3d11/d3d11_texture.h"
-#include "rendering_d3d11/d3d11_render_context.h"
+#include "d3d11_rhi/d3d11_render_view.h"
+#include "d3d11_rhi/d3d11_texture.h"
+#include "d3d11_rhi/d3d11_rhi_context.h"
 
-#include "rendering/texture.h"
+#include "rhi/texture.h"
 
 #include "kernel/context.h"
 
-#define DVF_MACRO_FILE_UID 4     // this code is auto generated, don't touch it!!!
+#define SEEK_MACRO_FILE_UID 4     // this code is auto generated, don't touch it!!!
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 /******************************************************************************
 * D3D11RenderTarget
 *******************************************************************************/
@@ -37,7 +37,7 @@ void D3D11RenderTargetView::ClearColor(float4 const& color)
 {
     if (m_pD3dRenderTargetView)
     {
-        D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
         rc.GetD3D11DeviceContext()->ClearRenderTargetView(m_pD3dRenderTargetView.Get(), &color[0]);
     }
     else
@@ -85,7 +85,7 @@ void D3D11DepthStencilView::ClearDepth(float depth)
 {
     if (m_pD3D11DepthStencilView)
     {
-        D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
         rc.GetD3D11DeviceContext()->ClearDepthStencilView(m_pD3D11DepthStencilView.Get(), D3D11_CLEAR_DEPTH, depth, 0);
     }
     else
@@ -95,7 +95,7 @@ void D3D11DepthStencilView::ClearStencil(uint32_t stencil)
 {
     if (m_pD3D11DepthStencilView)
     {
-        D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
         rc.GetD3D11DeviceContext()->ClearDepthStencilView(m_pD3D11DepthStencilView.Get(), D3D11_CLEAR_STENCIL, 0, (UINT8)stencil);
     }
     else
@@ -105,7 +105,7 @@ void D3D11DepthStencilView::ClearDepthStencil(float depth, uint32_t stencil)
 {
     if (m_pD3D11DepthStencilView)
     {
-        D3D11RenderContext& rc = static_cast<D3D11RenderContext&>(m_pContext->RenderContextInstance());
+        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
         rc.GetD3D11DeviceContext()->ClearDepthStencilView(m_pD3D11DepthStencilView.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, depth, (UINT8)stencil);
     }
     else
@@ -127,6 +127,6 @@ D3D11CubeDepthStencilView::D3D11CubeDepthStencilView(Context* context, TexturePt
 }
 
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END
 
-#undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

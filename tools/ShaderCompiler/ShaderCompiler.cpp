@@ -1,5 +1,5 @@
-#include "dvf.config.h"
-#include "ShaderConductor.hpp"
+#include "seek.config.h"
+#include "ShaderConductor/ShaderConductor.hpp"
 #include "shader_helper.h"
 #include <fstream>
 #include <iostream>
@@ -347,7 +347,7 @@ struct IncludeFilePool
             return blobIt->second;
 
         std::string fileContent;
-        int success = read_file_content(std::string{ DVF_SHADER_SOURCE_DIR "/" } + includeFilePath, fileContent);
+        int success = read_file_content(std::string{ SEEK_SHADER_SOURCE_DIR "/" } + includeFilePath, fileContent);
         std::cout << "load include file: " << includeFilePath << ", success: " << success << std::endl;
         if (SUCCESS != success)
             return _emptyBlob;
@@ -525,7 +525,7 @@ int main(int argc, char** argv)
     }
     std::cout << std::endl;
 
-    CLI::App app{ "A tool for dvf to compile HLSL to many other shader languages", "Shader Compiler" };
+    CLI::App app{ "A tool for seek to compile HLSL to many other shader languages", "Shader Compiler" };
 
     std::string inputFileName;
     app.add_option("--input", inputFileName, "input shader file")
@@ -571,8 +571,8 @@ int main(int argc, char** argv)
     {
         bool generateDebugShaderPass = false;
         std::vector<ExtentPredefine> extPredefines;
-        std::string shaderSourceDir = DVF_SHADER_SOURCE_DIR;
-        std::string shaderGenerateDir = DVF_GENERATED_SHADER_DIR;
+        std::string shaderSourceDir = SEEK_SHADER_SOURCE_DIR;
+        std::string shaderGenerateDir = SEEK_GENERATED_SHADER_DIR;
 
         size_t delimiterPos = inputFileName.find_last_of('.');
         const auto inputFileBaseName = inputFileName.substr(0, delimiterPos);
@@ -964,8 +964,8 @@ int main(int argc, char** argv)
                 }
             }
 
-            std::string metaSourceFilePath = DVF_GENERATED_META_DIR "/" + inputFileBaseName + SHADER_META_FILE_SUFFIX;
-            std::string metaHeaderFilePath = DVF_GENERATED_META_DIR "/" + inputFileBaseName + ".h";
+            std::string metaSourceFilePath = SEEK_GENERATED_META_DIR "/" + inputFileBaseName + SHADER_META_FILE_SUFFIX;
+            std::string metaHeaderFilePath = SEEK_GENERATED_META_DIR "/" + inputFileBaseName + ".h";
 
             ///////////////////// shader meta - source file /////////////////////
             std::string metaJsonContent;
@@ -996,7 +996,7 @@ int main(int argc, char** argv)
             std::cout << "shader meta - header file saved in: " << metaHeaderFilePath << std::endl;
             
             // generate tag file for incremental build
-            std::string tagFilePath = DVF_GENERATED_TAG_DIR "/" SHADER_COMPILE_FILE_SUFFIX "/" + inputFileBaseName + SHADER_TAG_FILE_SUFFIX;
+            std::string tagFilePath = SEEK_GENERATED_TAG_DIR "/" SHADER_COMPILE_FILE_SUFFIX "/" + inputFileBaseName + SHADER_TAG_FILE_SUFFIX;
             int generateRet = GenerateTagFile(tagFilePath);
             if (generateRet != SUCCESS)
                 return generateRet;
@@ -1010,7 +1010,7 @@ int main(int argc, char** argv)
                 return success;
 
             bool needToGenerateDependFile = false;
-            std::string dependFilePath = DVF_GENERATED_DEPEND_DIR "/" + inputFileBaseName + SHADER_DEPEND_FILE_SUFFIX;
+            std::string dependFilePath = SEEK_GENERATED_DEPEND_DIR "/" + inputFileBaseName + SHADER_DEPEND_FILE_SUFFIX;
             std::string oldDependFileContent;
             if (SUCCESS != read_file_content(dependFilePath, oldDependFileContent))
             {
@@ -1075,7 +1075,7 @@ int main(int argc, char** argv)
                 std::cerr << "no need to generate depend file" << std::endl;
             }
 
-            std::string tagFilePath = DVF_GENERATED_TAG_DIR "/" SHADER_DEPEND_FILE_SUFFIX "/" + inputFileBaseName + SHADER_TAG_FILE_SUFFIX;
+            std::string tagFilePath = SEEK_GENERATED_TAG_DIR "/" SHADER_DEPEND_FILE_SUFFIX "/" + inputFileBaseName + SHADER_TAG_FILE_SUFFIX;
             int generateRet = GenerateTagFile(tagFilePath);
             if (generateRet != SUCCESS)
                 return generateRet;

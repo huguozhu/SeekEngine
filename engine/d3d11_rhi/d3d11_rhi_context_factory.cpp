@@ -1,13 +1,13 @@
-#include "rendering_d3d11/d3d11_predeclare.h"
-#include "rendering_d3d11/d3d11_rhi_context.h"
-#include "rendering_d3d11/d3d11_window.h"
-#include "rendering_d3d11/d3d11_texture.h"
-#include "rendering_d3d11/d3d11_render_buffer.h"
-#include "rendering_d3d11/d3d11_render_state.h"
-#include "rendering_d3d11/d3d11_program.h"
-#include "rendering_d3d11/d3d11_shader.h"
-#include "rendering_d3d11/d3d11_mesh.h"
-#include "rendering_d3d11/d3d11_render_view.h"
+#include "d3d11_rhi/d3d11_predeclare.h"
+#include "d3d11_rhi/d3d11_rhi_context.h"
+#include "d3d11_rhi/d3d11_window.h"
+#include "d3d11_rhi/d3d11_texture.h"
+#include "d3d11_rhi/d3d11_render_buffer.h"
+#include "d3d11_rhi/d3d11_render_state.h"
+#include "d3d11_rhi/d3d11_program.h"
+#include "d3d11_rhi/d3d11_shader.h"
+#include "d3d11_rhi/d3d11_mesh.h"
+#include "d3d11_rhi/d3d11_render_view.h"
 
 #define SEEK_MACRO_FILE_UID 8     // this code is auto generated, don't touch it!!!
 

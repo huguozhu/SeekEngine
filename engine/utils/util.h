@@ -5,7 +5,7 @@
 #include <assert.h>
 #include "error.h"
 #include "safe_c.h"
-
+#include "seek.config.h"
 
 USING_SSB_NAMESPACE
 
@@ -14,9 +14,9 @@ SEEK_NAMESPACE_BEGIN
 // Assert
 #define SEEK_ASSERT assert
 
-#define dvf_alignup(x, a)   ( ((x) + (a) - 1) & (~((a)-1)) )
-#define dvf_aligndown(x, a) ( (x) & (~((a)-1)) )
-#define dvf_alignaddr(x, a) ( ((intptr_t)(x) + ((intptr_t)(a) - (intptr_t)1)) & ((intptr_t)-(a)) )
+#define seek_alignup(x, a)   ( ((x) + (a) - 1) & (~((a)-1)) )
+#define seek_aligndown(x, a) ( (x) & (~((a)-1)) )
+#define seek_alignaddr(x, a) ( ((intptr_t)(x) + ((intptr_t)(a) - (intptr_t)1)) & ((intptr_t)-(a)) )
 
 // String function
 std::string                 string_trim     (std::string const& str);

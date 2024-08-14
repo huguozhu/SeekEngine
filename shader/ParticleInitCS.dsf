@@ -1,0 +1,25 @@
+//STAGE:cs
+#include "shared/ParticleCommon.h"
+
+RWStructuredBuffer<ParticleCounters> particle_counters;
+RWStructuredBuffer<uint>	dead_indices;
+cbuffer CInitParam
+{
+	uint max_particles;
+};
+
+[numthreads(PARTICLE_CS_X_SIZE, 1, 1)]
+void main(uint3 DTid : SV_DispatchThreadID)
+{
+	uint index = DTid.x;
+	if (index == 0)
+	{
+		particle_counters[index].dead_count 		= max_particles;
+		particle_counters[index].alive_count[0] 	= 0;
+		particle_counters[index].alive_count[1] 	= 0;
+		particle_counters[index].emit_count			= 0;
+		particle_counters[index].simulate_count		= 0; 
+	}
+	if (index < max_particles)
+		dead_indices[index] = index;
+}

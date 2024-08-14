@@ -1,0 +1,18 @@
+#pragma once
+#include "Common.dsh"
+
+cbuffer joints
+{
+    SkeletalJointMat joints;
+}
+
+float4x4 CalcSkeletonMatrix(float4 blend_weight, uint4 blend_index)
+{	
+	float4x4 skin_mat = blend_weight.x * joints.joint_mat[blend_index.x];
+	skin_mat += blend_weight.y * joints.joint_mat[blend_index.y];
+	skin_mat += blend_weight.z * joints.joint_mat[blend_index.z];
+	skin_mat += blend_weight.w * joints.joint_mat[blend_index.w];
+	
+	return skin_mat;
+}
+

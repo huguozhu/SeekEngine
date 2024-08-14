@@ -39,7 +39,7 @@ SResult Compression::Compress(char** dst, uint32_t &dst_len, void* src, uint32_t
 
     *dst = (char*)pDst;
     dst_len = static_cast<uint32_t>(uDstLen);
-    return SEEK_Success;
+    return S_Success;
 }
 
 SResult Compression::Decompress(char* dst, uint32_t &dst_len, void* src, uint32_t src_len)
@@ -62,7 +62,7 @@ SResult Compression::Decompress(char* dst, uint32_t &dst_len, void* src, uint32_
     }
     
     dst_len = static_cast<uint32_t>(*uDstLen);
-    return SEEK_Success;
+    return S_Success;
 }
 
 SEEK_NAMESPACE_END

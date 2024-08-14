@@ -1,0 +1,11 @@
+//STAGE:cs
+#include "ParticleCommon.dsh"
+
+RWStructuredBuffer<SortInfo>	sort_indices;
+
+[numthreads(BITONIC_BLOCK_SIZE, 1, 1)]
+void main(uint3 DTid : SV_DispatchThreadID)
+{	
+	if (DTid.x >= particle_counters[0].render_count)
+		sort_indices[DTid.x].particle_depth = 0.0;
+}

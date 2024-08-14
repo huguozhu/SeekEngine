@@ -1,0 +1,51 @@
+//STAGE:cs
+#include "ParticleCommon.dsh"
+
+RWStructuredBuffer<SortInfo>	sort_indices;
+
+cbuffer CSortParam
+{
+	GpuSortParam param;
+};
+
+groupshared uint shared_particle_index[BITONIC_BLOCK_SIZE];
+groupshared float shared_particle_depth[BITONIC_BLOCK_SIZE];
+
+[numthreads(BITONIC_BLOCK_SIZE, 1, 1)]
+void main(uint3 DTid : SV_DispatchThreadID,
+		  uint 	GI 	 : SV_GroupIndex)
+{	
+	// Step1: Write shared data
+	shared_particle_index[GI] = sort_indices[DTid.x].particle_index;
+	shared_particle_depth[GI] = sort_indices[DTid.x].particle_depth;
+    GroupMemoryBarrierWithGroupSync();
+
+	// Step2: Sort
+	for (uint j = param.sort_level>>1; j>0; j>>=1 )	
+	{
+        uint smallerIndex = GI & ~j;
+        uint largerIndex = GI | j;
+        bool isSmallerIndex = (GI == smallerIndex);
+        bool isDescending = (bool) (param.descend_mask & DTid.x);
+        float result_depth;
+		uint  result_index;
+		if ((shared_particle_depth[smallerIndex] <= shared_particle_depth[largerIndex]) == (isDescending == isSmallerIndex))
+		{
+			result_depth = shared_particle_depth[smallerIndex];
+			result_index = shared_particle_index[smallerIndex];
+		}
+		else
+		{
+			result_depth = shared_particle_depth[largerIndex];
+			result_index = shared_particle_index[largerIndex];
+		}
+        GroupMemoryBarrierWithGroupSync();
+        shared_particle_depth[GI] = result_depth;
+		shared_particle_index[GI] = result_index;
+        GroupMemoryBarrierWithGroupSync();
+	}
+
+	// Step3: save result
+	sort_indices[DTid.x].particle_depth = shared_particle_depth[GI];
+	sort_indices[DTid.x].particle_index = shared_particle_index[GI];	
+}

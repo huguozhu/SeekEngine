@@ -1,25 +1,10 @@
-﻿/*************************************************************************************************
-**
-**      Copyright (C) 2021. All rights reserved.
-**
-**      Name                   : d3d11_translate.h
-**
-**      Brief                  : translate DVF enum to D3D11 enum
-**
-**      Additional             : None
-**
-**------------------------------------------------------------------------------------------------
-**
-**      History                : 2021-05-28  Created by Ted Hu
-**
-**************************************************************************************************/
-#pragma once
+﻿#pragma once
 
-#include "rendering/render_state.h"
-#include "rendering/render_definition.h"
-#include "rendering_d3d11/d3d11_predeclare.h"
+#include "rhi/render_state.h"
+#include "rhi/render_definition.h"
+#include "d3d11_rhi/d3d11_predeclare.h"
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
 class D3D11Translate
 {
@@ -41,4 +26,4 @@ public:
     static void TranslateResourceFlagsToD3D11Foramt(ResourceFlags flags, D3D11_USAGE& usage, UINT& cpu_access_flags);
 };
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END

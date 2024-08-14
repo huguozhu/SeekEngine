@@ -1,18 +1,3 @@
-/*************************************************************************************************
-**
-**      Copyright (C) 2021. All rights reserved.
-**
-**      Name                   : scene_manager.h
-**
-**      Brief                     : scene manager base class
-**
-**      Additional             : None
-**
-**------------------------------------------------------------------------------------------------
-**
-**      History                : 2021-06-11  Created by Ted Hu
-**
-**************************************************************************************************/
 #pragma once
 
 #include "kernel/kernel.h"
@@ -125,10 +110,6 @@ protected:
     std::vector<MeshPair>                               m_vMeshList;
     std::map<CameraComponent*, std::vector<MeshPair>>   m_mCachedVisibleMeshListByCamera;
     
-
-    /* *********************************************************************
-     * Sprite 2D
-     * *********************************************************************/
     
     RenderBufferPtr m_LightInfoCBuffer;
     RenderBufferPtr m_ViewInfoCBuffer;
