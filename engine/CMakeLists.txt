@@ -187,7 +187,7 @@ endif()
 
 ############################################ seek_engine static lib ############################################
 add_library(${SEEK_STATICLIB_NAME} STATIC ${ENGINE_CODE})
-add_dependencies(${DVF_STATICLIB_NAME} GenerateShaders)
+add_dependencies(${SEEK_STATICLIB_NAME} GenerateShaders)
 target_link_libraries(${SEEK_STATICLIB_NAME} PUBLIC
     turbojpeg
     libpng
