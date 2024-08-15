@@ -4,6 +4,7 @@
 #include "thread/thread_manager.h"
 
 #include "rhi/rhi_context.h"
+#include "utils/log.h"
 
 SEEK_NAMESPACE_BEGIN
 
@@ -38,18 +39,40 @@ SResult Context::Init(const RenderInitInfo& init_info)
     {
         m_pSceneManager = MakeUniquePtrMacro(SceneManager, this);
     }
+
+    m_ApiSemaphore.Post();
     return S_Success;
 }
 void Context::Uninit()
 {
     m_pThreadManager.reset();
 }
+void Context::SetViewport(Viewport vp)
+{
+    if (m_viewport != vp)
+    {
+        LOG_INFO("viewport is changed, (%d, %d, %u, %u)->(%d, %d, %u, %u)",
+            m_viewport.left, m_viewport.top, m_viewport.width, m_viewport.height,
+            vp.left, vp.top, vp.width, vp.height);
+        m_viewport = vp;
+        m_bViewportChanged = true;
+    }
+}
+SResult Context::Frame()
+{
+    Thread* pRenderThread = m_pThreadManager->GetRenderThread();
+    pRenderThread->GetSemaphore().Wait();
+
+    // swap()
+
+    m_ApiSemaphore.Post();
+}
 
 SResult Context::Update()
 {
     return S_Success;
 }
-SResult Context::BeginFrame()
+SResult Context::BeginRenderFrame()
 {
     return S_Success;
 }
@@ -57,19 +80,16 @@ SResult Context::RenderFrame()
 {
     return S_Success;
 }
-SResult Context::EndFrame()
+SResult Context::EndRenderFrame()
 {
     return S_Success;
 }
 
-bool Context::ApiSemWait(int32_t msecs)
+void Context::ApiSemWait()
 {
-    bool ok = m_ApiSemaphore.Wait(msecs);
-    if (ok)
+    if (m_InitInfo.multi_thread)
     {
-
-        return true;
+        m_ApiSemaphore.Wait();
     }
-    return false;
 }
 SEEK_NAMESPACE_END

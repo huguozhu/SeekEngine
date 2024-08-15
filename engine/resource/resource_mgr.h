@@ -23,7 +23,6 @@ class ResourceManager;
 
 struct IResource
 {
-    //using Initializer = std::function<SResult(IResource*)>;
     using Uninitializer = std::function<void(IResource*)>;
 
     IResource(ResourceManager* mgr = nullptr) 
@@ -49,19 +48,6 @@ struct IResource
     {
         _backendResources.clear();
     }
-
-    //virtual SResult MakeAvailable()
-    //{
-    //    if (_isAvailabled)
-    //        return S_Success;
-
-    //    SResult ret = S_Success;
-    //    if (_initializer)
-    //        ret = _initializer(this);
-    //    if (!SEEK_CHECKFAILED(ret))
-    //        _isAvailabled = true;
-    //    return ret;
-    //}
 
     virtual bool IsAvailable()
     {

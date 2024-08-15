@@ -7,9 +7,6 @@ set(SAMPLE_COMMON_SRCS
 )
 
 set(SAMPLE_DEPENDENT_LIBS)
-if(TARGET_PLATFORM_WINDOWS)
-    #list(APPEND SAMPLE_COMMON_SRCS ${SEEK_SAMPLES_DIR}/common/app_framework_windows.cpp)
-endif()
 
 add_library(${SAMPLE_COMMON_PROJECT_NAME} STATIC ${SAMPLE_COMMON_SRCS})
 
@@ -22,9 +19,8 @@ target_link_libraries(${SAMPLE_COMMON_PROJECT_NAME} PUBLIC ${SAMPLE_DEPENDENT_LI
 
 # include
 target_include_directories(${SAMPLE_COMMON_PROJECT_NAME} PUBLIC
-    ${SEEK_SAMPLES_DIR}
     ${SEEK_THIRDPARTY_DIR}/imgui/include
-    ${SEEK_ROOT_DIR}
+    ${SEEK_ENGINE_SOURCE_DIR}
 )
 
 
@@ -53,7 +49,10 @@ function(add_sample_project sample_name)
         set_target_properties(${sample_name}    PROPERTIES LINK_FLAGS "/ignore:4099")
     endif()
 
-    target_include_directories(${sample_name} PUBLIC ${SEEK_ENGINE_SOURCE_DIR})
+    target_include_directories(${sample_name} PUBLIC 
+        ${SEEK_ENGINE_SOURCE_DIR}
+        ${SEEK_SAMPLES_DIR}/common
+    )
 
 endfunction(add_sample_project)
 

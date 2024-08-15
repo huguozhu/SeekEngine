@@ -18,14 +18,22 @@ int APP_RUN(AppFramework* app)
 
 SResult AppFramework::InitContext(int width, int height, void* device, void* native_wnd)
 {
-    RenderInitInfo info;
-    SEEK_RETIF_FAIL(m_pContext->Init(info));
+    m_pContext = MakeSharedPtr<Context>();
 
+    RenderInitInfo info;
+    info.device = device;
+    info.native_wnd = native_wnd;    
+    SEEK_RETIF_FAIL(m_pContext->Init(info));
+    return S_Success;
+}
+
+SResult AppFramework::RenderFrame()
+{
+    SEEK_RETIF_FAIL(m_pContext->Update());
     return S_Success;
 }
 
 IWICImagingFactory* g_pIWICFactory;
-
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)
@@ -45,8 +53,8 @@ static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 
 HWND InitWindow(std::string const& name, uint32_t width, uint32_t height)
 {
-    static uint32_t w = width;
-    static uint32_t h = height;
+    uint32_t w = width;
+    uint32_t h = height;
     HINSTANCE hInst = GetModuleHandle(nullptr);
 
     WNDCLASSEXA wc;
@@ -82,26 +90,16 @@ SResult AppFramework::Run()
     HWND wnd = InitWindow(m_szName, DEFAULT_WND_WIDTH, DEFAULT_WND_HEIGHT);
     this->InitContext(DEFAULT_WND_WIDTH, DEFAULT_WND_HEIGHT, NULL, (void*)wnd);
 
-    static bool init = false;
-    if (!init)
+    if (!m_bInit)
     {
         SEEK_RETIF_FAIL(this->OnCreate());
-        init = true;
+        m_bInit = true;
     }
 
-    /*D3D11RenderContext* rc_d3d = static_cast<D3D11RenderContext*>(&m_pContextOnscreen->RenderContextInstance());
-    
-    if (m_bNeedAttachScreen)
-    {
-        RenderContext& rc = m_pContextOnscreen->RenderContextInstance();
-        DVF_RETIF_FAIL(rc.AttachNativeWindow(m_szName, wnd));
-        rc.SetFinalFrameBuffer(rc.GetScreenFrameBuffer());
-        m_pContextOnscreen->SetViewport(Viewport{ 0, 0, DEFAULT_WND_WIDTH ,DEFAULT_WND_HEIGHT });
-    }
-    else
-    {
-        m_pRenderTarget = wnd;
-    }*/
+    RHIContext& rc = m_pContext->RHIContextInstance();
+    rc.AttachNativeWindow(m_szName, wnd);
+    rc.SetFinalFrameBuffer(rc.GetScreenFrameBuffer());
+    m_pContext->SetViewport(Viewport(0, 0, DEFAULT_WND_WIDTH, DEFAULT_WND_HEIGHT));
 
     bool get_msg = false;
     MSG  msg;
@@ -118,16 +116,14 @@ SResult AppFramework::Run()
         else
         {
             SEEK_RETIF_FAIL(this->OnUpdate());
-            //SEEK_RETIF_FAIL(this->DisplayOnscreen());
+            SEEK_RETIF_FAIL(this->RenderFrame());
         }
     }
 
     this->OnDestroy();
     DestroyWindow(wnd);
     CoUninitialize();
-
     return S_Success;
-
 }
 
 #undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

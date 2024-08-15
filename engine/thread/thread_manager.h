@@ -5,7 +5,7 @@
 
 SEEK_NAMESPACE_BEGIN
 
-
+class Thread;
 class ThreadManager
 {
 public:
@@ -13,6 +13,8 @@ public:
     ~ThreadManager();
 
     SResult Init();
+
+    Thread*     GetRenderThread();
 
 
 private:

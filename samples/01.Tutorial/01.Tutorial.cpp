@@ -4,8 +4,8 @@
 
 
 Tutorial::Tutorial()
+    :AppFramework("Tutorial")
 {
-    m_pContext = MakeSharedPtr<Context>();
 }
 
 Tutorial::~Tutorial()

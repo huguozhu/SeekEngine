@@ -6,7 +6,8 @@ USING_NAMESPACE_SEEK
 class AppFramework
 {
 public:
-    AppFramework()
+    AppFramework(std::string const& name)
+        :m_szName(name)
     {}
     virtual ~AppFramework()
     {}
@@ -15,14 +16,15 @@ public:
     virtual SResult         OnCreate() = 0;
     virtual SResult         OnUpdate() = 0;
     virtual SResult         OnDestroy() { return S_Success; }
+    virtual SResult         RenderFrame();
 
     virtual SResult         InitContext(int width, int height, void* device = nullptr, void* native_wnd = nullptr);
 
 
-
 private:
     std::string     m_szName;
-    Context*        m_pContext;
+    ContextPtr      m_pContext = nullptr;
+    bool            m_bInit = false;
 
 };
 

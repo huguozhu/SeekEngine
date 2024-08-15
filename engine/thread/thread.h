@@ -19,6 +19,8 @@ public:
     bool    IsRunning() const { return m_bRunning; }
     uint32_t GetExitCode() const { return m_iExitCode; }
 
+    Semaphore& GetSemaphore() { return m_Semaphore; }
+
 private:
     friend struct ThreadInternal;
     SResult     Entry();

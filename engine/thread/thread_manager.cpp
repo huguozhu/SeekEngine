@@ -1,15 +1,21 @@
 #include "thread/thread_manager.h"
 #include "thread/thread.h"
 
+#define SEEK_MACRO_FILE_UID 79     // this code is auto generated, don't touch it!!!
+
 SEEK_NAMESPACE_BEGIN
 
-
-static SResult RenderThread_Entry(Context* context, Thread* thread, void* user_data)
+static SResult RenderThread_Entry(Context* context, Thread* render_thread, void* user_data)
 {
+    if (!context || !render_thread)
+        return ERR_INVALID_INIT;
+
     Context* pContext = (Context*)user_data;
-    pContext->BeginFrame();
-    pContext->RenderFrame();
-    pContext->EndFrame();
+    pContext->ApiSemWait();
+    // add to do: call real GPU command
+
+
+    render_thread->GetSemaphore().Post();
     return S_Success;
 }
 
@@ -36,4 +42,10 @@ SResult ThreadManager::Init()
     return S_Success;
 }
 
+Thread* ThreadManager::GetRenderThread()
+{
+    if (!m_pRenderThread)
+        return nullptr;
+    return m_pRenderThread.get();
+}
 SEEK_NAMESPACE_END

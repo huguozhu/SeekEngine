@@ -3,6 +3,8 @@
 #include "thread/semaphore.h"
 #include "rhi/rhi_context.h"
 #include "scene_manager/scene_manager.h"
+#include "rhi/viewport.h"
+#include "effect/frame.h"
 
 
 SEEK_NAMESPACE_BEGIN
@@ -38,11 +40,15 @@ public:
 
     SResult             Init(const RenderInitInfo& init_info);
     void                Uninit();
-    SResult             Update();
+    void                SetViewport(Viewport vp);
+    
 
-    SResult             BeginFrame();
+    SResult             Frame();
+
+    SResult             Update();
+    SResult             BeginRenderFrame();
     SResult             RenderFrame();    
-    SResult             EndFrame();
+    SResult             EndRenderFrame();
 
     bool                IsMultiThreaded() { return m_InitInfo.multi_thread; }
     bool                IsDebug() { return m_InitInfo.debug; }
@@ -53,17 +59,23 @@ public:
     RHIContext&         RHIContextInstance() { return *m_pRHIContext; }
     SceneManager&       SceneManagerInstance() { return *m_pSceneManager;}
 
-
-private:
-    bool                ApiSemWait(int32_t msecs = -1);
+    void                ApiSemPost();
+    void                ApiSemWait();
+    void                RenderSemPost();
+    void                RenderSemWait();
+    void                EncoderApiWait();
 
 private:
     RenderInitInfo              m_InitInfo{};
-    Semaphore                   m_ApiSemaphore;
+    Semaphore                   m_ApiSemaphore;    
+
+
     ThreadManagerPtrUnique      m_pThreadManager;
     RHIContextPtrUnique         m_pRHIContext;
     SceneManagerPtrUnique       m_pSceneManager;
 
+    Viewport                    m_viewport;
+    bool                        m_bViewportChanged = false;                      
 
 };
 
