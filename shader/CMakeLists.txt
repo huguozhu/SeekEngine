@@ -89,7 +89,6 @@ foreach(single_shader_sources_file ${shader_sources_files})
 
     set(single_tag_depend_tagfile "${generated_shader_tag_depend_dir}/${single_shader_basename}${SHADER_TAG_FILE_SUFFIX}")
     set(single_depend_dependfile  "${generated_shader_depend_dir}/${single_shader_basename}${SHADER_DEPEND_FILE_SUFFIX}")
-    # message(STATUS "single_tag_depend_tagfile ${single_tag_depend_tagfile}")
     add_custom_command(
         OUTPUT ${single_tag_depend_tagfile} ${single_depend_dependfile}
         COMMAND ${ShaderCompiler_bin} --input "${single_shader_filename}" --depend
@@ -129,7 +128,7 @@ foreach(single_shader_sources_file ${shader_sources_files})
 
     set(single_depend_dependfile  "${generated_shader_depend_dir}/${single_shader_basename}${SHADER_DEPEND_FILE_SUFFIX}")
     set(single_tag_compile_tagfile "${generated_shader_tag_compile_dir}/${single_shader_basename}${SHADER_TAG_FILE_SUFFIX}")
-    #message(STATUS "single_tag_compile_tagfile ${single_tag_compile_tagfile}")
+
     add_custom_command(
         OUTPUT ${single_tag_compile_tagfile}
         COMMAND ${ShaderCompiler_bin} --input=${single_shader_filename} --target=${shader_target_platform} ${shader_compile_options}

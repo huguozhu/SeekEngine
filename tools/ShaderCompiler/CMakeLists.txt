@@ -49,9 +49,6 @@ if(APPLE)
     )
 endif()
 
-message(FATAL_INFO "shaderconductor_LIB_DIRS ----- shaderconductor_LIB_DIRS")
-message(FATAL_INFO $<TARGET_FILE_DIR>)
-message(FATAL_INFO $<TARGET_FILE_DIR:ShaderCompiler>)
 set(shaderconductor_LIB_DIRS ${SEEK_THIRDPARTY_DIR}/shaderconductor/libs/${TARGET_PLATFORM})
 if(WIN32)
     add_custom_command(TARGET ShaderCompiler POST_BUILD
