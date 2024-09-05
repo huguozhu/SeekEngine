@@ -30,11 +30,21 @@ public:
 };
 
 
-
+union DrawCallItem
+{
+	RenderDrawCall    draw;
+	ComputeDrawCall compute;
+};
 
 class Encoder
 {
 public:
+
+
+private:
+
+	std::vector<DrawCallItem> m_vDrawCallItems;
+
 
 };
 

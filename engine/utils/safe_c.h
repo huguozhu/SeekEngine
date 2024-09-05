@@ -80,7 +80,7 @@ destsz	-	size of the destination array
 Return value
 zero on success, non-zero on error. Also on error, if dest is not a null pointer and destsz is valid, writes destsz fill bytes ch to the destination array.
 */
-int __EXPORT__ zm_memset_s( void *dest, size_t destsz, int ch, size_t count );
+int __EXPORT__ seek_memset_s( void *dest, size_t destsz, int ch, size_t count );
 
 #ifndef __WINOS__
 #define strnstr(a, b, c) strstr(a, b)

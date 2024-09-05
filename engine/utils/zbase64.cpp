@@ -111,7 +111,7 @@ SResult ZBase64::Decode(const char* srcData, int srcSize, char** out)
     char* outData = (char*)malloc(dstSize);
     if (NULL == outData)
         return false;
-    zm_memset_s(outData, dstSize, 0, dstSize);
+    seek_memset_s(outData, dstSize, 0, dstSize);
 
     const int alphabetCount = sizeof(c_alphabet_string);
     static char alphabetTable[256];

@@ -18,7 +18,7 @@ D3D11RenderState::D3D11RenderState(Context* context, RasterizerStateDesc const& 
 
     // Step1 : RasterizerState
     D3D11_RASTERIZER_DESC d3d_rs_desc;
-    zm_memset_s(&d3d_rs_desc, sizeof(d3d_rs_desc), 0, sizeof(d3d_rs_desc));
+    seek_memset_s(&d3d_rs_desc, sizeof(d3d_rs_desc), 0, sizeof(d3d_rs_desc));
     d3d_rs_desc.FillMode = D3D11Translate::TranslateFillMode(rs_desc.eFillMode);
     d3d_rs_desc.CullMode = D3D11Translate::TranslateCullMode(rs_desc.eCullMode);
     d3d_rs_desc.FrontCounterClockwise = rs_desc.bFrontFaceCCW;
@@ -36,7 +36,7 @@ D3D11RenderState::D3D11RenderState(Context* context, RasterizerStateDesc const& 
 
     // Step2 : DepthStencil State
     D3D11_DEPTH_STENCIL_DESC d3d_ds_desc;
-    zm_memset_s(&d3d_ds_desc, sizeof(d3d_ds_desc), 0, sizeof(d3d_ds_desc));
+    seek_memset_s(&d3d_ds_desc, sizeof(d3d_ds_desc), 0, sizeof(d3d_ds_desc));
     d3d_ds_desc.DepthEnable = ds_desc.bDepthEnable;
     d3d_ds_desc.DepthWriteMask = ds_desc.bDepthWriteMask ? D3D11_DEPTH_WRITE_MASK_ALL : D3D11_DEPTH_WRITE_MASK_ZERO;
     d3d_ds_desc.DepthFunc = D3D11Translate::TranslateCompareFunction(ds_desc.eDepthFunc);
@@ -66,7 +66,7 @@ D3D11RenderState::D3D11RenderState(Context* context, RasterizerStateDesc const& 
 
     // Step3 : Blend State
     D3D11_BLEND_DESC d3d_blend_desc;
-    zm_memset_s(&d3d_blend_desc, sizeof(d3d_blend_desc), 0, sizeof(d3d_blend_desc));
+    seek_memset_s(&d3d_blend_desc, sizeof(d3d_blend_desc), 0, sizeof(d3d_blend_desc));
     d3d_blend_desc.AlphaToCoverageEnable = bs_desc.bAlphaToCoverageEnable;
     d3d_blend_desc.IndependentBlendEnable = bs_desc.bIndependentBlendEnable;
 
@@ -129,7 +129,7 @@ D3D11Sampler::D3D11Sampler(Context* context, SamplerDesc const& desc)
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
     D3D11_SAMPLER_DESC d3d_sampler_desc;
-    zm_memset_s(&d3d_sampler_desc, sizeof(d3d_sampler_desc), 0, sizeof(d3d_sampler_desc));
+    seek_memset_s(&d3d_sampler_desc, sizeof(d3d_sampler_desc), 0, sizeof(d3d_sampler_desc));
 
     d3d_sampler_desc.Filter = D3D11Translate::TranslateTexFilterOp(desc.eFilterOp);
     d3d_sampler_desc.AddressU = D3D11Translate::TranslateAddressMode(desc.eAddrModeU);

@@ -49,6 +49,9 @@ CLASS_DECLARE(Context);
 // Scene Manager
 CLASS_DECLARE(SceneManager);
 
+// Effect
+CLASS_DECLARE(Frame);
+
 // Component
 CLASS_DECLARE(Entity);
 CLASS_DECLARE(Component);

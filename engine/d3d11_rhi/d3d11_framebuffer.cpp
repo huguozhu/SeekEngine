@@ -12,7 +12,7 @@ SEEK_NAMESPACE_BEGIN
 D3D11FrameBuffer::D3D11FrameBuffer(Context* context)
     : FrameBuffer(context)
 {
-    zm_memset_s(&m_stD3dViewport, sizeof(m_stD3dViewport), 0, sizeof(m_stD3dViewport));
+    seek_memset_s(&m_stD3dViewport, sizeof(m_stD3dViewport), 0, sizeof(m_stD3dViewport));
 }
 
 D3D11FrameBuffer::~D3D11FrameBuffer()

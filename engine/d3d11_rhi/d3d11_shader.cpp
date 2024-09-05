@@ -93,7 +93,7 @@ SResult D3D11Shader::OnCompile()
         if (macro_size > 0)
         {
             pMacros = (D3D_SHADER_MACRO*)malloc(sizeof(D3D_SHADER_MACRO) * (macro_size + 1));
-            zm_memset_s(pMacros, sizeof(D3D_SHADER_MACRO) * (macro_size + 1), 0, sizeof(D3D_SHADER_MACRO) * (macro_size + 1));
+            seek_memset_s(pMacros, sizeof(D3D_SHADER_MACRO) * (macro_size + 1), 0, sizeof(D3D_SHADER_MACRO) * (macro_size + 1));
             uint32_t index = 0;
             for (auto& m : m_vMacros)
             {

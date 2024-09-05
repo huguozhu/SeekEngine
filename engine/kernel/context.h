@@ -5,6 +5,7 @@
 #include "scene_manager/scene_manager.h"
 #include "rhi/viewport.h"
 #include "effect/frame.h"
+#include "effect/command_buffer.h"
 
 
 SEEK_NAMESPACE_BEGIN
@@ -25,6 +26,7 @@ struct RenderInitInfo
     bool                    debug = false;
     bool                    profile = false;
     bool                    multi_thread = true;
+    bool                    immediate_rendering_mode = false;
     RHIType                 rhi_type = RHIType::Unknown;
     uint32_t                num_samples = 1;
     int32_t                 preferred_adapter = -1;
@@ -43,7 +45,8 @@ public:
     void                SetViewport(Viewport vp);
     
 
-    SResult             Frame();
+
+    void                ExecuteRendererCommands(CommandBuffer& cb ) {}
 
     SResult             Update();
     SResult             BeginRenderFrame();
@@ -59,15 +62,21 @@ public:
     RHIContext&         RHIContextInstance() { return *m_pRHIContext; }
     SceneManager&       SceneManagerInstance() { return *m_pSceneManager;}
 
-    void                ApiSemPost();
     void                ApiSemWait();
-    void                RenderSemPost();
+    void                ApiSemPost();
     void                RenderSemWait();
-    void                EncoderApiWait();
+    void                RenderSemPost();
+    
 
 private:
+    void                SwapFrame();
+
     RenderInitInfo              m_InitInfo{};
-    Semaphore                   m_ApiSemaphore;    
+    Semaphore                   m_ApiSemaphore;
+
+    FramePtr                    m_Frames[2] = { nullptr };
+    Frame*                      m_pFrameToRender = nullptr;
+    Frame*                      m_pFrameToSubmit = nullptr;
 
 
     ThreadManagerPtrUnique      m_pThreadManager;
@@ -75,7 +84,8 @@ private:
     SceneManagerPtrUnique       m_pSceneManager;
 
     Viewport                    m_viewport;
-    bool                        m_bViewportChanged = false;                      
+    bool                        m_bViewportChanged = false;
+    
 
 };
 

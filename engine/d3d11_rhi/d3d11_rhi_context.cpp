@@ -376,7 +376,7 @@ void D3D11RHIContext::Uninit()
 
 SResult D3D11RHIContext::CheckCapabilitySetSupport()
 {
-    zm_memset_s(m_CapabilitySet.TextureSampleCountSupport, sizeof(m_CapabilitySet.TextureSampleCountSupport), false, sizeof(m_CapabilitySet.TextureSampleCountSupport));
+    seek_memset_s(m_CapabilitySet.TextureSampleCountSupport, sizeof(m_CapabilitySet.TextureSampleCountSupport), false, sizeof(m_CapabilitySet.TextureSampleCountSupport));
     static_assert((1 << 4) == CAP_MAX_TEXTURE_SAMPLE_COUNT, "msaa sample count mismatch");
     for (size_t msaaLevel = 0; msaaLevel <= 4; msaaLevel++)
     {

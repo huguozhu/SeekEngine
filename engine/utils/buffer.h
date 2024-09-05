@@ -15,23 +15,23 @@ public:
     virtual ~Buffer() { Free(); }
 
     void                    Create(size_t size, uint8_t* data); // Can be called multiple times
-    bool                    Valid() const { return data != nullptr; }
+    bool                    Valid() const { return m_pData != nullptr; }
     bool                    Alloc (size_t size);
     bool                    Expand(size_t size);
 
-    uint8_t*                Data() const { return data; }
-    size_t                  Size() const { return size; }
+    uint8_t*                Data() const { return m_pData; }
+    size_t                  Size() const { return m_iSize; }
 
     virtual SEEKPicture      ToSEEKPicture(uint32_t _width, uint32_t _height, uint32_t _rowPitch, SEEK_PIC_FORMAT _format) const;
 
 protected:
     void                    Free();
 
-    uint8_t*                data = nullptr;
-    size_t                  size = 0;
-    size_t                  bufsize = 0;
+    uint8_t*                m_pData = nullptr;
+    size_t                  m_iSize = 0;
+    size_t                  m_iBufSize = 0;
 
-    bool                    external_memory = false;
+    bool                    m_bExternalMemory = false;
 };
 
 class BitmapBuffer : public Buffer
@@ -46,12 +46,12 @@ public:
     bool                    Alloc (uint32_t width, uint32_t height, PixelFormat format);
     bool                    Expand(uint32_t width, uint32_t height, PixelFormat format);
 
-    uint32_t                Width()             const { return width; }
-    uint32_t                Height()            const { return height; }
-    uint32_t                RowPitch()          const { return rowPitch; }
-    PixelFormat             Format()            const { return format; }
-    ColorSpace              GetColorSpace()     const { return color_space; }
-    void                    SetColorSpace(ColorSpace cs) { color_space = cs; }
+    uint32_t                Width()             const { return m_iWidth; }
+    uint32_t                Height()            const { return m_iHeight; }
+    uint32_t                RowPitch()          const { return m_iRowPitch; }
+    PixelFormat             Format()            const { return m_eFormat; }
+    ColorSpace              GetColorSpace()     const { return m_eColorSpace; }
+    void                    SetColorSpace(ColorSpace cs) { m_eColorSpace = cs; }
 
     virtual SEEKPicture     ToSEEKPicture() const;
 
@@ -60,11 +60,11 @@ public:
 protected:
     void                    UpdateSize(uint32_t width, uint32_t height, PixelFormat format);
 
-    uint32_t    width       = 0;
-    uint32_t    height      = 0;
-    uint32_t    rowPitch    = 0;
-    PixelFormat format      = PixelFormat::Unknown;
-    ColorSpace  color_space = ColorSpace::Unknown;
+    uint32_t    m_iWidth        = 0;
+    uint32_t    m_iHeight       = 0;
+    uint32_t    m_iRowPitch     = 0;
+    PixelFormat m_eFormat       = PixelFormat::Unknown;
+    ColorSpace  m_eColorSpace   = ColorSpace::Unknown;
 };
 
 SEEK_NAMESPACE_END

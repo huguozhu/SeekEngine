@@ -152,7 +152,7 @@ SResult D3D11RenderBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
     D3D11_USAGE usage = D3D11_USAGE_DEFAULT;
     D3D11Translate::TranslateResourceFlagsToD3D11Foramt(m_iFlags, usage, cpu_access_flags);
 
-    zm_memset_s(&desc, sizeof(D3D11_BUFFER_DESC), 0, sizeof(D3D11_BUFFER_DESC));
+    seek_memset_s(&desc, sizeof(D3D11_BUFFER_DESC), 0, sizeof(D3D11_BUFFER_DESC));
     desc.ByteWidth = m_iSize;
     desc.Usage = usage;
     desc.CPUAccessFlags = cpu_access_flags;

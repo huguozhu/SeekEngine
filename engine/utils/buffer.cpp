@@ -19,9 +19,9 @@ void Buffer::Create(size_t size, uint8_t* data)
     if (data)
     {
         Free();
-        this->data = data;
-        this->size = this->bufsize = size;
-        this->external_memory = true;
+        this->m_pData = data;
+        this->m_iSize = this->m_iBufSize = size;
+        this->m_bExternalMemory = true;
     }
     else
     {
@@ -31,42 +31,42 @@ void Buffer::Create(size_t size, uint8_t* data)
 
 void Buffer::Free()
 {
-    if (data)
+    if (m_pData)
     {
-        if (!external_memory)
+        if (!m_bExternalMemory)
         {
 #if defined(_WIN32)
-            _aligned_free(data);
+            _aligned_free(m_pData);
 #else
-            free(data);
+            free(m_pData);
 #endif
         }
-        data = nullptr;
+        m_pData = nullptr;
     }
-    size = 0;
-    bufsize = 0;
-    external_memory = false;
+    m_iSize = 0;
+    m_iBufSize = 0;
+    m_bExternalMemory = false;
 }
 
 bool Buffer::Alloc(size_t size)
 {
-    if (external_memory)
+    if (m_bExternalMemory)
         return false;
 
     Free();
 
-    this->size = size;
-    this->bufsize = seek_alignup(size, MEM_DEFAULT_ALIGN); // sometimes we may access overflow(like simd), so align size to meet these requirements
+    this->m_iSize = size;
+    this->m_iBufSize = seek_alignup(size, MEM_DEFAULT_ALIGN); // sometimes we may access overflow(like simd), so align size to meet these requirements
 
 #if defined(_WIN32)
-    data = (uint8_t*)_aligned_malloc(this->bufsize, MEM_DEFAULT_ALIGN); // align mem address, so we can use some optimize algo(like simd)
+    m_pData = (uint8_t*)_aligned_malloc(this->m_iBufSize, MEM_DEFAULT_ALIGN); // align mem address, so we can use some optimize algo(like simd)
 #else
-    if (posix_memalign((void**)&(data), MEM_DEFAULT_ALIGN, this->bufsize))
+    if (posix_memalign((void**)&(m_pData), MEM_DEFAULT_ALIGN, this->m_iBufSize))
         data = nullptr;
 #endif
-    external_memory = false;
+    m_bExternalMemory = false;
 
-    if (!data)
+    if (!m_pData)
     {
         Free();
         return false;
@@ -76,20 +76,20 @@ bool Buffer::Alloc(size_t size)
 
 bool Buffer::Expand(size_t size)
 {
-    if (external_memory)
+    if (m_bExternalMemory)
         return false;
     size_t aligned_size = seek_alignup(size, MEM_DEFAULT_ALIGN);
-    if (aligned_size > bufsize)
+    if (aligned_size > m_iBufSize)
         return Alloc(size);
-    this->size = size;
+    this->m_iSize = size;
     return true;
 }
 
 SEEKPicture Buffer::ToSEEKPicture(uint32_t _width, uint32_t _height, uint32_t _rowPitch, SEEK_PIC_FORMAT _format) const
 {
     SEEKPicture pic;
-    zm_memset_s(&pic, sizeof(pic), 0, sizeof(pic));
-    pic.pData[0] = data;
+    seek_memset_s(&pic, sizeof(pic), 0, sizeof(pic));
+    pic.pData[0] = m_pData;
     pic.iRowPitch[0] = _rowPitch;
     pic.iWidth = _width;
     pic.iHeight = _height;
@@ -154,15 +154,15 @@ void BitmapBuffer::Create(uint32_t width, uint32_t height, PixelFormat format, u
     {
         Free();
         if (rowpitch > 0)
-            this->rowPitch = rowpitch;
+            this->m_iRowPitch = rowpitch;
         else
-            this->rowPitch = width;
-        this->width = width;
-        this->height = height;
-        this->format = format;
-        this->data = data;
-        this->bufsize = this->size = this->rowPitch * this->height;
-        this->external_memory = true;
+            this->m_iRowPitch = width;
+        this->m_iWidth = width;
+        this->m_iHeight = height;
+        this->m_eFormat = format;
+        this->m_pData = data;
+        this->m_iBufSize = this->m_iSize = this->m_iRowPitch * this->m_iHeight;
+        this->m_bExternalMemory = true;
     }
     else
     {
@@ -172,37 +172,37 @@ void BitmapBuffer::Create(uint32_t width, uint32_t height, PixelFormat format, u
 
 void BitmapBuffer::UpdateSize(uint32_t width, uint32_t height, PixelFormat format)
 {
-    this->width = width;
-    this->height = height;
-    this->format = format;
+    this->m_iWidth = width;
+    this->m_iHeight = height;
+    this->m_eFormat = format;
     // we want each row address is align to MEM_DEFAULT_ALIGN
     // TODO: NumComponentBytes is 2 or 4, no need to align width to MEM_DEFAULT_ALIGN
-    this->rowPitch = seek_alignup(width, MEM_DEFAULT_ALIGN) * Formatutil::NumComponentBytes(format);
-    this->size = this->rowPitch * this->height;
+    this->m_iRowPitch = seek_alignup(width, MEM_DEFAULT_ALIGN) * Formatutil::NumComponentBytes(format);
+    this->m_iSize = this->m_iRowPitch * this->m_iHeight;
 }
 
 bool BitmapBuffer::Alloc(uint32_t width, uint32_t height, PixelFormat format)
 {
     UpdateSize(width, height, format);
-    return Buffer::Alloc(this->size);
+    return Buffer::Alloc(this->m_iSize);
 }
 
 bool BitmapBuffer::Expand(uint32_t width, uint32_t height, PixelFormat format)
 {
     UpdateSize(width, height, format);
-    return Buffer::Expand(this->size);
+    return Buffer::Expand(this->m_iSize);
 }
 
 SEEKPicture BitmapBuffer::ToSEEKPicture() const
 {
     SEEK_PIC_FORMAT _format = SEEKPicFormat_Unknown;
-    if (format == PixelFormat::R8G8B8A8_UNORM ||
-        format == PixelFormat::R8G8B8A8_UINT)
+    if (m_eFormat == PixelFormat::R8G8B8A8_UNORM ||
+        m_eFormat == PixelFormat::R8G8B8A8_UINT)
     {
         _format = SEEK_PIC_FORMAT::SEEKPicFormat_RGBA;
     }
 
-    return Buffer::ToSEEKPicture(width, height, rowPitch, _format);
+    return Buffer::ToSEEKPicture(m_iWidth, m_iHeight, m_iRowPitch, _format);
 }
 
 void BitmapBuffer::DumpToFile(std::string path)
@@ -210,10 +210,10 @@ void BitmapBuffer::DumpToFile(std::string path)
     std::fstream file;
     file.open(path.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
 
-    for (uint32_t j = 0; j < height; j++)
+    for (uint32_t j = 0; j < m_iHeight; j++)
     {
-        const char* ptr = (const char*)data + rowPitch * j;
-        long long size = width * Formatutil::NumComponentBytes(format);
+        const char* ptr = (const char*)m_pData + m_iRowPitch * j;
+        long long size = m_iWidth * Formatutil::NumComponentBytes(m_eFormat);
         file.write(ptr, size);
     }
     file.close();

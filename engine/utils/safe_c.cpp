@@ -65,14 +65,14 @@ int  memcmp_s (const void *dest, size_t dmax, const void *src,  size_t smax, int
 	return EOK;
 }
 
-int zm_memset_s( void *dest, size_t destsz, int ch, size_t count ){
+int seek_memset_s( void *dest, size_t destsz, int ch, size_t count ){
 	if(destsz == 0 || count == 0) {
 		return EOK;
 	}
-	MSG_ASSERT_RETURN("zm_memset_s invalid parameters" << VAR(dest) << VAR(destsz) << VAR(ch) << VAR(count), NULL != dest, ESNULLP);
-	MSG_ASSERT_RETURN("zm_memset_s invalid parameters" << VAR(destsz) << VAR(count), destsz >= MIN_LIMIT_MEM_SIZE && count >= MIN_LIMIT_MEM_SIZE, ESLEMIN);
-	MSG_ASSERT_RETURN("zm_memset_s invalid parameters" << VAR(destsz) << VAR(count), destsz <= MAX_LIMIT_MEM_SIZE, ESLEMAX);
-	MSG_ASSERT_RETURN("zm_memset_s invalid parameters" << VAR(destsz) << VAR(count), count <= destsz, ESNOSPC);
+	MSG_ASSERT_RETURN("seek_memset_s invalid parameters" << VAR(dest) << VAR(destsz) << VAR(ch) << VAR(count), NULL != dest, ESNULLP);
+	MSG_ASSERT_RETURN("seek_memset_s invalid parameters" << VAR(destsz) << VAR(count), destsz >= MIN_LIMIT_MEM_SIZE && count >= MIN_LIMIT_MEM_SIZE, ESLEMIN);
+	MSG_ASSERT_RETURN("seek_memset_s invalid parameters" << VAR(destsz) << VAR(count), destsz <= MAX_LIMIT_MEM_SIZE, ESLEMAX);
+	MSG_ASSERT_RETURN("seek_memset_s invalid parameters" << VAR(destsz) << VAR(count), count <= destsz, ESNOSPC);
 	memset(dest, ch, count);/*checked safe*/
 	return EOK;
 }

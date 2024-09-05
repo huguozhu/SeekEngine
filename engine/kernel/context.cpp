@@ -3,8 +3,11 @@
 #include "thread/thread.h"
 #include "thread/thread_manager.h"
 
+
+
 #include "rhi/rhi_context.h"
 #include "utils/log.h"
+
 
 SEEK_NAMESPACE_BEGIN
 
@@ -41,6 +44,12 @@ SResult Context::Init(const RenderInitInfo& init_info)
     }
 
     m_ApiSemaphore.Post();
+
+    m_Frames[0] = MakeSharedPtr<Frame>(this);
+    m_Frames[1] = MakeSharedPtr<Frame>(this);
+    m_pFrameToRender = m_Frames[0].get();
+    m_pFrameToSubmit = m_Frames[1].get();
+
     return S_Success;
 }
 void Context::Uninit()
@@ -58,15 +67,6 @@ void Context::SetViewport(Viewport vp)
         m_bViewportChanged = true;
     }
 }
-SResult Context::Frame()
-{
-    Thread* pRenderThread = m_pThreadManager->GetRenderThread();
-    pRenderThread->GetSemaphore().Wait();
-
-    // swap()
-
-    m_ApiSemaphore.Post();
-}
 
 SResult Context::Update()
 {
@@ -76,20 +76,55 @@ SResult Context::BeginRenderFrame()
 {
     return S_Success;
 }
+// Called by MainThread
 SResult Context::RenderFrame()
 {
+    Thread* pRenderThread = m_pThreadManager->GetRenderThread();
+    this->RenderSemWait();
+
+    this->ApiSemWait();
+    {
+
+    }
     return S_Success;
 }
 SResult Context::EndRenderFrame()
 {
+
     return S_Success;
 }
-
 void Context::ApiSemWait()
 {
     if (m_InitInfo.multi_thread)
     {
         m_ApiSemaphore.Wait();
     }
+}
+void Context::ApiSemPost()
+{
+    if (m_InitInfo.multi_thread)
+    {
+        m_ApiSemaphore.Post();
+    }
+}
+void Context::RenderSemWait()
+{
+    if (m_InitInfo.multi_thread)
+    {
+        m_pThreadManager->GetRenderThread()->GetSemaphore().Wait();
+    }
+}
+void Context::RenderSemPost()
+{
+    if (m_InitInfo.multi_thread)
+    {
+        m_pThreadManager->GetRenderThread()->GetSemaphore().Post();
+    }
+}
+void Context::SwapFrame()
+{
+    Frame* tmp = m_pFrameToRender;
+    m_pFrameToRender = m_pFrameToSubmit;
+    m_pFrameToSubmit = tmp;
 }
 SEEK_NAMESPACE_END
