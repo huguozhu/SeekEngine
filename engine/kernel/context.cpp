@@ -42,6 +42,10 @@ SResult Context::Init(const RenderInitInfo& init_info)
     {
         m_pSceneManager = MakeUniquePtrMacro(SceneManager, this);
     }
+    if (!m_pResourceManager)
+    {
+        m_pResourceManager = MakeUniquePtrMacro(ResourceManager, this);
+    }
 
     m_ApiSemaphore.Post();
 

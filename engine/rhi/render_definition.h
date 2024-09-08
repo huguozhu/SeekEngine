@@ -85,6 +85,14 @@ struct VertexStream
     bool                            is_instance_stream = false;
 };
 
+struct VertexStreamInfo
+{
+    uint32_t                        offset = 0;
+    uint32_t                        stride = 0;
+    std::vector<VertexStreamLayout> layouts;
+    bool                            is_instance_stream = false;
+};
+
 enum class TextureFormatSupportType : uint32_t
 {
     Filtering,

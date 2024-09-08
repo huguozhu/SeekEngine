@@ -58,31 +58,12 @@ protected:
     uint32_t    m_iPos;
 };
 
-struct VertexStreamLayout2
-{
-    uint32_t                buffer_offset = 0;
-    VertexFormat            format = VertexFormat::Unknown;
-    VertexElementUsage      usage = VertexElementUsage::Position;
-    uint32_t                usage_index = 0;
-    bool                    is_instance_attrib = false;
-    uint32_t                instance_divisor = 1;
-};
-
-struct VertexStream2
-{
-    RenderBufferPtr                 render_buffer = nullptr;
-    uint32_t                        offset = 0;
-    uint32_t                        stride = 0;
-    std::vector<VertexStreamLayout2> layouts;
-    bool                            is_instance_stream = false;
-};
-
 
 class CommandGenerater
 {
 public:
     void CreateVertexLayout();
-    BufferPtr CreateVertexBuffer(VertexStream2 vs, uint32_t flags);
+    BufferPtr CreateVertexStream(BufferPtr mem, VertexStreamInfo vs, uint32_t flags);
 
 protected:
     CommandBuffer& GetCommandBuffer(CommandType type);

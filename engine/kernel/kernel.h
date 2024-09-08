@@ -77,6 +77,9 @@ CLASS_DECLARE(TransformAnimationTrack);
 CLASS_DECLARE(MorphTargetAnimationTrack);
 CLASS_DECLARE(AnimationComponent);
 
+// Resource
+CLASS_DECLARE(ResourceManager)
+
 // RHI
 CLASS_DECLARE(RHIContext);
 CLASS_DECLARE(FrameBuffer);

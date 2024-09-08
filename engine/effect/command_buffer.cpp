@@ -2,6 +2,8 @@
 
 #include "thread/mutex.h"
 
+#include "resource/resource_mgr.h"
+
 #include "utils/log.h"
 #include "math/hash.h"
 
@@ -44,11 +46,15 @@ void CommandGenerater::CreateVertexLayout()
 {
 
 }
-BufferPtr CommandGenerater::CreateVertexBuffer(VertexStream2 vs, uint32_t flags)
+BufferPtr CommandGenerater::CreateVertexStream(BufferPtr mem, VertexStreamInfo vs, uint32_t flags)
 {
     MutexScope ms(m_CommnadGenerateMutex);
 
+
+
+    BufferPtr buffer = nullptr;
     
+
     CommandBuffer& cmd = this->GetCommandBuffer(CommandType::CreateVertexBuffer);
 
     return nullptr;

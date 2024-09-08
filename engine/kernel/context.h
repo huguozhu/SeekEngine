@@ -6,6 +6,7 @@
 #include "rhi/viewport.h"
 #include "effect/frame.h"
 #include "effect/command_buffer.h"
+#include "resource/resource_mgr.h"
 
 
 SEEK_NAMESPACE_BEGIN
@@ -61,6 +62,7 @@ public:
 
     RHIContext&         RHIContextInstance() { return *m_pRHIContext; }
     SceneManager&       SceneManagerInstance() { return *m_pSceneManager;}
+    ResourceManager&    ResourceManagerInstance() { return *m_pResourceManager; }
 
     void                ApiSemWait();
     void                ApiSemPost();
@@ -82,6 +84,7 @@ private:
     ThreadManagerPtrUnique      m_pThreadManager;
     RHIContextPtrUnique         m_pRHIContext;
     SceneManagerPtrUnique       m_pSceneManager;
+    ResourceManagerPtrUnique    m_pResourceManager;
 
     Viewport                    m_viewport;
     bool                        m_bViewportChanged = false;
