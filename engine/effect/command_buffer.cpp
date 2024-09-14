@@ -14,6 +14,11 @@ SEEK_NAMESPACE_BEGIN
 /******************************************************************************
  * CommandBuffer
  ******************************************************************************/
+CommandBuffer::CommandBuffer()
+    :Buffer()
+{
+
+}
 CommandBuffer::CommandBuffer(size_t size)
     :Buffer(size), m_iPos(0)
 {}
@@ -40,33 +45,46 @@ void CommandBuffer::Align(uint32_t align)
 
 
 /******************************************************************************
-* CommandGenerater
+* Frame
 ******************************************************************************/
-void CommandGenerater::CreateVertexLayout()
+Frame::Frame(Context* context)
+    :m_pContext(context)
 {
 
 }
-BufferPtr CommandGenerater::CreateVertexStream(BufferPtr mem, VertexStreamInfo vs, uint32_t flags)
+Frame::~Frame()
 {
-    MutexScope ms(m_CommnadGenerateMutex);
 
-
-
-    BufferPtr buffer = nullptr;
-    
-
-    CommandBuffer& cmd = this->GetCommandBuffer(CommandType::CreateVertexBuffer);
-
-    return nullptr;
 }
-
-
-CommandBuffer& CommandGenerater::GetCommandBuffer(CommandType type)
+CommandBuffer& Frame::GetCommandBuffer(CommandType type)
 {
     CommandBuffer& cb = type < CommandType::End ? m_CommandBufferPre : m_CommandBufferPost;
     cb.Write((uint8_t)type);
     return cb;
 }
+
+/******************************************************************************
+* CommandGenerater
+******************************************************************************/
+CommandGenerater::CommandGenerater(Context* context)
+    :m_pContext(context)
+{}
+void CommandGenerater::CreateVertexLayout()
+{
+
+}
+RenderBufferPtr CommandGenerater::CreateVertexStream(Buffer* mem, VertexStreamInfo vs, ResourceFlags flags)
+{
+    MutexScope ms(m_CommnadGenerateMutex);
+
+    RenderBufferPtr buf = m_pContext->RHIContextInstance().CreateVertexBuffer(mem->Size(), flags, nullptr);
+    CommandBuffer& cb = m_pContext->GetSubmitFrame()->GetCommandBuffer(CommandType::CreateVertexBuffer);
+    cb.Write(mem);
+    cb.Write(vs);
+    return buf;
+}
+
+
 
 
 SEEK_NAMESPACE_END

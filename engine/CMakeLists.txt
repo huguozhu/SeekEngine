@@ -21,8 +21,6 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/effect/draw_call.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/command_buffer.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/command_buffer.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/effect/frame.h
-    ${SEEK_ENGINE_SOURCE_DIR}/effect/frame.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/parameter.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/parameter.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/variable.h

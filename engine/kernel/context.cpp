@@ -51,8 +51,8 @@ SResult Context::Init(const RenderInitInfo& init_info)
 
     m_Frames[0] = MakeSharedPtr<Frame>(this);
     m_Frames[1] = MakeSharedPtr<Frame>(this);
-    m_pFrameToRender = m_Frames[0].get();
-    m_pFrameToSubmit = m_Frames[1].get();
+    m_pRenderFrame = m_Frames[0].get();
+    m_pSubmitFrame = m_Frames[1].get();
 
     return S_Success;
 }
@@ -127,8 +127,8 @@ void Context::RenderSemPost()
 }
 void Context::SwapFrame()
 {
-    Frame* tmp = m_pFrameToRender;
-    m_pFrameToRender = m_pFrameToSubmit;
-    m_pFrameToSubmit = tmp;
+    Frame* tmp = m_pRenderFrame;
+    m_pRenderFrame = m_pSubmitFrame;
+    m_pSubmitFrame = tmp;
 }
 SEEK_NAMESPACE_END

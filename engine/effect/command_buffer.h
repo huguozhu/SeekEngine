@@ -1,5 +1,6 @@
  #pragma once
 #include "kernel/kernel.h"
+#include "kernel/context.h"
 #include "utils/buffer.h"
 #include "thread/mutex.h"
 #include "rhi/render_definition.h"
@@ -36,6 +37,7 @@ enum class CommandType : uint8_t
 class CommandBuffer : public Buffer
 {
 public:
+    CommandBuffer();
     CommandBuffer(size_t size);
     void Read(void* data, uint32_t size);
     void Write(void* data, uint32_t size);
@@ -58,20 +60,37 @@ protected:
     uint32_t    m_iPos;
 };
 
+class Frame
+{
+public:
+    Frame(Context* context);
+    ~Frame();
+
+    CommandBuffer& GetCommandBuffer(CommandType type);
+
+
+private:
+    Context*        m_pContext = nullptr;
+    CommandBuffer   m_CommandBufferPre;
+    CommandBuffer   m_CommandBufferPost;
+
+};
+
 
 class CommandGenerater
 {
 public:
-    void CreateVertexLayout();
-    BufferPtr CreateVertexStream(BufferPtr mem, VertexStreamInfo vs, uint32_t flags);
+    CommandGenerater(Context* context);
 
-protected:
-    CommandBuffer& GetCommandBuffer(CommandType type);
+    void CreateVertexLayout();
+    RenderBufferPtr CreateVertexStream(Buffer* mem, VertexStreamInfo vs, ResourceFlags flags);
+
+
 
 private:
-    Mutex   m_CommnadGenerateMutex;
-    CommandBuffer m_CommandBufferPre;
-    CommandBuffer m_CommandBufferPost;
+    Context*    m_pContext = nullptr;
+    Mutex       m_CommnadGenerateMutex;
+    
     
 };
 

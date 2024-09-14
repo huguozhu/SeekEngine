@@ -186,7 +186,7 @@ CLASS_DECLARE(ShaderResource);
 #define SEEK_HANDLE(_name)                   \
     struct _name { uint16_t index = -1; };        \
     inline bool IsValid(_name _handle) { return -1 != _handle.index; }
-#define SEEK_INVALID_HANDLE -1
+#define SEEK_INVALID_HANDLE { (uint16_t)-1}
 
 SEEK_HANDLE(VertexStreamHandle)
 

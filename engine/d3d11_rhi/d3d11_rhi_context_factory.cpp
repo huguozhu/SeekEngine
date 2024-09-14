@@ -12,6 +12,7 @@
 #define SEEK_MACRO_FILE_UID 8     // this code is auto generated, don't touch it!!!
 
 SEEK_NAMESPACE_BEGIN
+
 MeshPtr D3D11RHIContext::CreateMesh()
 {
     MeshPtr res = MakeSharedPtr<D3D11Mesh>(m_pContext);

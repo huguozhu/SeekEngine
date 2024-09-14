@@ -85,11 +85,13 @@ struct VertexStream
     bool                            is_instance_stream = false;
 };
 
+#define MAX_VertexStreamLayout 8
 struct VertexStreamInfo
 {
     uint32_t                        offset = 0;
     uint32_t                        stride = 0;
-    std::vector<VertexStreamLayout> layouts;
+    uint32_t                        num_vertex_stream_layout;
+    VertexStreamLayout              layouts[MAX_VertexStreamLayout];
     bool                            is_instance_stream = false;
 };
 

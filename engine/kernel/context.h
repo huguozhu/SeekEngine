@@ -4,7 +4,6 @@
 #include "rhi/rhi_context.h"
 #include "scene_manager/scene_manager.h"
 #include "rhi/viewport.h"
-#include "effect/frame.h"
 #include "effect/command_buffer.h"
 #include "resource/resource_mgr.h"
 
@@ -35,6 +34,7 @@ struct RenderInitInfo
     void*                   device = nullptr;
 };
 
+class CommandBuffer;
 class Context
 {
 public:
@@ -47,7 +47,7 @@ public:
     
 
 
-    void                ExecuteRendererCommands(CommandBuffer& cb ) {}
+    void                ExecuteRendererCommands(CommandBuffer* cb ) {}
 
     SResult             Update();
     SResult             BeginRenderFrame();
@@ -68,6 +68,9 @@ public:
     void                ApiSemPost();
     void                RenderSemWait();
     void                RenderSemPost();
+
+    Frame*              GetRenderFrame() { return m_pRenderFrame; }
+    Frame*              GetSubmitFrame() { return m_pSubmitFrame; }
     
 
 private:
@@ -77,8 +80,8 @@ private:
     Semaphore                   m_ApiSemaphore;
 
     FramePtr                    m_Frames[2] = { nullptr };
-    Frame*                      m_pFrameToRender = nullptr;
-    Frame*                      m_pFrameToSubmit = nullptr;
+    Frame*                      m_pRenderFrame = nullptr;
+    Frame*                      m_pSubmitFrame = nullptr;
 
 
     ThreadManagerPtrUnique      m_pThreadManager;
