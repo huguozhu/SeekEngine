@@ -4,7 +4,7 @@
 
 SEEK_NAMESPACE_BEGIN
 
-#define LOG_MAX_LEN 900 // > 1000 will cause crash in zoom
+#define LOG_MAX_LEN 900
 
 //#define SEEK_ANDROID_SAMPLE
 #if defined(SEEK_PLATFORM_WINDOWS)

@@ -21,7 +21,7 @@ public:
     virtual SResult         InitContext(int width, int height, void* device = nullptr, void* native_wnd = nullptr);
 
 
-private:
+protected:
     std::string     m_szName;
     ContextPtr      m_pContext = nullptr;
     bool            m_bInit = false;

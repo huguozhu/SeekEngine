@@ -69,11 +69,12 @@ enum class MeshTopologyType : uint8_t
 struct VertexStreamLayout
 {
     uint32_t                buffer_offset = 0;
-    VertexFormat            format = VertexFormat::Unknown;
-    VertexElementUsage      usage = VertexElementUsage::Position;
     uint32_t                usage_index = 0;
-    bool                    is_instance_attrib = false;
     uint32_t                instance_divisor = 1;
+    VertexFormat            format = VertexFormat::Unknown;
+    VertexElementUsage      usage = VertexElementUsage::Position;    
+    uint8_t                 is_instance_attrib = false;
+    uint8_t                 pad;
 };
 
 struct VertexStream
@@ -82,7 +83,7 @@ struct VertexStream
     uint32_t                        offset = 0;
     uint32_t                        stride = 0;
     std::vector<VertexStreamLayout> layouts;
-    bool                            is_instance_stream = false;
+    uint8_t                         is_instance_stream = false;
 };
 
 #define MAX_VertexStreamLayout 8
@@ -95,7 +96,7 @@ struct VertexStreamInfo
     bool                            is_instance_stream = false;
 };
 
-enum class TextureFormatSupportType : uint32_t
+enum class TextureFormatSupportType : uint8_t
 {
     Filtering,
     Write,

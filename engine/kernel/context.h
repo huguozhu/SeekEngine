@@ -46,9 +46,6 @@ public:
     void                SetViewport(Viewport vp);
     
 
-
-    void                ExecuteRendererCommands(CommandBuffer* cb ) {}
-
     SResult             Update();
     SResult             BeginRenderFrame();
     SResult             RenderFrame();    
@@ -63,31 +60,25 @@ public:
     RHIContext&         RHIContextInstance() { return *m_pRHIContext; }
     SceneManager&       SceneManagerInstance() { return *m_pSceneManager;}
     ResourceManager&    ResourceManagerInstance() { return *m_pResourceManager; }
+    RendererCommandManager& RendererCommandManagerInstance() { return *m_pRendererCommandManager; }
 
     void                ApiSemWait();
     void                ApiSemPost();
     void                RenderSemWait();
     void                RenderSemPost();
-
-    Frame*              GetRenderFrame() { return m_pRenderFrame; }
-    Frame*              GetSubmitFrame() { return m_pSubmitFrame; }
     
 
 private:
-    void                SwapFrame();
+    SResult             ExecCommandBuffers();
 
     RenderInitInfo              m_InitInfo{};
     Semaphore                   m_ApiSemaphore;
-
-    FramePtr                    m_Frames[2] = { nullptr };
-    Frame*                      m_pRenderFrame = nullptr;
-    Frame*                      m_pSubmitFrame = nullptr;
-
 
     ThreadManagerPtrUnique      m_pThreadManager;
     RHIContextPtrUnique         m_pRHIContext;
     SceneManagerPtrUnique       m_pSceneManager;
     ResourceManagerPtrUnique    m_pResourceManager;
+    RendererCommandManagerPtrUnique     m_pRendererCommandManager;
 
     Viewport                    m_viewport;
     bool                        m_bViewportChanged = false;

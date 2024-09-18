@@ -1,15 +1,3 @@
-/********************************************************************
-	filename: 	..\common\platform\util\h\safe_c.h
-	file path:	..\common\platform\util\h
-	file base:	safe_c
-	file ext:	h
-	author:		Victor Cui (victor.cui@zoom.us)
-	
-	purpose:	
-	history:	
-				2018/10/12 created by Victor Cui
-*********************************************************************/
-
 #ifndef SAFEC_INCLUDE
 #define SAFEC_INCLUDE
 

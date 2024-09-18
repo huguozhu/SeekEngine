@@ -7,7 +7,9 @@
 
 SEEK_NAMESPACE_BEGIN
 
-
+/******************************************************************************
+ * CommandBuffer
+ ******************************************************************************/
 enum class CommandType : uint8_t
 {
     RendererInit,
@@ -32,8 +34,6 @@ enum class CommandType : uint8_t
     DestroyShaderBuffer,
 };
 
-
-
 class CommandBuffer : public Buffer
 {
 public:
@@ -46,52 +46,48 @@ public:
     template<typename Type>
     void Read(Type& in)
     {
-        this->Align(alignof(in));
+        //this->Align(alignof(in));
         this->Read((void*)&in, sizeof(Type));
     }
     template<typename Type>
     void Write(const Type& in)
     {
-        this->Align(alignof(Type));
+        //this->Align(alignof(Type));
         this->Write((void*)&in, sizeof(Type));
     }
+    void Reset() { m_iPos = 0; }
 
 protected:
     uint32_t    m_iPos;
 };
 
-class Frame
+
+/******************************************************************************
+* RendererCommandManager
+******************************************************************************/
+class RendererCommandManager
 {
 public:
-    Frame(Context* context);
-    ~Frame();
+    RendererCommandManager(Context* context);
 
     CommandBuffer& GetCommandBuffer(CommandType type);
+    void    ExecPreCommands();
+    void    ExecPostCommands();
+    void    SwapCommandBuffer();
 
+    /* All Command */
+    RenderBufferPtr CreateVertexStream(Buffer* mem, VertexStreamInfo vsi, ResourceFlags flags);
 
 private:
-    Context*        m_pContext = nullptr;
-    CommandBuffer   m_CommandBufferPre;
-    CommandBuffer   m_CommandBufferPost;
-
-};
-
-
-class CommandGenerater
-{
-public:
-    CommandGenerater(Context* context);
-
-    void CreateVertexLayout();
-    RenderBufferPtr CreateVertexStream(Buffer* mem, VertexStreamInfo vs, ResourceFlags flags);
-
-
+    void ExecCommands(CommandBuffer& cb);
 
 private:
     Context*    m_pContext = nullptr;
     Mutex       m_CommnadGenerateMutex;
-    
-    
+
+    CommandBuffer   m_CommandBuffers[2][2];
+    CommandBuffer*   m_pSubmitCommandBuffer;
+    CommandBuffer*   m_pRenderCommandBuffer;
 };
 
 SEEK_NAMESPACE_END

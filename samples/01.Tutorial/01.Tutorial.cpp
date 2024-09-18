@@ -19,6 +19,11 @@ SResult Tutorial::OnCreate()
 }
 SResult Tutorial::OnUpdate()
 {
+    SEEK_RETIF_FAIL(m_pContext->Update());
+    SEEK_RETIF_FAIL(m_pContext->BeginRenderFrame());
+    SEEK_RETIF_FAIL(m_pContext->RenderFrame());
+    SEEK_RETIF_FAIL(m_pContext->EndRenderFrame());
+
     return S_Success;
 }
 

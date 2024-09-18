@@ -50,7 +50,7 @@ CLASS_DECLARE(Context);
 CLASS_DECLARE(SceneManager);
 
 // Effect
-CLASS_DECLARE(Frame);
+CLASS_DECLARE(RendererCommandManager);
 
 // Component
 CLASS_DECLARE(Entity);

@@ -3,7 +3,7 @@
 
 SEEK_NAMESPACE_BEGIN
 
-enum class VertexFormat : uint32_t
+enum class VertexFormat : uint8_t
 {
     Unknown = 0,
     UChar2,
@@ -51,7 +51,7 @@ enum class VertexFormat : uint32_t
     Int4,
 };
 
-enum class PixelFormat : uint32_t
+enum class PixelFormat : uint8_t
 {
     Unknown = 0,
 

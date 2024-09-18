@@ -43,44 +43,68 @@ void CommandBuffer::Align(uint32_t align)
     m_iPos = seek_alignaddr(m_iPos, align);
 }
 
-
 /******************************************************************************
-* Frame
+* RendererCommandManager
 ******************************************************************************/
-Frame::Frame(Context* context)
+RendererCommandManager::RendererCommandManager(Context* context)
     :m_pContext(context)
 {
-
+    m_pSubmitCommandBuffer = m_CommandBuffers[0];
+    m_pRenderCommandBuffer = m_CommandBuffers[1];
 }
-Frame::~Frame()
-{
 
-}
-CommandBuffer& Frame::GetCommandBuffer(CommandType type)
+CommandBuffer& RendererCommandManager::GetCommandBuffer(CommandType type)
 {
-    CommandBuffer& cb = type < CommandType::End ? m_CommandBufferPre : m_CommandBufferPost;
+    CommandBuffer& cb = type < CommandType::End ? m_pSubmitCommandBuffer[0] : m_pSubmitCommandBuffer[1];
     cb.Write((uint8_t)type);
     return cb;
 }
-
-/******************************************************************************
-* CommandGenerater
-******************************************************************************/
-CommandGenerater::CommandGenerater(Context* context)
-    :m_pContext(context)
-{}
-void CommandGenerater::CreateVertexLayout()
+void RendererCommandManager::ExecCommands(CommandBuffer& cb)
 {
+    cb.Reset();
+
+    bool end = false;
+
+    do
+    {
+        uint8_t command_type;
+        cb.Read(command_type);
+        switch (command_type)
+        {
+        case (uint8_t)CommandType::CreateVertexBuffer:
+        {
+            const Buffer* mem;
+            VertexStreamInfo vsi;
+            cb.Read(mem);
+            cb.Read(vsi);
+            break;
+        }
+        }
+    } while (!end);
 
 }
-RenderBufferPtr CommandGenerater::CreateVertexStream(Buffer* mem, VertexStreamInfo vs, ResourceFlags flags)
+void RendererCommandManager::ExecPreCommands()
+{
+    this->ExecCommands(m_pSubmitCommandBuffer[0]);
+}
+void RendererCommandManager::ExecPostCommands()
+{
+    this->ExecCommands(m_pSubmitCommandBuffer[1]);
+}
+void RendererCommandManager::SwapCommandBuffer()
+{
+    CommandBuffer* tmp = m_pSubmitCommandBuffer;
+    m_pSubmitCommandBuffer = m_pRenderCommandBuffer;
+    m_pRenderCommandBuffer = tmp;
+}
+RenderBufferPtr RendererCommandManager::CreateVertexStream(Buffer* mem, VertexStreamInfo vsi, ResourceFlags flags)
 {
     MutexScope ms(m_CommnadGenerateMutex);
 
     RenderBufferPtr buf = m_pContext->RHIContextInstance().CreateVertexBuffer(mem->Size(), flags, nullptr);
-    CommandBuffer& cb = m_pContext->GetSubmitFrame()->GetCommandBuffer(CommandType::CreateVertexBuffer);
+    CommandBuffer& cb = this->GetCommandBuffer(CommandType::CreateVertexBuffer);
     cb.Write(mem);
-    cb.Write(vs);
+    cb.Write(vsi);
     return buf;
 }
 

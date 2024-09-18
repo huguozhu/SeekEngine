@@ -29,7 +29,6 @@ SResult AppFramework::InitContext(int width, int height, void* device, void* nat
 
 SResult AppFramework::RenderFrame()
 {
-    SEEK_RETIF_FAIL(m_pContext->Update());
     return S_Success;
 }
 
@@ -116,7 +115,6 @@ SResult AppFramework::Run()
         else
         {
             SEEK_RETIF_FAIL(this->OnUpdate());
-            SEEK_RETIF_FAIL(this->RenderFrame());
         }
     }
 

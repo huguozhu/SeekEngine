@@ -46,13 +46,12 @@ SResult Context::Init(const RenderInitInfo& init_info)
     {
         m_pResourceManager = MakeUniquePtrMacro(ResourceManager, this);
     }
+    if (!m_pRendererCommandManager)
+    {
+        m_pRendererCommandManager = MakeUniquePtrMacro(RendererCommandManager, this);
+    }
 
     m_ApiSemaphore.Post();
-
-    m_Frames[0] = MakeSharedPtr<Frame>(this);
-    m_Frames[1] = MakeSharedPtr<Frame>(this);
-    m_pRenderFrame = m_Frames[0].get();
-    m_pSubmitFrame = m_Frames[1].get();
 
     return S_Success;
 }
@@ -78,6 +77,7 @@ SResult Context::Update()
 }
 SResult Context::BeginRenderFrame()
 {
+    m_pRendererCommandManager->ExecPreCommands();
     return S_Success;
 }
 // Called by MainThread
@@ -94,7 +94,7 @@ SResult Context::RenderFrame()
 }
 SResult Context::EndRenderFrame()
 {
-
+    m_pRendererCommandManager->ExecPostCommands();
     return S_Success;
 }
 void Context::ApiSemWait()
@@ -125,10 +125,8 @@ void Context::RenderSemPost()
         m_pThreadManager->GetRenderThread()->GetSemaphore().Post();
     }
 }
-void Context::SwapFrame()
-{
-    Frame* tmp = m_pRenderFrame;
-    m_pRenderFrame = m_pSubmitFrame;
-    m_pSubmitFrame = tmp;
+SResult Context::ExecCommandBuffers()
+{    
+    return S_Success;
 }
 SEEK_NAMESPACE_END
