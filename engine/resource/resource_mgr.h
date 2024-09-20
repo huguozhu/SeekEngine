@@ -183,21 +183,6 @@ struct ShaderResource : public IResource
 };
 CLASS_DECLARE(ShaderResource);
 
-#define SEEK_HANDLE(_name)                   \
-    struct _name { uint16_t index = -1; };        \
-    inline bool IsValid(_name _handle) { return -1 != _handle.index; }
-#define SEEK_INVALID_HANDLE { (uint16_t)-1}
-
-SEEK_HANDLE(VertexStreamHandle)
-
-#define SEEK_RESOURCE_FUNCTIONS(name)                   \
-    private: std::vector<name>           m_v##name##s;   \
-    public: name&       Alloc##name() {                  \
-        m_v##name##s.emplace_back(name());              \
-        name& v = m_v##name##s.back();                  \
-        v.index = m_v##name##s.size() -1;               \
-        return v;                                       \
-    }
 
 class ResourceManager
 {
@@ -216,9 +201,6 @@ public:
     std::string                 GetShaderReflectPath    (const std::string& shaderName);
     
     const std::string&          GetShaderLanguageStr();
-
-    SEEK_RESOURCE_FUNCTIONS(VertexStreamHandle)
-
 
 private:
     Context*                                        m_pContext = nullptr;

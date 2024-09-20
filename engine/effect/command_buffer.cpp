@@ -61,6 +61,7 @@ CommandBuffer& RendererCommandManager::GetCommandBuffer(CommandType type)
 }
 void RendererCommandManager::ExecCommands(CommandBuffer& cb)
 {
+    return;
     cb.Reset();
 
     bool end = false;
@@ -97,17 +98,29 @@ void RendererCommandManager::SwapCommandBuffer()
     m_pSubmitCommandBuffer = m_pRenderCommandBuffer;
     m_pRenderCommandBuffer = tmp;
 }
-RenderBufferPtr RendererCommandManager::CreateVertexStream(Buffer* mem, VertexStreamInfo vsi, ResourceFlags flags)
+VertexStreamHandle RendererCommandManager::CreateVertexStream(Buffer* mem, VertexStreamInfo vsi, ResourceFlags flags)
 {
     MutexScope ms(m_CommnadGenerateMutex);
 
-    RenderBufferPtr buf = m_pContext->RHIContextInstance().CreateVertexBuffer(mem->Size(), flags, nullptr);
+    VertexStreamHandle handle = this->AllocVertexStreamHandle();
+
     CommandBuffer& cb = this->GetCommandBuffer(CommandType::CreateVertexBuffer);
+    cb.Write(handle);
     cb.Write(mem);
     cb.Write(vsi);
-    return buf;
+    cb.Write(flags);
+    return handle;
 }
+MeshHandle RendererCommandManager::CreateMesh()
+{
+    MutexScope ms(m_CommnadGenerateMutex);
 
+    MeshHandle handle = this->AllocMeshHandle();
+
+    CommandBuffer& cb = this->GetCommandBuffer(CommandType::CreateMesh);
+    cb.Write(handle);
+    return handle;
+}
 
 
 

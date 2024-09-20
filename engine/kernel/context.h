@@ -47,9 +47,9 @@ public:
     
 
     SResult             Update();
-    SResult             BeginRenderFrame();
-    SResult             RenderFrame();    
-    SResult             EndRenderFrame();
+    SResult             BeginRender();
+    SResult             RenderFrame();   // Called by Rendering Thread 
+    SResult             EndRender();
 
     bool                IsMultiThreaded() { return m_InitInfo.multi_thread; }
     bool                IsDebug() { return m_InitInfo.debug; }
@@ -62,17 +62,17 @@ public:
     ResourceManager&    ResourceManagerInstance() { return *m_pResourceManager; }
     RendererCommandManager& RendererCommandManagerInstance() { return *m_pRendererCommandManager; }
 
-    void                ApiSemWait();
-    void                ApiSemPost();
-    void                RenderSemWait();
-    void                RenderSemPost();
+    void                MainThreadSemWait();
+    void                MainThreadSemPost();
+    void                RenderThreadSemWait();
+    void                RenderThreadSemPost();
     
 
 private:
     SResult             ExecCommandBuffers();
 
     RenderInitInfo              m_InitInfo{};
-    Semaphore                   m_ApiSemaphore;
+    Semaphore                   m_MainThreadSemaphore;
 
     ThreadManagerPtrUnique      m_pThreadManager;
     RHIContextPtrUnique         m_pRHIContext;

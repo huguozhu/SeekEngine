@@ -15,14 +15,14 @@ Tutorial::~Tutorial()
 
 SResult Tutorial::OnCreate()
 {
+
     return S_Success;
 }
 SResult Tutorial::OnUpdate()
 {
     SEEK_RETIF_FAIL(m_pContext->Update());
-    SEEK_RETIF_FAIL(m_pContext->BeginRenderFrame());
-    SEEK_RETIF_FAIL(m_pContext->RenderFrame());
-    SEEK_RETIF_FAIL(m_pContext->EndRenderFrame());
+    SEEK_RETIF_FAIL(m_pContext->BeginRender());
+    SEEK_RETIF_FAIL(m_pContext->EndRender());
 
     return S_Success;
 }

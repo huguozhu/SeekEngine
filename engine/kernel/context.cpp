@@ -3,11 +3,10 @@
 #include "thread/thread.h"
 #include "thread/thread_manager.h"
 
-
-
 #include "rhi/rhi_context.h"
 #include "utils/log.h"
 
+#include "utils/timer.h"
 
 SEEK_NAMESPACE_BEGIN
 
@@ -51,7 +50,7 @@ SResult Context::Init(const RenderInitInfo& init_info)
         m_pRendererCommandManager = MakeUniquePtrMacro(RendererCommandManager, this);
     }
 
-    m_ApiSemaphore.Post();
+    m_MainThreadSemaphore.Post();
 
     return S_Success;
 }
@@ -75,50 +74,54 @@ SResult Context::Update()
 {
     return S_Success;
 }
-SResult Context::BeginRenderFrame()
+
+SResult Context::BeginRender()
 {
-    m_pRendererCommandManager->ExecPreCommands();
+    this->RenderThreadSemPost();
+    static uint32_t MainThread_Index = 0;
+    double var = Timer::CurrentTimeSinceEpoch_S();
+    LOG_INFO("MainThread Index:  %6d:  time = %20f", MainThread_Index++, var);
+    ::_sleep(10);
     return S_Success;
 }
-// Called by MainThread
+/********** Called by Rendering Thread ***************/
 SResult Context::RenderFrame()
 {
-    Thread* pRenderThread = m_pThreadManager->GetRenderThread();
-    this->RenderSemWait();
+    return S_Success;
+}
+SResult Context::EndRender()
+{
+    this->MainThreadSemWait();
 
-    this->ApiSemWait();
+    FrameBufferPtr final_fb = this->RHIContextInstance().GetFinalFrameBuffer();
+    if (final_fb)
     {
-
+        SEEK_RETIF_FAIL(final_fb->SwapBuffers());
     }
     return S_Success;
 }
-SResult Context::EndRenderFrame()
-{
-    m_pRendererCommandManager->ExecPostCommands();
-    return S_Success;
-}
-void Context::ApiSemWait()
+void Context::MainThreadSemWait()
 {
     if (m_InitInfo.multi_thread)
     {
-        m_ApiSemaphore.Wait();
+        m_MainThreadSemaphore.Wait();
     }
 }
-void Context::ApiSemPost()
+void Context::MainThreadSemPost()
 {
     if (m_InitInfo.multi_thread)
     {
-        m_ApiSemaphore.Post();
+        m_MainThreadSemaphore.Post();
     }
 }
-void Context::RenderSemWait()
+void Context::RenderThreadSemWait()
 {
     if (m_InitInfo.multi_thread)
     {
         m_pThreadManager->GetRenderThread()->GetSemaphore().Wait();
     }
 }
-void Context::RenderSemPost()
+void Context::RenderThreadSemPost()
 {
     if (m_InitInfo.multi_thread)
     {

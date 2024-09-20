@@ -1,5 +1,6 @@
 #include "thread/thread_manager.h"
 #include "thread/thread.h"
+#include "utils/timer.h"
 
 #define SEEK_MACRO_FILE_UID 79     // this code is auto generated, don't touch it!!!
 
@@ -7,15 +8,27 @@ SEEK_NAMESPACE_BEGIN
 
 static SResult RenderThread_Entry(Context* context, Thread* render_thread, void* user_data)
 {
-    if (!context || !render_thread)
-        return ERR_INVALID_INIT;
+    while (1)
+    {
+        if (!context || !render_thread)
+            return ERR_INVALID_INIT;
 
-    Context* pContext = (Context*)user_data;
-    pContext->ApiSemWait();
-    // add to do: call real GPU command
+        Context* pContext = (Context*)user_data;
+        pContext->RenderThreadSemWait();
+
+        static uint32_t RenderThread_Index = 0;
+        double var = Timer::CurrentTimeSinceEpoch_S();
+        LOG_INFO("RengeringThread Index:  %6d:    time = %20f ", RenderThread_Index++, var);
+        
+        pContext->RenderFrame();
+
+        // add to do: call real GPU command
+        //pContext->RendererCommandManagerInstance().ExecPreCommands();
+        //pContext->RendererCommandManagerInstance().ExecPostCommands();
 
 
-    render_thread->GetSemaphore().Post();
+        pContext->MainThreadSemPost();
+    }
     return S_Success;
 }
 
@@ -36,7 +49,7 @@ SResult ThreadManager::Init()
 {
     if (m_pRenderThread)
     {
-        m_pRenderThread->Init(RenderThread_Entry, nullptr);
+        m_pRenderThread->Init(RenderThread_Entry, m_pContext, 0, "RenderThread");
     }
 
     return S_Success;
