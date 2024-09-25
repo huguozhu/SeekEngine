@@ -13,19 +13,23 @@ static SResult RenderThread_Entry(Context* context, Thread* render_thread, void*
         if (!context || !render_thread)
             return ERR_INVALID_INIT;
 
+        LOG_RECORD_FUNCTION();
         Context* pContext = (Context*)user_data;
         pContext->RenderThreadSemWait();
 
-        static uint32_t RenderThread_Index = 0;
-        double var = Timer::CurrentTimeSinceEpoch_S();
-        LOG_INFO("RengeringThread Index:  %6d:    time = %20f ", RenderThread_Index++, var);
-        
-        pContext->RenderFrame();
+        if (0)
+        {
+            static uint32_t RenderThread_Index = 0;
+            double var = Timer::CurrentTimeSinceEpoch_S();
+            LOG_INFO("RengeringThread Index:  %6d:    time = %20f ", RenderThread_Index++, var);
+        }
 
         // add to do: call real GPU command
-        //pContext->RendererCommandManagerInstance().ExecPreCommands();
-        //pContext->RendererCommandManagerInstance().ExecPostCommands();
+        pContext->RendererCommandManagerInstance().ExecPreRenderCommands();
 
+        pContext->RenderFrame();
+
+        pContext->RendererCommandManagerInstance().ExecPostRenderCommands();
 
         pContext->MainThreadSemPost();
     }
@@ -38,7 +42,6 @@ ThreadManager::ThreadManager(Context* context)
 {
     m_pRenderThread = MakeSharedPtr<Thread>(m_pContext);
 }
-
 
 ThreadManager::~ThreadManager()
 {

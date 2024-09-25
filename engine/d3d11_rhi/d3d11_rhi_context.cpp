@@ -458,10 +458,6 @@ SResult D3D11RHIContext::AttachNativeWindow(std::string const& name, void* nativ
     return res;
 }
 
-
-
-
-
 void D3D11RHIContext::SetD3DRasterizerState(ID3D11RasterizerState* state)
 {
     m_pDeviceContext->RSSetState(state);

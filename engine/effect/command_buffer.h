@@ -58,6 +58,7 @@ public:
         this->Write((void*)&in, sizeof(Type));
     }
     void Reset() { m_iPos = 0; }
+    void Finish();
 
 protected:
     uint32_t    m_iPos;
@@ -88,9 +89,10 @@ class RendererCommandManager
 public:
     RendererCommandManager(Context* context);
 
-    CommandBuffer& GetCommandBuffer(CommandType type);
-    void    ExecPreCommands();
-    void    ExecPostCommands();
+    CommandBuffer& GetSubmitCommandBuffer(CommandType type);
+    void    ExecPreRenderCommands();
+    void    ExecPostRenderCommands();
+    void    FinishSubmitCommandBuffer();
     void    SwapCommandBuffer();
 
     SEEK_RESOURCE_FUNCTIONS(VertexStreamHandle);
@@ -98,7 +100,8 @@ public:
 
 
 public:
-    /* All Command */
+    /* All Renderer Commands */
+    void InitRendererInit(void* native_wnd);
     VertexStreamHandle CreateVertexStream(Buffer* mem, VertexStreamInfo vsi, ResourceFlags flags);
     MeshHandle CreateMesh();
 

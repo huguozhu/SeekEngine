@@ -26,7 +26,7 @@ public:
         std::string name = "ComputePass";
     };
     
-    SResult                       BindFrameBuffer(FrameBufferPtr const& fb);
+    SResult                         BindFrameBuffer(FrameBufferPtr const& fb);
     FrameBufferPtr const&           GetScreenFrameBuffer() const;
     FrameBufferPtr const&           GetFinalFrameBuffer() const;
     FrameBufferPtr const&           GetCurFrameBuffer() const;
@@ -71,24 +71,24 @@ public: // virutal factory
 
     virtual void                    BindProgram(Program* program) {}
 
-    virtual SResult               BeginFrame() = 0;
-    virtual SResult               EndFrame() = 0;
+    virtual SResult                 BeginFrame() = 0;
+    virtual SResult                 EndFrame() = 0;
     
-    virtual SResult               BeginRenderPass(const RenderPassInfo& renderPassInfo) = 0;
-    virtual SResult               Render(Program* program, MeshPtr const& mesh) = 0;
-    virtual SResult               EndRenderPass() = 0;
+    virtual SResult                 BeginRenderPass(const RenderPassInfo& renderPassInfo) = 0;
+    virtual SResult                 Render(Program* program, MeshPtr const& mesh) = 0;
+    virtual SResult                 EndRenderPass() = 0;
     
     virtual void                    BeginComputePass(const ComputePassInfo& computePassInfo) = 0;
-    virtual SResult               Dispatch(Program* program, uint32_t x, uint32_t y, uint32_t z) = 0;
-    virtual SResult               DispatchIndirect(Program* program, RenderBufferPtr indirectBuf) { return 0; }
-    virtual SResult               DrawIndirect(Program* program, RenderStatePtr rs, RenderBufferPtr indirectBuf, MeshTopologyType type) { return 0; }
+    virtual SResult                 Dispatch(Program* program, uint32_t x, uint32_t y, uint32_t z) = 0;
+    virtual SResult                 DispatchIndirect(Program* program, RenderBufferPtr indirectBuf) { return 0; }
+    virtual SResult                 DrawIndirect(Program* program, RenderStatePtr rs, RenderBufferPtr indirectBuf, MeshTopologyType type) { return 0; }
     virtual void                    EndComputePass() = 0;
 
-    virtual SResult               SyncTexture(TexturePtr tex) { return ERR_NOT_IMPLEMENTED; }
-    virtual SResult               CopyTexture(TexturePtr tex_src, TexturePtr tex_dst) { return ERR_NOT_IMPLEMENTED; }
+    virtual SResult                 SyncTexture(TexturePtr tex) { return ERR_NOT_IMPLEMENTED; }
+    virtual SResult                 CopyTexture(TexturePtr tex_src, TexturePtr tex_dst) { return ERR_NOT_IMPLEMENTED; }
 
-    virtual SResult               BindContext() { return S_Success; }
-    virtual SResult               DetachContext() { return S_Success; }
+    virtual SResult                 BindContext() { return S_Success; }
+    virtual SResult                 DetachContext() { return S_Success; }
 
     virtual void                    BeginCapture() {}
     virtual void                    EndCapture() {}

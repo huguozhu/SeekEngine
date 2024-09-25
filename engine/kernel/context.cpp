@@ -34,8 +34,7 @@ SResult Context::Init(const RenderInitInfo& init_info)
     }
     if (!m_pRHIContext)
     {
-        MakeD3D11RHIContext(this, m_pRHIContext);
-        m_pRHIContext->Init();
+        MakeD3D11RHIContext(this, m_pRHIContext); 
     }
     if (!m_pSceneManager)
     {
@@ -48,6 +47,7 @@ SResult Context::Init(const RenderInitInfo& init_info)
     if (!m_pRendererCommandManager)
     {
         m_pRendererCommandManager = MakeUniquePtrMacro(RendererCommandManager, this);
+        m_pRendererCommandManager->InitRendererInit(init_info.native_wnd);
     }
 
     m_MainThreadSemaphore.Post();
@@ -77,11 +77,18 @@ SResult Context::Update()
 
 SResult Context::BeginRender()
 {
+    LOG_RECORD_FUNCTION();
+    this->RendererCommandManagerInstance().FinishSubmitCommandBuffer();
+    this->RendererCommandManagerInstance().SwapCommandBuffer();
     this->RenderThreadSemPost();
-    static uint32_t MainThread_Index = 0;
-    double var = Timer::CurrentTimeSinceEpoch_S();
-    LOG_INFO("MainThread Index:  %6d:  time = %20f", MainThread_Index++, var);
-    ::_sleep(10);
+    
+    if (0)
+    {
+        static uint32_t MainThread_Index = 0;
+        double var = Timer::CurrentTimeSinceEpoch_S();
+        LOG_INFO("MainThread Index:  %6d:  time = %20f", MainThread_Index++, var);
+        ::_sleep(10);
+    }
     return S_Success;
 }
 /********** Called by Rendering Thread ***************/
@@ -91,8 +98,8 @@ SResult Context::RenderFrame()
 }
 SResult Context::EndRender()
 {
+    LOG_RECORD_FUNCTION();
     this->MainThreadSemWait();
-
     FrameBufferPtr final_fb = this->RHIContextInstance().GetFinalFrameBuffer();
     if (final_fb)
     {

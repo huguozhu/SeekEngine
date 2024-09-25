@@ -95,9 +95,9 @@ SResult AppFramework::Run()
         m_bInit = true;
     }
 
-    RHIContext& rc = m_pContext->RHIContextInstance();
-    rc.AttachNativeWindow(m_szName, wnd);
-    rc.SetFinalFrameBuffer(rc.GetScreenFrameBuffer());
+    //RHIContext& rc = m_pContext->RHIContextInstance();
+    //rc.AttachNativeWindow(m_szName, wnd);
+    //rc.SetFinalFrameBuffer(rc.GetScreenFrameBuffer());
     m_pContext->SetViewport(Viewport(0, 0, DEFAULT_WND_WIDTH, DEFAULT_WND_HEIGHT));
 
     bool get_msg = false;

@@ -4,6 +4,8 @@
 #include "windows.h"
 #endif
 
+#define SEEK_MACRO_FILE_UID 765
+
 SEEK_NAMESPACE_BEGIN
 
 struct ThreadInternal
@@ -19,16 +21,10 @@ struct ThreadInternal
 #endif
 };
 
-SResult Thread::Entry()
-{   
-#if defined(SEEK_PLATFORM_WINDOWS)
-    ThreadInternal* ti = (ThreadInternal*)m_Internal;
-    ti->m_iThreadId = GetCurrentThreadId();
-#endif
-    m_Semaphore.Post();
-    return m_pThreadFn(m_pContext, this, m_pUserData);
-}
 
+/******************************************************************************
+ * Thread
+ ******************************************************************************/
 Thread::Thread(Context* context)
     :m_pContext(context)
 {
@@ -36,7 +32,6 @@ Thread::Thread(Context* context)
 
 Thread::~Thread()
 {
-
 }
 
 SResult Thread::Init(ThreadFn fn, void* user_data, uint32_t stack_size, const char* thread_name)
@@ -50,9 +45,8 @@ SResult Thread::Init(ThreadFn fn, void* user_data, uint32_t stack_size, const ch
     ti->m_Handle = CreateThread(nullptr, m_iStackSize, 
         ti->m_pThreadFunc, this, 0, (DWORD*)&ti->m_iThreadId);
     if (!ti->m_Handle)
-        return SEEK_ERR_INVALID_INIT;
+        return ERR_INVALID_INIT;
     m_bRunning = true;
-    m_Semaphore.Wait();
 #endif
     return S_Success;
 }
@@ -66,6 +60,15 @@ void Thread::ShutDown()
     ti->m_Handle = INVALID_HANDLE_VALUE;
 #endif
     m_bRunning = false;
+}
+
+SResult Thread::Entry()
+{
+#if defined(SEEK_PLATFORM_WINDOWS)
+    ThreadInternal* ti = (ThreadInternal*)m_Internal;
+    ti->m_iThreadId = GetCurrentThreadId();
+#endif
+    return m_pThreadFn(m_pContext, this, m_pUserData);
 }
 
 SEEK_NAMESPACE_END

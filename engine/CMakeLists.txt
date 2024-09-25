@@ -71,8 +71,6 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/render_state.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/render_state.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/render_view.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/rhi_command.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/rhi_command.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/rhi_context.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/rhi_context.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/shader.h
@@ -83,8 +81,6 @@ set(ENGINE_CODE
     
 
     # d3d11_rhi
-
-
     ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_adapter.h
     ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_adapter.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/d3d11_rhi/d3d11_framebuffer.h

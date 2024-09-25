@@ -1,6 +1,7 @@
 #pragma once
 
 #include "kernel/kernel.h"
+#include "windows.h"
 
 SEEK_NAMESPACE_BEGIN
 
@@ -67,6 +68,8 @@ public:
 #define LOG_ERROR(fmt, ...)             { __android_log_print(ANDROID_LOG_ERROR, JNI_TAG_0, fmt, ##__VA_ARGS__); }
 #define LOG_ERROR_PRIERR(ret, fmt, ...)    { __android_log_print(ANDROID_LOG_ERROR, JNI_TAG_0, fmt PRIERR_FORMAT, ##__VA_ARGS__, PRIERR_VALUE(ret)); }
 
+#define LOG_RECORD_FUNCTION
+
 #else
 
 #define LOG_DEBUG(fmt, ...) \
@@ -97,6 +100,13 @@ public:
 { \
     constexpr const char* base_name = file_name(__FILE__); \
     seekTrace::TraceLog(TRACE_LEVEL::LevelError, "[%s:" __LINE_STR__ "] [%s] " fmt PRIERR_FORMAT, base_name, __func__, ##__VA_ARGS__, PRIERR_VALUE(ret)); \
+}
+
+#define LOG_RECORD_FUNCTION() \
+{ \
+    ::Sleep(10);    \
+    seekTrace::TraceLog(TRACE_LEVEL::LevelInfo,  "[%s]\n", __FUNCTION__); \
+    ::Sleep(10);    \
 }
 
 #endif
