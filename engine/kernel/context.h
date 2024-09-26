@@ -69,7 +69,6 @@ public:
     
 
 private:
-    SResult             ExecCommandBuffers();
 
     RenderInitInfo              m_InitInfo{};
     Semaphore                   m_MainThreadSemaphore;

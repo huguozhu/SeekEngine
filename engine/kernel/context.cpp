@@ -81,6 +81,7 @@ SResult Context::BeginRender()
     this->RendererCommandManagerInstance().FinishSubmitCommandBuffer();
     this->RendererCommandManagerInstance().SwapCommandBuffer();
     this->RenderThreadSemPost();
+    this->Update();
     
     if (0)
     {
@@ -134,9 +135,5 @@ void Context::RenderThreadSemPost()
     {
         m_pThreadManager->GetRenderThread()->GetSemaphore().Post();
     }
-}
-SResult Context::ExecCommandBuffers()
-{    
-    return S_Success;
 }
 SEEK_NAMESPACE_END
