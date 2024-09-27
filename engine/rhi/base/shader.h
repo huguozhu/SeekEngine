@@ -19,7 +19,7 @@ enum class ShaderType : uint8_t
 };
 static constexpr std::underlying_type<ShaderType>::type SHADER_STAGE_COUNT = to_underlying(ShaderType::Num);
 
-class Shader
+class RHIShader
 {
 public:
     void SetShaderCode(const void* byteCode, size_t byteCodeSize)
@@ -74,11 +74,11 @@ public:
     }
 
 protected:
-    Shader(Context* context)
+    RHIShader(Context* context)
         : m_pContext(context) {}
-    Shader(Context* context, ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code)
+    RHIShader(Context* context, ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code)
         : m_pContext(context), m_eShaderType(type), m_szName(name), m_szEntryFuncName(entry_func_name), m_szCode(code) {}
-    virtual ~Shader() {}
+    virtual ~RHIShader() {}
 
     virtual SResult   OnCompile() = 0;
 

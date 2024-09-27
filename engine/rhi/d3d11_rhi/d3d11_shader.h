@@ -4,11 +4,11 @@
 
 SEEK_NAMESPACE_BEGIN
 
-class D3D11Shader : public Shader
+class D3D11Shader : public RHIShader
 {
 public:
     D3D11Shader(Context* context, ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code)
-        : Shader(context, type, name, entry_func_name, code)
+        : RHIShader(context, type, name, entry_func_name, code)
     {}
     virtual ~D3D11Shader() override
     {

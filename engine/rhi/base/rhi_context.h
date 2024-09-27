@@ -45,29 +45,29 @@ public: // virutal factory
     virtual SResult                 CheckCapabilitySetSupport() = 0;
     virtual void                    Uninit() = 0;
     virtual SResult                 AttachNativeWindow(std::string const& name, void* native_wnd = nullptr) = 0;
-    virtual RHIMeshPtr                  CreateMesh() = 0;
-    virtual ShaderPtr               CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) = 0;
+    virtual RHIMeshPtr              CreateMesh() = 0;
+    virtual RHIShaderPtr            CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) = 0;
     virtual std::vector<TexturePtr> CreateTexture2DFromNative(void* gpu_data, std::vector<PixelFormat> format) { return std::vector<TexturePtr>(); }
             TexturePtr              CreateTexture2D(const BitmapBufferPtr data);
     virtual TexturePtr              CreateTexture2D(const Texture::Desc& tex_desc, const BitmapBufferPtr init_data = nullptr) = 0;
     virtual TexturePtr              CreateTexture2D(const Texture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas) { return nullptr; }
     virtual TexturePtr              CreateTexture3D(const Texture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas = {}) { return nullptr; }
     virtual TexturePtr              CreateTextureCube(const Texture::Desc& tex_desc, std::vector<BitmapBufferPtr>* init_data = nullptr) { return nullptr; }
-    virtual RHIRenderBufferPtr         CreateRHIRenderBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) = 0;
-    virtual RHIRenderBufferPtr         CreateConstantBuffer(uint32_t size, ResourceFlags flags) = 0;
-    virtual RHIRenderBufferPtr         CreateStructuredBuffer  (uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIRenderBufferData* pData = nullptr) = 0;
-    virtual RHIRenderBufferPtr         CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIRenderBufferData* pData = nullptr) = 0;
-    virtual RHIRenderBufferPtr         CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) { return nullptr; }
-    virtual RHIRenderBufferPtr         CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) { return nullptr; }
-    virtual RHIRenderBufferPtr         CreateVertexBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) = 0;
-    virtual RHIRenderBufferPtr         CreateIndexBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) = 0;
+    virtual RHIRenderBufferPtr      CreateRHIRenderBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) = 0;
+    virtual RHIRenderBufferPtr      CreateConstantBuffer(uint32_t size, ResourceFlags flags) = 0;
+    virtual RHIRenderBufferPtr      CreateStructuredBuffer  (uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIRenderBufferData* pData = nullptr) = 0;
+    virtual RHIRenderBufferPtr      CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIRenderBufferData* pData = nullptr) = 0;
+    virtual RHIRenderBufferPtr      CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) { return nullptr; }
+    virtual RHIRenderBufferPtr      CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) { return nullptr; }
+    virtual RHIRenderBufferPtr      CreateVertexBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) = 0;
+    virtual RHIRenderBufferPtr      CreateIndexBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) = 0;
     virtual RenderViewPtr           CreateRenderTargetView(TexturePtr const& tex, uint32_t lod = 0) = 0;
     virtual RenderViewPtr           CreateRenderTargetView(TexturePtr const& tex, CubeFaceType face, uint32_t lod = 0) { return nullptr; }
     virtual RenderViewPtr           CreateDepthStencilView(TexturePtr const& tex) = 0;
     virtual RenderViewPtr           CreateDepthStencilView(TexturePtr const& tex, CubeFaceType face) { return nullptr; }
     virtual RHIFrameBufferPtr       CreateRHIFrameBuffer() = 0;
-    virtual RHIProgramPtr              CreateRHIProgram() = 0;
-    virtual TimerRHIQueryPtr           CreateTimerRHIQuery() = 0;
+    virtual RHIProgramPtr           CreateRHIProgram() = 0;
+    virtual TimerRHIQueryPtr        CreateTimerRHIQuery() = 0;
 
     virtual void                    BindRHIProgram(RHIProgram* program) {}
 

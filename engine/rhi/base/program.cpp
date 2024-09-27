@@ -5,7 +5,7 @@
 
 SEEK_NAMESPACE_BEGIN
 
-SResult RHIProgram::SetShader(Shader* shader)
+SResult RHIProgram::SetShader(RHIShader* shader)
 {
     if (!shader) return ERR_INVALID_ARG;
     m_vShaders[int(shader->Type())] = shader;

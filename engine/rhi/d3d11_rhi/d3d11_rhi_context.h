@@ -69,7 +69,7 @@ public:
     virtual void Uninit() override;
     virtual SResult CheckCapabilitySetSupport() override;
     virtual RHIMeshPtr CreateMesh() override;
-    virtual ShaderPtr CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) override;
+    virtual RHIShaderPtr CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) override;
 
     virtual TexturePtr      CreateTexture2D(ID3D11Texture2DPtr const& tex);
     virtual TexturePtr      CreateTexture2D(const Texture::Desc& tex_desc, const BitmapBufferPtr init_data = nullptr) override;

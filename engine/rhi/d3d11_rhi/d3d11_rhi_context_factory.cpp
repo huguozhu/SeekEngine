@@ -19,7 +19,7 @@ RHIMeshPtr D3D11RHIContext::CreateMesh()
     return res;
 }
 
-ShaderPtr D3D11RHIContext::CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code)
+RHIShaderPtr D3D11RHIContext::CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code)
 {
     return MakeSharedPtr<D3D11Shader>(m_pContext, type, name, entry_func_name, code);
 }

@@ -19,9 +19,9 @@ enum class CommandType : uint8_t
     CreateIndexBuffer,
     CreateVertexLayout,
     CreateShader,
-    CreateRHIProgram,
+    CreateProgram,
     CreateTexture,
-    CreateRHIFrameBuffer,
+    CreateFrameBuffer,
     CreateShaderBuffer,
     End,
     RendererShutdownEnd,
@@ -30,9 +30,9 @@ enum class CommandType : uint8_t
     DestroyIndexBuffer,
     DestroyVertexLayout,
     DestroyShader,
-    DestroyRHIProgram,
+    DestroyProgram,
     DestroyTexture,
-    DestroyRHIFrameBuffer,
+    DestroyFrameBuffer,
     DestroyShaderBuffer,
 };
 

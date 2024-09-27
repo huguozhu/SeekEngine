@@ -9,15 +9,15 @@ class RHIProgram
 {
 public:
     RHIProgram(Context* context) : m_pContext(context) {}
-    virtual     ~RHIProgram() {}
-    Shader*     GetShader(ShaderType type) const { return m_vShaders[to_underlying(type)]; }
-    SResult   SetShader(Shader* shader);
+    virtual ~RHIProgram() {}
+    RHIShader*  GetShader(ShaderType type) const { return m_vShaders[to_underlying(type)]; }
+    SResult     SetShader(RHIShader* shader);
 
     size_t      Hash() const { return m_Hash; }
 
 protected:
     Context* m_pContext = nullptr;
-    std::array<Shader*, SHADER_STAGE_COUNT> m_vShaders = {};
+    std::array<RHIShader*, SHADER_STAGE_COUNT> m_vShaders = {};
     size_t m_Hash = 0;
 };
 
