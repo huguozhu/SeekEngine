@@ -1,8 +1,8 @@
 #include "effect/parameter.h"
 #include "kernel/context.h"
-#include "rhi/base/render_state.h"
+#include "rhi/base/rhi_render_state.h"
 #include "rhi/base/rhi_context.h"
-#include "rhi/base/render_buffer.h"
+#include "rhi/base/rhi_render_buffer.h"
 #include "utils/log.h"
 #include "math/hash.h"
 

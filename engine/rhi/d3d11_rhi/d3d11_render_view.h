@@ -1,8 +1,8 @@
 ﻿#pragma once
 #include "kernel/kernel.h"
 #include "math/vector.h"
-#include "rhi/base/render_view.h"
-#include "rhi/base/framebuffer.h"
+#include "rhi/base/rhi_render_view.h"
+#include "rhi/base/rhi_framebuffer.h"
 #include "rhi/d3d11_rhi/d3d11_predeclare.h"
 
 SEEK_NAMESPACE_BEGIN

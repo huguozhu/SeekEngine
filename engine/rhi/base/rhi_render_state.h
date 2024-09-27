@@ -1,7 +1,7 @@
 #pragma once
 
 #include "kernel/kernel.h"
-#include "rhi/base/render_definition.h"
+#include "rhi/base/rhi_definition.h"
 #include "math/vector.h"
 #include "math/color.h"
 #include "math/math_utility.h"

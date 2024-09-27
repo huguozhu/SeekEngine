@@ -83,7 +83,7 @@ SResult Context::BeginRender()
     this->RenderThreadSemPost();
     this->Update();
     
-    if (0)
+    if (1)
     {
         static uint32_t MainThread_Index = 0;
         double var = Timer::CurrentTimeSinceEpoch_S();

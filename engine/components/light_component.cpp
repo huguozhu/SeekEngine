@@ -1,6 +1,6 @@
 #include "components/light_component.h"
 #include "components/camera_component.h"
-#include "rhi/base/texture.h"
+#include "rhi/base/rhi_texture.h"
 #include "math/math_utility.h"
 #include "utils/log.h"
 #include <cmath>

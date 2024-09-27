@@ -1,12 +1,12 @@
 #pragma once
 
 #include "kernel/kernel.h"
-#include "rhi/base/shader.h"
-#include "rhi/base/render_state.h"
-#include "rhi/base/render_definition.h"
-#include "rhi/base/texture.h"
-#include "rhi/base/program.h"
-#include "rhi/base/framebuffer.h"
+#include "rhi/base/rhi_shader.h"
+#include "rhi/base/rhi_render_state.h"
+#include "rhi/base/rhi_definition.h"
+#include "rhi/base/rhi_texture.h"
+#include "rhi/base/rhi_program.h"
+#include "rhi/base/rhi_framebuffer.h"
 
 #define SEEK_MACRO_FILE_UID 67     // this code is auto generated, don't touch it!!!
 

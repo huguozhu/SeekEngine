@@ -2,7 +2,7 @@
 #include "rhi/d3d11_rhi/d3d11_texture.h"
 #include "rhi/d3d11_rhi/d3d11_rhi_context.h"
 
-#include "rhi/base/texture.h"
+#include "rhi/base/rhi_texture.h"
 
 #include "kernel/context.h"
 

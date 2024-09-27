@@ -1,5 +1,5 @@
-#include "rhi/base/mesh.h"
-#include "rhi/base/render_buffer.h"
+#include "rhi/base/rhi_mesh.h"
+#include "rhi/base/rhi_render_buffer.h"
 #include "kernel/context.h"
 #include "resource/resource_mgr.h"
 

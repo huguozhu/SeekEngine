@@ -3,7 +3,7 @@
 #include "kernel/context.h"
 #include "utils/buffer.h"
 #include "thread/mutex.h"
-#include "rhi/base/render_definition.h"
+#include "rhi/base/rhi_definition.h"
 
 SEEK_NAMESPACE_BEGIN
 

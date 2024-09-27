@@ -2,7 +2,7 @@
 
 #include "kernel/kernel.h"
 #include "math/vector.h"
-#include "rhi/base/texture.h"
+#include "rhi/base/rhi_texture.h"
 #include "rhi/base/viewport.h"
 
 SEEK_NAMESPACE_BEGIN

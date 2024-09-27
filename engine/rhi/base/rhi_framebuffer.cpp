@@ -1,6 +1,6 @@
-#include "rhi/base/framebuffer.h"
+#include "rhi/base/rhi_framebuffer.h"
 #include "rhi/base/rhi_context.h"
-#include "rhi/base/render_view.h"
+#include "rhi/base/rhi_render_view.h"
 #include "kernel/context.h"
 
 #define SEEK_MACRO_FILE_UID 43     // this code is auto generated, don't touch it!!!

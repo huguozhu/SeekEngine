@@ -10,8 +10,8 @@
 #include "rhi/d3d11_rhi/d3d11_translate.h"
 #include "rhi/d3d11_rhi/d3d11_texture.h"
 
-#include "rhi/base/mesh.h"
-#include "rhi/base/program.h"
+#include "rhi/base/rhi_mesh.h"
+#include "rhi/base/rhi_program.h"
 #include "utils/log.h"
 
 #define SEEK_MACRO_FILE_UID 6     // this code is auto generated, don't touch it!!!

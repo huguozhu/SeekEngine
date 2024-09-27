@@ -58,25 +58,25 @@ set(ENGINE_CODE
     # rhi
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/format.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/format.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/framebuffer.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/framebuffer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_framebuffer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_framebuffer.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/material.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/mesh.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/mesh.cpp    
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/program.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/program.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/query.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/render_buffer.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/render_definition.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/render_state.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/render_state.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/render_view.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_mesh.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_mesh.cpp    
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_program.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_program.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_query.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_render_buffer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_definition.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_render_state.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_render_state.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_render_view.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_context.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_context.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/shader.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/shader.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_shader.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_shader.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/shader_param_assign_helper.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/texture.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_texture.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/viewport.h
     
 

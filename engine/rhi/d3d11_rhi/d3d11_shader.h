@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "rhi/base/shader.h"
+#include "rhi/base/rhi_shader.h"
 #include "rhi/d3d11_rhi/d3d11_predeclare.h"
 
 SEEK_NAMESPACE_BEGIN

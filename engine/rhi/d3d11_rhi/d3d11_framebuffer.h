@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "kernel/kernel.h"
-#include "rhi/base/framebuffer.h"
+#include "rhi/base/rhi_framebuffer.h"
 
 SEEK_NAMESPACE_BEGIN
 

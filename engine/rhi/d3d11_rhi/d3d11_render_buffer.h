@@ -1,8 +1,8 @@
 ﻿#pragma once
-#include "rhi/base/render_buffer.h"
+#include "rhi/base/rhi_render_buffer.h"
 #include "rhi/d3d11_rhi/d3d11_predeclare.h"
 
-#include "rhi/base/render_definition.h"
+#include "rhi/base/rhi_definition.h"
 
 SEEK_NAMESPACE_BEGIN
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "kernel/kernel.h"
-#include "rhi/base/shader.h"
+#include "rhi/base/rhi_shader.h"
 
 SEEK_NAMESPACE_BEGIN
 

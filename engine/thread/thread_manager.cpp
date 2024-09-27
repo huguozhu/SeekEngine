@@ -17,7 +17,7 @@ static SResult RenderThread_Entry(Context* context, Thread* render_thread, void*
         Context* pContext = (Context*)user_data;
         pContext->RenderThreadSemWait();
 
-        if (0)
+        if (1)
         {
             static uint32_t RenderThread_Index = 0;
             double var = Timer::CurrentTimeSinceEpoch_S();

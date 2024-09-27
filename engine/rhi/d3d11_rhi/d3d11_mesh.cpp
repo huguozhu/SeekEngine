@@ -5,7 +5,7 @@
 #include "rhi/d3d11_rhi/d3d11_translate.h"
 #include "rhi/d3d11_rhi/d3d11_shader.h"
 
-#include "rhi/base/program.h"
+#include "rhi/base/rhi_program.h"
 
 #include "kernel/context.h"
 

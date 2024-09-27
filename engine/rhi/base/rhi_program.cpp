@@ -1,4 +1,4 @@
-#include "rhi/base/program.h"
+#include "rhi/base/rhi_program.h"
 #include "math/hash.h"
 
 #define SEEK_MACRO_FILE_UID 41     // this code is auto generated, don't touch it!!!

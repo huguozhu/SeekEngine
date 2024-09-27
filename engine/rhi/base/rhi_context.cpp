@@ -1,6 +1,6 @@
 #include "rhi/base/rhi_context.h"
-#include "rhi/base/framebuffer.h"
-#include "rhi/base/mesh.h"
+#include "rhi/base/rhi_framebuffer.h"
+#include "rhi/base/rhi_mesh.h"
 #include "math/quad_mesh_process.h"
 #include "math/math_utility.h"
 #include <cmath>

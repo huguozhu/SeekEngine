@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <vector>
 #include <tuple>
-#include "rhi/base/mesh.h"
+#include "rhi/base/rhi_mesh.h"
 #include "rhi/d3d11_rhi/d3d11_predeclare.h"
 
 SEEK_NAMESPACE_BEGIN

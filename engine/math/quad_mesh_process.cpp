@@ -1,7 +1,7 @@
 #include "quad_mesh_process.h"
 #include "vector.h"
 #include "math_utility.h"
-#include "rhi/base/mesh.h"
+#include "rhi/base/rhi_mesh.h"
 #include "rhi/base/rhi_context.h"
 #include "utils/buffer.h"
 

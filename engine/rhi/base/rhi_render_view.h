@@ -1,7 +1,7 @@
 #pragma once
 
 #include "kernel/kernel.h"
-#include "rhi/base/texture.h"
+#include "rhi/base/rhi_texture.h"
 
 SEEK_NAMESPACE_BEGIN
 

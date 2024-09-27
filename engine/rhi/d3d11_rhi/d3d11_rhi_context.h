@@ -2,8 +2,8 @@
 
 #include "kernel/kernel.h"
 #include "rhi/base/rhi_context.h"
-#include "rhi/base/render_definition.h"
-#include "rhi/base/render_buffer.h"
+#include "rhi/base/rhi_definition.h"
+#include "rhi/base/rhi_render_buffer.h"
 #include "rhi/d3d11_rhi/d3d11_adapter.h"
 #include "rhi/d3d11_rhi/d3d11_query.h"
 #include "rhi/d3d11_rhi/d3d11_framebuffer.h"

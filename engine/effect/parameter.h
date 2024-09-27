@@ -2,7 +2,7 @@
 
 #include "kernel/kernel.h"
 #include "effect/variable.h"
-#include "rhi/base/render_state.h"
+#include "rhi/base/rhi_render_state.h"
 #include "utils/error.h"
 
 SEEK_NAMESPACE_BEGIN

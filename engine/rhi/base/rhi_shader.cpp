@@ -1,4 +1,4 @@
-#include "rhi/base/shader.h"
+#include "rhi/base/rhi_shader.h"
 #include "effect/parameter.h"
 
 #define SEEK_MACRO_FILE_UID 44     // this code is auto generated, don't touch it!!!
