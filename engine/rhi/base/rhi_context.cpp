@@ -205,14 +205,14 @@ RHISamplerPtr RHIContext::GetSampler(SamplerDesc const& desc)
     return ptr;
 }
 
-RenderStatePtr RHIContext::GetRenderState(RenderStateDesc const& desc)
+RHIRenderStatePtr RHIContext::GetRenderState(RenderStateDesc const& desc)
 {
     auto it = m_RenderStates.find(desc);
     if (it != m_RenderStates.end())
         return it->second;
 
     LOG_INFO("Context::GetRenderState");
-    RenderStatePtr ptr = this->CreateRenderState(desc);
+    RHIRenderStatePtr ptr = this->CreateRenderState(desc);
     if (ptr)
         m_RenderStates[desc] = ptr;
     return ptr;

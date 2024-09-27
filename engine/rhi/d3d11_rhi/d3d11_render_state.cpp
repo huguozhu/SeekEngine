@@ -11,7 +11,7 @@ SEEK_NAMESPACE_BEGIN
 
 D3D11RenderState::D3D11RenderState(Context* context, RasterizerStateDesc const& rs_desc,
     DepthStencilStateDesc const& ds_desc, BlendStateDesc const& bs_desc)
-    : RenderState(context, rs_desc, ds_desc, bs_desc)
+    : RHIRenderState(context, rs_desc, ds_desc, bs_desc)
 {
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();

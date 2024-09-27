@@ -637,7 +637,7 @@ SResult D3D11RHIContext::Render(RHIProgram* program, RHIMeshPtr const& mesh)
 
     SResult ret = S_Success;
 
-    RenderState* rs = mesh->GetRenderState().get();
+    RHIRenderState* rs = mesh->GetRenderState().get();
 
     SEEK_RETIF_FAIL(((D3D11RenderState*)(rs))->Active());
     SEEK_RETIF_FAIL(((D3D11RHIProgram*)(program))->Active());
@@ -716,7 +716,7 @@ SResult D3D11RHIContext::DispatchIndirect(RHIProgram* program, RHIRenderBufferPt
     ((D3D11RHIProgram*)program)->Deactive();
     return res;
 }
-SResult D3D11RHIContext::DrawIndirect(RHIProgram* program, RenderStatePtr rs, RHIRenderBufferPtr indirectBuf, MeshTopologyType type)
+SResult D3D11RHIContext::DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIRenderBufferPtr indirectBuf, MeshTopologyType type)
 {
     SResult res = S_Success;
     SEEK_RETIF_FAIL(((D3D11RenderState*)(rs.get()))->Active());

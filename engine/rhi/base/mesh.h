@@ -55,15 +55,15 @@ public:
     std::shared_ptr<MaterialResource>   GetMaterialResource() { return m_materialRes; }
 
     // Render State
-    void                                SetRenderState(RenderStatePtr rs) { m_pRenderState = rs; }
-    RenderStatePtr&                     GetRenderState() { return m_pRenderState; }
+    void                                SetRenderState(RHIRenderStatePtr rs) { m_pRenderState = rs; }
+    RHIRenderStatePtr&                  GetRenderState() { return m_pRenderState; }
 
     // Morph targets
     MorphInfo&                          GetMorphInfo();
     bool                                HasMorphTarget();
-    const RHIRenderBufferPtr&              GetMorphWeightsCBuffer();
-    const RHIRenderBufferPtr&              GetMorphSizeCBuffer();
-    RHIRenderBufferPtr&                    GetMaterialInfoCBuffer();
+    const RHIRenderBufferPtr&           GetMorphWeightsCBuffer();
+    const RHIRenderBufferPtr&           GetMorphSizeCBuffer();
+    RHIRenderBufferPtr&                 GetMaterialInfoCBuffer();
 
     // Skin
     SkinningJointBindSize               GetSkinningJointBindSize() { return m_eJointBindSize; }
@@ -97,7 +97,7 @@ protected:
     mutable bool                m_bDataDirty = true;
 
     // index buffers
-    RHIRenderBufferPtr             m_pIndexBuffer = nullptr;
+    RHIRenderBufferPtr          m_pIndexBuffer = nullptr;
     IndexBufferType             m_eIndexBufferType = IndexBufferType::UInt16;
 
     // vertex buffers
@@ -108,14 +108,14 @@ protected:
     MaterialPtr                 m_pMaterial = nullptr;
 
     // RenderState
-    RenderStatePtr              m_pRenderState = nullptr;
+    RHIRenderStatePtr           m_pRenderState = nullptr;
 
     // Morph Targets
     MorphInfo                   m_stMorphInfo;
 
-    RHIRenderBufferPtr             m_morphWeightsCBuffer;
-    RHIRenderBufferPtr             m_morphSizeCBuffer;
-    RHIRenderBufferPtr             m_MaterialInfoCBuffer;
+    RHIRenderBufferPtr          m_morphWeightsCBuffer;
+    RHIRenderBufferPtr          m_morphSizeCBuffer;
+    RHIRenderBufferPtr          m_MaterialInfoCBuffer;
 
     // Skin
     SkinningJointBindSize       m_eJointBindSize = SkinningJointBindSize::None;

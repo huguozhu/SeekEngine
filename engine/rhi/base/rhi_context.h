@@ -81,7 +81,7 @@ public: // virutal factory
     virtual void                    BeginComputePass(const ComputePassInfo& computePassInfo) = 0;
     virtual SResult                 Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z) = 0;
     virtual SResult                 DispatchIndirect(RHIProgram* program, RHIRenderBufferPtr indirectBuf) { return 0; }
-    virtual SResult                 DrawIndirect(RHIProgram* program, RenderStatePtr rs, RHIRenderBufferPtr indirectBuf, MeshTopologyType type) { return 0; }
+    virtual SResult                 DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIRenderBufferPtr indirectBuf, MeshTopologyType type) { return 0; }
     virtual void                    EndComputePass() = 0;
 
     virtual SResult                 SyncTexture(RHITexturePtr tex) { return ERR_NOT_IMPLEMENTED; }
@@ -98,7 +98,7 @@ public: // virutal factory
 
     // Global common reused variable
     RHISamplerPtr                   GetSampler(SamplerDesc const& desc);
-    RenderStatePtr                  GetRenderState(RenderStateDesc const& desc);
+    RHIRenderStatePtr                  GetRenderState(RenderStateDesc const& desc);
     
     virtual void                    BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* cbuffer, const char* name) = 0;
     virtual void                    BindRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* buffer, const char* name) = 0;
@@ -111,7 +111,7 @@ protected:
     // Functions that only can been called by Context
     friend class Context;
     virtual RHISamplerPtr           CreateSampler(SamplerDesc const& desc) = 0;
-    virtual RenderStatePtr          CreateRenderState(RenderStateDesc const& desc) = 0;
+    virtual RHIRenderStatePtr          CreateRenderState(RenderStateDesc const& desc) = 0;
 
 
 protected:
@@ -129,7 +129,7 @@ protected:
 
     // Reused Variable
     std::map<SamplerDesc, RHISamplerPtr>           m_Samplers;
-    std::map<RenderStateDesc, RenderStatePtr>   m_RenderStates;
+    std::map<RenderStateDesc, RHIRenderStatePtr>   m_RenderStates;
 };
 
 SEEK_NAMESPACE_END

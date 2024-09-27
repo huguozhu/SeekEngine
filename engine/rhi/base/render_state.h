@@ -176,23 +176,23 @@ struct RenderStateDesc
     bool     operator<(RenderStateDesc const& rhs) const;
 };
 
-class RenderState
+class RHIRenderState
 {
 public:
-    virtual ~RenderState(){}
+    virtual ~RHIRenderState(){}
 
     RenderStateDesc const&      GetRenderStateDesc() const { return m_stRenderStateDesc; }
 
     virtual bool                IsTransparent() { return m_stRenderStateDesc.blend.stTargetBlend[0].bBlendEnable; }
 
 protected:
-    RenderState(Context* context)
+    RHIRenderState(Context* context)
         : m_pContext(context)
     {}
-    RenderState(Context* context, RenderStateDesc const& desc)
+    RHIRenderState(Context* context, RenderStateDesc const& desc)
         : m_pContext(context), m_stRenderStateDesc(desc)
     {}
-    RenderState(Context* context, RasterizerStateDesc const& rs_desc, DepthStencilStateDesc const& ds_desc, BlendStateDesc const& bs_desc)
+    RHIRenderState(Context* context, RasterizerStateDesc const& rs_desc, DepthStencilStateDesc const& ds_desc, BlendStateDesc const& bs_desc)
         : m_pContext(context)
     {
         m_stRenderStateDesc.rasterizer = rs_desc;
@@ -205,7 +205,7 @@ protected:
 };
 
 /******************************************************************************
-* Sampler
+* RHISampler
 *******************************************************************************/
 enum class TexFilterOp : uint8_t
 {

@@ -108,9 +108,9 @@ RHIRenderBufferPtr D3D11RHIContext::CreateRWByteAddressBuffer(uint32_t size, Res
     flags |= RESOURCE_FLAG_GPU_WRITE;
     return CreateByteAddressBuffer(size, flags, pData);
 }
-RenderStatePtr D3D11RHIContext::CreateRenderState(RenderStateDesc const& desc)
+RHIRenderStatePtr D3D11RHIContext::CreateRenderState(RenderStateDesc const& desc)
 {
-    RenderStatePtr state = MakeSharedPtr<D3D11RenderState>(m_pContext, desc);
+    RHIRenderStatePtr state = MakeSharedPtr<D3D11RenderState>(m_pContext, desc);
     return state;
 }
 RHISamplerPtr D3D11RHIContext::CreateSampler(SamplerDesc const& desc)

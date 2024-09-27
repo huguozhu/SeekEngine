@@ -5,7 +5,7 @@
 
 SEEK_NAMESPACE_BEGIN
 
-class D3D11RenderState : public RenderState
+class D3D11RenderState : public RHIRenderState
 {
 public:
     D3D11RenderState(Context* context, RasterizerStateDesc const& rs_desc,

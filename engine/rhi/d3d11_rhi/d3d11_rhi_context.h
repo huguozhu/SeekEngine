@@ -85,7 +85,7 @@ public:
     virtual RHIRenderBufferPtr  CreateVertexBuffer(uint32_t size, ResourceFlags usage, RHIRenderBufferData* pData) override;
     virtual RHIRenderBufferPtr  CreateIndexBuffer(uint32_t size, ResourceFlags usage, RHIRenderBufferData* pData) override;
 
-    virtual RenderStatePtr      CreateRenderState(RenderStateDesc const& desc) override;
+    virtual RHIRenderStatePtr   CreateRenderState(RenderStateDesc const& desc) override;
     virtual RHISamplerPtr       CreateSampler(SamplerDesc const& desc) override;
 
     virtual RenderViewPtr       CreateRenderTargetView(RHITexturePtr const& tex, uint32_t lod = 0) override;
@@ -109,7 +109,7 @@ public:
     virtual void                BeginComputePass(const ComputePassInfo& computePassInfo) override;
     virtual SResult             Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z) override;
     virtual SResult             DispatchIndirect(RHIProgram* program, RHIRenderBufferPtr indirectBuf) override;
-    virtual SResult             DrawIndirect(RHIProgram* program, RenderStatePtr rs, RHIRenderBufferPtr indirectBuf, MeshTopologyType type) override;
+    virtual SResult             DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIRenderBufferPtr indirectBuf, MeshTopologyType type) override;
     virtual void                EndComputePass() override;
 
     virtual SResult SyncTexture(RHITexturePtr tex) override { return S_Success; }
