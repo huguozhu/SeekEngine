@@ -59,7 +59,7 @@ protected:
 
     ComPtr<IDXGraphicsAnalysis> m_pGraphicsAnalysis = nullptr;
 
-    D3D11TimerRHIQueryExecutor m_TimerRHIQueryExecutor{ m_pContext };
+    D3D11RHITimerQueryExecutor m_RHITimerQueryExecutor{ m_pContext };
 
     D3D11RHIFrameBuffer* m_pCurrentRHIFrameBuffer = nullptr;
 
@@ -95,7 +95,7 @@ public:
 
     virtual RHIFrameBufferPtr   CreateRHIFrameBuffer() override;
     virtual RHIProgramPtr       CreateRHIProgram() override;
-    virtual TimerRHIQueryPtr    CreateTimerRHIQuery() override;
+    virtual RHITimerQueryPtr    CreateRHITimerQuery() override;
 
     virtual SResult             AttachNativeWindow(std::string const& name, void* native_wnd = nullptr) override;
 
@@ -118,8 +118,8 @@ public:
     virtual void BeginCapture() override;
     virtual void EndCapture() override;
 
-    virtual void BeginTimerRHIQuery(TimerRHIQueryPtr& timerRHIQuery) override;
-    virtual void EndTimerRHIQuery(TimerRHIQueryPtr& timerRHIQuery) override;
+    virtual void BeginRHITimerQuery(RHITimerQueryPtr& timerRHIQuery) override;
+    virtual void EndRHITimerQuery(RHITimerQueryPtr& timerRHIQuery) override;
 
     virtual void BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* cbuffer, const char* name) override;
     virtual void BindRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* buffer, const char* name) override;

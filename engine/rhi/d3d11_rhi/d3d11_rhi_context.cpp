@@ -757,14 +757,14 @@ void D3D11RHIContext::EndCapture()
     }
 }
 
-void D3D11RHIContext::BeginTimerRHIQuery(TimerRHIQueryPtr& timerRHIQuery)
+void D3D11RHIContext::BeginRHITimerQuery(RHITimerQueryPtr& timerRHIQuery)
 {
-    m_TimerRHIQueryExecutor.Begin(timerRHIQuery);
+    m_RHITimerQueryExecutor.Begin(timerRHIQuery);
 }
 
-void D3D11RHIContext::EndTimerRHIQuery(TimerRHIQueryPtr& timerRHIQuery)
+void D3D11RHIContext::EndRHITimerQuery(RHITimerQueryPtr& timerRHIQuery)
 {
-    m_TimerRHIQueryExecutor.End(timerRHIQuery);
+    m_RHITimerQueryExecutor.End(timerRHIQuery);
 }
 
 void D3D11RHIContext::BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* cbuffer, const char* name)

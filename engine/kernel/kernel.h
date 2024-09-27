@@ -92,7 +92,7 @@ CLASS_DECLARE(RHIShader);
 CLASS_DECLARE(RHIProgram);
 CLASS_DECLARE(RenderState);
 CLASS_DECLARE(RenderView);
-CLASS_DECLARE(TimerRHIQuery);
+CLASS_DECLARE(RHITimerQuery);
 
 // Thread
 CLASS_DECLARE(Thread);
