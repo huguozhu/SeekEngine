@@ -26,7 +26,7 @@ public:
 
     EffectVariable_Declare(TexturePtr)
     EffectVariable_Declare(SamplerPtr)
-    EffectVariable_Declare(RenderBufferPtr)
+    EffectVariable_Declare(RHIRenderBufferPtr)
 #undef EffectVariable_Declare
 
 protected:
@@ -103,7 +103,7 @@ private:
 
 EFFECT_VARIABLE_CONCRETE(Sampler,       SamplerPtr)
 EFFECT_VARIABLE_CONCRETE(Texture,       TexturePtr)
-EFFECT_VARIABLE_CONCRETE(RenderBuffer,  RenderBufferPtr)
+EFFECT_VARIABLE_CONCRETE(RHIRenderBuffer,  RHIRenderBufferPtr)
 
 #undef EFFECT_VARIABLE_CONCRETE
 

@@ -32,16 +32,16 @@ RHIMeshPtr QuadMesh_GetMesh(RHIContext& ctx, std::vector<float>* vertices)
 {
     static std::vector<float>     vertices_ = QuadMesh_GetVertices();
     static uint16_t               indics[4] = {0, 1, 2, 3};
-    static RenderBufferData       indics_data(sizeof(indics), indics);
+    static RHIRenderBufferData       indics_data(sizeof(indics), indics);
     if (!vertices)
         vertices = &vertices_;
 
     RHIMeshPtr mesh = ctx.CreateMesh();
-    RenderBufferPtr indics_buffer = ctx.CreateIndexBuffer(sizeof(indics), 0, &indics_data);
+    RHIRenderBufferPtr indics_buffer = ctx.CreateIndexBuffer(sizeof(indics), 0, &indics_data);
     mesh->SetIndexBuffer(indics_buffer, IndexBufferType::UInt16);
 
-    RenderBufferData vertex_data((uint32_t)(sizeof(float) * vertices->size()), vertices->data());
-    RenderBufferPtr vertex_buffer = ctx.CreateVertexBuffer(vertex_data.m_iDataSize, RESOURCE_FLAG_NONE, &vertex_data);
+    RHIRenderBufferData vertex_data((uint32_t)(sizeof(float) * vertices->size()), vertices->data());
+    RHIRenderBufferPtr vertex_buffer = ctx.CreateVertexBuffer(vertex_data.m_iDataSize, RESOURCE_FLAG_NONE, &vertex_data);
     mesh->AddVertexStream(vertex_buffer, sizeof(float) * VERTEX_POS_OFFSET, sizeof(float) * VERTEX_STRIDE, VertexFormat::Float3, VertexElementUsage::Position, 0);
     mesh->AddVertexStream(vertex_buffer, sizeof(float) * VERTEX_UV_OFFSET,  sizeof(float) * VERTEX_STRIDE, VertexFormat::Float2, VertexElementUsage::TexCoord, 0);
     mesh->SetTopologyType(MeshTopologyType::Triangle_Strip);

@@ -26,10 +26,10 @@ using ResourceFlags = uint64_t;
 #define RESOURCE_FLAG_GENERATE_MIPS         UINT64_C(0x0000000000040000)
 #define RESOURCE_FLAG_DRAW_INDIRECT_ARGS    UINT64_C(0x0000000000080000)
 
-struct RenderBufferData
+struct RHIRenderBufferData
 {
-    RenderBufferData(uint32_t size, const void* data) :m_iDataSize(size), m_pData(data) { }
-    RenderBufferData(size_t size, const void* data) :m_iDataSize((uint32_t)size), m_pData(data) { }
+    RHIRenderBufferData(uint32_t size, const void* data) :m_iDataSize(size), m_pData(data) { }
+    RHIRenderBufferData(size_t size, const void* data) :m_iDataSize((uint32_t)size), m_pData(data) { }
     const void*                 m_pData = nullptr;
     uint32_t                    m_iDataSize = 0;
 };
@@ -79,7 +79,7 @@ struct VertexStreamLayout
 
 struct VertexStream
 {
-    RenderBufferPtr                 render_buffer = nullptr;
+    RHIRenderBufferPtr                 render_buffer = nullptr;
     uint32_t                        offset = 0;
     uint32_t                        stride = 0;
     std::vector<VertexStreamLayout> layouts;
@@ -126,7 +126,7 @@ enum class MorphTargetType
 struct MorphInfo
 {
     MorphTargetType             morph_target_type = MorphTargetType::None;
-    RenderBufferPtr             render_buffer = nullptr;
+    RHIRenderBufferPtr             render_buffer = nullptr;
     std::vector<float>          morph_target_weights;
     std::vector<std::string>    morph_target_names;
 };

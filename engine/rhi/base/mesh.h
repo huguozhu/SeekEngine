@@ -31,9 +31,9 @@ public:
     // Index Streams
     bool                                IsUseIndices() const;
     uint32_t                            GetNumIndices() const;
-    RenderBufferPtr const&              GetIndexBuffer();
+    RHIRenderBufferPtr const&              GetIndexBuffer();
     IndexBufferType                     GetIndexBufferType() const { return m_eIndexBufferType; }
-    void                                SetIndexBuffer(RenderBufferPtr buffer, IndexBufferType type);
+    void                                SetIndexBuffer(RHIRenderBufferPtr buffer, IndexBufferType type);
     void                                SetIndexBufferResource(std::shared_ptr<VertexIndicesResource>& indicesRes);
 
     // Vertex Streams
@@ -41,8 +41,8 @@ public:
     uint32_t                            NumVertexStream();
     VertexStream&                       GetVertexStreamByIndex(uint32_t i);
     std::vector<VertexStream>&          GetVertexStreams();
-    void                                AddVertexStream(RenderBufferPtr render_buffer, uint32_t buffer_offset, uint32_t stride, VertexFormat format, VertexElementUsage usage, uint32_t usage_index);
-    void                                AddInstanceVertexStream(RenderBufferPtr render_buffer, uint32_t buffer_offset, uint32_t stride, VertexFormat format, VertexElementUsage usage, uint32_t usage_index, uint32_t instance_count, uint32_t divisor);
+    void                                AddVertexStream(RHIRenderBufferPtr render_buffer, uint32_t buffer_offset, uint32_t stride, VertexFormat format, VertexElementUsage usage, uint32_t usage_index);
+    void                                AddInstanceVertexStream(RHIRenderBufferPtr render_buffer, uint32_t buffer_offset, uint32_t stride, VertexFormat format, VertexElementUsage usage, uint32_t usage_index, uint32_t instance_count, uint32_t divisor);
     VertexStream*                       GetInstanceVertexStream(VertexElementUsage instance_type, uint32_t usage_index);
     void                                SetVertexAttributeResource(VertexAttributeResource& res);
     VertexAttributeResource&            GetVertexAttributeResource();
@@ -61,9 +61,9 @@ public:
     // Morph targets
     MorphInfo&                          GetMorphInfo();
     bool                                HasMorphTarget();
-    const RenderBufferPtr&              GetMorphWeightsCBuffer();
-    const RenderBufferPtr&              GetMorphSizeCBuffer();
-    RenderBufferPtr&                    GetMaterialInfoCBuffer();
+    const RHIRenderBufferPtr&              GetMorphWeightsCBuffer();
+    const RHIRenderBufferPtr&              GetMorphSizeCBuffer();
+    RHIRenderBufferPtr&                    GetMaterialInfoCBuffer();
 
     // Skin
     SkinningJointBindSize               GetSkinningJointBindSize() { return m_eJointBindSize; }
@@ -97,7 +97,7 @@ protected:
     mutable bool                m_bDataDirty = true;
 
     // index buffers
-    RenderBufferPtr             m_pIndexBuffer = nullptr;
+    RHIRenderBufferPtr             m_pIndexBuffer = nullptr;
     IndexBufferType             m_eIndexBufferType = IndexBufferType::UInt16;
 
     // vertex buffers
@@ -113,9 +113,9 @@ protected:
     // Morph Targets
     MorphInfo                   m_stMorphInfo;
 
-    RenderBufferPtr             m_morphWeightsCBuffer;
-    RenderBufferPtr             m_morphSizeCBuffer;
-    RenderBufferPtr             m_MaterialInfoCBuffer;
+    RHIRenderBufferPtr             m_morphWeightsCBuffer;
+    RHIRenderBufferPtr             m_morphSizeCBuffer;
+    RHIRenderBufferPtr             m_MaterialInfoCBuffer;
 
     // Skin
     SkinningJointBindSize       m_eJointBindSize = SkinningJointBindSize::None;

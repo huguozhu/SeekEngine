@@ -78,7 +78,7 @@ protected:
     std::vector<BSConfig>       m_vBSConfig;
     bool                        m_bIsInstance = false;
 
-    RenderBufferPtr             m_ModelInfoCBuffer;
+    RHIRenderBufferPtr             m_ModelInfoCBuffer;
 };
 
 SEEK_NAMESPACE_END

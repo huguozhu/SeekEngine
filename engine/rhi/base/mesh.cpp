@@ -29,18 +29,18 @@ uint32_t RHIMesh::GetNumIndices() const
     return n;
 }
 
-RenderBufferPtr const& RHIMesh::GetIndexBuffer()
+RHIRenderBufferPtr const& RHIMesh::GetIndexBuffer()
 {
     if (!m_pIndexBuffer)
     {
         RHIContext& rc = m_pContext->RHIContextInstance();
-        RenderBufferData index_data{ m_indicesRes->_size, m_indicesRes->_data };
+        RHIRenderBufferData index_data{ m_indicesRes->_size, m_indicesRes->_data };
         m_pIndexBuffer = rc.CreateIndexBuffer((uint32_t)m_indicesRes->_size, 0, &index_data);
     }
     return m_pIndexBuffer;
 }
 
-void RHIMesh::SetIndexBuffer(RenderBufferPtr buffer, IndexBufferType type)
+void RHIMesh::SetIndexBuffer(RHIRenderBufferPtr buffer, IndexBufferType type)
 {
     m_pIndexBuffer = buffer;
     m_eIndexBufferType = type;
@@ -69,19 +69,19 @@ MorphInfo& RHIMesh::GetMorphInfo()
     if ((!m_morphTargetRes._morphInfo.render_buffer) && m_morphTargetRes._data)
     {
         RHIContext& rc = m_pContext->RHIContextInstance();
-        RenderBufferData MorphTargetData(m_morphTargetRes._size, m_morphTargetRes._data);
-        RenderBufferPtr MorphTargetBuffer = rc.CreateByteAddressBuffer((uint32_t)m_morphTargetRes._size, RESOURCE_FLAG_SHADER_RESOURCE, &MorphTargetData);
+        RHIRenderBufferData MorphTargetData(m_morphTargetRes._size, m_morphTargetRes._data);
+        RHIRenderBufferPtr MorphTargetBuffer = rc.CreateByteAddressBuffer((uint32_t)m_morphTargetRes._size, RESOURCE_FLAG_SHADER_RESOURCE, &MorphTargetData);
         m_morphTargetRes._morphInfo.render_buffer = MorphTargetBuffer;
         m_stMorphInfo = m_morphTargetRes._morphInfo;
     }
-    if (m_morphTargetRes._refreshRenderBuffer && m_morphTargetRes._data)
+    if (m_morphTargetRes._refreshRHIRenderBuffer && m_morphTargetRes._data)
     {
         RHIContext& rc = m_pContext->RHIContextInstance();
-        RenderBufferData MorphTargetData(m_morphTargetRes._size, m_morphTargetRes._data);
-        RenderBufferPtr MorphTargetBuffer = rc.CreateByteAddressBuffer((uint32_t)m_morphTargetRes._size, RESOURCE_FLAG_SHADER_RESOURCE, &MorphTargetData);
+        RHIRenderBufferData MorphTargetData(m_morphTargetRes._size, m_morphTargetRes._data);
+        RHIRenderBufferPtr MorphTargetBuffer = rc.CreateByteAddressBuffer((uint32_t)m_morphTargetRes._size, RESOURCE_FLAG_SHADER_RESOURCE, &MorphTargetData);
         m_morphTargetRes._morphInfo.render_buffer = MorphTargetBuffer;
         m_stMorphInfo.render_buffer = m_morphTargetRes._morphInfo.render_buffer;
-        m_morphTargetRes._refreshRenderBuffer = false;
+        m_morphTargetRes._refreshRHIRenderBuffer = false;
     }
 
     return m_stMorphInfo;
@@ -92,7 +92,7 @@ uint32_t RHIMesh::NumVertexStream()
     return (uint32_t)GetVertexStreams().size();
 }
 
-void RHIMesh::AddVertexStream(RenderBufferPtr render_buffer, uint32_t buffer_offset,
+void RHIMesh::AddVertexStream(RHIRenderBufferPtr render_buffer, uint32_t buffer_offset,
     uint32_t stride, VertexFormat format, VertexElementUsage usage, uint32_t usage_index)
 {
     VertexStream* stream = nullptr;
@@ -124,7 +124,7 @@ void RHIMesh::AddVertexStream(RenderBufferPtr render_buffer, uint32_t buffer_off
     m_bDataDirty = true;
 }
 
-void RHIMesh::AddInstanceVertexStream(RenderBufferPtr render_buffer, uint32_t buffer_offset, uint32_t stride, VertexFormat format, VertexElementUsage usage, uint32_t usage_index, uint32_t instance_count, uint32_t divisor)
+void RHIMesh::AddInstanceVertexStream(RHIRenderBufferPtr render_buffer, uint32_t buffer_offset, uint32_t stride, VertexFormat format, VertexElementUsage usage, uint32_t usage_index, uint32_t instance_count, uint32_t divisor)
 {
     LOG_INFO("Mesh::AddInstanceVertexStream begin InstancCount=%d", instance_count);
     VertexStream* stream = nullptr;
@@ -205,7 +205,7 @@ std::vector<VertexStream>& RHIMesh::GetVertexStreams()
             
             m_vVertexStreams.emplace_back(_vs);
             VertexStream& vs = m_vVertexStreams.back();
-            RenderBufferData vertex_data(_vsBuf->_size, _vsBuf->_data);
+            RHIRenderBufferData vertex_data(_vsBuf->_size, _vsBuf->_data);
             vs.render_buffer = rc.CreateVertexBuffer((uint32_t)_vsBuf->_size, 0, &vertex_data);
         }
     }
@@ -427,7 +427,7 @@ inline size_t std_container_byte_size(const T& vec)
     return vec.size() * sizeof(T::value_type);
 }
 
-const RenderBufferPtr& RHIMesh::GetMorphWeightsCBuffer()
+const RHIRenderBufferPtr& RHIMesh::GetMorphWeightsCBuffer()
 {
     MorphInfo& mi = GetMorphInfo();
     if (!m_morphWeightsCBuffer)
@@ -443,7 +443,7 @@ const RenderBufferPtr& RHIMesh::GetMorphWeightsCBuffer()
     return m_morphWeightsCBuffer;
 }
 
-const RenderBufferPtr& RHIMesh::GetMorphSizeCBuffer()
+const RHIRenderBufferPtr& RHIMesh::GetMorphSizeCBuffer()
 {
     if (!m_morphSizeCBuffer)
     {
@@ -455,7 +455,7 @@ const RenderBufferPtr& RHIMesh::GetMorphSizeCBuffer()
     return m_morphSizeCBuffer;
 }
 
-RenderBufferPtr& RHIMesh::GetMaterialInfoCBuffer()
+RHIRenderBufferPtr& RHIMesh::GetMaterialInfoCBuffer()
 {
     if (!m_MaterialInfoCBuffer)
     {
