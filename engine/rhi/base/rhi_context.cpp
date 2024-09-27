@@ -51,13 +51,13 @@ void RHIContext::SetFinalRHIFrameBuffer(RHIFrameBufferPtr const& fb)
 {
     m_pFinalRHIFrameBuffer = fb;
 }
-MeshPtr RHIContext::GetCubeMesh()
+RHIMeshPtr RHIContext::GetCubeMesh()
 {
     if (!m_pCubeMesh)
         this->CreateCommonMesh();
     return m_pCubeMesh;
 }
-MeshPtr RHIContext::GetConeMesh()
+RHIMeshPtr RHIContext::GetConeMesh()
 {
     if (!m_pConeMesh)
         this->CreateCommonMesh();

@@ -9,12 +9,12 @@ SEEK_NAMESPACE_BEGIN
 
 #include "shader/shared/common.h"
 
-bool Mesh::IsUseIndices() const
+bool RHIMesh::IsUseIndices() const
 {
     return this->GetNumIndices() != 0;
 }
 
-uint32_t Mesh::GetNumIndices() const
+uint32_t RHIMesh::GetNumIndices() const
 {
     uint32_t n = 0;
     if (m_pIndexBuffer)
@@ -29,7 +29,7 @@ uint32_t Mesh::GetNumIndices() const
     return n;
 }
 
-RenderBufferPtr const& Mesh::GetIndexBuffer()
+RenderBufferPtr const& RHIMesh::GetIndexBuffer()
 {
     if (!m_pIndexBuffer)
     {
@@ -40,21 +40,21 @@ RenderBufferPtr const& Mesh::GetIndexBuffer()
     return m_pIndexBuffer;
 }
 
-void Mesh::SetIndexBuffer(RenderBufferPtr buffer, IndexBufferType type)
+void RHIMesh::SetIndexBuffer(RenderBufferPtr buffer, IndexBufferType type)
 {
     m_pIndexBuffer = buffer;
     m_eIndexBufferType = type;
     m_bDataDirty = true;
 }
 
-void Mesh::SetIndexBufferResource(std::shared_ptr<VertexIndicesResource>& indicesRes)
+void RHIMesh::SetIndexBufferResource(std::shared_ptr<VertexIndicesResource>& indicesRes)
 {
     m_indicesRes = indicesRes;
     m_eIndexBufferType = indicesRes->_indexBufferType;
     m_pIndexBuffer.reset();
 }
 
-uint32_t Mesh::GetNumVertex() const
+uint32_t RHIMesh::GetNumVertex() const
 {
     uint32_t n = 0;
     if (!m_vVertexStreams.empty())
@@ -64,7 +64,7 @@ uint32_t Mesh::GetNumVertex() const
     return n;
 }
 
-MorphInfo& Mesh::GetMorphInfo() 
+MorphInfo& RHIMesh::GetMorphInfo()
 {
     if ((!m_morphTargetRes._morphInfo.render_buffer) && m_morphTargetRes._data)
     {
@@ -87,12 +87,12 @@ MorphInfo& Mesh::GetMorphInfo()
     return m_stMorphInfo;
 }
 
-uint32_t Mesh::NumVertexStream()
+uint32_t RHIMesh::NumVertexStream()
 {
     return (uint32_t)GetVertexStreams().size();
 }
 
-void Mesh::AddVertexStream(RenderBufferPtr render_buffer, uint32_t buffer_offset,
+void RHIMesh::AddVertexStream(RenderBufferPtr render_buffer, uint32_t buffer_offset,
     uint32_t stride, VertexFormat format, VertexElementUsage usage, uint32_t usage_index)
 {
     VertexStream* stream = nullptr;
@@ -124,7 +124,7 @@ void Mesh::AddVertexStream(RenderBufferPtr render_buffer, uint32_t buffer_offset
     m_bDataDirty = true;
 }
 
-void Mesh::AddInstanceVertexStream(RenderBufferPtr render_buffer, uint32_t buffer_offset, uint32_t stride, VertexFormat format, VertexElementUsage usage, uint32_t usage_index, uint32_t instance_count, uint32_t divisor)
+void RHIMesh::AddInstanceVertexStream(RenderBufferPtr render_buffer, uint32_t buffer_offset, uint32_t stride, VertexFormat format, VertexElementUsage usage, uint32_t usage_index, uint32_t instance_count, uint32_t divisor)
 {
     LOG_INFO("Mesh::AddInstanceVertexStream begin InstancCount=%d", instance_count);
     VertexStream* stream = nullptr;
@@ -166,7 +166,7 @@ void Mesh::AddInstanceVertexStream(RenderBufferPtr render_buffer, uint32_t buffe
     m_bIsInstance = true;
     m_uInstancCount = instance_count;
 }
-VertexStream* Mesh::GetInstanceVertexStream(VertexElementUsage usage, uint32_t usage_index)
+VertexStream* RHIMesh::GetInstanceVertexStream(VertexElementUsage usage, uint32_t usage_index)
 {
     VertexStream* pStream = nullptr;
     bool isFound = false;
@@ -193,7 +193,7 @@ VertexStream* Mesh::GetInstanceVertexStream(VertexElementUsage usage, uint32_t u
     return pStream;
 }
 
-std::vector<VertexStream>& Mesh::GetVertexStreams()
+std::vector<VertexStream>& RHIMesh::GetVertexStreams()
 {
     if (m_vVertexStreams.empty())
     {
@@ -213,32 +213,32 @@ std::vector<VertexStream>& Mesh::GetVertexStreams()
     return m_vVertexStreams;
 }
 
-VertexStream& Mesh::GetVertexStreamByIndex(uint32_t i)
+VertexStream& RHIMesh::GetVertexStreamByIndex(uint32_t i)
 {
     return GetVertexStreams()[i];
 }
 
-void Mesh::SetVertexAttributeResource(VertexAttributeResource& res)
+void RHIMesh::SetVertexAttributeResource(VertexAttributeResource& res)
 {
     m_vertexAttributeRes = res;
 }
 
-VertexAttributeResource& Mesh::GetVertexAttributeResource()
+VertexAttributeResource& RHIMesh::GetVertexAttributeResource()
 {
     return m_vertexAttributeRes;
 };
 
-VertexIndicesResource& Mesh::GetVertexIndicesResource()
+VertexIndicesResource& RHIMesh::GetVertexIndicesResource()
 {
     return *m_indicesRes;
 };
 
-MorphTargetResource& Mesh::GetMorphTargetResource()
+MorphTargetResource& RHIMesh::GetMorphTargetResource()
 {
     return m_morphTargetRes;
 };
 
-bool Mesh::HasMorphTarget()
+bool RHIMesh::HasMorphTarget()
 {
     if ((m_stMorphInfo.morph_target_type == MorphTargetType::None || m_stMorphInfo.render_buffer == nullptr) && m_morphTargetRes._data == nullptr)
         return false;
@@ -355,7 +355,7 @@ static TexturePtr CreateTextureFromBitmap(RHIContext& rc, BitmapBufferPtr& bm, b
     }
     return rc.CreateTexture2D(tex_desc, bm);
 }
-MaterialPtr& Mesh::GetMaterial()
+MaterialPtr& RHIMesh::GetMaterial()
 {
     if (!m_pMaterial && m_materialRes)
     {
@@ -427,7 +427,7 @@ inline size_t std_container_byte_size(const T& vec)
     return vec.size() * sizeof(T::value_type);
 }
 
-const RenderBufferPtr& Mesh::GetMorphWeightsCBuffer()
+const RenderBufferPtr& RHIMesh::GetMorphWeightsCBuffer()
 {
     MorphInfo& mi = GetMorphInfo();
     if (!m_morphWeightsCBuffer)
@@ -443,7 +443,7 @@ const RenderBufferPtr& Mesh::GetMorphWeightsCBuffer()
     return m_morphWeightsCBuffer;
 }
 
-const RenderBufferPtr& Mesh::GetMorphSizeCBuffer()
+const RenderBufferPtr& RHIMesh::GetMorphSizeCBuffer()
 {
     if (!m_morphSizeCBuffer)
     {
@@ -455,7 +455,7 @@ const RenderBufferPtr& Mesh::GetMorphSizeCBuffer()
     return m_morphSizeCBuffer;
 }
 
-RenderBufferPtr& Mesh::GetMaterialInfoCBuffer()
+RenderBufferPtr& RHIMesh::GetMaterialInfoCBuffer()
 {
     if (!m_MaterialInfoCBuffer)
     {

@@ -22,7 +22,7 @@ enum class SkinningJointBindSize
 };
 
 
-class Mesh
+class RHIMesh
 {
 public:
     MeshTopologyType                    GetTopologyType() const { return m_eTopoType; }
@@ -90,8 +90,8 @@ public:
     bool                                m_bUpdateFrontFaceCCW = true;
 
 protected:
-    Mesh(Context* context) :m_pContext(context) {}
-    virtual ~Mesh() {}
+    RHIMesh(Context* context) :m_pContext(context) {}
+    virtual ~RHIMesh() {}
 
     Context*                    m_pContext = nullptr;
     mutable bool                m_bDataDirty = true;

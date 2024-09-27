@@ -18,7 +18,7 @@ SEEK_NAMESPACE_BEGIN
 #define MORPH_TARGET_USAGE_INDEX 1
 
 D3D11Mesh::D3D11Mesh(Context* context)
-    : Mesh(context)
+    : RHIMesh(context)
 {
 
 }

@@ -47,38 +47,38 @@ public:
     MeshComponent(Context* context);
     virtual ~MeshComponent();
 
-    void                    AddMesh(MeshPtr mesh) { m_vMeshes.push_back(mesh); }
-    void                    InsertMesh(size_t idx, MeshPtr mesh) { m_vMeshes.insert(m_vMeshes.begin() + idx, mesh); }
-    void                    DelMesh(MeshPtr mesh);
-    size_t                  NumMeshes() const { return m_vMeshes.size(); }
-    MeshPtr                 GetMeshByIndex(size_t index);
-    std::vector<MeshPtr>&   GetMeshes() { return m_vMeshes; }
+    void                        AddMesh(RHIMeshPtr mesh) { m_vMeshes.push_back(mesh); }
+    void                        InsertMesh(size_t idx, RHIMeshPtr mesh) { m_vMeshes.insert(m_vMeshes.begin() + idx, mesh); }
+    void                        DelMesh(RHIMeshPtr mesh);
+    size_t                      NumMeshes() const { return m_vMeshes.size(); }
+    RHIMeshPtr                  GetMeshByIndex(size_t index);
+    std::vector<RHIMeshPtr>&    GetMeshes() { return m_vMeshes; }
 
-    void                    SetVisible(bool b);
+    void                        SetVisible(bool b);
 
-    VisibleMark             GetVisibleMark() const { return m_eVisibleMark; }
-    void                    SetVisibleMark(VisibleMark mark) { m_eVisibleMark = mark; }
+    VisibleMark                 GetVisibleMark() const { return m_eVisibleMark; }
+    void                        SetVisibleMark(VisibleMark mark) { m_eVisibleMark = mark; }
 
-    void                    SetAABBox(AABBox const& box) { m_cAABBox = box; }
-    AABBox const&           GetAABBox() const { return m_cAABBox; }
-    void                    SetAABBoxWorld(AABBox const& box) { m_cAABBoxWorld = box; }
-    AABBox const&           GetAABBoxWorld() const { return m_cAABBoxWorld; }
+    void                        SetAABBox(AABBox const& box) { m_cAABBox = box; }
+    AABBox const&               GetAABBox() const { return m_cAABBox; }
+    void                        SetAABBoxWorld(AABBox const& box) { m_cAABBoxWorld = box; }
+    AABBox const&               GetAABBoxWorld() const { return m_cAABBoxWorld; }
 
-    void                    SetBSConfig(std::vector<BSConfig>& bsConfig);
-    virtual SResult       Tick(float delta_time);
+    void                        SetBSConfig(std::vector<BSConfig>& bsConfig);
+    virtual SResult             Tick(float delta_time);
 
-    bool                    IsInstanceMesh() { return m_bIsInstance; }
+    bool                        IsInstanceMesh() { return m_bIsInstance; }
 
 protected:
-    std::vector<MeshPtr>    m_vMeshes;
+    std::vector<RHIMeshPtr>     m_vMeshes;
 
-    AABBox                  m_cAABBox;
-    AABBox                  m_cAABBoxWorld;
-    VisibleMark             m_eVisibleMark = VisibleMark::Yes;
-    std::vector<BSConfig>   m_vBSConfig;
-    bool                    m_bIsInstance = false;
+    AABBox                      m_cAABBox;
+    AABBox                      m_cAABBoxWorld;
+    VisibleMark                 m_eVisibleMark = VisibleMark::Yes;
+    std::vector<BSConfig>       m_vBSConfig;
+    bool                        m_bIsInstance = false;
 
-    RenderBufferPtr         m_ModelInfoCBuffer;
+    RenderBufferPtr             m_ModelInfoCBuffer;
 };
 
 SEEK_NAMESPACE_END

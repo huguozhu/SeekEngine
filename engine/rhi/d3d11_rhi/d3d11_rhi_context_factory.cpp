@@ -13,9 +13,9 @@
 
 SEEK_NAMESPACE_BEGIN
 
-MeshPtr D3D11RHIContext::CreateMesh()
+RHIMeshPtr D3D11RHIContext::CreateMesh()
 {
-    MeshPtr res = MakeSharedPtr<D3D11Mesh>(m_pContext);
+    RHIMeshPtr res = MakeSharedPtr<D3D11Mesh>(m_pContext);
     return res;
 }
 

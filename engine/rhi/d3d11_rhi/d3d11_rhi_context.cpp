@@ -627,7 +627,7 @@ SResult D3D11RHIContext::BeginRenderPass(const RenderPassInfo& renderPassInfo)
     return S_Success;
 }
 
-SResult D3D11RHIContext::Render(Program* program, MeshPtr const& mesh)
+SResult D3D11RHIContext::Render(Program* program, RHIMeshPtr const& mesh)
 {
     if (!m_pCurrentRHIFrameBuffer)
     {

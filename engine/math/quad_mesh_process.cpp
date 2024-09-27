@@ -28,7 +28,7 @@ std::vector<float> QuadMesh_GetVertices(float left, float right, float top, floa
     };
 }
 
-MeshPtr QuadMesh_GetMesh(RHIContext& ctx, std::vector<float>* vertices)
+RHIMeshPtr QuadMesh_GetMesh(RHIContext& ctx, std::vector<float>* vertices)
 {
     static std::vector<float>     vertices_ = QuadMesh_GetVertices();
     static uint16_t               indics[4] = {0, 1, 2, 3};
@@ -36,7 +36,7 @@ MeshPtr QuadMesh_GetMesh(RHIContext& ctx, std::vector<float>* vertices)
     if (!vertices)
         vertices = &vertices_;
 
-    MeshPtr mesh = ctx.CreateMesh();
+    RHIMeshPtr mesh = ctx.CreateMesh();
     RenderBufferPtr indics_buffer = ctx.CreateIndexBuffer(sizeof(indics), 0, &indics_data);
     mesh->SetIndexBuffer(indics_buffer, IndexBufferType::UInt16);
 

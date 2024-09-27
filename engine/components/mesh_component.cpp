@@ -23,7 +23,7 @@ MeshComponent::~MeshComponent()
 {
 }
 
-void MeshComponent::DelMesh(MeshPtr mesh)
+void MeshComponent::DelMesh(RHIMeshPtr mesh)
 {
     auto iter = std::find(m_vMeshes.begin(), m_vMeshes.end(), mesh);
     if (iter != m_vMeshes.end())
@@ -38,7 +38,7 @@ void MeshComponent::SetVisible(bool b)
         mesh->SetVisible(b);
 }
 
-MeshPtr MeshComponent::GetMeshByIndex(size_t index)
+RHIMeshPtr MeshComponent::GetMeshByIndex(size_t index)
 {
     if (index >= m_vMeshes.size())
     {

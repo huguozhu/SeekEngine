@@ -68,7 +68,7 @@ public:
     virtual SResult Init() override;
     virtual void Uninit() override;
     virtual SResult CheckCapabilitySetSupport() override;
-    virtual MeshPtr CreateMesh() override;
+    virtual RHIMeshPtr CreateMesh() override;
     virtual ShaderPtr CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) override;
 
     virtual TexturePtr      CreateTexture2D(ID3D11Texture2DPtr const& tex);
@@ -97,19 +97,19 @@ public:
     virtual ProgramPtr      CreateProgram() override;
     virtual TimerQueryPtr   CreateTimerQuery() override;
 
-    virtual SResult AttachNativeWindow(std::string const& name, void* native_wnd = nullptr) override;
+    virtual SResult         AttachNativeWindow(std::string const& name, void* native_wnd = nullptr) override;
 
-    virtual SResult       BeginFrame() override;
-    virtual SResult       EndFrame() override;
+    virtual SResult         BeginFrame() override;
+    virtual SResult         EndFrame() override;
 
-    virtual SResult       BeginRenderPass(const RenderPassInfo& renderPassInfo) override;
-    virtual SResult       Render(Program* program, MeshPtr const& mesh) override;
-    virtual SResult       EndRenderPass() override;
+    virtual SResult         BeginRenderPass(const RenderPassInfo& renderPassInfo) override;
+    virtual SResult         Render(Program* program, RHIMeshPtr const& mesh) override;
+    virtual SResult         EndRenderPass() override;
 
     virtual void            BeginComputePass(const ComputePassInfo& computePassInfo) override;
-    virtual SResult       Dispatch(Program* program, uint32_t x, uint32_t y, uint32_t z) override;
-    virtual SResult       DispatchIndirect(Program* program, RenderBufferPtr indirectBuf) override;
-    virtual SResult       DrawIndirect(Program* program, RenderStatePtr rs, RenderBufferPtr indirectBuf, MeshTopologyType type) override;
+    virtual SResult         Dispatch(Program* program, uint32_t x, uint32_t y, uint32_t z) override;
+    virtual SResult         DispatchIndirect(Program* program, RenderBufferPtr indirectBuf) override;
+    virtual SResult         DrawIndirect(Program* program, RenderStatePtr rs, RenderBufferPtr indirectBuf, MeshTopologyType type) override;
     virtual void            EndComputePass() override;
 
     virtual SResult SyncTexture(TexturePtr tex) override { return S_Success; }

@@ -27,14 +27,14 @@ public:
     };
     
     SResult                         BindRHIFrameBuffer(RHIFrameBufferPtr const& fb);
-    RHIFrameBufferPtr const&           GetScreenRHIFrameBuffer() const;
-    RHIFrameBufferPtr const&           GetFinalRHIFrameBuffer() const;
-    RHIFrameBufferPtr const&           GetCurRHIFrameBuffer() const;
+    RHIFrameBufferPtr const&        GetScreenRHIFrameBuffer() const;
+    RHIFrameBufferPtr const&        GetFinalRHIFrameBuffer() const;
+    RHIFrameBufferPtr const&        GetCurRHIFrameBuffer() const;
     void                            SetFinalRHIFrameBuffer(RHIFrameBufferPtr const& fb);
 
     CapabilitySet const&            GetCapabilitySet() const { return m_CapabilitySet; }
-    MeshPtr                         GetCubeMesh();
-    MeshPtr                         GetConeMesh();
+    RHIMeshPtr                      GetCubeMesh();
+    RHIMeshPtr                      GetConeMesh();
     
     // if (D3D/OpenGL/Metal) VU's Y Direction Need Flipping
     virtual bool                    NeedFlipping() { return true; }
@@ -45,7 +45,7 @@ public: // virutal factory
     virtual SResult                 CheckCapabilitySetSupport() = 0;
     virtual void                    Uninit() = 0;
     virtual SResult                 AttachNativeWindow(std::string const& name, void* native_wnd = nullptr) = 0;
-    virtual MeshPtr                 CreateMesh() = 0;
+    virtual RHIMeshPtr                  CreateMesh() = 0;
     virtual ShaderPtr               CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) = 0;
     virtual std::vector<TexturePtr> CreateTexture2DFromNative(void* gpu_data, std::vector<PixelFormat> format) { return std::vector<TexturePtr>(); }
             TexturePtr              CreateTexture2D(const BitmapBufferPtr data);
@@ -65,7 +65,7 @@ public: // virutal factory
     virtual RenderViewPtr           CreateRenderTargetView(TexturePtr const& tex, CubeFaceType face, uint32_t lod = 0) { return nullptr; }
     virtual RenderViewPtr           CreateDepthStencilView(TexturePtr const& tex) = 0;
     virtual RenderViewPtr           CreateDepthStencilView(TexturePtr const& tex, CubeFaceType face) { return nullptr; }
-    virtual RHIFrameBufferPtr          CreateRHIFrameBuffer() = 0;
+    virtual RHIFrameBufferPtr       CreateRHIFrameBuffer() = 0;
     virtual ProgramPtr              CreateProgram() = 0;
     virtual TimerQueryPtr           CreateTimerQuery() = 0;
 
@@ -75,7 +75,7 @@ public: // virutal factory
     virtual SResult                 EndFrame() = 0;
     
     virtual SResult                 BeginRenderPass(const RenderPassInfo& renderPassInfo) = 0;
-    virtual SResult                 Render(Program* program, MeshPtr const& mesh) = 0;
+    virtual SResult                 Render(Program* program, RHIMeshPtr const& mesh) = 0;
     virtual SResult                 EndRenderPass() = 0;
     
     virtual void                    BeginComputePass(const ComputePassInfo& computePassInfo) = 0;
@@ -119,13 +119,13 @@ protected:
     void                            CreateCommonMesh();
 
     Context*                        m_pContext;
-    RHIFrameBufferPtr                  m_pScreenRHIFrameBuffer = nullptr;
-    RHIFrameBufferPtr                  m_pFinalRHIFrameBuffer = nullptr;
-    RHIFrameBufferPtr                  m_pCurRHIFrameBuffer = nullptr;
+    RHIFrameBufferPtr               m_pScreenRHIFrameBuffer = nullptr;
+    RHIFrameBufferPtr               m_pFinalRHIFrameBuffer = nullptr;
+    RHIFrameBufferPtr               m_pCurRHIFrameBuffer = nullptr;
 
     CapabilitySet                   m_CapabilitySet;
-    MeshPtr                         m_pCubeMesh;
-    MeshPtr                         m_pConeMesh;
+    RHIMeshPtr                      m_pCubeMesh;
+    RHIMeshPtr                      m_pConeMesh;
 
     // Reused Variable
     std::map<SamplerDesc, SamplerPtr>           m_Samplers;

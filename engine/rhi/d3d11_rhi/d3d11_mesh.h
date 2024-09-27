@@ -6,7 +6,7 @@
 
 SEEK_NAMESPACE_BEGIN
 
-class D3D11Mesh : public Mesh
+class D3D11Mesh : public RHIMesh
 {
 public:
     D3D11Mesh(Context* context);

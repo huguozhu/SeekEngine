@@ -6,7 +6,7 @@
 SEEK_NAMESPACE_BEGIN
 
 std::vector<float>      QuadMesh_GetVertices(float left = 0, float right = 1, float top = 0, float bottom = 1); // 0 ~ 1
-MeshPtr                 QuadMesh_GetMesh(RHIContext& ctx, std::vector<float>* vertices = nullptr);
+RHIMeshPtr              QuadMesh_GetMesh(RHIContext& ctx, std::vector<float>* vertices = nullptr);
 
 void                    QuadMesh_VertexRotate       (std::vector<float>& vertices, int angle, uint32_t* width = nullptr, uint32_t* height = nullptr);
 void                    QuadMesh_VertexAspectRadio  (std::vector<float>& vertices, int aspect_radio_mode, float dst_aspect_ratio, float src_aspect_ratio);
