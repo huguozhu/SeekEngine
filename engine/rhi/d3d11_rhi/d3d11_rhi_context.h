@@ -59,7 +59,7 @@ protected:
 
     ComPtr<IDXGraphicsAnalysis> m_pGraphicsAnalysis = nullptr;
 
-    D3D11TimerQueryExecutor m_TimerQueryExecutor{ m_pContext };
+    D3D11TimerRHIQueryExecutor m_TimerRHIQueryExecutor{ m_pContext };
 
     D3D11RHIFrameBuffer* m_pCurrentRHIFrameBuffer = nullptr;
 
@@ -94,8 +94,8 @@ public:
     virtual RenderViewPtr   CreateDepthStencilView(TexturePtr const& tex, CubeFaceType face) override;
 
     virtual RHIFrameBufferPtr  CreateRHIFrameBuffer() override;
-    virtual ProgramPtr      CreateProgram() override;
-    virtual TimerQueryPtr   CreateTimerQuery() override;
+    virtual RHIProgramPtr      CreateRHIProgram() override;
+    virtual TimerRHIQueryPtr   CreateTimerRHIQuery() override;
 
     virtual SResult         AttachNativeWindow(std::string const& name, void* native_wnd = nullptr) override;
 
@@ -103,13 +103,13 @@ public:
     virtual SResult         EndFrame() override;
 
     virtual SResult         BeginRenderPass(const RenderPassInfo& renderPassInfo) override;
-    virtual SResult         Render(Program* program, RHIMeshPtr const& mesh) override;
+    virtual SResult         Render(RHIProgram* program, RHIMeshPtr const& mesh) override;
     virtual SResult         EndRenderPass() override;
 
     virtual void            BeginComputePass(const ComputePassInfo& computePassInfo) override;
-    virtual SResult         Dispatch(Program* program, uint32_t x, uint32_t y, uint32_t z) override;
-    virtual SResult         DispatchIndirect(Program* program, RenderBufferPtr indirectBuf) override;
-    virtual SResult         DrawIndirect(Program* program, RenderStatePtr rs, RenderBufferPtr indirectBuf, MeshTopologyType type) override;
+    virtual SResult         Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z) override;
+    virtual SResult         DispatchIndirect(RHIProgram* program, RenderBufferPtr indirectBuf) override;
+    virtual SResult         DrawIndirect(RHIProgram* program, RenderStatePtr rs, RenderBufferPtr indirectBuf, MeshTopologyType type) override;
     virtual void            EndComputePass() override;
 
     virtual SResult SyncTexture(TexturePtr tex) override { return S_Success; }
@@ -118,8 +118,8 @@ public:
     virtual void BeginCapture() override;
     virtual void EndCapture() override;
 
-    virtual void BeginTimerQuery(TimerQueryPtr& timerQuery) override;
-    virtual void EndTimerQuery(TimerQueryPtr& timerQuery) override;
+    virtual void BeginTimerRHIQuery(TimerRHIQueryPtr& timerRHIQuery) override;
+    virtual void EndTimerRHIQuery(TimerRHIQueryPtr& timerRHIQuery) override;
 
     virtual void BindConstantBuffer(ShaderType stage, uint32_t binding, const RenderBuffer* cbuffer, const char* name) override;
     virtual void BindRenderBuffer(ShaderType stage, uint32_t binding, const RenderBuffer* buffer, const char* name) override;

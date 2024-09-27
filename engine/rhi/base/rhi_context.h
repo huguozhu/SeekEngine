@@ -66,22 +66,22 @@ public: // virutal factory
     virtual RenderViewPtr           CreateDepthStencilView(TexturePtr const& tex) = 0;
     virtual RenderViewPtr           CreateDepthStencilView(TexturePtr const& tex, CubeFaceType face) { return nullptr; }
     virtual RHIFrameBufferPtr       CreateRHIFrameBuffer() = 0;
-    virtual ProgramPtr              CreateProgram() = 0;
-    virtual TimerQueryPtr           CreateTimerQuery() = 0;
+    virtual RHIProgramPtr              CreateRHIProgram() = 0;
+    virtual TimerRHIQueryPtr           CreateTimerRHIQuery() = 0;
 
-    virtual void                    BindProgram(Program* program) {}
+    virtual void                    BindRHIProgram(RHIProgram* program) {}
 
     virtual SResult                 BeginFrame() = 0;
     virtual SResult                 EndFrame() = 0;
     
     virtual SResult                 BeginRenderPass(const RenderPassInfo& renderPassInfo) = 0;
-    virtual SResult                 Render(Program* program, RHIMeshPtr const& mesh) = 0;
+    virtual SResult                 Render(RHIProgram* program, RHIMeshPtr const& mesh) = 0;
     virtual SResult                 EndRenderPass() = 0;
     
     virtual void                    BeginComputePass(const ComputePassInfo& computePassInfo) = 0;
-    virtual SResult                 Dispatch(Program* program, uint32_t x, uint32_t y, uint32_t z) = 0;
-    virtual SResult                 DispatchIndirect(Program* program, RenderBufferPtr indirectBuf) { return 0; }
-    virtual SResult                 DrawIndirect(Program* program, RenderStatePtr rs, RenderBufferPtr indirectBuf, MeshTopologyType type) { return 0; }
+    virtual SResult                 Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z) = 0;
+    virtual SResult                 DispatchIndirect(RHIProgram* program, RenderBufferPtr indirectBuf) { return 0; }
+    virtual SResult                 DrawIndirect(RHIProgram* program, RenderStatePtr rs, RenderBufferPtr indirectBuf, MeshTopologyType type) { return 0; }
     virtual void                    EndComputePass() = 0;
 
     virtual SResult                 SyncTexture(TexturePtr tex) { return ERR_NOT_IMPLEMENTED; }
@@ -93,8 +93,8 @@ public: // virutal factory
     virtual void                    BeginCapture() {}
     virtual void                    EndCapture() {}
 
-    virtual void                    BeginTimerQuery(TimerQueryPtr&) = 0;
-    virtual void                    EndTimerQuery(TimerQueryPtr&) = 0;
+    virtual void                    BeginTimerRHIQuery(TimerRHIQueryPtr&) = 0;
+    virtual void                    EndTimerRHIQuery(TimerRHIQueryPtr&) = 0;
 
     // Global common reused variable
     SamplerPtr                      GetSampler(SamplerDesc const& desc);

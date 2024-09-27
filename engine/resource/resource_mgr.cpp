@@ -12,17 +12,17 @@
 
 SEEK_NAMESPACE_BEGIN
 
-static inline ShaderContent QueryGeneratedShaderMetaContent(const std::string& shaderName)
+static inline ShaderContent RHIQueryGeneratedShaderMetaContent(const std::string& shaderName)
 {
     return QueryShaderMetaContent(shaderName);
 }
 
-static inline ShaderContent QueryGeneratedShaderCodeContent(const std::string& shaderLanguage, const std::string& shaderName, bool isDebug)
+static inline ShaderContent RHIQueryGeneratedShaderCodeContent(const std::string& shaderLanguage, const std::string& shaderName, bool isDebug)
 {
     if (isDebug)
     {
 #if defined(SEEK_SHADER_GENERATE_DEBUG)
-        return QueryShaderCodeContent_debug(shaderLanguage, shaderName);
+        return RHIQueryShaderCodeContent_debug(shaderLanguage, shaderName);
 #else
         LOG_ERROR("debug shader is not generated, please reconfigure with SEEK_SHADER_GENERATE_DEBUG enabled");
         return ShaderContent{ nullptr, 0 };
@@ -34,12 +34,12 @@ static inline ShaderContent QueryGeneratedShaderCodeContent(const std::string& s
     }
 }
 
-static inline ShaderContent QueryGeneratedShaderReflectContent(const std::string& shaderLanguage, const std::string& shaderName, bool isDebug)
+static inline ShaderContent RHIQueryGeneratedShaderReflectContent(const std::string& shaderLanguage, const std::string& shaderName, bool isDebug)
 {
     if (isDebug)
     {
 #if defined(SEEK_SHADER_GENERATE_DEBUG)
-        return QueryShaderReflectContent_debug(shaderLanguage, shaderName);
+        return RHIQueryShaderReflectContent_debug(shaderLanguage, shaderName);
 #else
         LOG_ERROR("debug shader is not generated, please reconfigure with SEEK_SHADER_GENERATE_DEBUG enabled");
         return ShaderContent{ nullptr, 0 };
@@ -243,7 +243,7 @@ SResult MetaShaderResource::Load(const std::string& metaShaderName)
 //    metaData = _fileRes._data;
 //    metaSize = _fileRes._size;
 //#else
-    auto content = QueryGeneratedShaderMetaContent(metaShaderName);
+    auto content = RHIQueryGeneratedShaderMetaContent(metaShaderName);
     if (!content.first)
     {
         LOG_ERROR("get shader %s meta content fail", metaShaderName.c_str());
@@ -302,14 +302,14 @@ SResult ShaderResource::Load(const std::string& shaderName)
 //    reflectData = reflectFileRes._data;
 //    reflectSize = reflectFileRes._size;
 //#else
-    auto codeContent = QueryGeneratedShaderCodeContent(resourceMgr->GetShaderLanguageStr(), shaderName, false);
+    auto codeContent = RHIQueryGeneratedShaderCodeContent(resourceMgr->GetShaderLanguageStr(), shaderName, false);
     if (!codeContent.first)
     {
         LOG_ERROR("get shader %s code content fail", shaderName.c_str());
         return ERR_FILE_NOT_FOUND;
     }
 
-    auto reflectContent = QueryGeneratedShaderReflectContent(resourceMgr->GetShaderLanguageStr(), shaderName, false);
+    auto reflectContent = RHIQueryGeneratedShaderReflectContent(resourceMgr->GetShaderLanguageStr(), shaderName, false);
     if (!reflectContent.first)
     {
         LOG_ERROR("get shader %s code content fail", shaderName.c_str());

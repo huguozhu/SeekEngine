@@ -12,14 +12,14 @@ public:
     D3D11Mesh(Context* context);
     virtual ~D3D11Mesh() override;
 
-    SResult Active(Program* program);
+    SResult Active(RHIProgram* program);
     SResult Deactive() const;
-    ID3D11InputLayout* GetInputLayout(Program* program) const;
+    ID3D11InputLayout* GetInputLayout(RHIProgram* program) const;
 
 private:
     mutable std::vector<D3D11_INPUT_ELEMENT_DESC> m_vD3DInputElementDescs;
     mutable std::tuple<std::vector<ID3D11Buffer*>, std::vector<UINT>, std::vector<UINT>> m_vD3DInputElementInfos;   // Buffer-stride-offset
-    mutable std::vector<std::pair<Program*, ID3D11InputLayoutPtr>> m_vD3DInputLayouts;
+    mutable std::vector<std::pair<RHIProgram*, ID3D11InputLayoutPtr>> m_vD3DInputLayouts;
 };
 
 

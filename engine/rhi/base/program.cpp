@@ -5,13 +5,13 @@
 
 SEEK_NAMESPACE_BEGIN
 
-SResult Program::SetShader(Shader* shader)
+SResult RHIProgram::SetShader(Shader* shader)
 {
     if (!shader) return ERR_INVALID_ARG;
     m_vShaders[int(shader->Type())] = shader;
 
     char* begin = (char*)this;
-    m_Hash = HashRange(begin, begin+sizeof(Program));
+    m_Hash = HashRange(begin, begin+sizeof(RHIProgram));
     return S_Success;
 }
 

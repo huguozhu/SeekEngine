@@ -144,13 +144,13 @@ RHIFrameBufferPtr D3D11RHIContext::CreateRHIFrameBuffer()
     RHIFrameBufferPtr fb = MakeSharedPtr<D3D11RHIFrameBuffer>(m_pContext);
     return fb;
 }
-ProgramPtr D3D11RHIContext::CreateProgram()
+RHIProgramPtr D3D11RHIContext::CreateRHIProgram()
 { 
-    return MakeSharedPtr<D3D11Program>(m_pContext);
+    return MakeSharedPtr<D3D11RHIProgram>(m_pContext);
 }
-TimerQueryPtr D3D11RHIContext::CreateTimerQuery()
+TimerRHIQueryPtr D3D11RHIContext::CreateTimerRHIQuery()
 {
-    return MakeSharedPtr<D3D11TimerQuery>(m_pContext);
+    return MakeSharedPtr<D3D11TimerRHIQuery>(m_pContext);
 }
 SEEK_NAMESPACE_END
 

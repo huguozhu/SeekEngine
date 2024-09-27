@@ -89,10 +89,10 @@ CLASS_DECLARE(RenderBuffer);
 CLASS_DECLARE(Texture);
 CLASS_DECLARE(Sampler);
 CLASS_DECLARE(Shader);
-CLASS_DECLARE(Program);
+CLASS_DECLARE(RHIProgram);
 CLASS_DECLARE(RenderState);
 CLASS_DECLARE(RenderView);
-CLASS_DECLARE(TimerQuery);
+CLASS_DECLARE(TimerRHIQuery);
 
 // Thread
 CLASS_DECLARE(Thread);

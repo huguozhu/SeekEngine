@@ -5,11 +5,11 @@
 
 SEEK_NAMESPACE_BEGIN
 
-class Program
+class RHIProgram
 {
 public:
-    Program(Context* context) : m_pContext(context) {}
-    virtual     ~Program() {}
+    RHIProgram(Context* context) : m_pContext(context) {}
+    virtual     ~RHIProgram() {}
     Shader*     GetShader(ShaderType type) const { return m_vShaders[to_underlying(type)]; }
     SResult   SetShader(Shader* shader);
 

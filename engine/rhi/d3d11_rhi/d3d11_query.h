@@ -6,12 +6,12 @@
 
 SEEK_NAMESPACE_BEGIN
 
-class D3D11TimerQuery : public TimerQuery
+class D3D11TimerRHIQuery : public TimerRHIQuery
 {
     Context* m_pContext = nullptr;
 public:
-    D3D11TimerQuery(Context* context);
-    virtual ~D3D11TimerQuery() override;
+    D3D11TimerRHIQuery(Context* context);
+    virtual ~D3D11TimerRHIQuery() override;
 
     bool Valid() const
     {
@@ -36,15 +36,15 @@ public:
     double m_TimeElapsedInMs = 0.0;
 };
 
-class D3D11TimerQueryExecutor
+class D3D11TimerRHIQueryExecutor
 {
 public:
-    D3D11TimerQueryExecutor(Context* context)
+    D3D11TimerRHIQueryExecutor(Context* context)
         : m_pContext(context)
     { }
 
-    void Begin(TimerQueryPtr& timerQuery);
-    void End(TimerQueryPtr& timerQuery);
+    void Begin(TimerRHIQueryPtr& timerRHIQuery);
+    void End(TimerRHIQueryPtr& timerRHIQuery);
 
 private:
     Context* m_pContext = nullptr;

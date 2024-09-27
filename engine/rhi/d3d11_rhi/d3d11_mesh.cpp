@@ -30,7 +30,7 @@ D3D11Mesh::~D3D11Mesh()
     m_vD3DInputLayouts.clear();
 }
 
-SResult D3D11Mesh::Active(Program* program)
+SResult D3D11Mesh::Active(RHIProgram* program)
 {
     // Step1: Update Dirty Data
     uint32_t vertex_stream_count = this->NumVertexStream();
@@ -123,7 +123,7 @@ SResult D3D11Mesh::Deactive() const
 {
     return S_Success;
 }
-ID3D11InputLayout* D3D11Mesh::GetInputLayout(Program* program) const
+ID3D11InputLayout* D3D11Mesh::GetInputLayout(RHIProgram* program) const
 {
     if (m_vVertexStreams.empty())
         return nullptr;

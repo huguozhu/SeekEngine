@@ -5,24 +5,24 @@
 
 SEEK_NAMESPACE_BEGIN
 
-class Query
+class RHIQuery
 {
 public:
-	virtual ~Query() {}
+	virtual ~RHIQuery() {}
 
 	virtual void Begin() = 0;
 	virtual void End() = 0;
 };
 
-struct TimerQuery
+struct TimerRHIQuery
 {
-	virtual ~TimerQuery() {}
+	virtual ~TimerRHIQuery() {}
 	
 	virtual bool Available() = 0;
 	virtual double GetTimeElapsedInMs() = 0;
 };
 
-//struct CPUTimerQuery : public TimerQuery
+//struct CPUTimerRHIQuery : public TimerRHIQuery
 //{
 //	bool Available()
 //	{
@@ -40,17 +40,17 @@ struct TimerQuery
 //	bool available = false;
 //};
 //
-//struct CPUTimerQueryExecutor
+//struct CPUTimerRHIQueryExecutor
 //{
-//	void Begin(TimerQueryPtr& timerQuery)
+//	void Begin(TimerRHIQueryPtr& timerRHIQuery)
 //	{
-//		CPUTimerQuery* cpuTQ = static_cast<CPUTimerQuery*>(timerQuery.get());
+//		CPUTimerRHIQuery* cpuTQ = static_cast<CPUTimerRHIQuery*>(timerRHIQuery.get());
 //		cpuTQ->beginTime = Timer::CurrentTimeSinceEpoch_S();
 //	}
 //
-//	void End(TimerQueryPtr& timerQuery)
+//	void End(TimerRHIQueryPtr& timerRHIQuery)
 //	{
-//		CPUTimerQuery* cpuTQ = static_cast<CPUTimerQuery*>(timerQuery.get());
+//		CPUTimerRHIQuery* cpuTQ = static_cast<CPUTimerRHIQuery*>(timerRHIQuery.get());
 //		cpuTQ->endTime = Timer::CurrentTimeSinceEpoch_S();
 //		cpuTQ->timeElapsed = cpuTQ->endTime - cpuTQ->beginTime;
 //		cpuTQ->available = true;

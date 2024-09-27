@@ -49,9 +49,9 @@ public:
     const std::vector<MeshPair>&        GetOpaqueMeshList() { return m_OpaqueMeshList; }
     const std::vector<MeshPair>&        GetTransparentMeshList() { return m_TransparentMeshList; }
 
-    // Query = std::function<bool(const MeshPair&)>
-    template<typename Query>
-    std::vector<MeshPair> QueryMesh(Query query)
+    // RHIQuery = std::function<bool(const MeshPair&)>
+    template<typename RHIQuery>
+    std::vector<MeshPair> RHIQueryMesh(RHIQuery query)
     {
         std::vector<MeshPair> outMeshes;
         CameraComponent* pActiveCamera = GetActiveCamera();

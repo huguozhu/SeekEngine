@@ -627,7 +627,7 @@ SResult D3D11RHIContext::BeginRenderPass(const RenderPassInfo& renderPassInfo)
     return S_Success;
 }
 
-SResult D3D11RHIContext::Render(Program* program, RHIMeshPtr const& mesh)
+SResult D3D11RHIContext::Render(RHIProgram* program, RHIMeshPtr const& mesh)
 {
     if (!m_pCurrentRHIFrameBuffer)
     {
@@ -640,7 +640,7 @@ SResult D3D11RHIContext::Render(Program* program, RHIMeshPtr const& mesh)
     RenderState* rs = mesh->GetRenderState().get();
 
     SEEK_RETIF_FAIL(((D3D11RenderState*)(rs))->Active());
-    SEEK_RETIF_FAIL(((D3D11Program*)(program))->Active());
+    SEEK_RETIF_FAIL(((D3D11RHIProgram*)(program))->Active());
 
     D3D11Mesh& d3d_mesh = static_cast<D3D11Mesh&>(*mesh);
     SEEK_RETIF_FAIL(d3d_mesh.Active(program));
@@ -674,7 +674,7 @@ SResult D3D11RHIContext::Render(Program* program, RHIMeshPtr const& mesh)
     }
 
     SEEK_RETIF_FAIL(d3d_mesh.Deactive());
-    ((D3D11Program*)program)->Deactive();
+    ((D3D11RHIProgram*)program)->Deactive();
 
     //std::vector<ID3D11ShaderResourceView*> null_srvs(16);
     //m_pDeviceContext->PSSetShaderResources(0, 16, null_srvs.data());
@@ -696,35 +696,35 @@ void D3D11RHIContext::BeginComputePass(const ComputePassInfo& computePassInfo)
 
 }
 
-SResult D3D11RHIContext::Dispatch(Program* program, uint32_t x, uint32_t y, uint32_t z)
+SResult D3D11RHIContext::Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z)
 {
     SResult res = S_Success;
-    SEEK_RETIF_FAIL(((D3D11Program*)(program))->Active());
+    SEEK_RETIF_FAIL(((D3D11RHIProgram*)(program))->Active());
     x = x <= D3D11_CS_DISPATCH_MAX_THREAD_GROUPS_PER_DIMENSION ? x : D3D11_CS_DISPATCH_MAX_THREAD_GROUPS_PER_DIMENSION;
     y = y <= D3D11_CS_DISPATCH_MAX_THREAD_GROUPS_PER_DIMENSION ? y : D3D11_CS_DISPATCH_MAX_THREAD_GROUPS_PER_DIMENSION;
     z = z <= D3D11_CS_DISPATCH_MAX_THREAD_GROUPS_PER_DIMENSION ? z : D3D11_CS_DISPATCH_MAX_THREAD_GROUPS_PER_DIMENSION;
     m_pDeviceContext->Dispatch(x, y, z);
-    ((D3D11Program*)program)->Deactive();
+    ((D3D11RHIProgram*)program)->Deactive();
     return res;
 }
-SResult D3D11RHIContext::DispatchIndirect(Program* program, RenderBufferPtr indirectBuf)
+SResult D3D11RHIContext::DispatchIndirect(RHIProgram* program, RenderBufferPtr indirectBuf)
 {
     SResult res = S_Success;
-    SEEK_RETIF_FAIL(((D3D11Program*)(program))->Active());
+    SEEK_RETIF_FAIL(((D3D11RHIProgram*)(program))->Active());
     D3D11RenderBuffer* pD3DBuf = (D3D11RenderBuffer*)indirectBuf.get();
     m_pDeviceContext->DispatchIndirect(pD3DBuf->GetD3DBuffer(), 0);
-    ((D3D11Program*)program)->Deactive();
+    ((D3D11RHIProgram*)program)->Deactive();
     return res;
 }
-SResult D3D11RHIContext::DrawIndirect(Program* program, RenderStatePtr rs, RenderBufferPtr indirectBuf, MeshTopologyType type)
+SResult D3D11RHIContext::DrawIndirect(RHIProgram* program, RenderStatePtr rs, RenderBufferPtr indirectBuf, MeshTopologyType type)
 {
     SResult res = S_Success;
     SEEK_RETIF_FAIL(((D3D11RenderState*)(rs.get()))->Active());
-    SEEK_RETIF_FAIL(((D3D11Program*)(program))->Active());
+    SEEK_RETIF_FAIL(((D3D11RHIProgram*)(program))->Active());
     D3D11RenderBuffer* pD3DBuf = (D3D11RenderBuffer*)indirectBuf.get();
     m_pDeviceContext->IASetPrimitiveTopology(D3D11Translate::TranslatePrimitiveTopology(type));
     m_pDeviceContext->DrawInstancedIndirect(pD3DBuf->GetD3DBuffer(), 0);
-    ((D3D11Program*)program)->Deactive();
+    ((D3D11RHIProgram*)program)->Deactive();
     return res;
 }
 void D3D11RHIContext::EndComputePass()
@@ -757,14 +757,14 @@ void D3D11RHIContext::EndCapture()
     }
 }
 
-void D3D11RHIContext::BeginTimerQuery(TimerQueryPtr& timerQuery)
+void D3D11RHIContext::BeginTimerRHIQuery(TimerRHIQueryPtr& timerRHIQuery)
 {
-    m_TimerQueryExecutor.Begin(timerQuery);
+    m_TimerRHIQueryExecutor.Begin(timerRHIQuery);
 }
 
-void D3D11RHIContext::EndTimerQuery(TimerQueryPtr& timerQuery)
+void D3D11RHIContext::EndTimerRHIQuery(TimerRHIQueryPtr& timerRHIQuery)
 {
-    m_TimerQueryExecutor.End(timerQuery);
+    m_TimerRHIQueryExecutor.End(timerRHIQuery);
 }
 
 void D3D11RHIContext::BindConstantBuffer(ShaderType stage, uint32_t binding, const RenderBuffer* cbuffer, const char* name)
