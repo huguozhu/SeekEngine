@@ -24,7 +24,7 @@ public:
     virtual void            Value(Tp                     & value) const { LOG_ERROR("Can't be called."); } \
     virtual void            Value(std::vector<Tp>        & value) const { LOG_ERROR("Can't be called."); }
 
-    EffectVariable_Declare(TexturePtr)
+    EffectVariable_Declare(RHITexturePtr)
     EffectVariable_Declare(SamplerPtr)
     EffectVariable_Declare(RHIRenderBufferPtr)
 #undef EffectVariable_Declare
@@ -102,7 +102,7 @@ private:
     using EffectVariable##name          = EffectVariableConcrete<type>;
 
 EFFECT_VARIABLE_CONCRETE(Sampler,       SamplerPtr)
-EFFECT_VARIABLE_CONCRETE(Texture,       TexturePtr)
+EFFECT_VARIABLE_CONCRETE(RHITexture,       RHITexturePtr)
 EFFECT_VARIABLE_CONCRETE(RHIRenderBuffer,  RHIRenderBufferPtr)
 
 #undef EFFECT_VARIABLE_CONCRETE

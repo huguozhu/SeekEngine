@@ -17,8 +17,8 @@ SEEK_NAMESPACE_BEGIN
 /******************************************************************************
 * D3D11Texture
 *******************************************************************************/
-D3D11Texture::D3D11Texture(Context* context, const Texture::Desc& tex_desc)
-    : Texture(context, tex_desc)
+D3D11Texture::D3D11Texture(Context* context, const RHITexture::Desc& tex_desc)
+    : RHITexture(context, tex_desc)
 {
     m_eDxgiFormat = D3D11Translate::TranslateToPlatformFormat(m_desc.format);
 }
@@ -234,7 +234,7 @@ void D3D11Texture::FillTextureDesc(D3D11_TEXTURE2D_DESC& desc)
 /******************************************************************************
 * D3D11Texture2D
 *******************************************************************************/
-D3D11Texture2D::D3D11Texture2D(Context* context, const Texture::Desc& tex_desc)
+D3D11Texture2D::D3D11Texture2D(Context* context, const RHITexture::Desc& tex_desc)
     : D3D11Texture(context, tex_desc)
 {
 }
@@ -244,7 +244,7 @@ D3D11Texture2D::~D3D11Texture2D()
 }
 
 D3D11Texture2D::D3D11Texture2D(Context* context, ID3D11Texture2DPtr const& tex)
-    : D3D11Texture(context, Texture::Desc{})
+    : D3D11Texture(context, RHITexture::Desc{})
 {
     D3D11_TEXTURE2D_DESC desc = {};
     tex->GetDesc(&desc);
@@ -623,7 +623,7 @@ SResult D3D11Texture2D::Resolve()
 /******************************************************************************
 * D3D11TextureCube
 *******************************************************************************/
-D3D11TextureCube::D3D11TextureCube(Context* context, const Texture::Desc& tex_desc)
+D3D11TextureCube::D3D11TextureCube(Context* context, const RHITexture::Desc& tex_desc)
     :D3D11Texture(context, tex_desc)
 {
     m_vCubeDSV.resize((uint32_t)CubeFaceType::Num, nullptr);
@@ -802,7 +802,7 @@ SResult D3D11TextureCube::CreateCube(std::vector<BitmapBufferPtr>* bitmap_datas)
 /******************************************************************************
 * D3D11Texture3D
 *******************************************************************************/
-D3D11Texture3D::D3D11Texture3D(Context* context, const Texture::Desc& tex_desc)
+D3D11Texture3D::D3D11Texture3D(Context* context, const RHITexture::Desc& tex_desc)
     :D3D11Texture(context, tex_desc)
 {
 }

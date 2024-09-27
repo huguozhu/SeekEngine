@@ -10,17 +10,17 @@ class Material
 public:
     std::string         name = "";
 
-    TexturePtr          albedo_tex = nullptr;
-    TexturePtr          normal_tex = nullptr;
-    TexturePtr          normal_mask_tex = nullptr;
-    TexturePtr          occlusion_tex = nullptr;
-    TexturePtr          metallic_roughness_tex = nullptr;
-    TexturePtr          emissive_tex = nullptr;
+    RHITexturePtr          albedo_tex = nullptr;
+    RHITexturePtr          normal_tex = nullptr;
+    RHITexturePtr          normal_mask_tex = nullptr;
+    RHITexturePtr          occlusion_tex = nullptr;
+    RHITexturePtr          metallic_roughness_tex = nullptr;
+    RHITexturePtr          emissive_tex = nullptr;
     //extensions
-    TexturePtr          clearcoat_tex = nullptr;
-    TexturePtr          clearcoat_roughness_tex = nullptr;
-    TexturePtr          sheen_color_tex = nullptr;
-    TexturePtr          sheen_roughness_tex = nullptr;
+    RHITexturePtr          clearcoat_tex = nullptr;
+    RHITexturePtr          clearcoat_roughness_tex = nullptr;
+    RHITexturePtr          sheen_color_tex = nullptr;
+    RHITexturePtr          sheen_roughness_tex = nullptr;
 
     float4              albedo_factor = float4(1.0);
     float               normal_scale = 1.0f;

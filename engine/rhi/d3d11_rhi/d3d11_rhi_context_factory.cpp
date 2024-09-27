@@ -24,21 +24,21 @@ RHIShaderPtr D3D11RHIContext::CreateShader(ShaderType type, std::string const& n
     return MakeSharedPtr<D3D11Shader>(m_pContext, type, name, entry_func_name, code);
 }
 
-TexturePtr D3D11RHIContext::CreateTexture2D(ID3D11Texture2DPtr const& tex)
+RHITexturePtr D3D11RHIContext::CreateTexture2D(ID3D11Texture2DPtr const& tex)
 {
     return MakeSharedPtr<D3D11Texture2D>(m_pContext, tex);
 }
 
-TexturePtr D3D11RHIContext::CreateTexture2D(const Texture::Desc& tex_desc, const BitmapBufferPtr init_data)
+RHITexturePtr D3D11RHIContext::CreateTexture2D(const RHITexture::Desc& tex_desc, const BitmapBufferPtr init_data)
 {
     if (tex_desc.type != TextureType::Tex2D || tex_desc.width < 0 || tex_desc.height < 0 || tex_desc.num_mips <= 0)
         return nullptr;
 
-    TexturePtr tex = MakeSharedPtr<D3D11Texture2D>(m_pContext, tex_desc);
+    RHITexturePtr tex = MakeSharedPtr<D3D11Texture2D>(m_pContext, tex_desc);
     SResult ret = tex->Create(std::vector<BitmapBufferPtr>{init_data});
     return SEEK_CHECKFAILED(ret) ? nullptr : tex;
 }
-TexturePtr D3D11RHIContext::CreateTexture2D(const Texture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas)
+RHITexturePtr D3D11RHIContext::CreateTexture2D(const RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas)
 {
     if (tex_desc.type != TextureType::Tex2D || tex_desc.width < 0 || tex_desc.height < 0 || tex_desc.num_mips <= 0)
         return nullptr;
@@ -46,7 +46,7 @@ TexturePtr D3D11RHIContext::CreateTexture2D(const Texture::Desc& tex_desc, std::
     SResult ret = tex->Create(init_datas);
     return SEEK_CHECKFAILED(ret) ? nullptr : tex;
 }
-TexturePtr D3D11RHIContext::CreateTexture3D(const Texture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas)
+RHITexturePtr D3D11RHIContext::CreateTexture3D(const RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas)
 {
     if (tex_desc.type != TextureType::Tex3D || tex_desc.width < 0 || tex_desc.height < 0 || tex_desc.num_mips <= 0)
         return nullptr;
@@ -54,7 +54,7 @@ TexturePtr D3D11RHIContext::CreateTexture3D(const Texture::Desc& tex_desc, std::
     SResult ret = tex->Create(init_datas);
     return SEEK_CHECKFAILED(ret) ? nullptr : tex;
 }
-TexturePtr D3D11RHIContext::CreateTextureCube(const Texture::Desc& tex_desc, std::vector<BitmapBufferPtr>* init_data)
+RHITexturePtr D3D11RHIContext::CreateTextureCube(const RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr>* init_data)
 {
     if (tex_desc.type != TextureType::Cube || tex_desc.width < 0 || tex_desc.height < 0 || tex_desc.num_mips <= 0)
         return nullptr;
@@ -119,22 +119,22 @@ SamplerPtr D3D11RHIContext::CreateSampler(SamplerDesc const& desc)
     return sampler;
 }
 
-RenderViewPtr D3D11RHIContext::CreateRenderTargetView(TexturePtr const& tex, uint32_t lod)
+RenderViewPtr D3D11RHIContext::CreateRenderTargetView(RHITexturePtr const& tex, uint32_t lod)
 {
     RenderViewPtr rtv = MakeSharedPtr<D3D11RenderTargetView>(m_pContext, tex, lod);
     return rtv;
 }
-RenderViewPtr D3D11RHIContext::CreateRenderTargetView(TexturePtr const& tex, CubeFaceType face, uint32_t lod)
+RenderViewPtr D3D11RHIContext::CreateRenderTargetView(RHITexturePtr const& tex, CubeFaceType face, uint32_t lod)
 {
     RenderViewPtr rtv = MakeSharedPtr<D3D11CubeFaceRenderTargetView>(m_pContext, tex, face, lod);
     return rtv;
 }
-RenderViewPtr D3D11RHIContext::CreateDepthStencilView(TexturePtr const& tex)
+RenderViewPtr D3D11RHIContext::CreateDepthStencilView(RHITexturePtr const& tex)
 {
     RenderViewPtr dsv = MakeSharedPtr<D3D11DepthStencilView>(m_pContext, tex);
     return dsv;
 }
-RenderViewPtr D3D11RHIContext::CreateDepthStencilView(TexturePtr const& tex, CubeFaceType face)
+RenderViewPtr D3D11RHIContext::CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face)
 {
     RenderViewPtr rtv = MakeSharedPtr<D3D11CubeDepthStencilView>(m_pContext, tex, face);
     return rtv;

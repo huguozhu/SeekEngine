@@ -10,10 +10,10 @@ SEEK_NAMESPACE_BEGIN
 /******************************************************************************
 * D3D11Texture
 *******************************************************************************/
-class D3D11Texture : public Texture
+class D3D11Texture : public RHITexture
 {
 public:
-    D3D11Texture(Context* context, const Texture::Desc& tex_desc);
+    D3D11Texture(Context* context, const RHITexture::Desc& tex_desc);
     virtual ~D3D11Texture() override;
 
     virtual SResult Resolve() { return S_Success; }
@@ -54,7 +54,7 @@ using D3D11TexturePtr = std::shared_ptr<D3D11Texture>;
 class D3D11Texture2D : public D3D11Texture
 {
 public:
-    D3D11Texture2D(Context* context, const Texture::Desc& tex_desc);
+    D3D11Texture2D(Context* context, const RHITexture::Desc& tex_desc);
     D3D11Texture2D(Context* context, ID3D11Texture2DPtr const& tex);
     virtual ~D3D11Texture2D() override;
 
@@ -82,7 +82,7 @@ using D3D11Texture2DPtr = std::shared_ptr<D3D11Texture2D>;
 class D3D11TextureCube : public D3D11Texture
 {
 public:
-    D3D11TextureCube(Context* context, const Texture::Desc& tex_desc);
+    D3D11TextureCube(Context* context, const RHITexture::Desc& tex_desc);
 
     virtual ID3D11RenderTargetView* GetD3DRenderTargetView(CubeFaceType face, uint32_t lod = 0);
     virtual ID3D11DepthStencilView* GetD3DDepthStencilView(CubeFaceType face);
@@ -111,7 +111,7 @@ using D3D11TextureCubePtr = std::shared_ptr<D3D11TextureCube>;
 class D3D11Texture3D : public D3D11Texture
 {
 public:
-    D3D11Texture3D(Context* context, const Texture::Desc& tex_desc);
+    D3D11Texture3D(Context* context, const RHITexture::Desc& tex_desc);
 
     SResult Create(std::vector<BitmapBufferPtr> const& bitmap_datas) override;
     SResult Update(std::vector<BitmapBufferPtr> const& bitmap_datas) override { return S_Success; }

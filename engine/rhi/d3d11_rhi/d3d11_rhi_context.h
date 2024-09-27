@@ -71,49 +71,49 @@ public:
     virtual RHIMeshPtr CreateMesh() override;
     virtual RHIShaderPtr CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) override;
 
-    virtual TexturePtr      CreateTexture2D(ID3D11Texture2DPtr const& tex);
-    virtual TexturePtr      CreateTexture2D(const Texture::Desc& tex_desc, const BitmapBufferPtr init_data = nullptr) override;
-    virtual TexturePtr      CreateTexture2D(const Texture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas) override;
-    virtual TexturePtr      CreateTexture3D(const Texture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas) override;
-    virtual TexturePtr      CreateTextureCube(const Texture::Desc& tex_desc, std::vector<BitmapBufferPtr>* init_data = nullptr);
-    virtual RHIRenderBufferPtr CreateRHIRenderBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) override;
-    virtual RHIRenderBufferPtr CreateConstantBuffer(uint32_t size, ResourceFlags usage) override;
-    virtual RHIRenderBufferPtr CreateStructuredBuffer  (uint32_t size, ResourceFlags usage, uint32_t structure_byte_stride, RHIRenderBufferData* pData) override;
-    virtual RHIRenderBufferPtr CreateRWStructuredBuffer(uint32_t size, ResourceFlags usage, uint32_t structure_byte_stride, RHIRenderBufferData* pData) override;
-    virtual RHIRenderBufferPtr CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) override;
-    virtual RHIRenderBufferPtr CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) override;
-    virtual RHIRenderBufferPtr CreateVertexBuffer(uint32_t size, ResourceFlags usage, RHIRenderBufferData* pData) override;
-    virtual RHIRenderBufferPtr CreateIndexBuffer(uint32_t size, ResourceFlags usage, RHIRenderBufferData* pData) override;
+    virtual RHITexturePtr       CreateTexture2D(ID3D11Texture2DPtr const& tex);
+    virtual RHITexturePtr       CreateTexture2D(const  RHITexture::Desc& tex_desc, const BitmapBufferPtr init_data = nullptr) override;
+    virtual RHITexturePtr       CreateTexture2D(const  RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas) override;
+    virtual RHITexturePtr       CreateTexture3D(const  RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas) override;
+    virtual RHITexturePtr       CreateTextureCube(const  RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr>* init_data = nullptr);
+    virtual RHIRenderBufferPtr  CreateRHIRenderBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) override;
+    virtual RHIRenderBufferPtr  CreateConstantBuffer(uint32_t size, ResourceFlags usage) override;
+    virtual RHIRenderBufferPtr  CreateStructuredBuffer  (uint32_t size, ResourceFlags usage, uint32_t structure_byte_stride, RHIRenderBufferData* pData) override;
+    virtual RHIRenderBufferPtr  CreateRWStructuredBuffer(uint32_t size, ResourceFlags usage, uint32_t structure_byte_stride, RHIRenderBufferData* pData) override;
+    virtual RHIRenderBufferPtr  CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) override;
+    virtual RHIRenderBufferPtr  CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) override;
+    virtual RHIRenderBufferPtr  CreateVertexBuffer(uint32_t size, ResourceFlags usage, RHIRenderBufferData* pData) override;
+    virtual RHIRenderBufferPtr  CreateIndexBuffer(uint32_t size, ResourceFlags usage, RHIRenderBufferData* pData) override;
 
-    virtual RenderStatePtr  CreateRenderState(RenderStateDesc const& desc) override;
-    virtual SamplerPtr      CreateSampler(SamplerDesc const& desc) override;
+    virtual RenderStatePtr      CreateRenderState(RenderStateDesc const& desc) override;
+    virtual SamplerPtr          CreateSampler(SamplerDesc const& desc) override;
 
-    virtual RenderViewPtr   CreateRenderTargetView(TexturePtr const& tex, uint32_t lod = 0) override;
-    virtual RenderViewPtr   CreateRenderTargetView(TexturePtr const& tex, CubeFaceType face, uint32_t lod = 0) override;
-    virtual RenderViewPtr   CreateDepthStencilView(TexturePtr const& tex) override;
-    virtual RenderViewPtr   CreateDepthStencilView(TexturePtr const& tex, CubeFaceType face) override;
+    virtual RenderViewPtr       CreateRenderTargetView(RHITexturePtr const& tex, uint32_t lod = 0) override;
+    virtual RenderViewPtr       CreateRenderTargetView(RHITexturePtr const& tex, CubeFaceType face, uint32_t lod = 0) override;
+    virtual RenderViewPtr       CreateDepthStencilView(RHITexturePtr const& tex) override;
+    virtual RenderViewPtr       CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face) override;
 
-    virtual RHIFrameBufferPtr  CreateRHIFrameBuffer() override;
-    virtual RHIProgramPtr      CreateRHIProgram() override;
-    virtual TimerRHIQueryPtr   CreateTimerRHIQuery() override;
+    virtual RHIFrameBufferPtr   CreateRHIFrameBuffer() override;
+    virtual RHIProgramPtr       CreateRHIProgram() override;
+    virtual TimerRHIQueryPtr    CreateTimerRHIQuery() override;
 
-    virtual SResult         AttachNativeWindow(std::string const& name, void* native_wnd = nullptr) override;
+    virtual SResult             AttachNativeWindow(std::string const& name, void* native_wnd = nullptr) override;
 
-    virtual SResult         BeginFrame() override;
-    virtual SResult         EndFrame() override;
+    virtual SResult             BeginFrame() override;
+    virtual SResult             EndFrame() override;
 
-    virtual SResult         BeginRenderPass(const RenderPassInfo& renderPassInfo) override;
-    virtual SResult         Render(RHIProgram* program, RHIMeshPtr const& mesh) override;
-    virtual SResult         EndRenderPass() override;
+    virtual SResult             BeginRenderPass(const RenderPassInfo& renderPassInfo) override;
+    virtual SResult             Render(RHIProgram* program, RHIMeshPtr const& mesh) override;
+    virtual SResult             EndRenderPass() override;
 
-    virtual void            BeginComputePass(const ComputePassInfo& computePassInfo) override;
-    virtual SResult         Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z) override;
-    virtual SResult         DispatchIndirect(RHIProgram* program, RHIRenderBufferPtr indirectBuf) override;
-    virtual SResult         DrawIndirect(RHIProgram* program, RenderStatePtr rs, RHIRenderBufferPtr indirectBuf, MeshTopologyType type) override;
-    virtual void            EndComputePass() override;
+    virtual void                BeginComputePass(const ComputePassInfo& computePassInfo) override;
+    virtual SResult             Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z) override;
+    virtual SResult             DispatchIndirect(RHIProgram* program, RHIRenderBufferPtr indirectBuf) override;
+    virtual SResult             DrawIndirect(RHIProgram* program, RenderStatePtr rs, RHIRenderBufferPtr indirectBuf, MeshTopologyType type) override;
+    virtual void                EndComputePass() override;
 
-    virtual SResult SyncTexture(TexturePtr tex) override { return S_Success; }
-    virtual SResult CopyTexture(TexturePtr tex_src, TexturePtr tex_dst) override;
+    virtual SResult SyncTexture(RHITexturePtr tex) override { return S_Success; }
+    virtual SResult CopyTexture(RHITexturePtr tex_src, RHITexturePtr tex_dst) override;
 
     virtual void BeginCapture() override;
     virtual void EndCapture() override;
@@ -124,8 +124,8 @@ public:
     virtual void BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* cbuffer, const char* name) override;
     virtual void BindRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* buffer, const char* name) override;
     virtual void BindRWRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* rw_buffer, const char* name) override;
-    virtual void BindTexture(ShaderType stage, uint32_t binding, const Texture* texture, const char* name) override;
-    virtual void BindRWTexture(ShaderType stage, uint32_t binding, const Texture* rw_texture, const char* name) override;
+    virtual void BindTexture(ShaderType stage, uint32_t binding, const  RHITexture* texture, const char* name) override;
+    virtual void BindRWTexture(ShaderType stage, uint32_t binding, const  RHITexture* rw_texture, const char* name) override;
     virtual void BindSampler(ShaderType stage, uint32_t binding, const Sampler* sampler, const char* name) override;
 };
 

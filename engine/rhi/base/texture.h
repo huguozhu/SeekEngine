@@ -26,7 +26,7 @@ enum class CubeFaceType : uint8_t
     Num,
 };
 
-class Texture
+class RHITexture
 {
 public:
     struct Desc
@@ -72,11 +72,11 @@ public:
     }
 
 protected:
-    Texture(Context* context, const Desc& desc)
+    RHITexture(Context* context, const Desc& desc)
         : m_pContext(context)
         , m_desc(desc)
     {}
-    virtual ~Texture() {}
+    virtual ~RHITexture() {}
 
     Context*                m_pContext = nullptr;
     Desc                    m_desc;

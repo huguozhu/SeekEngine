@@ -171,8 +171,8 @@ protected:
     LoadOption m_depthLoadOption;
     StoreOption m_depthStoreOption;
     
-    std::array<TexturePtr, MAX_COLOR_ATTACHMENTS> m_msaaColorTex;
-    TexturePtr m_msaaDepthStencilTex = nullptr;
+    std::array<RHITexturePtr, MAX_COLOR_ATTACHMENTS> m_msaaColorTex;
+    RHITexturePtr m_msaaDepthStencilTex = nullptr;
     
     uint32_t m_resolveFlag = RESOLVE_NONE;
 };

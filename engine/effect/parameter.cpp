@@ -20,7 +20,7 @@ std::unique_ptr<EffectVariable> CreateEffectVariable(EffectDataType data_type)
             return MakeUniquePtr<EffectVariableRHIRenderBuffer>();
         case EffectDataType::Texture:
         case EffectDataType::RWTexture:
-            return MakeUniquePtr<EffectVariableTexture>();
+            return MakeUniquePtr<EffectVariableRHITexture>();
         case EffectDataType::Sampler:
             return MakeUniquePtr<EffectVariableSampler>();
         case EffectDataType::SampledTexture:
@@ -46,7 +46,7 @@ std::unique_ptr<EffectVariable> EffectParam::ReadRenderVariable(EffectDataType d
         case EffectDataType::Texture:
         case EffectDataType::RWTexture:
         {
-            *var = TexturePtr();
+            *var = RHITexturePtr();
             break;
         }
         case EffectDataType::Sampler:

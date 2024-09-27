@@ -311,9 +311,9 @@ static bool GenerateMipBuffers(BitmapBufferPtr src, std::vector<BitmapBufferPtr>
     }
     return true;
 }
-static TexturePtr CreateTextureFromBitmap(RHIContext& rc, BitmapBufferPtr& bm, bool bColor, bool generate_mips = false)
+static RHITexturePtr CreateTextureFromBitmap(RHIContext& rc, BitmapBufferPtr& bm, bool bColor, bool generate_mips = false)
 {
-    Texture::Desc tex_desc;
+    RHITexture::Desc tex_desc;
     tex_desc.type = TextureType::Tex2D;
     tex_desc.width = bm->Width();
     tex_desc.height = bm->Height();

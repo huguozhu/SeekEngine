@@ -181,9 +181,9 @@ void RHIContext::CreateCommonMesh()
     }
 }
 
-TexturePtr RHIContext::CreateTexture2D(const BitmapBufferPtr data)
+RHITexturePtr RHIContext::CreateTexture2D(const BitmapBufferPtr data)
 {
-    Texture::Desc desc;
+    RHITexture::Desc desc;
     desc.width = data->Width();
     desc.height = data->Height();
     desc.type = TextureType::Tex2D;

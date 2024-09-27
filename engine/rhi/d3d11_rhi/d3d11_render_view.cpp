@@ -12,7 +12,7 @@ SEEK_NAMESPACE_BEGIN
 /******************************************************************************
 * D3D11RenderTarget
 *******************************************************************************/
-D3D11RenderTargetView::D3D11RenderTargetView(Context* context, TexturePtr const& tex, uint32_t lod)
+D3D11RenderTargetView::D3D11RenderTargetView(Context* context, RHITexturePtr const& tex, uint32_t lod)
     : RenderView(context, tex, lod), m_pD3dRenderTargetView(nullptr)
 {
     if (tex->Type() != TextureType::Cube)
@@ -47,7 +47,7 @@ void D3D11RenderTargetView::ClearColor(float4 const& color)
 /******************************************************************************
  * D3D11RenderTarget
  ******************************************************************************/
-D3D11CubeFaceRenderTargetView::D3D11CubeFaceRenderTargetView(Context* context, TexturePtr const& tex, CubeFaceType face, uint32_t lod)
+D3D11CubeFaceRenderTargetView::D3D11CubeFaceRenderTargetView(Context* context, RHITexturePtr const& tex, CubeFaceType face, uint32_t lod)
     :D3D11RenderTargetView(context, tex, lod)
 {
     if (tex->Type() != TextureType::Cube)
@@ -60,7 +60,7 @@ D3D11CubeFaceRenderTargetView::D3D11CubeFaceRenderTargetView(Context* context, T
 /******************************************************************************
 * D3D11DepthStencilView
 *******************************************************************************/
-D3D11DepthStencilView::D3D11DepthStencilView(Context* context, TexturePtr const& tex)
+D3D11DepthStencilView::D3D11DepthStencilView(Context* context, RHITexturePtr const& tex)
     : RenderView(context, tex), m_pD3D11DepthStencilView(nullptr)
 {
     if (tex->Type() != TextureType::Cube)
@@ -116,7 +116,7 @@ void D3D11DepthStencilView::ClearDepthStencil(float depth, uint32_t stencil)
 /******************************************************************************
 * D3D11CubeDepthStencilView
 *******************************************************************************/
-D3D11CubeDepthStencilView::D3D11CubeDepthStencilView(Context* context, TexturePtr const& tex, CubeFaceType face)
+D3D11CubeDepthStencilView::D3D11CubeDepthStencilView(Context* context, RHITexturePtr const& tex, CubeFaceType face)
     : D3D11DepthStencilView(context, tex)
 {
     if (tex->Type() != TextureType::Cube)

@@ -61,7 +61,7 @@ SResult RHIFrameBuffer::Bind()
             
             if (!m_msaaColorTex[idx])
             {
-                Texture::Desc colorTexDesc = m_vRenderTargets[idx]->Texture()->Descriptor();
+                RHITexture::Desc colorTexDesc = m_vRenderTargets[idx]->Texture()->Descriptor();
                 colorTexDesc.num_samples = m_sampleNum;
                 m_msaaColorTex[idx] = m_pContext->RHIContextInstance().CreateTexture2D(colorTexDesc);
             }
@@ -82,7 +82,7 @@ SResult RHIFrameBuffer::Bind()
             
             if (!m_msaaDepthStencilTex)
             {
-                Texture::Desc depthStencilTexDesc = m_pDepthStencilView->Texture()->Descriptor();
+                RHITexture::Desc depthStencilTexDesc = m_pDepthStencilView->Texture()->Descriptor();
                 depthStencilTexDesc.num_samples = m_sampleNum;
                 m_msaaDepthStencilTex = m_pContext->RHIContextInstance().CreateTexture2D(depthStencilTexDesc);
             }
