@@ -1,7 +1,7 @@
 #pragma once
 
 #include "kernel/kernel.h"
-#include "rhi/format.h"
+#include "rhi/base/format.h"
 #include "utils/seek_defs.h"
 
 SEEK_NAMESPACE_BEGIN

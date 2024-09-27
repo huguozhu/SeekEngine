@@ -7,8 +7,8 @@
 #include "math/math_utility.h"
 #include "math/frustum.h"
 #include "math/transform.h"
-#include "rhi/mesh.h"
-#include "rhi/render_buffer.h"
+#include "rhi/base/mesh.h"
+#include "rhi/base/render_buffer.h"
 #include "utils/timer.h"
 #include <algorithm>
 

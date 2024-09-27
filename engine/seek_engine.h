@@ -8,8 +8,8 @@
 #include "kernel/context.h"
 
 // rhi
-#include "rhi/rhi_context.h"
-#include "rhi/rhi_command.h"
+#include "rhi/base/rhi_context.h"
+
 
 // thread
 #include "thread/mutex.h"

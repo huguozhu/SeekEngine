@@ -3,7 +3,7 @@
 #include "thread/thread.h"
 #include "thread/thread_manager.h"
 
-#include "rhi/rhi_context.h"
+#include "rhi/base/rhi_context.h"
 #include "utils/log.h"
 
 #include "utils/timer.h"

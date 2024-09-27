@@ -1,9 +1,9 @@
 #pragma once
 #include "kernel/kernel.h"
 #include "thread/semaphore.h"
-#include "rhi/rhi_context.h"
+#include "rhi/base/rhi_context.h"
 #include "scene_manager/scene_manager.h"
-#include "rhi/viewport.h"
+#include "rhi/base/viewport.h"
 #include "effect/command_buffer.h"
 #include "resource/resource_mgr.h"
 

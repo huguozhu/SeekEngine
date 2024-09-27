@@ -4,8 +4,8 @@
 #include "utils/util.h"
 #include "utils/file.h"
 #include "math/vector.h"
-#include "rhi/render_definition.h"
-#include "rhi/format.h"
+#include "rhi/base/render_definition.h"
+#include "rhi/base/format.h"
 #include <functional>
 // AGAIN!!! X11 define Bool as macro.
 #undef Bool

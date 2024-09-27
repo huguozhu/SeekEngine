@@ -2,12 +2,12 @@
 #include "components/camera_component.h"
 #include "components/light_component.h"
 #include "scene_manager/scene_manager.h"
-#include "rhi/mesh.h"
-#include "rhi/texture.h"
+#include "rhi/base/mesh.h"
+#include "rhi/base/texture.h"
 #include "kernel/context.h"
 #include "math/color.h"
 #include <math.h>
-#include "rhi/render_buffer.h"
+#include "rhi/base/render_buffer.h"
 
 #define SEEK_MACRO_FILE_UID 36     // this code is auto generated, don't touch it!!!
 
