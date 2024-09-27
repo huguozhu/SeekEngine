@@ -25,11 +25,11 @@ D3D11RenderTargetView::~D3D11RenderTargetView()
 {
     m_pD3dRenderTargetView.Reset();
 }
-void D3D11RenderTargetView::OnAttached(FrameBuffer& fb, FrameBuffer::Attachment attach)
+void D3D11RenderTargetView::OnAttached(RHIFrameBuffer& fb, RHIFrameBuffer::Attachment attach)
 {
     // empty
 }
-void D3D11RenderTargetView::OnDetached(FrameBuffer& fb, FrameBuffer::Attachment attach)
+void D3D11RenderTargetView::OnDetached(RHIFrameBuffer& fb, RHIFrameBuffer::Attachment attach)
 {
     // empty
 }
@@ -73,11 +73,11 @@ D3D11DepthStencilView::~D3D11DepthStencilView()
 {
     m_pD3D11DepthStencilView.Reset();
 }
-void D3D11DepthStencilView::OnAttached(FrameBuffer& fb)
+void D3D11DepthStencilView::OnAttached(RHIFrameBuffer& fb)
 {
     // empty
 }
-void D3D11DepthStencilView::OnDetached(FrameBuffer& fb)
+void D3D11DepthStencilView::OnDetached(RHIFrameBuffer& fb)
 {
     // empty
 }

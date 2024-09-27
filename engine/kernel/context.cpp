@@ -101,7 +101,7 @@ SResult Context::EndRender()
 {
     LOG_RECORD_FUNCTION();
     this->MainThreadSemWait();
-    FrameBufferPtr final_fb = this->RHIContextInstance().GetFinalFrameBuffer();
+    RHIFrameBufferPtr final_fb = this->RHIContextInstance().GetFinalRHIFrameBuffer();
     if (final_fb)
     {
         SEEK_RETIF_FAIL(final_fb->SwapBuffers());

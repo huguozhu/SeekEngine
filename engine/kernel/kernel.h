@@ -82,7 +82,7 @@ CLASS_DECLARE(ResourceManager)
 
 // RHI
 CLASS_DECLARE(RHIContext);
-CLASS_DECLARE(FrameBuffer);
+CLASS_DECLARE(RHIFrameBuffer);
 CLASS_DECLARE(Material);
 CLASS_DECLARE(Mesh);
 CLASS_DECLARE(RenderBuffer);

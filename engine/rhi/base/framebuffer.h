@@ -7,7 +7,7 @@
 
 SEEK_NAMESPACE_BEGIN
 
-class FrameBuffer
+class RHIFrameBuffer
 {
 public:
     enum Attachment: uint8_t
@@ -154,8 +154,8 @@ public:
     }
     
 protected:
-    FrameBuffer(Context* context) :m_pContext(context) {}
-    virtual ~FrameBuffer() {}
+    RHIFrameBuffer(Context* context) :m_pContext(context) {}
+    virtual ~RHIFrameBuffer() {}
 
     Context*                            m_pContext = nullptr;
 

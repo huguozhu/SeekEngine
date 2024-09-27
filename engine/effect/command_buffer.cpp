@@ -86,7 +86,7 @@ void RendererCommandManager::ExecCommands(CommandBuffer& cb)
             {
                 RHIContext& rc = m_pContext->RHIContextInstance();
                 rc.AttachNativeWindow("", native_wnd);
-                rc.SetFinalFrameBuffer(rc.GetScreenFrameBuffer());
+                rc.SetFinalRHIFrameBuffer(rc.GetScreenRHIFrameBuffer());
             }
             break;
         }

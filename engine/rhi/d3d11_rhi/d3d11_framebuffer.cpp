@@ -9,18 +9,18 @@
 
 SEEK_NAMESPACE_BEGIN
 
-D3D11FrameBuffer::D3D11FrameBuffer(Context* context)
-    : FrameBuffer(context)
+D3D11RHIFrameBuffer::D3D11RHIFrameBuffer(Context* context)
+    : RHIFrameBuffer(context)
 {
     seek_memset_s(&m_stD3dViewport, sizeof(m_stD3dViewport), 0, sizeof(m_stD3dViewport));
 }
 
-D3D11FrameBuffer::~D3D11FrameBuffer()
+D3D11RHIFrameBuffer::~D3D11RHIFrameBuffer()
 {
     m_vD3dRednerTargets.clear();
 }
 
-SResult D3D11FrameBuffer::OnBind()
+SResult D3D11RHIFrameBuffer::OnBind()
 {
     SResult res = S_Success;
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
@@ -80,7 +80,7 @@ SResult D3D11FrameBuffer::OnBind()
     return res;
 }
 
-SResult D3D11FrameBuffer::OnUnbind()
+SResult D3D11RHIFrameBuffer::OnUnbind()
 {
     SResult res = S_Success;
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
@@ -92,7 +92,7 @@ SResult D3D11FrameBuffer::OnUnbind()
     return res;
 }
 
-SResult D3D11FrameBuffer::Resolve()
+SResult D3D11RHIFrameBuffer::Resolve()
 {
     if (m_resolveFlag == RESOLVE_NONE)
         return S_Success;

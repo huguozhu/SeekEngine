@@ -15,7 +15,7 @@
 
 SEEK_NAMESPACE_BEGIN
 D3D11Window::D3D11Window(Context* context)
-    : D3D11FrameBuffer(context)
+    : D3D11RHIFrameBuffer(context)
 {
 
 }

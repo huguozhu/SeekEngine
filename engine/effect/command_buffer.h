@@ -21,7 +21,7 @@ enum class CommandType : uint8_t
     CreateShader,
     CreateProgram,
     CreateTexture,
-    CreateFrameBuffer,
+    CreateRHIFrameBuffer,
     CreateShaderBuffer,
     End,
     RendererShutdownEnd,
@@ -32,7 +32,7 @@ enum class CommandType : uint8_t
     DestroyShader,
     DestroyProgram,
     DestroyTexture,
-    DestroyFrameBuffer,
+    DestroyRHIFrameBuffer,
     DestroyShaderBuffer,
 };
 

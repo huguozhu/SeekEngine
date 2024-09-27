@@ -139,9 +139,9 @@ RenderViewPtr D3D11RHIContext::CreateDepthStencilView(TexturePtr const& tex, Cub
     RenderViewPtr rtv = MakeSharedPtr<D3D11CubeDepthStencilView>(m_pContext, tex, face);
     return rtv;
 }
-FrameBufferPtr D3D11RHIContext::CreateFrameBuffer()
+RHIFrameBufferPtr D3D11RHIContext::CreateRHIFrameBuffer()
 {
-    FrameBufferPtr fb = MakeSharedPtr<D3D11FrameBuffer>(m_pContext);
+    RHIFrameBufferPtr fb = MakeSharedPtr<D3D11RHIFrameBuffer>(m_pContext);
     return fb;
 }
 ProgramPtr D3D11RHIContext::CreateProgram()

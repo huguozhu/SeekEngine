@@ -61,7 +61,7 @@ protected:
 
     D3D11TimerQueryExecutor m_TimerQueryExecutor{ m_pContext };
 
-    D3D11FrameBuffer* m_pCurrentFrameBuffer = nullptr;
+    D3D11RHIFrameBuffer* m_pCurrentRHIFrameBuffer = nullptr;
 
 // Rendering Object Factory
 public:
@@ -93,7 +93,7 @@ public:
     virtual RenderViewPtr   CreateDepthStencilView(TexturePtr const& tex) override;
     virtual RenderViewPtr   CreateDepthStencilView(TexturePtr const& tex, CubeFaceType face) override;
 
-    virtual FrameBufferPtr  CreateFrameBuffer() override;
+    virtual RHIFrameBufferPtr  CreateRHIFrameBuffer() override;
     virtual ProgramPtr      CreateProgram() override;
     virtual TimerQueryPtr   CreateTimerQuery() override;
 

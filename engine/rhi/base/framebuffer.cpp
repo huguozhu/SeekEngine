@@ -7,12 +7,12 @@
 
 SEEK_NAMESPACE_BEGIN
 
-Viewport const & FrameBuffer::GetViewport()
+Viewport const & RHIFrameBuffer::GetViewport()
 {
     return m_stViewport;
 }
 
-void FrameBuffer::AttachTargetView(Attachment att, RenderViewPtr const& view)
+void RHIFrameBuffer::AttachTargetView(Attachment att, RenderViewPtr const& view)
 {
     uint8_t index = to_underlying(att);
     if (index >= MAX_COLOR_ATTACHMENTS)
@@ -22,13 +22,13 @@ void FrameBuffer::AttachTargetView(Attachment att, RenderViewPtr const& view)
     m_bViewDirty = true;
 }
 
-void FrameBuffer::AttachDepthStencilView(RenderViewPtr const& view)
+void RHIFrameBuffer::AttachDepthStencilView(RenderViewPtr const& view)
 {
     m_pDepthStencilView = view;
     m_bViewDirty = true;
 }
 
-RenderViewPtr FrameBuffer::GetRenderTarget(Attachment att) const
+RenderViewPtr RHIFrameBuffer::GetRenderTarget(Attachment att) const
 {
     uint32_t color_index = att - Attachment::Color0;
     if (color_index < m_vRenderTargets.size())
@@ -37,7 +37,7 @@ RenderViewPtr FrameBuffer::GetRenderTarget(Attachment att) const
         return nullptr;
 }
 
-SResult FrameBuffer::Bind()
+SResult RHIFrameBuffer::Bind()
 {
     // prepare the MSAA attachments
     if (m_sampleNum > 1)
@@ -92,12 +92,12 @@ SResult FrameBuffer::Bind()
     return OnBind();
 }
 
-void FrameBuffer::Unbind()
+void RHIFrameBuffer::Unbind()
 {
     OnUnbind();
 }
 
-void FrameBuffer::SetColorLoadOption(Attachment attachment, LoadOption loadOption)
+void RHIFrameBuffer::SetColorLoadOption(Attachment attachment, LoadOption loadOption)
 {
     uint8_t index = to_underlying(attachment);
     if (index >= MAX_COLOR_ATTACHMENTS)
@@ -107,7 +107,7 @@ void FrameBuffer::SetColorLoadOption(Attachment attachment, LoadOption loadOptio
     m_bViewDirty = true;
 }
 
-void FrameBuffer::SetColorStoreOption(Attachment attachment, StoreOption storeOption)
+void RHIFrameBuffer::SetColorStoreOption(Attachment attachment, StoreOption storeOption)
 {
     uint8_t index = to_underlying(attachment);
     if (index >= MAX_COLOR_ATTACHMENTS)
@@ -117,19 +117,19 @@ void FrameBuffer::SetColorStoreOption(Attachment attachment, StoreOption storeOp
     m_bViewDirty = true;
 }
 
-void FrameBuffer::SetDepthLoadOption(LoadOption loadOption)
+void RHIFrameBuffer::SetDepthLoadOption(LoadOption loadOption)
 {
     m_depthLoadOption = loadOption;
     m_bViewDirty = true;
 }
 
-void FrameBuffer::SetDepthStoreOption(StoreOption storeOption)
+void RHIFrameBuffer::SetDepthStoreOption(StoreOption storeOption)
 {
     m_depthStoreOption = storeOption;
     m_bViewDirty = true;
 }
 
-void FrameBuffer::Reset()
+void RHIFrameBuffer::Reset()
 {
     std::fill(m_vRenderTargets.begin(), m_vRenderTargets.end(), nullptr);
     m_pDepthStencilView = nullptr;

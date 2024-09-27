@@ -14,42 +14,42 @@ RHIContext::RHIContext(Context* context)
 {
 }
 
-SResult RHIContext::BindFrameBuffer(FrameBufferPtr const& fb)
+SResult RHIContext::BindRHIFrameBuffer(RHIFrameBufferPtr const& fb)
 {
     SResult res = S_Success;
-    if (fb != m_pCurFrameBuffer || fb == m_pScreenFrameBuffer || (fb && fb->IsDirty()) )
+    if (fb != m_pCurRHIFrameBuffer || fb == m_pScreenRHIFrameBuffer || (fb && fb->IsDirty()) )
     {
-        if (m_pCurFrameBuffer)
+        if (m_pCurRHIFrameBuffer)
         {
-            SEEK_RETIF_FAIL(m_pCurFrameBuffer->OnUnbind());
+            SEEK_RETIF_FAIL(m_pCurRHIFrameBuffer->OnUnbind());
         }
 
-        m_pCurFrameBuffer = fb;
+        m_pCurRHIFrameBuffer = fb;
     }
 
-    if (m_pCurFrameBuffer)
+    if (m_pCurRHIFrameBuffer)
     {
-        SEEK_RETIF_FAIL(m_pCurFrameBuffer->OnBind());
+        SEEK_RETIF_FAIL(m_pCurRHIFrameBuffer->OnBind());
     }
     return res;
 }
 
-FrameBufferPtr const& RHIContext::GetScreenFrameBuffer() const
+RHIFrameBufferPtr const& RHIContext::GetScreenRHIFrameBuffer() const
 {
-    return m_pScreenFrameBuffer;
+    return m_pScreenRHIFrameBuffer;
 }
 
-FrameBufferPtr const& RHIContext::GetFinalFrameBuffer() const
+RHIFrameBufferPtr const& RHIContext::GetFinalRHIFrameBuffer() const
 {
-    return m_pFinalFrameBuffer;
+    return m_pFinalRHIFrameBuffer;
 }
-FrameBufferPtr const& RHIContext::GetCurFrameBuffer() const
+RHIFrameBufferPtr const& RHIContext::GetCurRHIFrameBuffer() const
 {
-    return m_pCurFrameBuffer;
+    return m_pCurRHIFrameBuffer;
 }
-void RHIContext::SetFinalFrameBuffer(FrameBufferPtr const& fb)
+void RHIContext::SetFinalRHIFrameBuffer(RHIFrameBufferPtr const& fb)
 {
-    m_pFinalFrameBuffer = fb;
+    m_pFinalRHIFrameBuffer = fb;
 }
 MeshPtr RHIContext::GetCubeMesh()
 {

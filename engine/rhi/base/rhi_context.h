@@ -18,7 +18,7 @@ public:
     struct RenderPassInfo
     {
         std::string name = "RenderPass";
-        FrameBuffer* fb = nullptr;
+        RHIFrameBuffer* fb = nullptr;
     };
 
     struct ComputePassInfo
@@ -26,11 +26,11 @@ public:
         std::string name = "ComputePass";
     };
     
-    SResult                         BindFrameBuffer(FrameBufferPtr const& fb);
-    FrameBufferPtr const&           GetScreenFrameBuffer() const;
-    FrameBufferPtr const&           GetFinalFrameBuffer() const;
-    FrameBufferPtr const&           GetCurFrameBuffer() const;
-    void                            SetFinalFrameBuffer(FrameBufferPtr const& fb);
+    SResult                         BindRHIFrameBuffer(RHIFrameBufferPtr const& fb);
+    RHIFrameBufferPtr const&           GetScreenRHIFrameBuffer() const;
+    RHIFrameBufferPtr const&           GetFinalRHIFrameBuffer() const;
+    RHIFrameBufferPtr const&           GetCurRHIFrameBuffer() const;
+    void                            SetFinalRHIFrameBuffer(RHIFrameBufferPtr const& fb);
 
     CapabilitySet const&            GetCapabilitySet() const { return m_CapabilitySet; }
     MeshPtr                         GetCubeMesh();
@@ -65,7 +65,7 @@ public: // virutal factory
     virtual RenderViewPtr           CreateRenderTargetView(TexturePtr const& tex, CubeFaceType face, uint32_t lod = 0) { return nullptr; }
     virtual RenderViewPtr           CreateDepthStencilView(TexturePtr const& tex) = 0;
     virtual RenderViewPtr           CreateDepthStencilView(TexturePtr const& tex, CubeFaceType face) { return nullptr; }
-    virtual FrameBufferPtr          CreateFrameBuffer() = 0;
+    virtual RHIFrameBufferPtr          CreateRHIFrameBuffer() = 0;
     virtual ProgramPtr              CreateProgram() = 0;
     virtual TimerQueryPtr           CreateTimerQuery() = 0;
 
@@ -119,9 +119,9 @@ protected:
     void                            CreateCommonMesh();
 
     Context*                        m_pContext;
-    FrameBufferPtr                  m_pScreenFrameBuffer = nullptr;
-    FrameBufferPtr                  m_pFinalFrameBuffer = nullptr;
-    FrameBufferPtr                  m_pCurFrameBuffer = nullptr;
+    RHIFrameBufferPtr                  m_pScreenRHIFrameBuffer = nullptr;
+    RHIFrameBufferPtr                  m_pFinalRHIFrameBuffer = nullptr;
+    RHIFrameBufferPtr                  m_pCurRHIFrameBuffer = nullptr;
 
     CapabilitySet                   m_CapabilitySet;
     MeshPtr                         m_pCubeMesh;

@@ -16,8 +16,8 @@ public:
     D3D11RenderTargetView(Context* context, TexturePtr const& tex, uint32_t lod = 0);
     virtual ~D3D11RenderTargetView() override;
 
-    void OnAttached(FrameBuffer& fb, FrameBuffer::Attachment attach);
-    void OnDetached(FrameBuffer& fb, FrameBuffer::Attachment attach);
+    void OnAttached(RHIFrameBuffer& fb, RHIFrameBuffer::Attachment attach);
+    void OnDetached(RHIFrameBuffer& fb, RHIFrameBuffer::Attachment attach);
     void ClearColor(float4 const& color);
 
     ID3D11RenderTargetView* GetD3DRenderTargetView() { return m_pD3dRenderTargetView.Get(); }
@@ -46,8 +46,8 @@ public:
     D3D11DepthStencilView(Context* context, TexturePtr const& tex);
     virtual ~D3D11DepthStencilView() override;
 
-    void OnAttached(FrameBuffer& fb);
-    void OnDetached(FrameBuffer& fb);
+    void OnAttached(RHIFrameBuffer& fb);
+    void OnDetached(RHIFrameBuffer& fb);
     void ClearDepth(float depth = 1.0);
     void ClearStencil(uint32_t stencil = 0);
     void ClearDepthStencil(float depth, uint32_t stencil);

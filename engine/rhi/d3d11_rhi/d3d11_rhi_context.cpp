@@ -452,8 +452,8 @@ SResult D3D11RHIContext::AttachNativeWindow(std::string const& name, void* nativ
         res = win->Create(pAdapter.get(), name, native_wnd);
         if (SEEK_CHECKFAILED(res))
             return res;
-        this->BindFrameBuffer(win);
-        m_pScreenFrameBuffer = m_pCurFrameBuffer;
+        this->BindRHIFrameBuffer(win);
+        m_pScreenRHIFrameBuffer = m_pCurRHIFrameBuffer;
     }
     return res;
 }
@@ -611,16 +611,16 @@ SResult D3D11RHIContext::BeginRenderPass(const RenderPassInfo& renderPassInfo)
     SResult ret = renderPassInfo.fb->Bind();
     if (SEEK_CHECKFAILED(ret))
     {
-        LOG_ERROR("bind FrameBuffer fail, ret:%x", ret);
+        LOG_ERROR("bind RHIFrameBuffer fail, ret:%x", ret);
         return ret;
     }
-    m_pCurrentFrameBuffer = static_cast<D3D11FrameBuffer*>(renderPassInfo.fb);
+    m_pCurrentRHIFrameBuffer = static_cast<D3D11RHIFrameBuffer*>(renderPassInfo.fb);
 
     D3D11_VIEWPORT d3dViewport;
-    d3dViewport.TopLeftX = (FLOAT)m_pCurrentFrameBuffer->GetViewport().left;
-    d3dViewport.TopLeftY = (FLOAT)m_pCurrentFrameBuffer->GetViewport().top;
-    d3dViewport.Width = (FLOAT)m_pCurrentFrameBuffer->GetViewport().width;
-    d3dViewport.Height = (FLOAT)m_pCurrentFrameBuffer->GetViewport().height;
+    d3dViewport.TopLeftX = (FLOAT)m_pCurrentRHIFrameBuffer->GetViewport().left;
+    d3dViewport.TopLeftY = (FLOAT)m_pCurrentRHIFrameBuffer->GetViewport().top;
+    d3dViewport.Width = (FLOAT)m_pCurrentRHIFrameBuffer->GetViewport().width;
+    d3dViewport.Height = (FLOAT)m_pCurrentRHIFrameBuffer->GetViewport().height;
     d3dViewport.MinDepth = 0.0;
     d3dViewport.MaxDepth = 1.0;
     m_pDeviceContext->RSSetViewports(1, &d3dViewport);
@@ -629,9 +629,9 @@ SResult D3D11RHIContext::BeginRenderPass(const RenderPassInfo& renderPassInfo)
 
 SResult D3D11RHIContext::Render(Program* program, MeshPtr const& mesh)
 {
-    if (!m_pCurrentFrameBuffer)
+    if (!m_pCurrentRHIFrameBuffer)
     {
-        LOG_ERROR("no FrameBuffer is bound, call Render between BeginRenderPass/EndRenderPass");
+        LOG_ERROR("no RHIFrameBuffer is bound, call Render between BeginRenderPass/EndRenderPass");
         return ERR_INVALID_INVOKE_FLOW;
     }
 
@@ -683,10 +683,10 @@ SResult D3D11RHIContext::Render(Program* program, MeshPtr const& mesh)
 
 SResult D3D11RHIContext::EndRenderPass()
 {
-    if (m_pCurrentFrameBuffer)
+    if (m_pCurrentRHIFrameBuffer)
     {
-        m_pCurrentFrameBuffer->Unbind();
-        m_pCurrentFrameBuffer = nullptr;
+        m_pCurrentRHIFrameBuffer->Unbind();
+        m_pCurrentRHIFrameBuffer = nullptr;
     }
     return S_Success;
 }
