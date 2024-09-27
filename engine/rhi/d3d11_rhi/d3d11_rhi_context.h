@@ -88,10 +88,10 @@ public:
     virtual RHIRenderStatePtr   CreateRenderState(RenderStateDesc const& desc) override;
     virtual RHISamplerPtr       CreateSampler(SamplerDesc const& desc) override;
 
-    virtual RenderViewPtr       CreateRenderTargetView(RHITexturePtr const& tex, uint32_t lod = 0) override;
-    virtual RenderViewPtr       CreateRenderTargetView(RHITexturePtr const& tex, CubeFaceType face, uint32_t lod = 0) override;
-    virtual RenderViewPtr       CreateDepthStencilView(RHITexturePtr const& tex) override;
-    virtual RenderViewPtr       CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face) override;
+    virtual RHIRenderViewPtr       CreateRenderTargetView(RHITexturePtr const& tex, uint32_t lod = 0) override;
+    virtual RHIRenderViewPtr       CreateRenderTargetView(RHITexturePtr const& tex, CubeFaceType face, uint32_t lod = 0) override;
+    virtual RHIRenderViewPtr       CreateDepthStencilView(RHITexturePtr const& tex) override;
+    virtual RHIRenderViewPtr       CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face) override;
 
     virtual RHIFrameBufferPtr   CreateRHIFrameBuffer() override;
     virtual RHIProgramPtr       CreateRHIProgram() override;

@@ -12,7 +12,7 @@ Viewport const & RHIFrameBuffer::GetViewport()
     return m_stViewport;
 }
 
-void RHIFrameBuffer::AttachTargetView(Attachment att, RenderViewPtr const& view)
+void RHIFrameBuffer::AttachTargetView(Attachment att, RHIRenderViewPtr const& view)
 {
     uint8_t index = to_underlying(att);
     if (index >= MAX_COLOR_ATTACHMENTS)
@@ -22,13 +22,13 @@ void RHIFrameBuffer::AttachTargetView(Attachment att, RenderViewPtr const& view)
     m_bViewDirty = true;
 }
 
-void RHIFrameBuffer::AttachDepthStencilView(RenderViewPtr const& view)
+void RHIFrameBuffer::AttachDepthStencilView(RHIRenderViewPtr const& view)
 {
     m_pDepthStencilView = view;
     m_bViewDirty = true;
 }
 
-RenderViewPtr RHIFrameBuffer::GetRenderTarget(Attachment att) const
+RHIRenderViewPtr RHIFrameBuffer::GetRenderTarget(Attachment att) const
 {
     uint32_t color_index = att - Attachment::Color0;
     if (color_index < m_vRenderTargets.size())

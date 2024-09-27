@@ -119,24 +119,24 @@ RHISamplerPtr D3D11RHIContext::CreateSampler(SamplerDesc const& desc)
     return sampler;
 }
 
-RenderViewPtr D3D11RHIContext::CreateRenderTargetView(RHITexturePtr const& tex, uint32_t lod)
+RHIRenderViewPtr D3D11RHIContext::CreateRenderTargetView(RHITexturePtr const& tex, uint32_t lod)
 {
-    RenderViewPtr rtv = MakeSharedPtr<D3D11RenderTargetView>(m_pContext, tex, lod);
+    RHIRenderViewPtr rtv = MakeSharedPtr<D3D11RenderTargetView>(m_pContext, tex, lod);
     return rtv;
 }
-RenderViewPtr D3D11RHIContext::CreateRenderTargetView(RHITexturePtr const& tex, CubeFaceType face, uint32_t lod)
+RHIRenderViewPtr D3D11RHIContext::CreateRenderTargetView(RHITexturePtr const& tex, CubeFaceType face, uint32_t lod)
 {
-    RenderViewPtr rtv = MakeSharedPtr<D3D11CubeFaceRenderTargetView>(m_pContext, tex, face, lod);
+    RHIRenderViewPtr rtv = MakeSharedPtr<D3D11CubeFaceRenderTargetView>(m_pContext, tex, face, lod);
     return rtv;
 }
-RenderViewPtr D3D11RHIContext::CreateDepthStencilView(RHITexturePtr const& tex)
+RHIRenderViewPtr D3D11RHIContext::CreateDepthStencilView(RHITexturePtr const& tex)
 {
-    RenderViewPtr dsv = MakeSharedPtr<D3D11DepthStencilView>(m_pContext, tex);
+    RHIRenderViewPtr dsv = MakeSharedPtr<D3D11DepthStencilView>(m_pContext, tex);
     return dsv;
 }
-RenderViewPtr D3D11RHIContext::CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face)
+RHIRenderViewPtr D3D11RHIContext::CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face)
 {
-    RenderViewPtr rtv = MakeSharedPtr<D3D11CubeDepthStencilView>(m_pContext, tex, face);
+    RHIRenderViewPtr rtv = MakeSharedPtr<D3D11CubeDepthStencilView>(m_pContext, tex, face);
     return rtv;
 }
 RHIFrameBufferPtr D3D11RHIContext::CreateRHIFrameBuffer()

@@ -61,10 +61,10 @@ public: // virutal factory
     virtual RHIRenderBufferPtr      CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) { return nullptr; }
     virtual RHIRenderBufferPtr      CreateVertexBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) = 0;
     virtual RHIRenderBufferPtr      CreateIndexBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) = 0;
-    virtual RenderViewPtr           CreateRenderTargetView(RHITexturePtr const& tex, uint32_t lod = 0) = 0;
-    virtual RenderViewPtr           CreateRenderTargetView(RHITexturePtr const& tex, CubeFaceType face, uint32_t lod = 0) { return nullptr; }
-    virtual RenderViewPtr           CreateDepthStencilView(RHITexturePtr const& tex) = 0;
-    virtual RenderViewPtr           CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face) { return nullptr; }
+    virtual RHIRenderViewPtr           CreateRenderTargetView(RHITexturePtr const& tex, uint32_t lod = 0) = 0;
+    virtual RHIRenderViewPtr           CreateRenderTargetView(RHITexturePtr const& tex, CubeFaceType face, uint32_t lod = 0) { return nullptr; }
+    virtual RHIRenderViewPtr           CreateDepthStencilView(RHITexturePtr const& tex) = 0;
+    virtual RHIRenderViewPtr           CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face) { return nullptr; }
     virtual RHIFrameBufferPtr       CreateRHIFrameBuffer() = 0;
     virtual RHIProgramPtr           CreateRHIProgram() = 0;
     virtual RHITimerQueryPtr        CreateRHITimerQuery() = 0;

@@ -5,7 +5,7 @@
 
 SEEK_NAMESPACE_BEGIN
 
-class RenderView
+class RHIRenderView
 {
 public:
     uint32_t        Width()     const { return m_iWidth; }
@@ -15,8 +15,8 @@ public:
     bool            Valid()     const { return m_pTexture != nullptr; }
 
 protected:
-    RenderView(Context* context) : m_pContext(context) {}
-    RenderView(Context* context, RHITexturePtr texture, uint32_t lod = 0)
+    RHIRenderView(Context* context) : m_pContext(context) {}
+    RHIRenderView(Context* context, RHITexturePtr texture, uint32_t lod = 0)
         : m_pContext(context), m_pTexture(texture), m_iLod(lod)
     {
         float lod_rate = (float)(1UL << lod);
@@ -24,7 +24,7 @@ protected:
         m_iHeight = uint32_t(texture->Height() / lod_rate);
         m_ePixelFormat = texture->Format();
     }
-    virtual ~RenderView() {}
+    virtual ~RHIRenderView() {}
 
     Context*        m_pContext = nullptr;
     uint32_t        m_iWidth = 0;

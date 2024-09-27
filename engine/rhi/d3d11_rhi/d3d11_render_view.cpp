@@ -13,7 +13,7 @@ SEEK_NAMESPACE_BEGIN
 * D3D11RenderTarget
 *******************************************************************************/
 D3D11RenderTargetView::D3D11RenderTargetView(Context* context, RHITexturePtr const& tex, uint32_t lod)
-    : RenderView(context, tex, lod), m_pD3dRenderTargetView(nullptr)
+    : RHIRenderView(context, tex, lod), m_pD3dRenderTargetView(nullptr)
 {
     if (tex->Type() != TextureType::Cube)
     {
@@ -61,7 +61,7 @@ D3D11CubeFaceRenderTargetView::D3D11CubeFaceRenderTargetView(Context* context, R
 * D3D11DepthStencilView
 *******************************************************************************/
 D3D11DepthStencilView::D3D11DepthStencilView(Context* context, RHITexturePtr const& tex)
-    : RenderView(context, tex), m_pD3D11DepthStencilView(nullptr)
+    : RHIRenderView(context, tex), m_pD3D11DepthStencilView(nullptr)
 {
     if (tex->Type() != TextureType::Cube)
     {

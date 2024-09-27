@@ -10,7 +10,7 @@ SEEK_NAMESPACE_BEGIN
 /******************************************************************************
 * D3D11RenderTarget
 *******************************************************************************/
-class D3D11RenderTargetView : public RenderView
+class D3D11RenderTargetView : public RHIRenderView
 {
 public:
     D3D11RenderTargetView(Context* context, RHITexturePtr const& tex, uint32_t lod = 0);
@@ -40,7 +40,7 @@ public:
 /******************************************************************************
 * D3D11DepthStencilView
 *******************************************************************************/
-class D3D11DepthStencilView : public RenderView
+class D3D11DepthStencilView : public RHIRenderView
 {
 public:
     D3D11DepthStencilView(Context* context, RHITexturePtr const& tex);

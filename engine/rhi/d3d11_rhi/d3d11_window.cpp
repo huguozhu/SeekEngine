@@ -95,7 +95,7 @@ SResult D3D11Window::Create(D3D11Adapter* adapter, std::string const& name, void
         }
 
         RHITexturePtr pBackBufferTex = d3d11_rc.CreateTexture2D(back_buffer);
-        RenderViewPtr drv = d3d11_rc.CreateRenderTargetView(pBackBufferTex);
+        RHIRenderViewPtr drv = d3d11_rc.CreateRenderTargetView(pBackBufferTex);
         this->AttachTargetView(Attachment::Color0, drv);
 
         RHITexture::Desc tex_desc;
@@ -105,7 +105,7 @@ SResult D3D11Window::Create(D3D11Adapter* adapter, std::string const& name, void
         tex_desc.format = PixelFormat::D24S8;
         tex_desc.flags = RESOURCE_FLAG_RENDER_TARGET;
         RHITexturePtr pDepthStencilTex = d3d11_rc.CreateTexture2D(tex_desc);
-        RenderViewPtr dsv = d3d11_rc.CreateDepthStencilView(pDepthStencilTex);
+        RHIRenderViewPtr dsv = d3d11_rc.CreateDepthStencilView(pDepthStencilTex);
         this->AttachDepthStencilView(dsv);
 
         return S_Success;

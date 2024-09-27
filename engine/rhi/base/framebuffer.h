@@ -121,12 +121,12 @@ public:
     void                                SetViewport(Viewport viewport) { m_stViewport = viewport; }
     Viewport const &                    GetViewport();
 
-    void                                AttachTargetView(Attachment att, RenderViewPtr const& view);
-    void                                AttachDepthStencilView(RenderViewPtr const& view);
+    void                                AttachTargetView(Attachment att, RHIRenderViewPtr const& view);
+    void                                AttachDepthStencilView(RHIRenderViewPtr const& view);
 
-    RenderViewPtr                       GetRenderTarget(Attachment att) const;
-    std::array<RenderViewPtr, MAX_COLOR_ATTACHMENTS> const& GetRenderTargets() const { return m_vRenderTargets; }
-    RenderViewPtr              const&   GetDepthStencilView() const { return m_pDepthStencilView; }
+    RHIRenderViewPtr                       GetRenderTarget(Attachment att) const;
+    std::array<RHIRenderViewPtr, MAX_COLOR_ATTACHMENTS> const& GetRenderTargets() const { return m_vRenderTargets; }
+    RHIRenderViewPtr              const&   GetDepthStencilView() const { return m_pDepthStencilView; }
     
     virtual SResult                   OnBind() = 0;
     virtual SResult                   OnUnbind() = 0;
@@ -161,8 +161,8 @@ protected:
 
     bool                                m_bViewDirty = false;
     Viewport                            m_stViewport;
-    std::array<RenderViewPtr, MAX_COLOR_ATTACHMENTS> m_vRenderTargets;
-    RenderViewPtr                       m_pDepthStencilView;
+    std::array<RHIRenderViewPtr, MAX_COLOR_ATTACHMENTS> m_vRenderTargets;
+    RHIRenderViewPtr                       m_pDepthStencilView;
     uint32_t                            m_sampleNum = 1;
     
     LoadOption m_colorLoadOptions[MAX_COLOR_ATTACHMENTS];
