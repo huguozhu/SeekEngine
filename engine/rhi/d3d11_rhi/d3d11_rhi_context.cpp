@@ -797,7 +797,7 @@ void D3D11RHIContext::BindRWTexture(ShaderType stage, uint32_t binding, const RH
     SetD3DUnorderedAccessViews(stage, binding, 1, &uav);
 }
 
-void D3D11RHIContext::BindSampler(ShaderType stage, uint32_t binding, const Sampler* sampler, const char* name)
+void D3D11RHIContext::BindSampler(ShaderType stage, uint32_t binding, const RHISampler* sampler, const char* name)
 {
     ID3D11SamplerState* d3d_sampler = sampler == nullptr ? nullptr : ((D3D11Sampler*)sampler)->GetD3D11SamplerState();
     SetD3DSamplers(stage, binding, 1, &d3d_sampler);

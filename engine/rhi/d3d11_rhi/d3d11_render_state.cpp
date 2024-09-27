@@ -123,7 +123,7 @@ SResult D3D11RenderState::Active()
 }
 
 D3D11Sampler::D3D11Sampler(Context* context, SamplerDesc const& desc)
-    : Sampler(context, desc)
+    : RHISampler(context, desc)
 {
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();

@@ -192,14 +192,14 @@ RHITexturePtr RHIContext::CreateTexture2D(const BitmapBufferPtr data)
     return this->CreateTexture2D(desc, data);
 }
 
-SamplerPtr RHIContext::GetSampler(SamplerDesc const& desc)
+RHISamplerPtr RHIContext::GetSampler(SamplerDesc const& desc)
 {
     auto it = m_Samplers.find(desc);
     if (it != m_Samplers.end())
         return it->second;
 
     LOG_INFO("Context::GetSampler");
-    SamplerPtr ptr = this->CreateSampler(desc);
+    RHISamplerPtr ptr = this->CreateSampler(desc);
     if (ptr)
         m_Samplers[desc] = ptr;
     return ptr;

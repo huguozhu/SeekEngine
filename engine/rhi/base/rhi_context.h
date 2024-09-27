@@ -97,7 +97,7 @@ public: // virutal factory
     virtual void                    EndRHITimerQuery(RHITimerQueryPtr&) = 0;
 
     // Global common reused variable
-    SamplerPtr                      GetSampler(SamplerDesc const& desc);
+    RHISamplerPtr                   GetSampler(SamplerDesc const& desc);
     RenderStatePtr                  GetRenderState(RenderStateDesc const& desc);
     
     virtual void                    BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* cbuffer, const char* name) = 0;
@@ -105,12 +105,12 @@ public: // virutal factory
     virtual void                    BindRWRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* rw_buffer, const char* name) = 0;
     virtual void                    BindTexture(ShaderType stage, uint32_t binding, const RHITexture* texture, const char* name) = 0;
     virtual void                    BindRWTexture(ShaderType stage, uint32_t binding, const RHITexture* rw_texture, const char* name) = 0;
-    virtual void                    BindSampler(ShaderType stage, uint32_t binding, const Sampler* sampler, const char* name) = 0;
+    virtual void                    BindSampler(ShaderType stage, uint32_t binding, const RHISampler* sampler, const char* name) = 0;
 
 protected:
     // Functions that only can been called by Context
     friend class Context;
-    virtual SamplerPtr              CreateSampler(SamplerDesc const& desc) = 0;
+    virtual RHISamplerPtr           CreateSampler(SamplerDesc const& desc) = 0;
     virtual RenderStatePtr          CreateRenderState(RenderStateDesc const& desc) = 0;
 
 
@@ -128,7 +128,7 @@ protected:
     RHIMeshPtr                      m_pConeMesh;
 
     // Reused Variable
-    std::map<SamplerDesc, SamplerPtr>           m_Samplers;
+    std::map<SamplerDesc, RHISamplerPtr>           m_Samplers;
     std::map<RenderStateDesc, RenderStatePtr>   m_RenderStates;
 };
 

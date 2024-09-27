@@ -253,13 +253,13 @@ struct SamplerDesc
     bool     operator<(SamplerDesc const& rhs) const;
 };
 
-class Sampler
+class RHISampler
 {
 protected:
-    Sampler(Context* context, SamplerDesc const& desc)
+    RHISampler(Context* context, SamplerDesc const& desc)
         : m_pContext(context), m_stSamplerDesc(desc)
     {}
-    virtual ~Sampler() {}
+    virtual ~RHISampler() {}
 
 protected:
     Context*    m_pContext = nullptr;

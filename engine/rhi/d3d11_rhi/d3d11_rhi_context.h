@@ -86,7 +86,7 @@ public:
     virtual RHIRenderBufferPtr  CreateIndexBuffer(uint32_t size, ResourceFlags usage, RHIRenderBufferData* pData) override;
 
     virtual RenderStatePtr      CreateRenderState(RenderStateDesc const& desc) override;
-    virtual SamplerPtr          CreateSampler(SamplerDesc const& desc) override;
+    virtual RHISamplerPtr       CreateSampler(SamplerDesc const& desc) override;
 
     virtual RenderViewPtr       CreateRenderTargetView(RHITexturePtr const& tex, uint32_t lod = 0) override;
     virtual RenderViewPtr       CreateRenderTargetView(RHITexturePtr const& tex, CubeFaceType face, uint32_t lod = 0) override;
@@ -126,7 +126,7 @@ public:
     virtual void BindRWRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* rw_buffer, const char* name) override;
     virtual void BindTexture(ShaderType stage, uint32_t binding, const  RHITexture* texture, const char* name) override;
     virtual void BindRWTexture(ShaderType stage, uint32_t binding, const  RHITexture* rw_texture, const char* name) override;
-    virtual void BindSampler(ShaderType stage, uint32_t binding, const Sampler* sampler, const char* name) override;
+    virtual void BindSampler(ShaderType stage, uint32_t binding, const RHISampler* sampler, const char* name) override;
 };
 
 SEEK_NAMESPACE_END

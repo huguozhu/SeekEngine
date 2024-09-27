@@ -22,7 +22,7 @@ std::unique_ptr<EffectVariable> CreateEffectVariable(EffectDataType data_type)
         case EffectDataType::RWTexture:
             return MakeUniquePtr<EffectVariableRHITexture>();
         case EffectDataType::Sampler:
-            return MakeUniquePtr<EffectVariableSampler>();
+            return MakeUniquePtr<EffectVariableRHISampler>();
         case EffectDataType::SampledTexture:
             return nullptr; // it's just a placehold type, has no instance
         default:
@@ -51,7 +51,7 @@ std::unique_ptr<EffectVariable> EffectParam::ReadRenderVariable(EffectDataType d
         }
         case EffectDataType::Sampler:
         {
-            *var = SamplerPtr();
+            *var = RHISamplerPtr();
             break;
         }
         case EffectDataType::SampledTexture:

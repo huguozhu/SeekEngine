@@ -113,9 +113,9 @@ RenderStatePtr D3D11RHIContext::CreateRenderState(RenderStateDesc const& desc)
     RenderStatePtr state = MakeSharedPtr<D3D11RenderState>(m_pContext, desc);
     return state;
 }
-SamplerPtr D3D11RHIContext::CreateSampler(SamplerDesc const& desc)
+RHISamplerPtr D3D11RHIContext::CreateSampler(SamplerDesc const& desc)
 {
-    SamplerPtr sampler = MakeSharedPtr<D3D11Sampler>(m_pContext, desc);
+    RHISamplerPtr sampler = MakeSharedPtr<D3D11Sampler>(m_pContext, desc);
     return sampler;
 }
 

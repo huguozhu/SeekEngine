@@ -26,7 +26,7 @@ protected:
     ID3D11BlendStatePtr m_pD3D11BlendState = nullptr;
 };
 
-class D3D11Sampler : public Sampler
+class D3D11Sampler : public RHISampler
 {
 public:
     D3D11Sampler(Context* context, SamplerDesc const& desc);
