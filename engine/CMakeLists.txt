@@ -115,9 +115,9 @@ set(ENGINE_CODE
 
 
     # vulkan rhi
-    ${SEEK_ENGINE_SOURCE_DIR}/vulkan_rhi/vulkan_rhi.h
-    ${SEEK_ENGINE_SOURCE_DIR}/vulkan_rhi/vulkan_rhi.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/vulkan_rhi/vulkan_rhi_factory.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan_rhi/vulkan_rhi.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan_rhi/vulkan_rhi.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan_rhi/vulkan_rhi_factory.cpp
 
     # resource
     ${SEEK_ENGINE_SOURCE_DIR}/resource/resource_mgr.h

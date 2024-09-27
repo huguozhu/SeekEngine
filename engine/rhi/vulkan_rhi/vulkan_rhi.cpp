@@ -1,4 +1,4 @@
-#include "vulkan_rhi/vulkan_rhi.h"
+#include "rhi/vulkan_rhi/vulkan_rhi.h"
 
 SEEK_NAMESPACE_BEGIN
 //void MakeVulkanRHIContext(Context* context, RHIContextPtrUnique& out)
