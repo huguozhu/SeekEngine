@@ -13,5 +13,12 @@ public:
     virtual SResult         OnCreate() override;
     virtual SResult         OnUpdate() override;
 
+private:
+    EntityPtr           m_pCameraEntity = nullptr;
+
+    EntityPtr           m_pMeshEntity = nullptr;
+
+    TriangleMeshComponentPtr    m_pMesh = nullptr;
+
 };
 

@@ -27,17 +27,17 @@ public:
     // Replace buildt-in SceneComponent
     void                    ReplaceSceneComponent(SceneComponentPtr component);
 
-    virtual SResult       Tick(float delta_time);
+    virtual SResult         Tick(float delta_time);
 
     // Add m_pRootComponent to the root node of the SceneManager
-    SResult               AddToTopScene();
+    SResult                 AddToTopScene();
     // Delete m_pRootComponent from the root node of the SceneManager
-    SResult               DeleteFromTopScene();
+    SResult                 DeleteFromTopScene();
 
     // Set the current root SC as the child of the parent entity root SC, and add to parent's m_vOwnedComponents
-    SResult               AddToParent(Entity* parent_entity);
+    SResult                 AddToParent(Entity* parent_entity);
     // Set the current root SC as the child of the parent_component
-    SResult               AddToParent(SceneComponent* parent_component);
+    SResult                 AddToParent(SceneComponent* parent_component);
 
     // Transform Functions
     void                    SetWorldTransform(Matrix4 const& matrix);

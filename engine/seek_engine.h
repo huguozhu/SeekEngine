@@ -1,7 +1,19 @@
 #pragma once
 
+// component
+#include "components/entity.h"
+#include "components/component.h"
+#include "components/camera_component.h"
+#include "components/light_component.h"
+#include "components/mesh_component.h"
+#include "components/scene_component.h"
+#include "components/triangle_mesh_component.h"
+
+
 // effect
 #include "effect/command_buffer.h"
+
+
 
 // kernel
 #include "kernel/kernel.h"

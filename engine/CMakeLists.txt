@@ -6,6 +6,8 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/components/entity.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/entity.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/triangle_mesh_component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/triangle_mesh_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/mesh_component.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/mesh_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/light_component.h

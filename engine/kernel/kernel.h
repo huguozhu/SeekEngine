@@ -65,6 +65,7 @@ CLASS_DECLARE(MeshComponent);
 CLASS_DECLARE(SkeletalMeshComponent);
 CLASS_DECLARE(SkyBoxComponent);
 CLASS_DECLARE(Sprite2DComponent);
+CLASS_DECLARE(TriangleMeshComponent);
 CLASS_DECLARE(ImageComponent);
 CLASS_DECLARE(SpringSkeletonComponent);
 CLASS_DECLARE(ParticleComponent);
