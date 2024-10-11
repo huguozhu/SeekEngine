@@ -1,7 +1,7 @@
 #pragma once
 
 #include "components/mesh_component.h"
-#include "rhi/render_definition.h"
+#include "rhi/base/rhi_definition.h"
 #include "math/matrix.h"
 
 SEEK_NAMESPACE_BEGIN

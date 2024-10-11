@@ -1,13 +1,14 @@
 #include "components/shape_mesh_component.h"
 #include "components/camera_component.h"
 #include "kernel/context.h"
-#include "rhi/mesh.h"
-#include "rhi/render_context.h"
-#include "rhi/render_definition.h"
-#include "rhi/render_buffer.h"
+#include "effect/command_buffer.h"
+#include "rhi/base/rhi_mesh.h"
+#include "rhi/base/rhi_context.h"
+#include "rhi/base/rhi_definition.h"
+#include "rhi/base/rhi_render_buffer.h"
 
-#include "effect/effect.h"
-#include "effect/technique.h"
+//#include "effect/effect.h"
+//#include "effect/technique.h"
 
 #define SEEK_MACRO_FILE_UID 99     // this code is auto generated, don't touch it!!!
 
@@ -310,36 +311,34 @@ MeshData CreateTerrain(float width, float height, uint32_t slices_x = 10, uint32
     return mesh_data;
 }
 
-MeshPtr CreateMeshFromMeshData(Context* context, MeshData& mesh_data)
+RHIMeshPtr CreateMeshFromMeshData(Context* context, MeshData& mesh_data)
 {
-    RenderContext& rc = context->RenderContextInstance();
-    // Create Mesh
-    MeshPtr pMesh = rc.CreateMesh();
+    RendererCommandManager& rcm = context->RendererCommandManagerInstance();
+    RHIMeshPtr pMesh = rcm.CreateMesh();
 
-    RenderBufferData vertex_data(sizeof(float3) * mesh_data.positions.size(), &mesh_data.positions[0]);
-    RenderBufferPtr vertex_buffer = rc.CreateVertexBuffer((uint32_t)(sizeof(float3) * mesh_data.positions.size()), RESOURCE_FLAG_NONE, &vertex_data);
-    pMesh->AddVertexStream(vertex_buffer, 0, sizeof(float3), VertexFormat::Float3, VertexElementUsage::Position, 0);
+    RHIRenderBufferPtr buf_pos =  rcm.CreateVertexrBuffer((const void*)&mesh_data.positions[0], sizeof(float3) * mesh_data.positions.size(), RESOURCE_FLAG_NONE);
+    VertexStream vs_pos = { buf_pos, 0, 0, {{0, 0, 1, VertexFormat::Float3, VertexElementUsage::Position, false, 0}}, false };
+    pMesh->AddVertexStream(vs_pos);
 
-    RenderBufferData tc_data(sizeof(float2) * mesh_data.texcoords.size(), &mesh_data.texcoords[0]);
-    RenderBufferPtr tc_buffer = rc.CreateVertexBuffer((uint32_t)(sizeof(float2) * mesh_data.texcoords.size()), RESOURCE_FLAG_NONE, &tc_data);
-    pMesh->AddVertexStream(tc_buffer, 0, sizeof(float2), VertexFormat::Float2, VertexElementUsage::TexCoord, 0);
+    RHIRenderBufferPtr buf_tc = rcm.CreateVertexrBuffer((const void*)&mesh_data.texcoords[0], sizeof(float2) * mesh_data.texcoords.size(), RESOURCE_FLAG_NONE);
+    VertexStream vs_tc = { buf_tc, 0, 0, {{0, 0, 1, VertexFormat::Float2, VertexElementUsage::TexCoord, false, 0}}, false };
+    pMesh->AddVertexStream(vs_tc);
 
-    RenderBufferData normal_data(sizeof(float3) * mesh_data.normals.size(), &mesh_data.normals[0]);
-    RenderBufferPtr normal_buffer = rc.CreateVertexBuffer((uint32_t)(sizeof(float3) * mesh_data.normals.size()), RESOURCE_FLAG_NONE, &normal_data);
-    pMesh->AddVertexStream(normal_buffer, 0, sizeof(float3), VertexFormat::Float3, VertexElementUsage::Normal, 0);
+    RHIRenderBufferPtr buf_normal = rcm.CreateVertexrBuffer((const void*)&mesh_data.normals[0], sizeof(float3) * mesh_data.normals.size(), RESOURCE_FLAG_NONE);
+    VertexStream vs_normal = { buf_normal, 0, 0, {{0, 0, 1, VertexFormat::Float3, VertexElementUsage::Normal, false, 0}}, false };
+    pMesh->AddVertexStream(vs_normal);
 
     if (mesh_data.tangent.size() > 0)
     {
-        RenderBufferData tangent_data(sizeof(float4) * mesh_data.tangent.size(), &mesh_data.tangent[0]);
-        RenderBufferPtr tangent_buffer = rc.CreateVertexBuffer((uint32_t)(sizeof(float4) * mesh_data.tangent.size()), RESOURCE_FLAG_NONE, &tangent_data);
-        pMesh->AddVertexStream(tangent_buffer, 0, sizeof(float4), VertexFormat::Float4, VertexElementUsage::Tangent, 0);
+        RHIRenderBufferPtr buf_tangent = rcm.CreateVertexrBuffer((const void*)&mesh_data.tangent[0], sizeof(float4) * mesh_data.tangent.size(), RESOURCE_FLAG_NONE);
+        VertexStream vs_tangent = { buf_tangent, 0, 0, {{0, 0, 1, VertexFormat::Float4, VertexElementUsage::Tangent, false, 0}}, false };
+        pMesh->AddVertexStream(vs_tangent);
     }
 
     if (mesh_data.indices.size() > 0)
     {
-        RenderBufferData index_data(sizeof(uint16_t) * mesh_data.indices.size(), &mesh_data.indices[0]);
-        RenderBufferPtr index_buffer = rc.CreateIndexBuffer((uint32_t)(sizeof(uint16_t) * mesh_data.indices.size()), RESOURCE_FLAG_NONE, &index_data);
-        pMesh->SetIndexBuffer(index_buffer, IndexBufferType::UInt16);
+        RHIRenderBufferPtr buf_index = rcm.CreateIndexBuffer((const void*)&mesh_data.indices[0], sizeof(uint16_t) * mesh_data.indices.size(), RESOURCE_FLAG_NONE);
+        pMesh->SetIndexBuffer(buf_index, IndexBufferType::UInt16);
     }
 
     pMesh->SetTopologyType(mesh_data.eTopoType);
@@ -356,12 +355,11 @@ MeshPtr CreateMeshFromMeshData(Context* context, MeshData& mesh_data)
 CubeMeshComponent::CubeMeshComponent(Context* context)
     :MeshComponent(context)
 {
-    RenderContext& rc = m_pContext->RenderContextInstance();
     this->SetName("Cube Mesh Component");
 
     // Create Mesh
     MeshData mesh_data = CreateCube();
-    MeshPtr pMesh = CreateMeshFromMeshData(m_pContext, mesh_data);
+    RHIMeshPtr pMesh = CreateMeshFromMeshData(m_pContext, mesh_data);
 
     this->AddMesh(pMesh);
     this->SetAABBox(pMesh->GetAABBox());
@@ -377,12 +375,11 @@ CubeMeshComponent::~CubeMeshComponent()
 SphereMeshComponent::SphereMeshComponent(Context* context, uint32_t x_segment_num, uint32_t y_segment_num)
     :MeshComponent(context)
 {
-    RenderContext& rc = m_pContext->RenderContextInstance();
     this->SetName("Sphere Mesh Component");
 
     // Create Mesh
     MeshData mesh_data = CreateSphere();
-    MeshPtr pMesh = CreateMeshFromMeshData(m_pContext, mesh_data);
+    RHIMeshPtr pMesh = CreateMeshFromMeshData(m_pContext, mesh_data);
 
     this->AddMesh(pMesh);
     this->SetAABBox(pMesh->GetAABBox());
@@ -397,12 +394,11 @@ SphereMeshComponent::~SphereMeshComponent()
 ConeMeshComponent::ConeMeshComponent(Context* context)
     :MeshComponent(context)
 {
-    RenderContext& rc = m_pContext->RenderContextInstance();
     this->SetName("Cone Mesh Component");
 
     // Create Mesh
     MeshData mesh_data = CreateCone();
-    MeshPtr pMesh = CreateMeshFromMeshData(m_pContext, mesh_data);
+    RHIMeshPtr pMesh = CreateMeshFromMeshData(m_pContext, mesh_data);
 
     this->AddMesh(pMesh);
     this->SetAABBox(pMesh->GetAABBox());
@@ -419,12 +415,11 @@ TerrainMeshComponent::TerrainMeshComponent(Context* context, float width, float 
     const std::function<float(float, float)>& heightFunc, const std::function<float3(float, float)>& normalFunc)
     :MeshComponent(context)
 {
-    RenderContext& rc = m_pContext->RenderContextInstance();
     this->SetName("Terrain Mesh Component");
 
     // Create Mesh
     MeshData mesh_data = CreateTerrain(width, height, slices_x, slices_z, max_texcoord_u, max_texcoord_v, heightFunc, normalFunc);
-    MeshPtr pMesh = CreateMeshFromMeshData(m_pContext, mesh_data);
+    RHIMeshPtr pMesh = CreateMeshFromMeshData(m_pContext, mesh_data);
 
     this->AddMesh(pMesh);
     this->SetAABBox(pMesh->GetAABBox());
@@ -439,7 +434,6 @@ TerrainMeshComponent::~TerrainMeshComponent()
 PlaneMeshComponent::PlaneMeshComponent(Context* context, float width, float height)
     :TerrainMeshComponent(context, width, height, 1, 1)
 {
-    RenderContext& rc = m_pContext->RenderContextInstance();
     this->SetName("Plane Mesh Component");
 }
 PlaneMeshComponent::~PlaneMeshComponent()

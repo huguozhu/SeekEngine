@@ -17,7 +17,7 @@ enum class CommandType : uint8_t
     CreateMesh,
     CreateVertexBuffer,
     CreateIndexBuffer,
-    CreateVertexLayout,
+
     CreateShader,
     CreateProgram,
     CreateTexture,
@@ -102,8 +102,11 @@ public:
 public:
     /* All Renderer Commands */
     void InitRendererInit(void* native_wnd);
-    VertexStreamHandle CreateVertexStream(Buffer* mem, VertexStreamInfo vsi, ResourceFlags flags);
-    MeshHandle CreateMesh();
+     
+    RHIMeshPtr CreateMesh();
+    RHIRenderBufferPtr CreateVertexrBuffer(const void* data, uint32_t data_size, ResourceFlags flags);
+    RHIRenderBufferPtr CreateIndexBuffer(const void* data, uint32_t data_size, ResourceFlags flags);
+    
 
 
 private:

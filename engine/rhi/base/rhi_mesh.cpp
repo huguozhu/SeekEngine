@@ -123,7 +123,10 @@ void RHIMesh::AddVertexStream(RHIRenderBufferPtr render_buffer, uint32_t buffer_
 
     m_bDataDirty = true;
 }
-
+void RHIMesh::AddVertexStream(VertexStream& vs)
+{
+    m_vVertexStreams.push_back(vs);
+}
 void RHIMesh::AddInstanceVertexStream(RHIRenderBufferPtr render_buffer, uint32_t buffer_offset, uint32_t stride, VertexFormat format, VertexElementUsage usage, uint32_t usage_index, uint32_t instance_count, uint32_t divisor)
 {
     LOG_INFO("Mesh::AddInstanceVertexStream begin InstancCount=%d", instance_count);

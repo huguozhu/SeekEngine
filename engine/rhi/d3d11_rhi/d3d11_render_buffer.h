@@ -45,7 +45,6 @@ using D3D11RHIRenderBufferPtr = std::shared_ptr<D3D11RHIRenderBuffer>;
 class D3D11VertexBuffer : public D3D11RHIRenderBuffer
 {
 public:
-    D3D11VertexBuffer();
     D3D11VertexBuffer(Context* context, uint32_t size, ResourceFlags flags);
 protected:
     SResult FillBufferDesc(D3D11_BUFFER_DESC& desc) override;

@@ -43,15 +43,15 @@ public:
 
     Rect<uint32_t>                      GetRenderRect() const { return m_RenderRect; }
 
-    RHIRenderBufferPtr&                    GetLightInfoCBuffer();
-    RHIRenderBufferPtr&                    GetViewInfoCBuffer();
+    RHIRenderBufferPtr&                 GetLightInfoCBuffer();
+    RHIRenderBufferPtr&                 GetViewInfoCBuffer();
 
     const std::vector<MeshPair>&        GetOpaqueMeshList() { return m_OpaqueMeshList; }
     const std::vector<MeshPair>&        GetTransparentMeshList() { return m_TransparentMeshList; }
 
     // RHIQuery = std::function<bool(const MeshPair&)>
-    template<typename RHIQuery>
-    std::vector<MeshPair> RHIQueryMesh(RHIQuery query)
+    template<typename Query>
+    std::vector<MeshPair> QueryMesh(Query query)
     {
         std::vector<MeshPair> outMeshes;
         CameraComponent* pActiveCamera = GetActiveCamera();

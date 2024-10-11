@@ -31,7 +31,7 @@ public:
     ComponentType           GetComponentType() const { return m_eComponentType; }
 
     virtual                 ~Component() {}
-    virtual SResult       Tick(float delta_time) { return S_Success; }
+    virtual SResult         Tick(float delta_time) { return S_Success; }
 
 protected:
     Component(Context* context, std::string const& name = "UnknownComponent", ComponentType type = ComponentType::Unknown)

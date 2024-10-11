@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <functional>
 
 #define SEEK_NAMESPACE_BEGIN     namespace seek_engine {
 #define SEEK_NAMESPACE_END       }
@@ -51,6 +52,14 @@ CLASS_DECLARE(SceneManager);
 
 // Effect
 CLASS_DECLARE(RendererCommandManager);
+CLASS_DECLARE(Effect);
+CLASS_DECLARE(Technique);
+CLASS_DECLARE(VirtualTechnique)
+CLASS_DECLARE(SceneRenderer);
+CLASS_DECLARE(EffectParam);
+CLASS_DECLARE(PostProcess);
+CLASS_DECLARE(HDRPostProcess);
+CLASS_DECLARE(LDRPostProcess);
 
 // Component
 CLASS_DECLARE(Entity);
@@ -65,10 +74,11 @@ CLASS_DECLARE(MeshComponent);
 CLASS_DECLARE(SkeletalMeshComponent);
 CLASS_DECLARE(SkyBoxComponent);
 CLASS_DECLARE(Sprite2DComponent);
-CLASS_DECLARE(TriangleMeshComponent);
+CLASS_DECLARE(Component);
 CLASS_DECLARE(ImageComponent);
 CLASS_DECLARE(SpringSkeletonComponent);
 CLASS_DECLARE(ParticleComponent);
+CLASS_DECLARE(SphereMeshComponent);
 
 CLASS_DECLARE(KeyFrame);
 CLASS_DECLARE(TransformKeyFrame);
@@ -118,6 +128,13 @@ inline std::unique_ptr<T> MakeUniquePtr(Args&& ... args)
 }
 #define MakeSharedPtrMacro(CLASS, ...) std::make_shared<CLASS>(__VA_ARGS__)
 #define MakeUniquePtrMacro(CLASS, ...) std::unique_ptr<CLASS>(new CLASS(__VA_ARGS__), std::default_delete<CLASS>())
+
+enum class RendererType
+{
+    Unknown,
+    Forward,
+    Deferred,
+};
 
 
 SEEK_NAMESPACE_END

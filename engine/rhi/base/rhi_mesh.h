@@ -1,12 +1,13 @@
 #pragma once
 
-#include "kernel/kernel.h"
+#include "rhi/base/rhi_object.h"
 #include "rhi/base/rhi_definition.h"
 #include "rhi/base/format.h"
 #include "rhi/base/material.h"
 #include "rhi/base/rhi_render_state.h"
 #include "math/vector.h"
 #include "math/aabbox.h"
+#include "effect/technique.h"
 #include "resource/resource_mgr.h"
 
 SEEK_NAMESPACE_BEGIN
@@ -22,7 +23,7 @@ enum class SkinningJointBindSize
 };
 
 
-class RHIMesh
+class RHIMesh : public RHIObject
 {
 public:
     MeshTopologyType                    GetTopologyType() const { return m_eTopoType; }
@@ -31,7 +32,7 @@ public:
     // Index Streams
     bool                                IsUseIndices() const;
     uint32_t                            GetNumIndices() const;
-    RHIRenderBufferPtr const&              GetIndexBuffer();
+    RHIRenderBufferPtr const&           GetIndexBuffer();
     IndexBufferType                     GetIndexBufferType() const { return m_eIndexBufferType; }
     void                                SetIndexBuffer(RHIRenderBufferPtr buffer, IndexBufferType type);
     void                                SetIndexBufferResource(std::shared_ptr<VertexIndicesResource>& indicesRes);
@@ -42,6 +43,7 @@ public:
     VertexStream&                       GetVertexStreamByIndex(uint32_t i);
     std::vector<VertexStream>&          GetVertexStreams();
     void                                AddVertexStream(RHIRenderBufferPtr render_buffer, uint32_t buffer_offset, uint32_t stride, VertexFormat format, VertexElementUsage usage, uint32_t usage_index);
+    void                                AddVertexStream(VertexStream& vs);
     void                                AddInstanceVertexStream(RHIRenderBufferPtr render_buffer, uint32_t buffer_offset, uint32_t stride, VertexFormat format, VertexElementUsage usage, uint32_t usage_index, uint32_t instance_count, uint32_t divisor);
     VertexStream*                       GetInstanceVertexStream(VertexElementUsage instance_type, uint32_t usage_index);
     void                                SetVertexAttributeResource(VertexAttributeResource& res);
@@ -85,6 +87,9 @@ public:
     bool                                IsInstanceRendering() { return m_bIsInstance; }
     uint32_t                            GetInstanceCount() { return m_uInstancCount; }
     void                                SetInstanceCount(uint32_t count) { m_uInstancCount = count; }
+
+    void                                SetTechnique(Technique* tech) { m_pTechnique = tech; }
+    Technique*                          GetTechnique() const { return m_pTechnique; }
     
     bool                                m_bFrontFaceCCW = false;
     bool                                m_bUpdateFrontFaceCCW = true;
@@ -135,6 +140,8 @@ protected:
     // Instance rendering
     bool                        m_bIsInstance = false;
     uint32_t                    m_uInstancCount = 1;
+
+    Technique*                  m_pTechnique = nullptr;
 };
 
 SEEK_NAMESPACE_END

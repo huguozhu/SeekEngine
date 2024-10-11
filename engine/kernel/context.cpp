@@ -4,9 +4,16 @@
 #include "thread/thread_manager.h"
 
 #include "rhi/base/rhi_context.h"
-#include "utils/log.h"
 
+#include "effect/effect.h"
+#include "effect/scene_renderer.h"
+#include "effect/forward_shading_renderer.h"
+
+#include "utils/log.h"
 #include "utils/timer.h"
+#include "utils/error.h"
+
+#define SEEK_MACRO_FILE_UID 28     // this code is auto generated, don't touch it!!!
 
 SEEK_NAMESPACE_BEGIN
 
@@ -49,6 +56,23 @@ SResult Context::Init(const RenderInitInfo& init_info)
         m_pRendererCommandManager = MakeUniquePtrMacro(RendererCommandManager, this);
         m_pRendererCommandManager->InitRendererInit(init_info.native_wnd);
     }
+    if (!m_pSceneRenderer)
+    {
+        {
+            m_pSceneRenderer = MakeUniquePtrMacro(ForwardShadingRenderer, this);
+        }
+    }
+
+    if (!m_pEffect)
+    {
+        m_pEffect = MakeUniquePtr<Effect>(this);
+        SResult ret = m_pEffect->Initialize();
+        if (SEEK_CHECKFAILED(ret))
+        {
+            m_pSceneRenderer.reset();
+            return ret;
+        }
+    }
 
     m_MainThreadSemaphore.Post();
 
@@ -72,7 +96,11 @@ void Context::SetViewport(Viewport vp)
 
 SResult Context::Update()
 {
-    return S_Success;
+    double last_time = m_dCurTime;
+    m_dCurTime = m_pTimer->CurrentTimeSinceEpoch_S();
+    m_dDeltaTime = m_dCurTime - last_time;
+
+    return SceneManagerInstance().Tick((float)m_dDeltaTime);
 }
 
 SResult Context::BeginRender()
@@ -81,7 +109,6 @@ SResult Context::BeginRender()
     this->RendererCommandManagerInstance().FinishSubmitCommandBuffer();
     this->RendererCommandManagerInstance().SwapCommandBuffer();
     this->RenderThreadSemPost();
-    this->Update();
     
     if (1)
     {
@@ -95,6 +122,31 @@ SResult Context::BeginRender()
 /********** Called by Rendering Thread ***************/
 SResult Context::RenderFrame()
 {
+    SResult ret = S_Success;
+    RendererReturnValue rrv;
+    SceneRenderer& sr_scene = this->SceneRendererInstance();
+
+    sr_scene.BuildRenderJobList();
+
+    // TODO: merge this two renderer
+    if (sr_scene.HasRenderJob())// && sr_sprite.HasRenderJob())
+    {
+        LOG_ERROR("SceneRenderer and Sprite2DRenderer is mutually exclusive");
+        return ERR_INVALID_INVOKE_FLOW;
+    }
+
+    if (sr_scene.HasRenderJob())
+    {
+        while (1)
+        {
+            rrv = sr_scene.DoRenderJob();
+            if (rrv & RRV_Finish)
+                break;
+        }
+    }
+
+
+    m_FrameCount++;
     return S_Success;
 }
 SResult Context::EndRender()

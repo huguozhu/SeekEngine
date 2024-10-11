@@ -18,7 +18,7 @@ private:
 
     EntityPtr           m_pMeshEntity = nullptr;
 
-    TriangleMeshComponentPtr    m_pMesh = nullptr;
+    SphereMeshComponentPtr    m_pMesh = nullptr;
 
 };
 

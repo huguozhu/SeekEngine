@@ -13,6 +13,9 @@ public:
 
     void Init();
 
+private:
+    BufferPtr m_pIndexBuffer = nullptr;
+    BufferPtr m_pVertexBuffer = nullptr;
 };
 
 SEEK_NAMESPACE_END

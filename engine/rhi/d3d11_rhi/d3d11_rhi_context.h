@@ -76,7 +76,10 @@ public:
     virtual RHITexturePtr       CreateTexture2D(const  RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas) override;
     virtual RHITexturePtr       CreateTexture3D(const  RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas) override;
     virtual RHITexturePtr       CreateTextureCube(const  RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr>* init_data = nullptr);
-    virtual RHIRenderBufferPtr  CreateRHIRenderBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) override;
+
+    virtual RHIRenderBufferPtr  CreateEmptyVertexBuffer(uint32_t size, ResourceFlags flags) override;
+    virtual RHIRenderBufferPtr  CreateEmptyIndexBuffer(uint32_t size, ResourceFlags flags) override;
+
     virtual RHIRenderBufferPtr  CreateConstantBuffer(uint32_t size, ResourceFlags usage) override;
     virtual RHIRenderBufferPtr  CreateStructuredBuffer  (uint32_t size, ResourceFlags usage, uint32_t structure_byte_stride, RHIRenderBufferData* pData) override;
     virtual RHIRenderBufferPtr  CreateRWStructuredBuffer(uint32_t size, ResourceFlags usage, uint32_t structure_byte_stride, RHIRenderBufferData* pData) override;
@@ -88,10 +91,10 @@ public:
     virtual RHIRenderStatePtr   CreateRenderState(RenderStateDesc const& desc) override;
     virtual RHISamplerPtr       CreateSampler(SamplerDesc const& desc) override;
 
-    virtual RHIRenderViewPtr       CreateRenderTargetView(RHITexturePtr const& tex, uint32_t lod = 0) override;
-    virtual RHIRenderViewPtr       CreateRenderTargetView(RHITexturePtr const& tex, CubeFaceType face, uint32_t lod = 0) override;
-    virtual RHIRenderViewPtr       CreateDepthStencilView(RHITexturePtr const& tex) override;
-    virtual RHIRenderViewPtr       CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face) override;
+    virtual RHIRenderViewPtr    CreateRenderTargetView(RHITexturePtr const& tex, uint32_t lod = 0) override;
+    virtual RHIRenderViewPtr    CreateRenderTargetView(RHITexturePtr const& tex, CubeFaceType face, uint32_t lod = 0) override;
+    virtual RHIRenderViewPtr    CreateDepthStencilView(RHITexturePtr const& tex) override;
+    virtual RHIRenderViewPtr    CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face) override;
 
     virtual RHIFrameBufferPtr   CreateRHIFrameBuffer() override;
     virtual RHIProgramPtr       CreateRHIProgram() override;

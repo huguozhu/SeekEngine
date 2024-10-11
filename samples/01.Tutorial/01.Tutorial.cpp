@@ -28,16 +28,16 @@ SResult Tutorial::OnCreate()
 
     // Mesh
     m_pMeshEntity = MakeSharedPtr<Entity>(m_pContext.get());
-    TriangleMeshComponentPtr pMesh = MakeSharedPtr<TriangleMeshComponent>(m_pContext.get());
+    SphereMeshComponentPtr pMesh = MakeSharedPtr<SphereMeshComponent>(m_pContext.get());
     m_pMeshEntity->AddSceneComponent(pMesh);
     m_pMeshEntity->AddToTopScene();
-
 
     return S_Success;
 }
 SResult Tutorial::OnUpdate()
 {    
     SEEK_RETIF_FAIL(m_pContext->BeginRender());
+    SEEK_RETIF_FAIL(m_pContext->Update());
     SEEK_RETIF_FAIL(m_pContext->EndRender());
 
     return S_Success;

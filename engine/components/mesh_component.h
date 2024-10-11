@@ -64,6 +64,11 @@ public:
     void                        SetAABBoxWorld(AABBox const& box) { m_cAABBoxWorld = box; }
     AABBox const&               GetAABBoxWorld() const { return m_cAABBoxWorld; }
 
+    virtual SResult             OnRenderBegin(Technique* tech, RHIMeshPtr mesh);
+    virtual SResult             OnRenderEnd();
+    virtual SResult             Render();
+    virtual SResult             RenderMesh(uint32_t i);
+
     void                        SetBSConfig(std::vector<BSConfig>& bsConfig);
     virtual SResult             Tick(float delta_time);
 

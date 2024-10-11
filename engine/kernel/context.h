@@ -21,6 +21,13 @@ enum class RHIType
     GLES,
 };
 
+enum class LightingMode
+{
+    Phong,
+    PBR,
+};
+static const float PBR_INTENSITY_COEFF = 120000.0f;
+
 struct RenderInitInfo
 {
     bool                    debug = false;
@@ -28,10 +35,17 @@ struct RenderInitInfo
     bool                    multi_thread = true;
     bool                    immediate_rendering_mode = false;
     RHIType                 rhi_type = RHIType::Unknown;
+    bool                    HDR = true;
     uint32_t                num_samples = 1;
     int32_t                 preferred_adapter = -1;
+    LightingMode            lighting_mode = LightingMode::Phong;
+    RendererType            renderer_type = RendererType::Forward;
     void*                   native_wnd = nullptr;
     void*                   device = nullptr;
+    bool                    enable_transparent = false;
+    bool                    enable_ambient_occlusion = false;
+    bool                    enable_capture = false;
+    //AntiAliasingMode        anti_aliasing_mode = AntiAliasingMode::None;
 };
 
 class CommandBuffer;
@@ -51,16 +65,24 @@ public:
     SResult             RenderFrame();   // Called by Rendering Thread 
     SResult             EndRender();
 
-    bool                IsMultiThreaded() { return m_InitInfo.multi_thread; }
-    bool                IsDebug() { return m_InitInfo.debug; }
+    void                SetClearColor(float4 color) { m_fClearColor = color; }
+    float4              GetClearColor() const { return m_fClearColor; }
+
+    RenderInitInfo&     GetRenderInitInfo()           { return m_InitInfo; }
+    bool                IsMultiThreaded()       const { return m_InitInfo.multi_thread; }
+    bool                IsDebug()               const { return m_InitInfo.debug; }
     int32_t             GetPreferredAdapter()   const { return m_InitInfo.preferred_adapter; }
     uint32_t            GetNumSamples()         const { return m_InitInfo.num_samples; }
+    bool                IsHDR()                 const { return m_InitInfo.HDR; }
     RHIType             GetRHIType()            const { return m_InitInfo.rhi_type; }
+    LightingMode        GetLightingMode()       const { return m_InitInfo.lighting_mode; }
 
     RHIContext&         RHIContextInstance() { return *m_pRHIContext; }
     SceneManager&       SceneManagerInstance() { return *m_pSceneManager;}
+    SceneRenderer&      SceneRendererInstance() { return *m_pSceneRenderer; }
     ResourceManager&    ResourceManagerInstance() { return *m_pResourceManager; }
     RendererCommandManager& RendererCommandManagerInstance() { return *m_pRendererCommandManager; }
+    Effect&             EffectInstance() { return *(m_pEffect.get()); }
 
     void                MainThreadSemWait();
     void                MainThreadSemPost();
@@ -76,9 +98,20 @@ private:
     ThreadManagerPtrUnique      m_pThreadManager;
     RHIContextPtrUnique         m_pRHIContext;
     SceneManagerPtrUnique       m_pSceneManager;
+    SceneRendererPtrUnique      m_pSceneRenderer;
     ResourceManagerPtrUnique    m_pResourceManager;
     RendererCommandManagerPtrUnique     m_pRendererCommandManager;
+    EffectPtrUnique             m_pEffect;
 
+    uint32_t                    m_FrameCount = 0;
+
+    // Time
+    TimerPtrUnique              m_pTimer = MakeUniquePtr<Timer>();
+    double                      m_dCurTime = 0.0;
+    double                      m_dDeltaTime = 0.0;
+
+
+    float4                      m_fClearColor = float4(0.0f);
     Viewport                    m_viewport;
     bool                        m_bViewportChanged = false;
     

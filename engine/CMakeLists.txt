@@ -6,25 +6,36 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/components/entity.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/entity.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/component.h
-    ${SEEK_ENGINE_SOURCE_DIR}/components/triangle_mesh_component.h
-    ${SEEK_ENGINE_SOURCE_DIR}/components/triangle_mesh_component.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/components/camera_component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/camera_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/mesh_component.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/mesh_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/light_component.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/light_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/scene_component.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/scene_component.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/components/camera_component.h
-    ${SEEK_ENGINE_SOURCE_DIR}/components/camera_component.cpp
-
+    ${SEEK_ENGINE_SOURCE_DIR}/components/skeletal_mesh_component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/skeletal_mesh_component.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/components/shape_mesh_component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/shape_mesh_component.cpp
 
     # effect
-    ${SEEK_ENGINE_SOURCE_DIR}/effect/draw_call.h
-    ${SEEK_ENGINE_SOURCE_DIR}/effect/draw_call.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/command_buffer.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/command_buffer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/draw_call.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/draw_call.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/effect.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/effect.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/forward_shading_renderer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/forward_shading_renderer.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/parameter.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/parameter.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/postprocess.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/postprocess.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/scene_renderer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/scene_renderer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/technique.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/technique.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/variable.h
 
     # kernel
@@ -58,6 +69,7 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/math/transform.cpp
     
     # rhi
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_object.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/format.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/format.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_framebuffer.h

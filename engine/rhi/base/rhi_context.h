@@ -49,11 +49,15 @@ public: // virutal factory
     virtual RHIShaderPtr            CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) = 0;
     virtual std::vector<RHITexturePtr> CreateTexture2DFromNative(void* gpu_data, std::vector<PixelFormat> format) { return std::vector<RHITexturePtr>(); }
             RHITexturePtr           CreateTexture2D(const BitmapBufferPtr data);
+    //virtual TexturePtr              CreateTexture(const Texture::Desc& tex_desc, const SubResourceData* init_data = nullptr, uint32_t init_data_size = 0) = 0;
     virtual RHITexturePtr           CreateTexture2D(const RHITexture::Desc& tex_desc, const BitmapBufferPtr init_data = nullptr) = 0;
     virtual RHITexturePtr           CreateTexture2D(const RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas) { return nullptr; }
     virtual RHITexturePtr           CreateTexture3D(const RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas = {}) { return nullptr; }
     virtual RHITexturePtr           CreateTextureCube(const RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr>* init_data = nullptr) { return nullptr; }
-    virtual RHIRenderBufferPtr      CreateRHIRenderBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) = 0;
+    
+    virtual RHIRenderBufferPtr      CreateEmptyVertexBuffer(uint32_t size, ResourceFlags flags) = 0;
+    virtual RHIRenderBufferPtr      CreateEmptyIndexBuffer(uint32_t size, ResourceFlags flags) = 0;
+
     virtual RHIRenderBufferPtr      CreateConstantBuffer(uint32_t size, ResourceFlags flags) = 0;
     virtual RHIRenderBufferPtr      CreateStructuredBuffer  (uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIRenderBufferData* pData = nullptr) = 0;
     virtual RHIRenderBufferPtr      CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIRenderBufferData* pData = nullptr) = 0;
@@ -61,10 +65,10 @@ public: // virutal factory
     virtual RHIRenderBufferPtr      CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) { return nullptr; }
     virtual RHIRenderBufferPtr      CreateVertexBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) = 0;
     virtual RHIRenderBufferPtr      CreateIndexBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) = 0;
-    virtual RHIRenderViewPtr           CreateRenderTargetView(RHITexturePtr const& tex, uint32_t lod = 0) = 0;
-    virtual RHIRenderViewPtr           CreateRenderTargetView(RHITexturePtr const& tex, CubeFaceType face, uint32_t lod = 0) { return nullptr; }
-    virtual RHIRenderViewPtr           CreateDepthStencilView(RHITexturePtr const& tex) = 0;
-    virtual RHIRenderViewPtr           CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face) { return nullptr; }
+    virtual RHIRenderViewPtr        CreateRenderTargetView(RHITexturePtr const& tex, uint32_t lod = 0) = 0;
+    virtual RHIRenderViewPtr        CreateRenderTargetView(RHITexturePtr const& tex, CubeFaceType face, uint32_t lod = 0) { return nullptr; }
+    virtual RHIRenderViewPtr        CreateDepthStencilView(RHITexturePtr const& tex) = 0;
+    virtual RHIRenderViewPtr        CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face) { return nullptr; }
     virtual RHIFrameBufferPtr       CreateRHIFrameBuffer() = 0;
     virtual RHIProgramPtr           CreateRHIProgram() = 0;
     virtual RHITimerQueryPtr        CreateRHITimerQuery() = 0;
@@ -98,7 +102,7 @@ public: // virutal factory
 
     // Global common reused variable
     RHISamplerPtr                   GetSampler(SamplerDesc const& desc);
-    RHIRenderStatePtr                  GetRenderState(RenderStateDesc const& desc);
+    RHIRenderStatePtr               GetRenderState(RenderStateDesc const& desc);
     
     virtual void                    BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* cbuffer, const char* name) = 0;
     virtual void                    BindRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* buffer, const char* name) = 0;
@@ -111,7 +115,7 @@ protected:
     // Functions that only can been called by Context
     friend class Context;
     virtual RHISamplerPtr           CreateSampler(SamplerDesc const& desc) = 0;
-    virtual RHIRenderStatePtr          CreateRenderState(RenderStateDesc const& desc) = 0;
+    virtual RHIRenderStatePtr       CreateRenderState(RenderStateDesc const& desc) = 0;
 
 
 protected:

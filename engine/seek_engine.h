@@ -7,7 +7,7 @@
 #include "components/light_component.h"
 #include "components/mesh_component.h"
 #include "components/scene_component.h"
-#include "components/triangle_mesh_component.h"
+#include "components/shape_mesh_component.h"
 
 
 // effect

@@ -4,20 +4,32 @@
 
 SEEK_NAMESPACE_BEGIN
 
+uint16_t indices[] = {
+        0,1,2
+};
+
+float3 vertices[] = {
+    float4(+0.0f, +0.5f, +0.0f),
+    float4(-0.5f, -0.5f, +0.0f),
+    float4(+0.5f, -0.5f, +0.0f),
+};
+
+
+
 TriangleMeshComponent::TriangleMeshComponent(Context* context)
     :MeshComponent(context)
 {
-
+    this->Init();
 }
 
 TriangleMeshComponent::~TriangleMeshComponent()
 {
-
+    m_pIndexBuffer.reset();
 }
 
 
 void TriangleMeshComponent::Init()
 {
-    m_pContext->RendererCommandManagerInstance().CreateMesh();
+
 }
 SEEK_NAMESPACE_END

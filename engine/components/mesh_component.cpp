@@ -48,6 +48,23 @@ RHIMeshPtr MeshComponent::GetMeshByIndex(size_t index)
     return m_vMeshes[index];
 }
 
+SResult MeshComponent::OnRenderBegin(Technique* tech, RHIMeshPtr mesh)
+{
+    return S_Success;
+}
+SResult MeshComponent::OnRenderEnd()
+{
+    return S_Success;
+}
+SResult MeshComponent::Render()
+{
+    return S_Success;
+}
+SResult MeshComponent::RenderMesh(uint32_t i)
+{
+    return S_Success;
+}
+
 
 void MeshComponent::SetBSConfig(std::vector<BSConfig>& bsConfig)
 {

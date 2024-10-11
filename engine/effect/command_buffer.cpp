@@ -7,6 +7,10 @@
 #include "utils/log.h"
 #include "math/hash.h"
 
+#include "rhi/base/rhi_context.h"
+#include "rhi/base/rhi_mesh.h"
+#include "rhi/base/rhi_render_buffer.h"
+
 #define SEEK_MACRO_FILE_UID 79     // this code is auto generated, don't touch it!!!
 
 SEEK_NAMESPACE_BEGIN
@@ -69,35 +73,46 @@ void RendererCommandManager::ExecCommands(CommandBuffer& cb)
     cb.Reset();
 
     bool end = false;
+    RHIContext& rc = m_pContext->RHIContextInstance();
 
     do
     {
         uint8_t command_type;
         cb.Read(command_type);
         LOG_INFO("command_type = %d", (uint32_t)command_type)
-        switch (command_type)
-        {
-        case (uint8_t)CommandType::RendererInit:
-        {            
-            m_pContext->RHIContextInstance().Init();
-            void* native_wnd = nullptr;
-            cb.Read(native_wnd);
-            if (native_wnd)
+            switch (command_type)
             {
-                RHIContext& rc = m_pContext->RHIContextInstance();
-                rc.AttachNativeWindow("", native_wnd);
-                rc.SetFinalRHIFrameBuffer(rc.GetScreenRHIFrameBuffer());
+            case (uint8_t)CommandType::RendererInit:
+            {
+                rc.Init();
+                void* native_wnd = nullptr;
+                cb.Read(native_wnd);
+                if (native_wnd)
+                {
+                    rc.AttachNativeWindow("", native_wnd);
+                    rc.SetFinalRHIFrameBuffer(rc.GetScreenRHIFrameBuffer());
+                }
+                break;
             }
-            break;
-        }
-        case (uint8_t)CommandType::CreateVertexBuffer:
-        {
-            const Buffer* mem;
-            VertexStreamInfo vsi;
-            cb.Read(mem);
-            cb.Read(vsi);
-            break;
-        }
+            case (uint8_t)CommandType::CreateMesh:
+            {
+                RHIMesh* pRHIMesh = nullptr;
+                cb.Read(pRHIMesh);
+                pRHIMesh->Init();
+                break;
+            }
+            case (uint8_t)CommandType::CreateVertexBuffer:
+            case (uint8_t)CommandType::CreateIndexBuffer:
+            {
+                RHIRenderBuffer* buf = nullptr;
+                void* data = nullptr;
+                uint32_t data_size = 0;
+                cb.Read(buf);
+                cb.Read(data);
+                cb.Read(data_size);
+                buf->Create(data, data_size);
+                break;
+            }
         case (uint8_t)CommandType::End:
             end = true;
             break;
@@ -144,28 +159,38 @@ void RendererCommandManager::InitRendererInit(void* native_wnd)
     cb.Write(native_wnd);
     return;
 }
-VertexStreamHandle RendererCommandManager::CreateVertexStream(Buffer* mem, VertexStreamInfo vsi, ResourceFlags flags)
+RHIMeshPtr RendererCommandManager::CreateMesh()
 {
     MutexScope ms(m_CommnadGenerateMutex);
 
-    VertexStreamHandle handle = this->AllocVertexStreamHandle();
-
-    CommandBuffer& cb = this->GetSubmitCommandBuffer(CommandType::CreateVertexBuffer);
-    cb.Write(handle);
-    cb.Write(mem);
-    cb.Write(vsi);
-    cb.Write(flags);
-    return handle;
-}
-MeshHandle RendererCommandManager::CreateMesh()
-{
-    MutexScope ms(m_CommnadGenerateMutex);
-
-    MeshHandle handle = this->AllocMeshHandle();
+    RHIMeshPtr pMesh = m_pContext->RHIContextInstance().CreateMesh();
 
     CommandBuffer& cb = this->GetSubmitCommandBuffer(CommandType::CreateMesh);
-    cb.Write(handle);
-    return handle;
+    cb.Write(pMesh.get());
+    return pMesh;
+}
+RHIRenderBufferPtr RendererCommandManager::CreateVertexrBuffer(const void* data, uint32_t data_size, ResourceFlags flags)
+{
+    MutexScope ms(m_CommnadGenerateMutex);
+    RHIRenderBufferPtr buf = m_pContext->RHIContextInstance().CreateEmptyVertexBuffer(data_size, flags);
+
+    CommandBuffer& cb = this->GetSubmitCommandBuffer(CommandType::CreateVertexBuffer);
+    cb.Write(buf.get());
+    cb.Write(data);
+    cb.Write(data_size);
+    return buf;
+}
+
+RHIRenderBufferPtr RendererCommandManager::CreateIndexBuffer(const void* data, uint32_t data_size, ResourceFlags flags)
+{
+    MutexScope ms(m_CommnadGenerateMutex);
+    RHIRenderBufferPtr buf = m_pContext->RHIContextInstance().CreateEmptyIndexBuffer(data_size, flags);
+
+    CommandBuffer& cb = this->GetSubmitCommandBuffer(CommandType::CreateIndexBuffer);
+    cb.Write(buf.get());
+    cb.Write(data);
+    cb.Write(data_size);
+    return buf;
 }
 
 
