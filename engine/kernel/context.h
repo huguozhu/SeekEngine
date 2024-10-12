@@ -34,7 +34,7 @@ struct RenderInitInfo
     bool                    profile = false;
     bool                    multi_thread = true;
     bool                    immediate_rendering_mode = false;
-    RHIType                 rhi_type = RHIType::Unknown;
+    RHIType                 rhi_type = RHIType::D3D11;
     bool                    HDR = true;
     uint32_t                num_samples = 1;
     int32_t                 preferred_adapter = -1;
@@ -112,7 +112,7 @@ private:
 
 
     float4                      m_fClearColor = float4(0.0f);
-    Viewport                    m_viewport;
+    Viewport                    m_sViewport;
     bool                        m_bViewportChanged = false;
     
 

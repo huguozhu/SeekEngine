@@ -84,12 +84,12 @@ void Context::Uninit()
 }
 void Context::SetViewport(Viewport vp)
 {
-    if (m_viewport != vp)
+    if (m_sViewport != vp)
     {
         LOG_INFO("viewport is changed, (%d, %d, %u, %u)->(%d, %d, %u, %u)",
-            m_viewport.left, m_viewport.top, m_viewport.width, m_viewport.height,
+            m_sViewport.left, m_sViewport.top, m_sViewport.width, m_sViewport.height,
             vp.left, vp.top, vp.width, vp.height);
-        m_viewport = vp;
+        m_sViewport = vp;
         m_bViewportChanged = true;
     }
 }
@@ -108,6 +108,12 @@ SResult Context::BeginRender()
     LOG_RECORD_FUNCTION();
     this->RendererCommandManagerInstance().FinishSubmitCommandBuffer();
     this->RendererCommandManagerInstance().SwapCommandBuffer();
+
+    if (m_bViewportChanged)
+    {
+        m_pSceneRenderer->SetViewport(m_sViewport);
+        m_bViewportChanged = false;
+    }
     this->RenderThreadSemPost();
     
     if (1)
