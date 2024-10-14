@@ -4,7 +4,7 @@
 #include "rhi/base/rhi_context.h"
 #include "math/hash.h"
 
-#define DVF_MACRO_FILE_UID 27     // this code is auto generated, don't touch it!!!
+#define SEEK_MACRO_FILE_UID 27     // this code is auto generated, don't touch it!!!
 
 SEEK_NAMESPACE_BEGIN
 
@@ -46,11 +46,11 @@ void Effect::LoadDefaultVirtualTechniques()
     VirtualTechniqueLoader("RGBAToAI420", nullptr, nullptr, nullptr, "RGBAToAI420CS");
     VirtualTechniqueLoader("ForwardRenderingCommon", &RenderStateDesc::Default3D(), "MeshRenderingVS", "ForwardRenderingCommonPS", nullptr);
     VirtualTechniqueLoader("ToneMapping", &RenderStateDesc::PostProcess(), "PostProcessVS", "ToneMappingPS", nullptr);
-    VirtualTechniqueLoader("Color", &RenderStateDesc::Default2D(), "Sprite2DVS", "ColorSpaceCvt_ColorPS", nullptr);
-    VirtualTechniqueLoader("AI420", &RenderStateDesc::Default2D(), "Sprite2DVS", "ColorSpaceCvt_AI420PS", nullptr);
-    VirtualTechniqueLoader("RGBA", &RenderStateDesc::Default2D(), "Sprite2DVS", "ColorSpaceCvt_RGBAPS", nullptr);
-    VirtualTechniqueLoader("RGBA_NDC", &RenderStateDesc::Default2D(), "Sprite2D_NDCVS", "ColorSpaceCvt_RGBAPS", nullptr);
-    VirtualTechniqueLoader("RGBAVFlip", &RenderStateDesc::Default2D(), "Sprite2D_VFlipVS", "ColorSpaceCvt_RGBAPS", nullptr);
+    //VirtualTechniqueLoader("Color", &RenderStateDesc::Default2D(), "Sprite2DVS", "ColorSpaceCvt_ColorPS", nullptr);
+    //VirtualTechniqueLoader("AI420", &RenderStateDesc::Default2D(), "Sprite2DVS", "ColorSpaceCvt_AI420PS", nullptr);
+    //VirtualTechniqueLoader("RGBA", &RenderStateDesc::Default2D(), "Sprite2DVS", "ColorSpaceCvt_RGBAPS", nullptr);
+    //VirtualTechniqueLoader("RGBA_NDC", &RenderStateDesc::Default2D(), "Sprite2D_NDCVS", "ColorSpaceCvt_RGBAPS", nullptr);
+    //VirtualTechniqueLoader("RGBAVFlip", &RenderStateDesc::Default2D(), "Sprite2D_VFlipVS", "ColorSpaceCvt_RGBAPS", nullptr);
 }
 
 RHIShader* Effect::CreateShader(ShaderType stage, const ShaderResourcePtr& shaderRes)
@@ -108,4 +108,4 @@ Technique* Effect::GetTechnique(const std::string& name)
 
 SEEK_NAMESPACE_END
 
-#undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

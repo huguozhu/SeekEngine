@@ -145,4 +145,4 @@ void SkeletalMeshComponent::UpdateJointFinalMatrices()
 
 SEEK_NAMESPACE_END
 
-#undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

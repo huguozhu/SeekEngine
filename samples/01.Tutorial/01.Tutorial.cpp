@@ -1,6 +1,6 @@
 #include "01.Tutorial.h"
 
-#define DVF_MACRO_FILE_UID 46     // this code is auto generated, don't touch it!!!
+#define SEEK_MACRO_FILE_UID 46     // this code is auto generated, don't touch it!!!
 
 
 #define DEFAULT_RENDER_WIDTH  1280
@@ -50,4 +50,4 @@ int main()
     return APP_RUN(&app);
 }
 
-#undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

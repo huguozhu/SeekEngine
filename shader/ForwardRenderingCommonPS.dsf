@@ -187,6 +187,5 @@ PSOutput main(VSOutput input)
     }
 
     output.color = float4(color, materialParam.alpha);
-	
     return output;
 }

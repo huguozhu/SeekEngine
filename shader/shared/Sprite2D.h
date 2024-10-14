@@ -10,7 +10,7 @@ struct Sprite2DGlobalParams
     float t0;
     float2 t1;
 
-#ifdef DVF_CPP
+#ifdef SEEK_CPP
     Sprite2DGlobalParams()
     {
         alpha = 1.0f;

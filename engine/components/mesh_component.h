@@ -1,7 +1,6 @@
 #pragma once
 
 #include "components/scene_component.h"
-//#include "effect/scene_renderer.h"
 #include "math/aabbox.h"
 
 SEEK_NAMESPACE_BEGIN
@@ -73,6 +72,9 @@ public:
     virtual SResult             Tick(float delta_time);
 
     bool                        IsInstanceMesh() { return m_bIsInstance; }
+
+private:
+    void                        FillMaterialParam(Technique* tech, RHIMeshPtr& pMesh);
 
 protected:
     std::vector<RHIMeshPtr>     m_vMeshes;

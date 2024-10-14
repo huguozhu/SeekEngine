@@ -4,7 +4,7 @@
 #include <Shlwapi.h>
 #include <wincodec.h>
 
-#define DVF_MACRO_FILE_UID 46     // this code is auto generated, don't touch it!!!
+#define SEEK_MACRO_FILE_UID 46     // this code is auto generated, don't touch it!!!
 
 #define DEFAULT_WND_WIDTH 1280
 #define DEFAULT_WND_HEIGHT 720
@@ -124,4 +124,4 @@ SResult AppFramework::Run()
     return S_Success;
 }
 
-#undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

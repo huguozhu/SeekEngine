@@ -87,15 +87,14 @@ SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tech
                 predefines.push_back({ "HAS_MATERIAL_OCCLUSION", "1" });
             else
                 predefines.push_back({ "HAS_MATERIAL_OCCLUSION", "0" });
-            //if (m_pContext->HasPrecomputedIBL())
-            //    predefines.push_back({ "HAS_IBL", "1" });
-            //else
+            if (m_pContext->HasPrecomputedIBL())
+                predefines.push_back({ "HAS_IBL", "1" });
+            else
                 predefines.push_back({ "HAS_IBL", "0" });
 
             virtualTech = effect.GetVirtualTechnique("ForwardRenderingCommon");
             break;
         }
-        case RenderStage::Sprite2D:
         case RenderStage::None:
             break;
     }
@@ -278,4 +277,4 @@ SResult ForwardShadingRenderer::PrepareFrameBuffer()
 
 SEEK_NAMESPACE_END
 
-#undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

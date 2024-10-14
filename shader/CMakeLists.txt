@@ -7,7 +7,6 @@ set(shader_shared_files
     ${SEEK_SHADER_SOURCE_DIR}/shared/common.h
     ${SEEK_SHADER_SOURCE_DIR}/shared/ParticleCommon.h
     ${SEEK_SHADER_SOURCE_DIR}/shared/SkyBox.h
-    ${SEEK_SHADER_SOURCE_DIR}/shared/Sprite2D.h
 )
 
 set(shader_header_files
@@ -24,16 +23,6 @@ set(shader_header_files
 )
 
 set(shader_sources_files
-    # 2D
-    #${SEEK_SHADER_SOURCE_DIR}/Sprite2DVS.dsf
-    #${SEEK_SHADER_SOURCE_DIR}/Sprite2D_VFlipVS.dsf
-    #${SEEK_SHADER_SOURCE_DIR}/Sprite2D_NDCVS.dsf
-    #${SEEK_SHADER_SOURCE_DIR}/ColorSpaceCvt_AI420PS.dsf
-    #${SEEK_SHADER_SOURCE_DIR}/ColorSpaceCvt_ColorPS.dsf
-    #${SEEK_SHADER_SOURCE_DIR}/ColorSpaceCvt_RGBAPS.dsf
-    #${SEEK_SHADER_SOURCE_DIR}/ColorLutPS.dsf
-
-    #{SEEK_SHADER_SOURCE_DIR}/ColorReplacePS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/CopyPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/ForwardRenderingCommonPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/MeshRenderingVS.dsf

@@ -17,7 +17,6 @@ enum class RenderStage : uint8_t
 {
     None,
     RenderScene,
-    Sprite2D,
 };
 
 using RenderingFunc = std::function<RendererReturnValue()>;

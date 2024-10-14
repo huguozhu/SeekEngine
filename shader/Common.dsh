@@ -52,7 +52,7 @@ float4x4 MatrixInverse(float4x4 mat)
 float2 TexCoordFromPosNDC(float3 posNDC)
 {
 	float2 texCoord = posNDC.xy * 0.5f;
-#if defined(DVF_GLSL) || defined(DVF_GLSL_ES)
+#if defined(SEEK_GLSL) || defined(SEEK_GLSL_ES)
 	texCoord.y *= 1;
 #else
     texCoord.y *= -1;
@@ -64,7 +64,7 @@ float2 TexCoordFromPosNDC(float3 posNDC)
 float2 TexCoordToPosNDC(float2 texCoord)
 {
 	float2 posNDC = texCoord - 0.5f;
-#if defined(DVF_GLSL) || defined(DVF_GLSL_ES)
+#if defined(SEEK_GLSL) || defined(SEEK_GLSL_ES)
 	posNDC.y *= 1;
 #else
     posNDC.y *= -1;
@@ -79,7 +79,7 @@ float2 TexCoordToPosNDC(float2 texCoord)
 // "depth buffer Z-value" --> "eye Z value"
 float ViewSpaceDepth(float z, float n, float f)
 {
-#if defined(DVF_GLSL) || defined(DVF_GLSL_ES)
+#if defined(SEEK_GLSL) || defined(SEEK_GLSL_ES)
     return (2.0 * n * f) / (f + n - z * (f - n));
 #else
 	return (n * f) / (f - z	* (f - n));
@@ -89,7 +89,7 @@ float ViewSpaceDepth(float z, float n, float f)
 // "depth buffer Z-value" --> "linear [0..1] range (near plane to far plane)"
 float LinearizeDepth(float z, float n, float f)
 {
-#if defined(DVF_GLSL) || defined(DVF_GLSL_ES)
+#if defined(SEEK_GLSL) || defined(SEEK_GLSL_ES)
     return n * (z + 1.0) / (f + n - z * (f - n));
 #else
 	return z / (f - z * (f - n));
@@ -99,7 +99,7 @@ float LinearizeDepth(float z, float n, float f)
 // "depth buffer Z-value" --> "linear [0..1] range (eye to far plane)"
 float LinearizeDepth2(float z, float n, float f)
 {
-#if defined(DVF_GLSL) || defined(DVF_GLSL_ES)
+#if defined(SEEK_GLSL) || defined(SEEK_GLSL_ES)
     return (2 * n) / (f + n - z * (f - n));
 #else
 	return n / (f - z * (f - n));

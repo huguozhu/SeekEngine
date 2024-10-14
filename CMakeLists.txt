@@ -75,6 +75,9 @@ include_directories(${SEEK_ROOT_DIR}/common/include)
 include_directories(${SEEK_GENERATED_FILE_DIR})
 
 
+add_definitions(-DSEEK_CPP)
+
+
 ######################### function definitions #########################
 function(create_directory folder_path)
     if(NOT EXISTS ${folder_path})

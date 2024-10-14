@@ -35,7 +35,7 @@ struct RenderInitInfo
     bool                    multi_thread = true;
     bool                    immediate_rendering_mode = false;
     RHIType                 rhi_type = RHIType::D3D11;
-    bool                    HDR = true;
+    bool                    HDR = false;
     uint32_t                num_samples = 1;
     int32_t                 preferred_adapter = -1;
     LightingMode            lighting_mode = LightingMode::Phong;
@@ -89,6 +89,10 @@ public:
     void                RenderThreadSemWait();
     void                RenderThreadSemPost();
     
+    const RHITexturePtr& GetIBLDiffuseTexture() { return m_pIBLDiffuseTex; }
+    const RHITexturePtr& GetIBLSpecularTexture() { return m_pIBLSpecularTex; }
+    const RHITexturePtr& GetIBLBrdfTex() { return m_pIBLBrdfTex; }
+    bool HasPrecomputedIBL() { return m_pIBLDiffuseTex && m_pIBLSpecularTex && m_pIBLBrdfTex; }
 
 private:
 
@@ -111,10 +115,13 @@ private:
     double                      m_dDeltaTime = 0.0;
 
 
-    float4                      m_fClearColor = float4(0.0f);
+    float4                      m_fClearColor = float4(1.0f, 1.0f, 0.0f, 1.0f);
     Viewport                    m_sViewport;
     bool                        m_bViewportChanged = false;
-    
+
+    RHITexturePtr               m_pIBLDiffuseTex = nullptr;
+    RHITexturePtr               m_pIBLSpecularTex = nullptr;
+    RHITexturePtr               m_pIBLBrdfTex = nullptr;
 
 };
 

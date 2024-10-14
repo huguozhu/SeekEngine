@@ -26,11 +26,8 @@ static SResult RenderThread_Entry(Context* context, Thread* render_thread, void*
 
         // add to do: call real GPU command
         pContext->RendererCommandManagerInstance().ExecPreRenderCommands();
-
         pContext->RenderFrame();
-
         pContext->RendererCommandManagerInstance().ExecPostRenderCommands();
-
         pContext->MainThreadSemPost();
     }
     return S_Success;

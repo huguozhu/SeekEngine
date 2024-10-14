@@ -13,7 +13,6 @@ enum class ComponentType : uint8_t
     Mesh,
     SkeletalMesh,
     SkyBox,
-    Sprite2D,
     Image,
     Animation,
     ParticleSystem,

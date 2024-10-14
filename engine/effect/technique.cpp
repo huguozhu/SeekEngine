@@ -304,8 +304,8 @@ SResult Technique::Build()
 //{
 //    std::shared_ptr<TechniqueInstance> techInst = MakeSharedPtr<TechniqueInstance>(m_pContext, this);
 //
-//    DVFResult ret = techInst->Build();
-//    if (DVF_CHECKFAILED(ret))
+//    SResult ret = techInst->Build();
+//    if (SEEK_CHECKFAILED(ret))
 //    {
 //        LOG_ERROR("Build TechniqueInstance fail, ret:%x", ret);
 //        return nullptr;
@@ -556,7 +556,7 @@ void Technique::Uncommit()
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // TechniqueInstance
-//DVFResult TechniqueInstance::Build()
+//SResult TechniqueInstance::Build()
 //{
 //    for (auto& formalParam : m_pTech->GetFormalParams())
 //    {
@@ -592,9 +592,9 @@ void Technique::Uncommit()
 //        }
 //    }
 //
-//    return DVF_Success;
+//    return S_Success;
 //}
 
 SEEK_NAMESPACE_END
 
-#undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

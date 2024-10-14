@@ -1,6 +1,6 @@
 #pragma once
 
-#ifdef DVF_CPP
+#ifdef SEEK_CPP
 typedef uint32_t uint;
 #endif
 
@@ -35,7 +35,7 @@ struct ModelInfo
     float4x4 modelViewMatrix;
     float4x4 normalMatrix;
 
-#ifdef DVF_CPP
+#ifdef SEEK_CPP
     ModelInfo()
     {
         mvpMatrix       = float4x4::Identity();
@@ -80,8 +80,9 @@ struct MaterialInfo
     float t2;
     float4 normalMaskWeights;
     int4 hasPbrTex;
+    int4 options; // x: sss, y: eye glint, z: IBL, w: specular_mipmaps
 
-#ifdef DVF_CPP
+#ifdef SEEK_CPP
     MaterialInfo()
     {
         hasBasicTex = int4{ 0, 0, 0, 0 };      // [albedoTex, normalTex, occlusionTex, emissiveTex]
@@ -93,6 +94,7 @@ struct MaterialInfo
         emissiveFactor = float3(0.0);
         normalMaskWeights = float4{ 0.0, 0.0, 0.0, 0.0 };
         hasPbrTex  = int4{ 0, 0, 0, 0 };       // [metallicRoughnessTex, irradianceTex, prefilterTex, normalMaskTex]
+        options = int4{ 0, 0, 0, 0 };
     };
 #endif
 };
@@ -108,7 +110,7 @@ struct LightInfo
     float2 inOutCutoff;
     int2 t1;
 
-#ifdef DVF_CPP
+#ifdef SEEK_CPP
     LightInfo()
     {
         color = float3(0.0f, 0.0f, 0.0f);
