@@ -18,10 +18,21 @@ struct MeshData
     AABBox aabb;
 };
 
+class ShapeMeshComponent : public MeshComponent
+{
+public:
+    ShapeMeshComponent(Context* context)
+        :MeshComponent(context) {}
+    ~ShapeMeshComponent() {}
+
+protected:
+    MeshData m_sMeshData;
+};
+
 /******************************************************************************
  * CubeMeshComponent
  ******************************************************************************/
-class CubeMeshComponent : public MeshComponent
+class CubeMeshComponent : public ShapeMeshComponent
 {
 public:
     CubeMeshComponent(Context* context);
@@ -31,7 +42,7 @@ public:
 /******************************************************************************
  * SphereMeshComponent
  ******************************************************************************/
-class SphereMeshComponent : public MeshComponent
+class SphereMeshComponent : public ShapeMeshComponent
 {
 public:
     SphereMeshComponent(Context* context, uint32_t x_segment_num = 64, uint32_t y_segment_num = 64);
@@ -42,7 +53,7 @@ public:
 /******************************************************************************
  * ConeMeshComponent
  ******************************************************************************/
-class ConeMeshComponent : public MeshComponent
+class ConeMeshComponent : public ShapeMeshComponent
 {
 public:
     ConeMeshComponent(Context* context);
@@ -52,7 +63,7 @@ public:
 /******************************************************************************
  * TerrainMeshComponent
  ******************************************************************************/
-class TerrainMeshComponent : public MeshComponent
+class TerrainMeshComponent : public ShapeMeshComponent
 {
 public:
     TerrainMeshComponent(Context* context, float width, float height, uint32_t slices_x = 10, uint32_t slices_z = 10, float max_texcoord_u = 1.0f, float max_texcoord_v = 1.0f,

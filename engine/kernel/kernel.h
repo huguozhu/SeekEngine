@@ -77,6 +77,7 @@ CLASS_DECLARE(Component);
 CLASS_DECLARE(ImageComponent);
 CLASS_DECLARE(SpringSkeletonComponent);
 CLASS_DECLARE(ParticleComponent);
+CLASS_DECLARE(CubeMeshComponent);
 CLASS_DECLARE(SphereMeshComponent);
 
 CLASS_DECLARE(KeyFrame);

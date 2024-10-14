@@ -383,14 +383,14 @@ RHIRenderBufferPtr& SceneManager::GetLightInfoCBuffer()
         LightInfo& info = lightInfo[lightIndex++];
 
         float exposure = 1.0;
-        //if (m_pContext->GetLightingMode() == LightingMode::PBR)
-        //{
-        //    auto camera = GetActiveCamera();
-        //    if (camera)
-        //        exposure = GetActiveCamera()->GetExposure() * PBR_INTENSITY_COEFF;
-        //    else
-        //        LOG_ERROR("no active camera");
-        //}
+        if (m_pContext->GetLightingMode() == LightingMode::PBR)
+        {
+            auto camera = GetActiveCamera();
+            if (camera)
+                exposure = GetActiveCamera()->GetExposure() * PBR_INTENSITY_COEFF;
+            else
+                LOG_ERROR("no active camera");
+        }
 
         LightType type = light->GetLightType();
         info.color = light->GetColor().ToFloat3();

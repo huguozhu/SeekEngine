@@ -17,9 +17,8 @@ SEEK_NAMESPACE_BEGIN
 /******************************************************************************
  * Shape Create
  ******************************************************************************/
-MeshData CreateCube()
+void CreateCube(MeshData& mesh_data)
 {
-    MeshData mesh_data;
     // Points
     float v = 1.0;
     
@@ -115,12 +114,9 @@ MeshData CreateCube()
     box.Min(float3(-v, -v, -v));
     box.Max(float3(+v, +v, +v));
     mesh_data.aabb = box;
-    return mesh_data;
 }
-MeshData CreateSphere(float radius = 1.0, uint32_t levels = 20, uint32_t slices = 20)
+void CreateSphere(MeshData& mesh_data, float radius = 1.0, uint32_t levels = 20, uint32_t slices = 20)
 {
-    MeshData mesh_data;
-
     float phi = 0.0f, theta = 0.0f;
     float per_phi = Math::PI / levels;
     float per_theta = Math::PI2 / slices;
@@ -185,14 +181,9 @@ MeshData CreateSphere(float radius = 1.0, uint32_t levels = 20, uint32_t slices 
     box.Min(float3(-radius, -radius, -radius));
     box.Max(float3(+radius, +radius, +radius));
     mesh_data.aabb = box;
-
-
-    return mesh_data;
 }
-MeshData CreateCone(float radius = 1.0f, float height = 2.0, uint32_t slices = 20)
+void CreateCone(MeshData& mesh_data, float radius = 1.0f, float height = 2.0, uint32_t slices = 20)
 {
-    MeshData mesh_data;
-
     float h2 = height * 0.5f;
     float theta = 0.0f;
     float pre_theta = Math::PI2 / slices;
@@ -254,15 +245,11 @@ MeshData CreateCone(float radius = 1.0f, float height = 2.0, uint32_t slices = 2
     box.Min(float3(-radius, -radius, -h2));
     box.Max(float3(+radius, +radius, +h2));
     mesh_data.aabb = box;
-    return mesh_data;
 }
-
-MeshData CreateTerrain(float width, float height, uint32_t slices_x = 10, uint32_t slices_z = 10, float max_texcoord_u = 1.0f, float max_texcoord_v = 1.0f, 
+void CreateTerrain(MeshData& mesh_data, float width, float height, uint32_t slices_x = 10, uint32_t slices_z = 10, float max_texcoord_u = 1.0f, float max_texcoord_v = 1.0f,
     const std::function<float (float, float)>& heightFunc = [](float x, float z) { return 0.0f; },
     const std::function<float3(float, float)>& normalFunc = [](float x, float z) { return float3(0.0f, 1.0f, 0.0f); } )
 {
-    MeshData mesh_data;
-
     float slice_width = width / slices_x;
     float slice_height = height / slices_z;
     float w2 = width * 0.5f;
@@ -307,8 +294,6 @@ MeshData CreateTerrain(float width, float height, uint32_t slices_x = 10, uint32
     box.Min(float3(-w2, 0, -h2));
     box.Max(float3(+w2, 0, +h2));
     mesh_data.aabb = box;
-
-    return mesh_data;
 }
 
 RHIMeshPtr CreateMeshFromMeshData(Context* context, MeshData& mesh_data)
@@ -349,17 +334,18 @@ RHIMeshPtr CreateMeshFromMeshData(Context* context, MeshData& mesh_data)
     return pMesh;
 }
 
+
 /******************************************************************************
  * CubeMeshComponent
  ******************************************************************************/
 CubeMeshComponent::CubeMeshComponent(Context* context)
-    :MeshComponent(context)
+    :ShapeMeshComponent(context)
 {
     this->SetName("Cube Mesh Component");
 
     // Create Mesh
-    MeshData mesh_data = CreateCube();
-    RHIMeshPtr pMesh = CreateMeshFromMeshData(m_pContext, mesh_data);
+    CreateCube(m_sMeshData);
+    RHIMeshPtr pMesh = CreateMeshFromMeshData(m_pContext, m_sMeshData);
 
     this->AddMesh(pMesh);
     this->SetAABBox(pMesh->GetAABBox());
@@ -373,13 +359,13 @@ CubeMeshComponent::~CubeMeshComponent()
  * SphereMeshComponent
  ******************************************************************************/
 SphereMeshComponent::SphereMeshComponent(Context* context, uint32_t x_segment_num, uint32_t y_segment_num)
-    :MeshComponent(context)
+    :ShapeMeshComponent(context)
 {
     this->SetName("Sphere Mesh Component");
 
     // Create Mesh
-    MeshData mesh_data = CreateSphere();
-    RHIMeshPtr pMesh = CreateMeshFromMeshData(m_pContext, mesh_data);
+    CreateSphere(m_sMeshData);
+    RHIMeshPtr pMesh = CreateMeshFromMeshData(m_pContext, m_sMeshData);
 
     this->AddMesh(pMesh);
     this->SetAABBox(pMesh->GetAABBox());
@@ -392,13 +378,13 @@ SphereMeshComponent::~SphereMeshComponent()
  * ConeMeshComponent
  ******************************************************************************/
 ConeMeshComponent::ConeMeshComponent(Context* context)
-    :MeshComponent(context)
+    :ShapeMeshComponent(context)
 {
     this->SetName("Cone Mesh Component");
 
     // Create Mesh
-    MeshData mesh_data = CreateCone();
-    RHIMeshPtr pMesh = CreateMeshFromMeshData(m_pContext, mesh_data);
+    CreateCone(m_sMeshData);
+    RHIMeshPtr pMesh = CreateMeshFromMeshData(m_pContext, m_sMeshData);
 
     this->AddMesh(pMesh);
     this->SetAABBox(pMesh->GetAABBox());
@@ -413,13 +399,13 @@ ConeMeshComponent::~ConeMeshComponent()
  ******************************************************************************/
 TerrainMeshComponent::TerrainMeshComponent(Context* context, float width, float height, uint32_t slices_x, uint32_t slices_z, float max_texcoord_u, float max_texcoord_v, 
     const std::function<float(float, float)>& heightFunc, const std::function<float3(float, float)>& normalFunc)
-    :MeshComponent(context)
+    :ShapeMeshComponent(context)
 {
     this->SetName("Terrain Mesh Component");
 
     // Create Mesh
-    MeshData mesh_data = CreateTerrain(width, height, slices_x, slices_z, max_texcoord_u, max_texcoord_v, heightFunc, normalFunc);
-    RHIMeshPtr pMesh = CreateMeshFromMeshData(m_pContext, mesh_data);
+    CreateTerrain(m_sMeshData, width, height, slices_x, slices_z, max_texcoord_u, max_texcoord_v, heightFunc, normalFunc);
+    RHIMeshPtr pMesh = CreateMeshFromMeshData(m_pContext, m_sMeshData);
 
     this->AddMesh(pMesh);
     this->SetAABBox(pMesh->GetAABBox());

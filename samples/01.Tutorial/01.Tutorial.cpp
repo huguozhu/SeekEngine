@@ -22,13 +22,13 @@ SResult Tutorial::OnCreate()
     m_pCameraEntity = MakeSharedPtr<Entity>(m_pContext.get());
     CameraComponentPtr pCam = MakeSharedPtr<CameraComponent>(m_pContext.get());
     pCam->ProjPerspectiveParams(Math::PI / 4, DEFAULT_RENDER_WIDTH * 1.0f / DEFAULT_RENDER_HEIGHT, 0.1f, 1000.0f);
-    pCam->SetLookAt(float3(0, 0, 5), float3(0, 0, 0), float3(0, 1, 0));
+    pCam->SetLookAt(float3(0, 0, 3), float3(0, 0, 0), float3(0, 1, 0));
     m_pCameraEntity->AddSceneComponent(pCam);
     m_pCameraEntity->AddToTopScene();
 
     // Mesh
     m_pMeshEntity = MakeSharedPtr<Entity>(m_pContext.get());
-    SphereMeshComponentPtr pMesh = MakeSharedPtr<SphereMeshComponent>(m_pContext.get());
+    CubeMeshComponentPtr pMesh = MakeSharedPtr<CubeMeshComponent>(m_pContext.get());
     m_pMeshEntity->AddSceneComponent(pMesh);
     m_pMeshEntity->AddToTopScene();
 

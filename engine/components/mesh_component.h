@@ -16,25 +16,6 @@ enum class VisibleMark : uint8_t
     Partial,
 };
 
-struct BSConfig
-{
-    enum class Method
-    {
-        T0,
-        T1,
-        NUM,
-    };
-
-    std::string                 name;
-    Method                      method = Method::T0;
-    std::vector<std::string>    relatedBSNames;
-    std::vector<float>          coef;
-
-    int32_t                     nameIdx = -1;
-    std::vector<int32_t>        relatedBSNamesIdx;
-};
-
-
 /*
  * MeshComponent is an instance of a renderable collection of triangles.
  *
@@ -68,9 +49,6 @@ public:
     virtual SResult             Render();
     virtual SResult             RenderMesh(uint32_t i);
 
-    void                        SetBSConfig(std::vector<BSConfig>& bsConfig);
-    virtual SResult             Tick(float delta_time);
-
     bool                        IsInstanceMesh() { return m_bIsInstance; }
 
 private:
@@ -82,7 +60,6 @@ protected:
     AABBox                      m_cAABBox;
     AABBox                      m_cAABBoxWorld;
     VisibleMark                 m_eVisibleMark = VisibleMark::Yes;
-    std::vector<BSConfig>       m_vBSConfig;
     bool                        m_bIsInstance = false;
 
     RHIRenderBufferPtr             m_ModelInfoCBuffer;
