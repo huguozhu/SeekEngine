@@ -132,13 +132,6 @@ SResult Context::RenderFrame()
 
     sr_scene.BuildRenderJobList();
 
-    // TODO: merge this two renderer
-    //if (sr_scene.HasRenderJob() && sr_sprite.HasRenderJob())
-    //{
-    //    LOG_ERROR("SceneRenderer and Sprite2DRenderer is mutually exclusive");
-    //    return ERR_INVALID_INVOKE_FLOW;
-    //}
-
     if (sr_scene.HasRenderJob())
     {
         while (1)

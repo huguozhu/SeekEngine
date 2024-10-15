@@ -28,6 +28,11 @@ static SResult RenderThread_Entry(Context* context, Thread* render_thread, void*
         pContext->RendererCommandManagerInstance().ExecPreRenderCommands();
         pContext->RenderFrame();
         pContext->RendererCommandManagerInstance().ExecPostRenderCommands();
+        RHIFrameBufferPtr final_fb = pContext->RHIContextInstance().GetFinalRHIFrameBuffer();
+        if (final_fb)
+        {
+            SEEK_RETIF_FAIL(final_fb->SwapBuffers());
+        }
         pContext->MainThreadSemPost();
     }
     return S_Success;
