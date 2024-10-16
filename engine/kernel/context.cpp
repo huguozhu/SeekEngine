@@ -52,7 +52,7 @@ SResult Context::Init(const RenderInitInfo& init_info)
     if (!m_pRendererCommandManager)
     {
         m_pRendererCommandManager = MakeUniquePtrMacro(RendererCommandManager, this);
-        m_pRendererCommandManager->InitRendererInit(init_info.native_wnd);
+        m_pRendererCommandManager->InitRenderer(init_info.native_wnd);
     }
     if (!m_pSceneRenderer)
     {
@@ -64,12 +64,7 @@ SResult Context::Init(const RenderInitInfo& init_info)
     if (!m_pEffect)
     {
         m_pEffect = MakeUniquePtr<Effect>(this);
-        SResult ret = m_pEffect->Initialize();
-        if (SEEK_CHECKFAILED(ret))
-        {
-            m_pSceneRenderer.reset();
-            return ret;
-        }
+        m_pRendererCommandManager->InitEffect(m_pEffect.get());
     }
 
     m_MainThreadSemaphore.Post();

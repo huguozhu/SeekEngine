@@ -1,4 +1,5 @@
 #include "effect/command_buffer.h"
+#include "effect/effect.h"
 
 #include "thread/mutex.h"
 
@@ -82,7 +83,7 @@ void RendererCommandManager::ExecCommands(CommandBuffer& cb)
         LOG_INFO("command_type = %d", (uint32_t)command_type)
             switch (command_type)
             {
-            case (uint8_t)CommandType::RendererInit:
+            case (uint8_t)CommandType::InitRenderer:
             {
                 rc.Init();
                 void* native_wnd = nullptr;
@@ -92,6 +93,13 @@ void RendererCommandManager::ExecCommands(CommandBuffer& cb)
                     rc.AttachNativeWindow("", native_wnd);
                     rc.SetFinalRHIFrameBuffer(rc.GetScreenRHIFrameBuffer());
                 }
+                break;
+            }
+            case (uint8_t)CommandType::InitEffect:
+            {
+                Effect* pEffect = nullptr;
+                cb.Read(pEffect);
+                pEffect->Initialize();
                 break;
             }
             case (uint8_t)CommandType::CreateMesh:
@@ -152,11 +160,18 @@ void RendererCommandManager::SwapCommandBuffer()
 /******************************************************************************
 * All Renderer Commands, Run in Main Thread
 ******************************************************************************/
-void RendererCommandManager::InitRendererInit(void* native_wnd)
+void RendererCommandManager::InitRenderer(void* native_wnd)
 {
     MutexScope ms(m_CommnadGenerateMutex);
-    CommandBuffer& cb = this->GetSubmitCommandBuffer(CommandType::RendererInit);
+    CommandBuffer& cb = this->GetSubmitCommandBuffer(CommandType::InitRenderer);
     cb.Write(native_wnd);
+    return;
+}
+void RendererCommandManager::InitEffect(Effect* effect)
+{
+    MutexScope ms(m_CommnadGenerateMutex);
+    CommandBuffer& cb = this->GetSubmitCommandBuffer(CommandType::InitEffect);
+    cb.Write(effect);
     return;
 }
 RHIMeshPtr RendererCommandManager::CreateMesh()
@@ -186,6 +201,7 @@ RHIRenderBufferPtr RendererCommandManager::CreateIndexBuffer(const void* data, u
     MutexScope ms(m_CommnadGenerateMutex);
     RHIRenderBufferPtr buf = m_pContext->RHIContextInstance().CreateEmptyIndexBuffer(data_size, flags);
 
+    //LOG_INFO("Run RendererCommandManager::CreateIndexBuffer");
     CommandBuffer& cb = this->GetSubmitCommandBuffer(CommandType::CreateIndexBuffer);
     cb.Write(buf.get());
     cb.Write(data);

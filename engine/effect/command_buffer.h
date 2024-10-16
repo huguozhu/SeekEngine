@@ -12,7 +12,8 @@ SEEK_NAMESPACE_BEGIN
  ******************************************************************************/
 enum class CommandType : uint8_t
 {
-    RendererInit,
+    InitRenderer,
+    InitEffect,
     RendererShutdownBegin,
     CreateMesh,
     CreateVertexBuffer,
@@ -101,7 +102,8 @@ public:
 
 public:
     /* All Renderer Commands */
-    void InitRendererInit(void* native_wnd);
+    void InitRenderer(void* native_wnd);
+    void InitEffect(Effect* effect);
      
     RHIMeshPtr CreateMesh();
     RHIRenderBufferPtr CreateVertexrBuffer(const void* data, uint32_t data_size, ResourceFlags flags);
