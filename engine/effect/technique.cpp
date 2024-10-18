@@ -103,7 +103,7 @@ Technique* VirtualTechnique::Concrete(const std::vector<EffectPredefine>& predef
     tech->SetName(activedTechName);
 
     for (size_t stage = 0; stage < SHADER_STAGE_COUNT; stage++)
-    {
+    { 
         if (!m_metaShaderResources[stage])
             continue;
         
@@ -351,7 +351,7 @@ SResult Technique::Render(RHIMeshPtr const& mesh)
     {
         RenderStateDesc rsd = state->GetRenderStateDesc();
         if (mesh->GetMaterial() && !mesh->GetMaterial()->double_sided)
-            rsd.rasterizer.eCullMode = CullMode::Back;
+            rsd.rasterizer.eCullMode = CullMode::None;
         else
             rsd.rasterizer.eCullMode = CullMode::None;
         rsd.rasterizer.bFrontFaceCCW = mesh->m_bFrontFaceCCW;

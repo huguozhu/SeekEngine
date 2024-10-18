@@ -12,7 +12,7 @@ SEEK_NAMESPACE_BEGIN
  ******************************************************************************/
 enum class CommandType : uint8_t
 {
-    InitRenderer,
+    InitRenderer            = 0x01,
     InitEffect,
     RendererShutdownBegin,
     CreateMesh,
@@ -24,8 +24,9 @@ enum class CommandType : uint8_t
     CreateTexture,
     CreateFrameBuffer,
     CreateShaderBuffer,
-    End,
-    RendererShutdownEnd,
+
+    End                     = 0x80,
+    RendererShutdownEnd     = 0x81,
     DestroyMesh,
     DestroyVertexBuffer,
     DestroyIndexBuffer,
@@ -69,22 +70,6 @@ protected:
 /******************************************************************************
 * RendererCommandManager
 ******************************************************************************/
-#define SEEK_INVALID_HANDLE  ((uint16_t)-1)
-#define SEEK_HANDLE(_name)                   \
-    struct _name { uint16_t index = -1; };        \
-    inline bool IsValid(_name _handle) { return SEEK_INVALID_HANDLE != _handle.index; }
-
-#define SEEK_RESOURCE_FUNCTIONS(name)                       \
-    private: std::vector<name>           m_v##name##s;      \
-    public: name&       Alloc##name() {                     \
-        m_v##name##s.emplace_back(name());                  \
-        name& v = m_v##name##s.back();                      \
-        v.index = m_v##name##s.size() -1;                   \
-        return v;                                           \
-    }
-
-SEEK_HANDLE(VertexStreamHandle);
-SEEK_HANDLE(MeshHandle);
 class RendererCommandManager
 {
 public:
@@ -96,8 +81,6 @@ public:
     void    FinishSubmitCommandBuffer();
     void    SwapCommandBuffer();
 
-    SEEK_RESOURCE_FUNCTIONS(VertexStreamHandle);
-    SEEK_RESOURCE_FUNCTIONS(MeshHandle);
 
 
 public:
@@ -118,9 +101,10 @@ private:
     Context*    m_pContext = nullptr;
     Mutex       m_CommnadGenerateMutex;
 
-    CommandBuffer   m_CommandBuffers[2][2];
-    CommandBuffer*  m_pSubmitCommandBuffer;
-    CommandBuffer*  m_pRenderCommandBuffer;
+    CommandBuffer   m_CommandBuffers0[2] = { 0 };
+    CommandBuffer   m_CommandBuffers1[2] = { 0 };
+    CommandBuffer*  m_pSubmitCommandBuffer = nullptr;
+    CommandBuffer*  m_pRenderCommandBuffer = nullptr;
 
 
 

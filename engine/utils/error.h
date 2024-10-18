@@ -15,7 +15,7 @@ SEEK_NAMESPACE_BEGIN
 #define SEEK_RETIF_FAIL(func) { \
     SResult __ret = func; \
     if (SEEK_CHECKFAILED(__ret)) { \
-        char buf[1024]; \
+        char buf[1024] = {0}; \
         LOG_ERROR("ERROR %s", buf); \
         return __ret; \
     } \
@@ -23,7 +23,7 @@ SEEK_NAMESPACE_BEGIN
 #define SEEK_RET_NULL_IF_FAIL(func) { \
     SResult __ret = func; \
     if (SEEK_CHECKFAILED(__ret)) { \
-        char buf[1024]; \
+        char buf[1024] = {0}; \
         LOG_ERROR("ERROR %s", buf); \
         return nullptr; \
     } \

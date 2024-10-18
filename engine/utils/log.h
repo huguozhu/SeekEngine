@@ -104,9 +104,7 @@ public:
 
 #define LOG_RECORD_FUNCTION() \
 { \
-    ::Sleep(10);    \
-    seekTrace::TraceLog(TRACE_LEVEL::LevelInfo,  "[%s]\n", __FUNCTION__); \
-    ::Sleep(10);    \
+    seekTrace::TraceLog(TRACE_LEVEL::LevelInfo,  "LOG_RECORD_FUNCTION [%s]\n", __FUNCTION__); \
 }
 
 #endif

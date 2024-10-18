@@ -29,12 +29,18 @@ CommandBuffer::CommandBuffer(size_t size)
 {}
 void CommandBuffer::Read(void* data, uint32_t size)
 {
+    LOG_RECORD_FUNCTION();    
     SEEK_ASSERT(m_iPos + size <= m_iSize);
     memcpy_s(data, size, &m_pData[m_iPos], size);
+    if (size == 1)
+        LOG_ERROR("CommandBuffer::Read, type = %d", *(uint8_t*)data)
     m_iPos += size;
 }
 void CommandBuffer::Write(void* data, uint32_t size)
 {
+    LOG_RECORD_FUNCTION();
+    if (size == 1)
+        LOG_ERROR("CommandBuffer::Write, type = %d", *(uint8_t*)data)
     if (m_iPos + size > m_iSize)
     {   
         this->Expand(m_iSize + (16 << 10));
@@ -51,6 +57,7 @@ void CommandBuffer::Finish()
     CommandType cmd_type = CommandType::End;
     this->Write((uint8_t)cmd_type);
     m_iPos = 0;
+
 }
 /******************************************************************************
  * RendererCommandManager
@@ -58,8 +65,8 @@ void CommandBuffer::Finish()
 RendererCommandManager::RendererCommandManager(Context* context)
     :m_pContext(context)
 {
-    m_pSubmitCommandBuffer = m_CommandBuffers[0];
-    m_pRenderCommandBuffer = m_CommandBuffers[1];
+    m_pSubmitCommandBuffer = m_CommandBuffers0;
+    m_pRenderCommandBuffer = m_CommandBuffers1;
 }
 
 CommandBuffer& RendererCommandManager::GetSubmitCommandBuffer(CommandType type)
@@ -85,6 +92,7 @@ void RendererCommandManager::ExecCommands(CommandBuffer& cb)
             {
             case (uint8_t)CommandType::InitRenderer:
             {
+                LOG_ERROR("InitRenderer-------InitRenderer, cb = %d\n", (uint32_t)&cb);
                 rc.Init();
                 void* native_wnd = nullptr;
                 cb.Read(native_wnd);
@@ -131,11 +139,13 @@ void RendererCommandManager::ExecCommands(CommandBuffer& cb)
 }
 void RendererCommandManager::ExecPreRenderCommands()
 {
+    LOG_RECORD_FUNCTION();
     this->ExecCommands(m_pRenderCommandBuffer[0]);
     m_pRenderCommandBuffer[0].Reset();
 }
 void RendererCommandManager::ExecPostRenderCommands()
 {
+    LOG_RECORD_FUNCTION();
     this->ExecCommands(m_pRenderCommandBuffer[1]);
     m_pRenderCommandBuffer[1].Reset();
 }

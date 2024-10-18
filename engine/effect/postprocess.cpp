@@ -43,7 +43,7 @@ SResult PostProcess::Init(const std::string& tech_name, const std::vector<Effect
     if (m_bIsGraphicsPipeline)
     {
         RHIContext& rc = m_pContext->RHIContextInstance();
-        m_pFrameBuffer = rc.CreateRHIFrameBuffer();
+        m_pFrameBuffer = rc.CreateEmptyRHIFrameBuffer();
         
         // TODO: don't hardcode
         m_pFrameBuffer->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, { RHIFrameBuffer::LoadAction::DontCare });

@@ -22,6 +22,7 @@ static SResult RenderThread_Entry(Context* context, Thread* render_thread, void*
             static uint32_t RenderThread_Index = 0;
             double var = Timer::CurrentTimeSinceEpoch_S();
             LOG_INFO("RengeringThread Index:  %6d:    time = %20f ", RenderThread_Index++, var);
+            ::_sleep(10);
         }
 
         // add to do: call real GPU command

@@ -96,7 +96,7 @@ public:
     virtual RHIRenderViewPtr    CreateDepthStencilView(RHITexturePtr const& tex) override;
     virtual RHIRenderViewPtr    CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face) override;
 
-    virtual RHIFrameBufferPtr   CreateRHIFrameBuffer() override;
+    virtual RHIFrameBufferPtr   CreateEmptyRHIFrameBuffer() override;
     virtual RHIProgramPtr       CreateRHIProgram() override;
     virtual RHITimerQueryPtr    CreateRHITimerQuery() override;
 

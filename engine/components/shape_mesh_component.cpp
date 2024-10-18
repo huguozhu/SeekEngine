@@ -20,7 +20,7 @@ SEEK_NAMESPACE_BEGIN
 void CreateCube(MeshData& mesh_data)
 {
     // Points
-    float v = 1.0;
+    float v = 0.5f;
     
     // Positions
     {

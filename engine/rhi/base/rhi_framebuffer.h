@@ -102,56 +102,41 @@ public:
     {
         StoreOption()
             : storeAction(StoreAction::Store)
-        { }
-        
+        { }        
         StoreOption(StoreAction _storeAction)
             : storeAction(_storeAction)
-        { }
-        
+        { }        
         StoreAction storeAction = StoreAction::Store;
     };
 
-//    int32_t                             Left()      const { return m_iLeft; }
-//    int32_t                             Top()       const { return m_iTop; }
-//    uint32_t                            Width()     const { return m_iWidth; }
-//    uint32_t                            Height()    const { return m_iHeight; }
-    bool                                IsDirty()   const { return m_bViewDirty; }
-    void                                SetDirty(bool b)  { m_bViewDirty = b; }
+    bool                        IsDirty()   const { return m_bViewDirty; }
+    void                        SetDirty(bool b)  { m_bViewDirty = b; }
 
-    void                                SetViewport(Viewport viewport) { m_stViewport = viewport; }
-    Viewport const &                    GetViewport();
+    void                        SetViewport(Viewport viewport) { m_stViewport = viewport; }
+    Viewport const &            GetViewport();
 
-    void                                AttachTargetView(Attachment att, RHIRenderViewPtr const& view);
-    void                                AttachDepthStencilView(RHIRenderViewPtr const& view);
+    void                        AttachTargetView(Attachment att, RHIRenderViewPtr const& view);
+    void                        AttachDepthStencilView(RHIRenderViewPtr const& view);
 
-    RHIRenderViewPtr                       GetRenderTarget(Attachment att) const;
+    RHIRenderViewPtr            GetRenderTarget(Attachment att) const;
     std::array<RHIRenderViewPtr, MAX_COLOR_ATTACHMENTS> const& GetRenderTargets() const { return m_vRenderTargets; }
-    RHIRenderViewPtr              const&   GetDepthStencilView() const { return m_pDepthStencilView; }
+    RHIRenderViewPtr const&     GetDepthStencilView() const { return m_pDepthStencilView; }
     
-    virtual SResult                   OnBind() = 0;
-    virtual SResult                   OnUnbind() = 0;
-    virtual SResult                   SwapBuffers() { return S_Success; }
+    virtual SResult             OnBind() = 0;
+    virtual SResult             OnUnbind() = 0;
+    virtual SResult             SwapBuffers() { return S_Success; }
     
     SResult Bind();
-    void Unbind();
+    void    Unbind();
     
     void SetColorLoadOption(Attachment attachment, LoadOption loadOption);
-    void SetColorStoreOption(Attachment attachment, StoreOption storeOption);
-    
+    void SetColorStoreOption(Attachment attachment, StoreOption storeOption);    
     void SetDepthLoadOption(LoadOption loadOption);
     void SetDepthStoreOption(StoreOption storeOption);
     
-    void Reset();
-    
-    void SetSampleNum(uint32_t sampleNum)
-    {
-        m_sampleNum = sampleNum;
-    }
-    
-    uint32_t GetSampleNum()
-    {
-        return m_sampleNum;
-    }
+    void Reset();    
+    void SetSampleNum(uint32_t sampleNum)  { m_sampleNum = sampleNum; }
+    uint32_t GetSampleNum() { return m_sampleNum; }
     
 protected:
     RHIFrameBuffer(Context* context) :m_pContext(context) {}

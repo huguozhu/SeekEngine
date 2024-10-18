@@ -24,7 +24,7 @@ ForwardShadingRenderer::ForwardShadingRenderer(Context* context)
     : SceneRenderer(context)
 {
     m_eRendererType = RendererType::Forward;
-    m_pRenderSceneFB = m_pContext->RHIContextInstance().CreateRHIFrameBuffer();
+    m_pRenderSceneFB = m_pContext->RHIContextInstance().CreateEmptyRHIFrameBuffer();
 }
 
 SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Technique** tech)
