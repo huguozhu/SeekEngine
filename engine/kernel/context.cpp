@@ -67,8 +67,6 @@ SResult Context::Init(const RenderInitInfo& init_info)
         m_pRendererCommandManager->InitEffect(m_pEffect.get());
     }
 
-    m_MainThreadSemaphore.Post();
-
     return S_Success;
 }
 void Context::Uninit()
@@ -145,11 +143,6 @@ SResult Context::EndRender()
 {
     LOG_RECORD_FUNCTION();
     this->MainThreadSemWait();
-    RHIFrameBufferPtr final_fb = this->RHIContextInstance().GetFinalRHIFrameBuffer();
-    if (final_fb)
-    {
-        SEEK_RETIF_FAIL(final_fb->SwapBuffers());
-    }
     return S_Success;
 }
 void Context::MainThreadSemWait()

@@ -45,7 +45,7 @@ void Effect::LoadDefaultVirtualTechniques()
     //VirtualTechniqueLoader("ColorReplace", &RenderStateDesc::PostProcess(), "PostProcessVS", "ColorReplacePS", nullptr);
     //VirtualTechniqueLoader("RGBAToAI420", nullptr, nullptr, nullptr, "RGBAToAI420CS");
     VirtualTechniqueLoader("ForwardRenderingCommon", &RenderStateDesc::Default3D(), "MeshRenderingVS", "ForwardRenderingCommonPS", nullptr);
-    //VirtualTechniqueLoader("ToneMapping", &RenderStateDesc::PostProcess(), "PostProcessVS", "ToneMappingPS", nullptr);
+    VirtualTechniqueLoader("ToneMapping", &RenderStateDesc::PostProcess(), "PostProcessVS", "ToneMappingPS", nullptr);
     //VirtualTechniqueLoader("Color", &RenderStateDesc::Default2D(), "Sprite2DVS", "ColorSpaceCvt_ColorPS", nullptr);
     //VirtualTechniqueLoader("AI420", &RenderStateDesc::Default2D(), "Sprite2DVS", "ColorSpaceCvt_AI420PS", nullptr);
     //VirtualTechniqueLoader("RGBA", &RenderStateDesc::Default2D(), "Sprite2DVS", "ColorSpaceCvt_RGBAPS", nullptr);

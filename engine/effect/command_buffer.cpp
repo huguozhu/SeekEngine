@@ -6,6 +6,7 @@
 #include "resource/resource_mgr.h"
 
 #include "utils/log.h"
+#include "utils/timer.h"
 #include "math/hash.h"
 
 #include "rhi/base/rhi_context.h"
@@ -22,25 +23,25 @@ SEEK_NAMESPACE_BEGIN
 CommandBuffer::CommandBuffer()
     :Buffer(), m_iPos(0)
 {
-
+    this->Finish();
 }
 CommandBuffer::CommandBuffer(size_t size)
     :Buffer(size), m_iPos(0)
-{}
+{
+    this->Finish();
+}
 void CommandBuffer::Read(void* data, uint32_t size)
 {
-    LOG_RECORD_FUNCTION();    
-    SEEK_ASSERT(m_iPos + size <= m_iSize);
+    SEEK_ASSERT(m_iPos + size <= m_iCommandSize);
     memcpy_s(data, size, &m_pData[m_iPos], size);
     if (size == 1)
-        LOG_ERROR("CommandBuffer::Read, type = %d", *(uint8_t*)data)
+        LOG_INFO("CommandBuffer::Read, type = %d", *(uint8_t*)data)
     m_iPos += size;
 }
 void CommandBuffer::Write(void* data, uint32_t size)
 {
-    LOG_RECORD_FUNCTION();
     if (size == 1)
-        LOG_ERROR("CommandBuffer::Write, type = %d", *(uint8_t*)data)
+        LOG_INFO("CommandBuffer::Write, type = %d, &cb = %d", *(uint8_t*)data, (uint32_t)this);
     if (m_iPos + size > m_iSize)
     {   
         this->Expand(m_iSize + (16 << 10));
@@ -56,8 +57,8 @@ void CommandBuffer::Finish()
 {
     CommandType cmd_type = CommandType::End;
     this->Write((uint8_t)cmd_type);
+    m_iCommandSize = m_iPos;
     m_iPos = 0;
-
 }
 /******************************************************************************
  * RendererCommandManager
@@ -87,55 +88,54 @@ void RendererCommandManager::ExecCommands(CommandBuffer& cb)
     {
         uint8_t command_type;
         cb.Read(command_type);
-        LOG_INFO("command_type = %d", (uint32_t)command_type)
-            switch (command_type)
+        LOG_INFO("ExecCommands command_type = %d", (uint32_t)command_type)
+        switch (command_type)
+        {
+        case (uint8_t)CommandType::InitRenderer:
+        {
+            rc.Init();
+            void* native_wnd = nullptr;
+            cb.Read(native_wnd);
+            if (native_wnd)
             {
-            case (uint8_t)CommandType::InitRenderer:
-            {
-                LOG_ERROR("InitRenderer-------InitRenderer, cb = %d\n", (uint32_t)&cb);
-                rc.Init();
-                void* native_wnd = nullptr;
-                cb.Read(native_wnd);
-                if (native_wnd)
-                {
-                    rc.AttachNativeWindow("", native_wnd);
-                    rc.SetFinalRHIFrameBuffer(rc.GetScreenRHIFrameBuffer());
-                }
-                break;
+                rc.AttachNativeWindow("", native_wnd);
+                rc.SetFinalRHIFrameBuffer(rc.GetScreenRHIFrameBuffer());
             }
-            case (uint8_t)CommandType::InitEffect:
-            {
-                Effect* pEffect = nullptr;
-                cb.Read(pEffect);
-                pEffect->Initialize();
-                break;
-            }
-            case (uint8_t)CommandType::CreateMesh:
-            {
-                RHIMesh* pRHIMesh = nullptr;
-                cb.Read(pRHIMesh);
-                pRHIMesh->Init();
-                break;
-            }
-            case (uint8_t)CommandType::CreateVertexBuffer:
-            case (uint8_t)CommandType::CreateIndexBuffer:
-            {
-                RHIRenderBuffer* buf = nullptr;
-                void* data = nullptr;
-                uint32_t data_size = 0;
-                cb.Read(buf);
-                cb.Read(data);
-                cb.Read(data_size);
-                buf->Create(data, data_size);
-                break;
-            }
+            break;
+        }
+        case (uint8_t)CommandType::InitEffect:
+        {
+            Effect* pEffect = nullptr;
+            cb.Read(pEffect);
+            pEffect->Initialize();
+            break;
+        }
+        case (uint8_t)CommandType::CreateMesh:
+        {
+            RHIMesh* pRHIMesh = nullptr;
+            cb.Read(pRHIMesh);
+            pRHIMesh->Init();
+            break;
+        }
+        case (uint8_t)CommandType::CreateVertexBuffer:
+        case (uint8_t)CommandType::CreateIndexBuffer:
+        {
+            RHIRenderBuffer* buf = nullptr;
+            void* data = nullptr;
+            uint32_t data_size = 0;
+            cb.Read(buf);
+            cb.Read(data);
+            cb.Read(data_size);
+            buf->Create(data, data_size);
+            break;
+        }
         case (uint8_t)CommandType::End:
+        {
             end = true;
             break;
-
+        }
         }
     } while (!end);
-
 }
 void RendererCommandManager::ExecPreRenderCommands()
 {
@@ -154,9 +154,6 @@ void RendererCommandManager::FinishSubmitCommandBuffer()
     LOG_RECORD_FUNCTION();
     m_pSubmitCommandBuffer[0].Finish();
     m_pSubmitCommandBuffer[1].Finish();
-    LOG_INFO("m_pSubmitCommandBuffer[0] = %x \n", &m_pSubmitCommandBuffer[0]);
-    LOG_INFO("m_pSubmitCommandBuffer[1] = %x \n", &m_pSubmitCommandBuffer[1]);
-
 }
 void RendererCommandManager::SwapCommandBuffer()
 {

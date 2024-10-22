@@ -37,7 +37,7 @@ struct RenderInitInfo
     RHIType                 rhi_type = RHIType::D3D11;
     bool                    HDR = false;
     uint32_t                num_samples = 1;
-    int32_t                 preferred_adapter = -1;
+    int32_t                 preferred_adapter = 0;
     LightingMode            lighting_mode = LightingMode::Phong;
     RendererType            renderer_type = RendererType::Forward;
     void*                   native_wnd = nullptr;

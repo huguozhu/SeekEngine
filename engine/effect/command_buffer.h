@@ -63,7 +63,8 @@ public:
     void Finish();
 
 protected:
-    uint32_t    m_iPos;
+    uint32_t    m_iPos = 0;
+    uint32_t    m_iCommandSize = 0;
 };
 
 
@@ -101,13 +102,11 @@ private:
     Context*    m_pContext = nullptr;
     Mutex       m_CommnadGenerateMutex;
 
-    CommandBuffer   m_CommandBuffers0[2] = { 0 };
-    CommandBuffer   m_CommandBuffers1[2] = { 0 };
-    CommandBuffer*  m_pSubmitCommandBuffer = nullptr;
-    CommandBuffer*  m_pRenderCommandBuffer = nullptr;
-
-
-
+    CommandBuffer   m_CommandBuffers0[2];
+    CommandBuffer   m_CommandBuffers1[2];
+    mutable CommandBuffer*  m_pSubmitCommandBuffer = nullptr;
+    mutable CommandBuffer*  m_pRenderCommandBuffer = nullptr;
+    
 };
 
 SEEK_NAMESPACE_END
