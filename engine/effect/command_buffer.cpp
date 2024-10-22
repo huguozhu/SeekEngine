@@ -49,10 +49,6 @@ void CommandBuffer::Write(void* data, uint32_t size)
     memcpy_s(&m_pData[m_iPos], m_iSize, data, size);
     m_iPos += size;
 }
-void CommandBuffer::Align(uint32_t align)
-{
-    m_iPos = seek_alignaddr(m_iPos, align);
-}
 void CommandBuffer::Finish()
 {
     CommandType cmd_type = CommandType::End;

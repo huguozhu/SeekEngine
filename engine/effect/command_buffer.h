@@ -45,7 +45,6 @@ public:
     CommandBuffer(size_t size);
     void Read(void* data, uint32_t size);
     void Write(void* data, uint32_t size);
-    void Align(uint32_t align);
         
     template<typename Type>
     void Read(Type& in)
