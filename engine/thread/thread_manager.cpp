@@ -13,11 +13,10 @@ static SResult RenderThread_Entry(Context* context, Thread* render_thread, void*
         if (!context || !render_thread)
             return ERR_INVALID_INIT;
 
-        LOG_RECORD_FUNCTION();
         Context* pContext = (Context*)user_data;
         pContext->RenderThreadSemWait();
 
-        if (1)
+        if (0)
         {
             static uint32_t RenderThread_Index = 0;
             double var = Timer::CurrentTimeSinceEpoch_S();

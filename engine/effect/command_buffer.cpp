@@ -34,14 +34,10 @@ void CommandBuffer::Read(void* data, uint32_t size)
 {
     SEEK_ASSERT(m_iPos + size <= m_iCommandSize);
     memcpy_s(data, size, &m_pData[m_iPos], size);
-    if (size == 1)
-        LOG_INFO("CommandBuffer::Read, type = %d", *(uint8_t*)data)
     m_iPos += size;
 }
 void CommandBuffer::Write(void* data, uint32_t size)
 {
-    if (size == 1)
-        LOG_INFO("CommandBuffer::Write, type = %d, &cb = %d", *(uint8_t*)data, (uint32_t)this);
     if (m_iPos + size > m_iSize)
     {   
         this->Expand(m_iSize + (16 << 10));
@@ -74,7 +70,6 @@ CommandBuffer& RendererCommandManager::GetSubmitCommandBuffer(CommandType type)
 }
 void RendererCommandManager::ExecCommands(CommandBuffer& cb)
 {
-    LOG_RECORD_FUNCTION();
     cb.Reset();
 
     bool end = false;
@@ -84,7 +79,6 @@ void RendererCommandManager::ExecCommands(CommandBuffer& cb)
     {
         uint8_t command_type;
         cb.Read(command_type);
-        LOG_INFO("ExecCommands command_type = %d", (uint32_t)command_type)
         switch (command_type)
         {
         case (uint8_t)CommandType::InitRenderer:
@@ -135,25 +129,21 @@ void RendererCommandManager::ExecCommands(CommandBuffer& cb)
 }
 void RendererCommandManager::ExecPreRenderCommands()
 {
-    LOG_RECORD_FUNCTION();
     this->ExecCommands(m_pRenderCommandBuffer[0]);
     m_pRenderCommandBuffer[0].Reset();
 }
 void RendererCommandManager::ExecPostRenderCommands()
 {
-    LOG_RECORD_FUNCTION();
     this->ExecCommands(m_pRenderCommandBuffer[1]);
     m_pRenderCommandBuffer[1].Reset();
 }
 void RendererCommandManager::FinishSubmitCommandBuffer()
 {
-    LOG_RECORD_FUNCTION();
     m_pSubmitCommandBuffer[0].Finish();
     m_pSubmitCommandBuffer[1].Finish();
 }
 void RendererCommandManager::SwapCommandBuffer()
 {
-    LOG_RECORD_FUNCTION();
     CommandBuffer* tmp = m_pSubmitCommandBuffer;
     m_pSubmitCommandBuffer = m_pRenderCommandBuffer;
     m_pRenderCommandBuffer = tmp;
@@ -204,7 +194,6 @@ RHIRenderBufferPtr RendererCommandManager::CreateIndexBuffer(const void* data, u
     MutexScope ms(m_CommnadGenerateMutex);
     RHIRenderBufferPtr buf = m_pContext->RHIContextInstance().CreateEmptyIndexBuffer(data_size, flags);
 
-    //LOG_INFO("Run RendererCommandManager::CreateIndexBuffer");
     CommandBuffer& cb = this->GetSubmitCommandBuffer(CommandType::CreateIndexBuffer);
     cb.Write(buf.get());
     cb.Write(data);

@@ -274,34 +274,6 @@ SResult ShaderResource::Load(const std::string& shaderName)
     size_t codeSize;
     const void* reflectData;
     size_t reflectSize;
-//#if !defined(SEEK_SHADER_GENERATE_HEADER_FILE)
-//    std::string shaderCodeFilePath = resourceMgr->GetShaderCodePath(shaderName);
-//    if (shaderCodeFilePath.empty())
-//    {
-//        LOG_ERROR("get shader %s code file path fail", shaderName.c_str());
-//        return ERR_FILE_NOT_FOUND;
-//    }
-//
-//    std::string shaderReflectFilePath = resourceMgr->GetShaderReflectPath(shaderName);
-//    if (shaderReflectFilePath.empty())
-//    {
-//        LOG_ERROR("get shader %s code file path fail", shaderName.c_str());
-//        return ERR_FILE_NOT_FOUND;
-//    }
-//
-//    FileResourcePtr _fileRes = MakeSharedPtr<FileResource>(shaderCodeFilePath);
-//    if (!_fileRes->IsAvailable())
-//        return ERR_FILE_NOT_FOUND;
-//    
-//    FileResource reflectFileRes(shaderReflectFilePath);
-//    if (!reflectFileRes.IsAvailable())
-//        return ERR_FILE_NOT_FOUND;
-//
-//    codeData = _fileRes->_data;
-//    codeSize = _fileRes->_size;
-//    reflectData = reflectFileRes._data;
-//    reflectSize = reflectFileRes._size;
-//#else
     auto codeContent = RHIQueryGeneratedShaderCodeContent(resourceMgr->GetShaderLanguageStr(), shaderName, false);
     if (!codeContent.first)
     {
@@ -320,7 +292,6 @@ SResult ShaderResource::Load(const std::string& shaderName)
     codeSize = codeContent.second;
     reflectData = reflectContent.first;
     reflectSize = reflectContent.second;
-//#endif
 
     _name = shaderName;
     shadercompiler::ReflectJsonReader reader(reinterpret_cast<const char*>(reflectData), reflectSize);
@@ -328,9 +299,6 @@ SResult ShaderResource::Load(const std::string& shaderName)
     {
         sourceCode = codeData;
         sourceCodeSize = codeSize;
-//#if !defined(SEEK_SHADER_GENERATE_HEADER_FILE)
-//        RetainBackendResource(_fileRes);
-//#endif
         SetAvailable(true);
         return S_Success;
     }

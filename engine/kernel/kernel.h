@@ -79,6 +79,9 @@ CLASS_DECLARE(SpringSkeletonComponent);
 CLASS_DECLARE(ParticleComponent);
 CLASS_DECLARE(CubeMeshComponent);
 CLASS_DECLARE(SphereMeshComponent);
+CLASS_DECLARE(ConeMeshComponent);
+CLASS_DECLARE(TerrainMeshComponent);
+CLASS_DECLARE(PlaneMeshComponent);
 
 CLASS_DECLARE(KeyFrame);
 CLASS_DECLARE(TransformKeyFrame);

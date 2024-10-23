@@ -96,7 +96,6 @@ SResult Context::Update()
 
 SResult Context::BeginRender()
 {
-    LOG_RECORD_FUNCTION();
     this->RendererCommandManagerInstance().FinishSubmitCommandBuffer();
     this->RendererCommandManagerInstance().SwapCommandBuffer();
 
@@ -107,7 +106,7 @@ SResult Context::BeginRender()
     }
     this->RenderThreadSemPost();
     
-    if (1)
+    if (0)
     {
         static uint32_t MainThread_Index = 0;
         double var = Timer::CurrentTimeSinceEpoch_S();
@@ -141,7 +140,6 @@ SResult Context::RenderFrame()
 }
 SResult Context::EndRender()
 {
-    LOG_RECORD_FUNCTION();
     this->MainThreadSemWait();
     return S_Success;
 }

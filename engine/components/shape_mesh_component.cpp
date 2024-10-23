@@ -302,21 +302,27 @@ RHIMeshPtr CreateMeshFromMeshData(Context* context, MeshData& mesh_data)
     RHIMeshPtr pMesh = rcm.CreateMesh();
 
     RHIRenderBufferPtr buf_pos =  rcm.CreateVertexrBuffer((const void*)&mesh_data.positions[0], sizeof(float3) * mesh_data.positions.size(), RESOURCE_FLAG_NONE);
-    VertexStream vs_pos = { buf_pos, 0, 0, {{0, 0, 1, VertexFormat::Float3, VertexElementUsage::Position, false, 0}}, false };
+    VertexStream vs_pos = { buf_pos, 0, sizeof(float3), {{0, 0, 1, VertexFormat::Float3, VertexElementUsage::Position, false, 0}}, false};
     pMesh->AddVertexStream(vs_pos);
 
-    RHIRenderBufferPtr buf_tc = rcm.CreateVertexrBuffer((const void*)&mesh_data.texcoords[0], sizeof(float2) * mesh_data.texcoords.size(), RESOURCE_FLAG_NONE);
-    VertexStream vs_tc = { buf_tc, 0, 0, {{0, 0, 1, VertexFormat::Float2, VertexElementUsage::TexCoord, false, 0}}, false };
-    pMesh->AddVertexStream(vs_tc);
+    if (mesh_data.texcoords.size() > 0)
+    {
+        RHIRenderBufferPtr buf_tc = rcm.CreateVertexrBuffer((const void*)&mesh_data.texcoords[0], sizeof(float2) * mesh_data.texcoords.size(), RESOURCE_FLAG_NONE);
+        VertexStream vs_tc = { buf_tc, 0, sizeof(float2), {{0, 0, 1, VertexFormat::Float2, VertexElementUsage::TexCoord, false, 0}}, false };
+        pMesh->AddVertexStream(vs_tc);
+    }
 
-    RHIRenderBufferPtr buf_normal = rcm.CreateVertexrBuffer((const void*)&mesh_data.normals[0], sizeof(float3) * mesh_data.normals.size(), RESOURCE_FLAG_NONE);
-    VertexStream vs_normal = { buf_normal, 0, 0, {{0, 0, 1, VertexFormat::Float3, VertexElementUsage::Normal, false, 0}}, false };
-    pMesh->AddVertexStream(vs_normal);
+    if (mesh_data.normals.size() > 0)
+    {
+        RHIRenderBufferPtr buf_normal = rcm.CreateVertexrBuffer((const void*)&mesh_data.normals[0], sizeof(float3) * mesh_data.normals.size(), RESOURCE_FLAG_NONE);
+        VertexStream vs_normal = { buf_normal, 0, sizeof(float3), {{0, 0, 1, VertexFormat::Float3, VertexElementUsage::Normal, false, 0}}, false };
+        pMesh->AddVertexStream(vs_normal);
+    }
 
     if (mesh_data.tangent.size() > 0)
     {
         RHIRenderBufferPtr buf_tangent = rcm.CreateVertexrBuffer((const void*)&mesh_data.tangent[0], sizeof(float4) * mesh_data.tangent.size(), RESOURCE_FLAG_NONE);
-        VertexStream vs_tangent = { buf_tangent, 0, 0, {{0, 0, 1, VertexFormat::Float4, VertexElementUsage::Tangent, false, 0}}, false };
+        VertexStream vs_tangent = { buf_tangent, 0, sizeof(float4), {{0, 0, 1, VertexFormat::Float4, VertexElementUsage::Tangent, false, 0}}, false };
         pMesh->AddVertexStream(vs_tangent);
     }
 
