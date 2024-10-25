@@ -545,7 +545,6 @@ SResult ParticleComponent::Render()
     if (!pCam)
         return SEEK_ERR_INVALID_INIT;
     if (1) this->SelectDebugInfo();
-    m_pContext->RHIContextInstance().Flush();
     float4x4 const& view = pCam->GetViewMatrix().Transpose();
     float4x4 const& proj = pCam->GetProjMatrix().Transpose();
     GpuRenderParam param { view, proj, m_Param.tex_rows_cols };

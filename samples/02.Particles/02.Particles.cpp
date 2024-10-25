@@ -205,10 +205,7 @@ SResult Particles::OnCreate()
 
 SResult Particles::OnUpdate()
 {
-    SEEK_RETIF_FAIL(m_pContext->BeginRender());
-    SEEK_RETIF_FAIL(m_pContext->Update());
-    SEEK_RETIF_FAIL(m_pContext->EndRender());
-    return S_Success;
+    return m_pContext->Update();
 }
 
 

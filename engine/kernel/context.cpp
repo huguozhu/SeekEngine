@@ -88,10 +88,18 @@ void Context::SetViewport(Viewport vp)
 SResult Context::Update()
 {
     double last_time = m_dCurTime;
-    m_dCurTime = m_pTimer->CurrentTimeSinceEpoch_S();
+    float cur_time = m_pTimer->CurrentTimeSinceEpoch_S();
+    float time_interval = cur_time - last_time;
+    if (time_interval < 0.033)
+        return S_Success;
+
+    m_dCurTime = cur_time;
     m_dDeltaTime = m_dCurTime - last_time;
 
-    return SceneManagerInstance().Tick((float)m_dDeltaTime);
+    SEEK_RETIF_FAIL(this->BeginRender());
+    SEEK_RETIF_FAIL(SceneManagerInstance().Tick((float)m_dDeltaTime));
+    SEEK_RETIF_FAIL(this->EndRender());
+    return S_Success;
 }
 
 SResult Context::BeginRender()
