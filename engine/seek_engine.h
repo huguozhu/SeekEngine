@@ -8,7 +8,7 @@
 #include "components/mesh_component.h"
 #include "components/scene_component.h"
 #include "components/shape_mesh_component.h"
-
+#include "components/particle_component.h"
 
 // effect
 #include "effect/command_buffer.h"
@@ -28,15 +28,12 @@
 #include "thread/semaphore.h"
 #include "thread/thread.h"
 
-//vulkan_rhi
-
-
-// d3d11_rhi
-
 
 // utils
 #include "utils/error.h"
 #include "utils/log.h"
+#include "utils/image_decode.h"
+#include "utils/timer.h"
 
 
 

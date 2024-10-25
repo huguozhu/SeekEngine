@@ -119,5 +119,30 @@ SResult AppFramework::Run()
     CoUninitialize();
     return S_Success;
 }
+std::string AppFramework::FullPath(std::string relativePath)
+{
+#if defined(SEEK_PLATFORM_WINDOWS)
+    return std::string{ SEEK_SAMPLES_DIR }.append("/") + relativePath;
+#elif defined(SEEK_PLATFORM_MAC)
+    return std::string{ SEEK_SAMPLES_DIR }.append("/") + relativePath;
+#elif defined(SEEK_PLATFORM_IOS)
+    CFURLRef resourceURL = CFBundleCopyResourcesDirectoryURL(CFBundleGetMainBundle());
+    char resourcePath[PATH_MAX];
+    if (CFURLGetFileSystemRepresentation(resourceURL, true, (UInt8*)resourcePath, PATH_MAX))
+    {
+        if (resourceURL != NULL)
+        {
+            CFRelease(resourceURL);
+        }
+    }
+    return std::string(resourcePath) + "/" + relativePath;
+#elif defined(SEEK_PLATFORM_LINUX)
+    return std::string{ SEEK_SAMPLES_DIR }.append("/") + relativePath;
+#elif defined(SEEK_PLATFORM_ANDROID)
+    return std::string{ "/sdcard/seek/" } + relativePath;
+#else
+    return relativePath;
+#endif
+}
 
 #undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

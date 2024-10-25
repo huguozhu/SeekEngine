@@ -1,21 +1,20 @@
 #include "components/particle_component.h"
 #include "components/camera_component.h"
 #include "scene_manager/scene_manager.h"
-#include "rhi/mesh.h"
-#include "rhi/texture.h"
+#include "rhi/base/rhi_mesh.h"
+#include "rhi/base/rhi_texture.h"
 #include "effect/scene_renderer.h"
 #include "effect/effect.h"
 #include "effect/technique.h"
 #include "kernel/context.h"
-#include "rhi/render_buffer.h"
+#include "rhi/base/rhi_render_buffer.h"
 #include "kernel/kernel.h"
 
 #define SEEK_MACRO_FILE_UID 100    // this code is auto generated, don't touch it!!!
 
 SEEK_NAMESPACE_BEGIN
 #include "shader/shared/ParticleCommon.h"
-#define PARTICLE_DEBUG 0   
-static const uint32_t DEBUG_MAX_PARTICLES = 1024; 
+static const uint32_t DEBUG_MAX_PARTICLES = 32; 
 static const uint32_t GRADIENT_SAMPLES = 32;
 static uint32_t s_ComponentIndex = 0;
 
@@ -55,17 +54,20 @@ ParticleComponent::ParticleComponent(Context* context, const ParticleSystemParam
     m_iMaxParticles = uint32_t(m_Param.particles_per_sec * m_Param.max_life_time + 15) / 16 * 16;
     m_eState = ParticleState::Stopped;
     m_szName = std::string("Particle_") + std::to_string(s_ComponentIndex++);
-    this->Init();
 }
 ParticleComponent::~ParticleComponent()
 {
 }
 SResult ParticleComponent::Init()
 {
-    DVF_RETIF_FAIL(this->InitShaders());
-    DVF_RETIF_FAIL(this->InitTextures());
-    DVF_RETIF_FAIL(this->InitResource());
-    DVF_RETIF_FAIL(this->InitParticles());
+    if (m_bInit == false)
+    {
+        SEEK_RETIF_FAIL(this->InitShaders());
+        SEEK_RETIF_FAIL(this->InitTextures());
+        SEEK_RETIF_FAIL(this->InitResource());
+        SEEK_RETIF_FAIL(this->InitParticles());
+        m_bInit = true;
+    }
     return S_Success;
 }
 SResult ParticleComponent::InitShaders()
@@ -105,7 +107,7 @@ SResult ParticleComponent::InitShaders()
         const std::string tech_name = particle_techs[i].tech_name;
         if (!effect.GetTechnique(tech_name))
         {
-            DVF_RETIF_FAIL(effect.LoadTechnique(tech_name, &RenderStateDesc::Particle(),
+            SEEK_RETIF_FAIL(effect.LoadTechnique(tech_name, &RenderStateDesc::Particle(),
                 particle_techs[i].vertex_shader_name,
                 particle_techs[i].pixel_shader_name,
                 particle_techs[i].compute_shader_name));
@@ -126,14 +128,14 @@ SResult ParticleComponent::InitShaders()
 }
 SResult ParticleComponent::InitTextures()
 {
-    Texture::Desc desc_color{ TextureType::Tex2D, GRADIENT_SAMPLES, 1, 1, 1, 1, 
+    RHITexture::Desc desc_color{ TextureType::Tex2D, GRADIENT_SAMPLES, 1, 1, 1, 1, 
         PixelFormat::R8G8B8A8_UNORM, RESOURCE_FLAG_CPU_WRITE };
-    m_pTexParticleColorOverLife = m_pContext->RenderContextInstance().CreateTexture2D(desc_color);
+    m_pTexParticleColorOverLife = m_pContext->RHIContextInstance().CreateTexture2D(desc_color);
     this->UpdateTexture_ColorOverLife();
 
-    Texture::Desc desc_size{ TextureType::Tex2D, GRADIENT_SAMPLES, 1, 1, 1, 1,
+    RHITexture::Desc desc_size{ TextureType::Tex2D, GRADIENT_SAMPLES, 1, 1, 1, 1,
         PixelFormat::R32G32F, RESOURCE_FLAG_CPU_WRITE };
-    m_pTexParticleSizeOverLife = m_pContext->RenderContextInstance().CreateTexture2D(desc_size);
+    m_pTexParticleSizeOverLife = m_pContext->RHIContextInstance().CreateTexture2D(desc_size);
     this->UpdateTexture_SizeOverLife();
     return S_Success;
 }
@@ -215,7 +217,7 @@ SResult ParticleComponent::UpdateTexture_SizeOverLife()
 }
 SResult ParticleComponent::InitResource()
 {
-    RenderContext& rc = m_pContext->RenderContextInstance();
+    RHIContext& rc = m_pContext->RHIContextInstance();
 
     m_pParticleInitParam            = rc.CreateConstantBuffer(sizeof(uint), RESOURCE_FLAG_CPU_WRITE);
     m_pParticleTickBeginParam       = rc.CreateConstantBuffer(sizeof(uint32_t),             RESOURCE_FLAG_CPU_WRITE);
@@ -334,6 +336,7 @@ SResult ParticleComponent::InitParticles()
 {
     m_pParticleInitParam->Update(&m_iMaxParticles, sizeof(uint));
     m_pTechParticleInit->Dispatch((m_iMaxParticles + PARTICLE_CS_X_SIZE - 1) / PARTICLE_CS_X_SIZE, 1, 1);
+    if (1) this->SelectDebugInfo();
     return S_Success;
 }
 SResult ParticleComponent::TickBegin(float delta_time)
@@ -348,6 +351,7 @@ SResult ParticleComponent::TickBegin(float delta_time)
     }
     m_pParticleTickBeginParam->Update(&emit_count, sizeof(emit_count));    
     m_pTechParticleTickBegin->Dispatch(1, 1, 1);
+    if (1) this->SelectDebugInfo();
     return S_Success;
 }
 SResult ParticleComponent::EmitParticles()
@@ -357,31 +361,7 @@ SResult ParticleComponent::EmitParticles()
     m_pParticleEmitParam->Update(&param, sizeof(GpuEmitParam));   
     m_pTechParticleEmit->SetParam("alive_pre_simulate_indices", m_pParticleAliveIndices[m_iPreSimIndex]);
     m_pTechParticleEmit->DispatchIndirect(m_pParticleDispatchEmitIndirectArgs);
-#if PARTICLE_DEBUG
-    {
-        ParticleCounters counters = { 0 };
-        BufferPtr buf1 = MakeSharedPtr<Buffer>(m_pParticleCounters->GetSize(), (uint8_t*)&counters);
-        m_pParticleCounters->CopyBack(buf1);
-
-        Particle datas[DEBUG_MAX_PARTICLES] = { 0.f };
-        BufferPtr buf2 = MakeSharedPtr<Buffer>(m_pParticleDatas->GetSize(), (uint8_t*)datas);
-        m_pParticleDatas->CopyBack(buf2);
-
-        uint32_t pre_indices[DEBUG_MAX_PARTICLES] = { 0 };
-        BufferPtr buf3 = MakeSharedPtr<Buffer>(m_pParticleAliveIndices[m_iPreSimIndex]->GetSize(), (uint8_t*)pre_indices);
-        m_pParticleAliveIndices[m_iPreSimIndex]->CopyBack(buf3);
-
-        uint32_t post_indices[DEBUG_MAX_PARTICLES] = { 0 };
-        BufferPtr buf4 = MakeSharedPtr<Buffer>(m_pParticleAliveIndices[m_iPostSimIndex]->GetSize(), (uint8_t*)post_indices);
-        m_pParticleAliveIndices[m_iPostSimIndex]->CopyBack(buf4);
-
-        uint32_t dead_indices[DEBUG_MAX_PARTICLES] = { 0 };
-        BufferPtr buf5 = MakeSharedPtr<Buffer>(m_pParticleDeadIndices->GetSize(), (uint8_t*)dead_indices);
-        m_pParticleDeadIndices->CopyBack(buf5);
-
-        buf2 = buf2;
-    }
-#endif
+    if (1) this->SelectDebugInfo();
     return S_Success;
 }
 SResult ParticleComponent::SimulateParticles(float delta_time)
@@ -392,19 +372,21 @@ SResult ParticleComponent::SimulateParticles(float delta_time)
     m_pTechParticleSimulate->SetParam("alive_pre_simulate_indices", m_pParticleAliveIndices[m_iPreSimIndex]);
     m_pTechParticleSimulate->SetParam("alive_post_simulate_indices", m_pParticleAliveIndices[m_iPostSimIndex]);    
     m_pTechParticleSimulate->DispatchIndirect(m_pParticleDispatchSimulateIndirectArgs);
+    if (1) this->SelectDebugInfo();
     return S_Success;
 }
 SResult ParticleComponent::CullingParticles()
 {
     CameraComponent* pCam = m_pContext->SceneManagerInstance().GetActiveCamera();
     if (!pCam)
-        return DVF_ERR_INVALID_INIT;
+        return SEEK_ERR_INVALID_INIT;
     float4x4 const& view = pCam->GetViewMatrix().Transpose();
     float4x4 const& proj = pCam->GetProjMatrix().Transpose();
     GpuCullingParam param{ view, proj };
     m_pParticleCullingParam->Update(&param, sizeof(GpuCullingParam));
     m_pTechParticleCulling->SetParam("alive_post_simulate_indices", m_pParticleAliveIndices[m_iPostSimIndex]);
     m_pTechParticleCulling->DispatchIndirect(m_pParticleDispatchSimulateIndirectArgs);
+    if (1) this->SelectDebugInfo();
     return S_Success;
 }
 SResult ParticleComponent::PreSortParticles()
@@ -519,22 +501,24 @@ SResult ParticleComponent::FillGpuEmitParam(void* to_gpu_param)
     if (!to_gpu_param)
         return ERR_INVALID_ARG;
     GpuEmitParam* target = (GpuEmitParam*)to_gpu_param;
-    //target->particle_color  = m_Param.particle_color.ToFloat4();
-    target->max_particles   = m_iMaxParticles;
     target->position        = this->GetCurEmitPos();
+    target->max_particles   = m_iMaxParticles;
+    
+    target->emit_direction_type = (uint)m_Param.emit_direction_type;
+    target->direction = m_Param.direction;
+    target->direction_spread_percent = (float)m_Param.direction_spread_percent / 100.0f;
+
     target->min_init_speed  = m_Param.min_init_speed;
     target->max_init_speed  = m_Param.max_init_speed;
     target->min_life_time   = m_Param.min_life_time;
     target->max_life_time   = m_Param.max_life_time;
 
-    target->emit_direction_type         = (uint)m_Param.emit_direction_type;
-    target->direction                   = m_Param.direction;
-    target->direction_spread_percent    = (float)m_Param.direction_spread_percent / 100.0f;
+    target->box_size                    = m_Param.box_size;    
     target->emit_shape                  = (int)m_Param.emit_shape_type;
     target->sphere_radius               = m_Param.sphere_radius;
-    target->box_size                    = m_Param.box_size;
-    target->tex_time_sampling_type      = (uint)m_Param.tex_time_sampling_type;
+    
     target->tex_rows_cols               = m_Param.tex_rows_cols;
+    target->tex_time_sampling_type      = (uint)m_Param.tex_time_sampling_type;    
     return S_Success;
 }
 SResult ParticleComponent::FillSimulateParam(void* param, float delta_time)
@@ -551,12 +535,17 @@ SResult ParticleComponent::FillSimulateParam(void* param, float delta_time)
 }
 SResult ParticleComponent::Render()
 {
+    if (m_bInit == false)
+        this->Init();
+    this->Tick_GPU(m_fTickDeltaTime);
+
     if (m_eState == ParticleState::Stopped)
         return S_Success;
-
     CameraComponent* pCam = m_pContext->SceneManagerInstance().GetActiveCamera();
     if (!pCam)
-        return DVF_ERR_INVALID_INIT;
+        return SEEK_ERR_INVALID_INIT;
+    if (1) this->SelectDebugInfo();
+    m_pContext->RHIContextInstance().Flush();
     float4x4 const& view = pCam->GetViewMatrix().Transpose();
     float4x4 const& proj = pCam->GetProjMatrix().Transpose();
     GpuRenderParam param { view, proj, m_Param.tex_rows_cols };
@@ -567,28 +556,41 @@ SResult ParticleComponent::Render()
 }
 SResult ParticleComponent::Tick(float delta_time)
 {
-    if (m_eState == ParticleState::Stopped  ||
-        m_eState == ParticleState::Pause    )
+    if (m_eState == ParticleState::Stopped ||
+        m_eState == ParticleState::Pause)
+        m_fTickDeltaTime = 0.0f;
+    else
+        m_fTickDeltaTime = delta_time;
+    return S_Success;
+}
+SResult ParticleComponent::Tick_GPU(float delta_time)
+{
+    if (m_eState == ParticleState::Stopped ||
+        m_eState == ParticleState::Pause)
         return S_Success;
+    if (m_bToCallInitParticles)
+    {
+        this->InitParticles();
+        m_bToCallInitParticles = false;
+    }
 
     m_fElapsed += delta_time;
     if (m_Param.duration != DURATION_INFINITY && m_Param.duration <  m_fElapsed)
         this->Stop();
-
+    
     uint2 indices = { m_iPreSimIndex, m_iPostSimIndex };
     m_pParticleAliveIndicesParam->Update(&indices, sizeof(uint2));
     float random_floats[RANDOM_FLOAT_NUM];
     for (uint32_t i = 0; i < RANDOM_FLOAT_NUM; ++i)
         random_floats[i] = Math::GenerateRandom(0.0, 1.0);
     m_pRandomFloats->Update(&random_floats, sizeof(float) * RANDOM_FLOAT_NUM);
-    DVF_RETIF_FAIL(this->TickBegin(delta_time));
-    DVF_RETIF_FAIL(this->EmitParticles());
-    DVF_RETIF_FAIL(this->SimulateParticles(delta_time));
-    DVF_RETIF_FAIL(this->CullingParticles());
-    DVF_RETIF_FAIL(this->PreSortParticles());
+    SEEK_RETIF_FAIL(this->TickBegin(delta_time));
+    SEEK_RETIF_FAIL(this->EmitParticles());
+    SEEK_RETIF_FAIL(this->SimulateParticles(delta_time));
+    SEEK_RETIF_FAIL(this->CullingParticles());
+    SEEK_RETIF_FAIL(this->PreSortParticles());
     if (m_Param.particle_tex)
-        DVF_RETIF_FAIL(this->SortParticles());
-
+        SEEK_RETIF_FAIL(this->SortParticles());
     m_iPreSimIndex  = 1 - m_iPreSimIndex;
     m_iPostSimIndex = 1 - m_iPostSimIndex;
     return S_Success;
@@ -601,7 +603,8 @@ SResult ParticleComponent::Play()
         return ERR_NOT_SUPPORT;
     }
 
-    this->InitParticles();
+    m_bToCallInitParticles = true;
+    
     m_fElapsed = 0;
     m_fLastEmitTime = 0;
 
@@ -658,7 +661,47 @@ void ParticleComponent::RegisterParticleCallback(ParticleCallback cb, void* user
     m_pCallback = cb;
     m_pCallbackData = user_data;
 }
+void ParticleComponent::SelectDebugInfo()
+{
+    //return;
+    ParticleCounters counters = { 0 };
+    BufferPtr buf1 = MakeSharedPtr<Buffer>(m_pParticleCounters->GetSize(), (uint8_t*)&counters);
+    m_pParticleCounters->CopyBack(buf1);
 
+    Particle datas[DEBUG_MAX_PARTICLES] = { 0.f };
+    BufferPtr buf2 = MakeSharedPtr<Buffer>(m_pParticleDatas->GetSize(), (uint8_t*)datas);
+    m_pParticleDatas->CopyBack(buf2);
+
+    uint32_t pre_indices[DEBUG_MAX_PARTICLES] = { 0 };
+    BufferPtr buf3 = MakeSharedPtr<Buffer>(m_pParticleAliveIndices[m_iPreSimIndex]->GetSize(), (uint8_t*)pre_indices);
+    m_pParticleAliveIndices[m_iPreSimIndex]->CopyBack(buf3);
+
+    uint32_t post_indices[DEBUG_MAX_PARTICLES] = { 0 };
+    BufferPtr buf4 = MakeSharedPtr<Buffer>(m_pParticleAliveIndices[m_iPostSimIndex]->GetSize(), (uint8_t*)post_indices);
+    m_pParticleAliveIndices[m_iPostSimIndex]->CopyBack(buf4);
+
+    uint32_t dead_indices[DEBUG_MAX_PARTICLES] = { 0 };
+    BufferPtr buf5 = MakeSharedPtr<Buffer>(m_pParticleDeadIndices->GetSize(), (uint8_t*)dead_indices);
+    m_pParticleDeadIndices->CopyBack(buf5);
+
+    //ParticleDrawArgs arg = { 0 };
+    //BufferPtr buf6 = MakeSharedPtr<Buffer>(m_pParticleDrawIndirectArgs->GetSize(), (uint8_t*)&arg);
+    //m_pParticleDrawIndirectArgs->CopyBack(buf6);
+
+    //DispatchArgs dis0 = { 0 };
+    //BufferPtr buf7 = MakeSharedPtr<Buffer>(m_pParticleDispatchEmitIndirectArgs->GetSize(), (uint8_t*)&dis0);
+    //m_pParticleDispatchEmitIndirectArgs->CopyBack(buf7);
+
+    //DispatchArgs dis1 = { 0 };
+    //BufferPtr buf8 = MakeSharedPtr<Buffer>(m_pParticleDispatchSimulateIndirectArgs->GetSize(), (uint8_t*)&dis1);
+    //m_pParticleDispatchSimulateIndirectArgs->CopyBack(buf8);
+
+    SortInfo sort_info[DEBUG_MAX_PARTICLES] = { 0 };
+    BufferPtr buf9 = MakeSharedPtr<Buffer>(m_pParticleSortIndices->GetSize(), (uint8_t*)sort_info);
+    m_pParticleSortIndices->CopyBack(buf9);
+
+    buf1 = buf1;
+}
 SEEK_NAMESPACE_END
 
 #undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

@@ -20,6 +20,8 @@ public:
 
     virtual SResult         InitContext(int width, int height, void* device = nullptr, void* native_wnd = nullptr);
 
+    static std::string      FullPath(std::string relativePath);
+    static std::string      Basename(std::string filepath) { return filepath.substr(filepath.rfind("/") + 1); }
 
 protected:
     std::string     m_szName;

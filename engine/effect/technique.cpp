@@ -412,10 +412,23 @@ SResult Technique::Render(RHIMeshPtr const& mesh)
 
 void Technique::Dispatch(uint32_t x, uint32_t y, uint32_t z)
 {
+    Commit();
+    m_pContext->RHIContextInstance().Dispatch(m_pProgram.get(), x, y, z);
+    Uncommit();
+}
+void Technique::DispatchIndirect(RHIRenderBufferPtr indirectBuf)
+{
+    Commit();
+    m_pContext->RHIContextInstance().DispatchIndirect(m_pProgram.get(), indirectBuf);
+    Uncommit();
+}
+void Technique::DrawIndirect(RHIRenderBufferPtr indirectBuf, MeshTopologyType type)
+{
     RHIContext& rc = m_pContext->RHIContextInstance();
+    RHIRenderStatePtr rs = this->GetRenderState();
 
     Commit();
-    rc.Dispatch(m_pProgram.get(), x, y, z);
+    rc.DrawIndirect(m_pProgram.get(), rs, indirectBuf, type);
     Uncommit();
 }
 

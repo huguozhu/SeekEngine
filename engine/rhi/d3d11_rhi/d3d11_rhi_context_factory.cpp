@@ -73,7 +73,10 @@ RHIRenderBufferPtr D3D11RHIContext::CreateEmptyIndexBuffer(uint32_t size, Resour
     RHIRenderBufferPtr buf = MakeSharedPtr<D3D11IndexBuffer>(m_pContext, size, flags);
     return buf;
 }
-
+RHITexturePtr D3D11RHIContext::CreateEmptyTexture2D(RHITexture::Desc desc)
+{
+    return MakeSharedPtr<D3D11Texture2D>(m_pContext, desc);
+}
 RHIRenderBufferPtr D3D11RHIContext::CreateVertexBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData)
 {
     RHIRenderBufferPtr buf = MakeSharedPtr<D3D11VertexBuffer>(m_pContext, size, flags);

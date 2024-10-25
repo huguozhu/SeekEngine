@@ -106,6 +106,33 @@ Technique* Effect::GetTechnique(const std::string& name)
     return GetTechnique(name, NULL_PREDEFINES);
 }
 
+SResult Effect::LoadTechnique(const std::string& name, const RenderStateDesc* pDefaultRenderStateDesc,
+    const char* vertexShaderName, const char* pixelShaderName, const char* computeShaderName)
+{
+    if (this->GetTechnique(name))
+        return S_Success;
+
+    VirtualTechniquePtrUnique virtualTech = MakeUniquePtr<VirtualTechnique>(m_pContext);
+    virtualTech->SetName(name);
+    if (pDefaultRenderStateDesc)
+        virtualTech->SetDefaultRenderState(*pDefaultRenderStateDesc);
+    if (vertexShaderName)
+        virtualTech->SetShaderName(ShaderType::Vertex, vertexShaderName);
+    if (pixelShaderName)
+        virtualTech->SetShaderName(ShaderType::Pixel, pixelShaderName);
+    if (computeShaderName)
+        virtualTech->SetShaderName(ShaderType::Compute, computeShaderName);
+    SResult ret = virtualTech->Build();
+    if (SEEK_CHECKFAILED(ret))
+    {
+        LOG_ERROR("load default VirtualTechnique %s fail", name);
+        return ret;
+    }
+
+    m_VirtualTechniques[name] = std::move(virtualTech);
+    return S_Success;
+}
+
 SEEK_NAMESPACE_END
 
 #undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

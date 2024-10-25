@@ -1,0 +1,28 @@
+[
+  {
+	"duration"	: -1,	
+	"position": [0.0, 0.0, 0.0],
+	"direction": [1.01, 1.0, 0.1],
+	"direction_spread_percent": 100,
+	"emit_shape_type"	: 0,
+	"sphere_radius" : 2.0,
+	"box_size" : [0, 0, 0],
+	"particles_per_sec": 2,	
+	"min_init_speed":4.00,
+	"max_init_speed":6.00,
+	"min_life_time":6.0015,
+	"max_life_time":8.0015,
+	
+	"gravity": [0.0, -2.0, 0.0],
+	"wind": [0.0, 0.0, 0.0],
+	"particle_size" : [0.331, 0.331],
+	"particle_color" : [1, 1, 1, 1],	
+	
+	"tex_rows":3,
+	"tex_cols":3,
+	"tex_frames_per_sec":6,
+	"tex_time_sampling_type":2,
+	"tex_path": "02.Particles/nine_birds_3x3.png"
+  }
+
+]

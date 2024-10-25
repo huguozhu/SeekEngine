@@ -208,10 +208,10 @@ public:
         return m_params.find(name) != m_params.end();
     }
 
-    //std::shared_ptr<TechniqueInstance> CreateInstance();
-
     SResult Render(const RHIMeshPtr& mesh);
     void Dispatch(uint32_t x, uint32_t y, uint32_t z);
+    void DispatchIndirect(RHIRenderBufferPtr indirectBuf);
+    void DrawIndirect(RHIRenderBufferPtr indirectBuf, MeshTopologyType type);
 
     SResult Commit();
     void Uncommit();

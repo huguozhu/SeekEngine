@@ -16,9 +16,9 @@
 #pragma once
 
 #include "components/mesh_component.h"
-#include "rhi/render_definition.h"
-#include "rhi/material.h"
-#include "rhi/mesh.h"
+#include "rhi/base/rhi_definition.h"
+#include "rhi/base/material.h"
+#include "rhi/base/rhi_mesh.h"
 #include <list>
 #include <mutex>
 
@@ -61,7 +61,7 @@ struct ParticleSystemParam
     uint2               tex_rows_cols = uint2(1, 1);
     float               tex_frames_per_sec = 1;
     TexTimeSamplingType tex_time_sampling_type = TexTimeSamplingType(0);
-    TexturePtr          particle_tex = nullptr;
+    RHITexturePtr          particle_tex = nullptr;
     SizeOverLife        particle_size_over_life;
     ColorOverLife       particle_color_over_life;
 
@@ -92,8 +92,8 @@ public:
     ParticleComponent(Context* context, const ParticleSystemParam& param);
     virtual ~ParticleComponent();
 
-    SResult               Render();
-    virtual SResult       Tick(float delta_time) override;   
+    SResult             Render();
+    virtual SResult     Tick(float delta_time) override;
 
     SResult Play();
     SResult Pause();
@@ -111,6 +111,7 @@ private:
     SResult UpdateTexture_ColorOverLife();
     SResult UpdateTexture_SizeOverLife();
 
+    SResult Tick_GPU(float delta_time);
     SResult TickBegin(float delta_time);
     SResult EmitParticles();
     SResult SimulateParticles(float delta_time);
@@ -121,28 +122,30 @@ private:
     float3 GetCurEmitPos();
     SResult FillGpuEmitParam(void* to_gpu_param);             // GpuParticleEmitParam*
     SResult FillSimulateParam(void* param, float delta_time); // ParticleSimulateParam*
+
+    void SelectDebugInfo();
     
 protected:
-    RenderBufferPtr m_pParticleAliveIndicesParam = nullptr;
-    RenderBufferPtr m_pParticleInitParam = nullptr;
-    RenderBufferPtr m_pParticleTickBeginParam = nullptr;
-    RenderBufferPtr m_pParticleEmitParam = nullptr;
-    RenderBufferPtr m_pParticleSimulateParam = nullptr;
-    RenderBufferPtr m_pParticleCullingParam = nullptr;
-    RenderBufferPtr m_pParticleSortParam = nullptr;
-    RenderBufferPtr m_pParticleRenderParam = nullptr;
-    RenderBufferPtr m_pParticleVertices = nullptr;
-    RenderBufferPtr m_pRandomFloats = nullptr;
+    RHIRenderBufferPtr m_pParticleAliveIndicesParam = nullptr;
+    RHIRenderBufferPtr m_pParticleInitParam = nullptr;
+    RHIRenderBufferPtr m_pParticleTickBeginParam = nullptr;
+    RHIRenderBufferPtr m_pParticleEmitParam = nullptr;
+    RHIRenderBufferPtr m_pParticleSimulateParam = nullptr;
+    RHIRenderBufferPtr m_pParticleCullingParam = nullptr;
+    RHIRenderBufferPtr m_pParticleSortParam = nullptr;
+    RHIRenderBufferPtr m_pParticleRenderParam = nullptr;
+    RHIRenderBufferPtr m_pParticleVertices = nullptr;
+    RHIRenderBufferPtr m_pRandomFloats = nullptr;
 
-    RenderBufferPtr m_pParticleCounters = nullptr;
-    RenderBufferPtr m_pParticleDeadIndices = nullptr;
-    RenderBufferPtr m_pParticleAliveIndices[2] = { nullptr };
-    RenderBufferPtr m_pParticleSortIndices = nullptr;
-    RenderBufferPtr m_pParticleSortTempIndices = nullptr;
-    RenderBufferPtr m_pParticleDatas = nullptr;    
-    RenderBufferPtr m_pParticleDrawIndirectArgs = nullptr;
-    RenderBufferPtr m_pParticleDispatchEmitIndirectArgs = nullptr;
-    RenderBufferPtr m_pParticleDispatchSimulateIndirectArgs = nullptr;
+    RHIRenderBufferPtr m_pParticleCounters = nullptr;
+    RHIRenderBufferPtr m_pParticleDeadIndices = nullptr;
+    RHIRenderBufferPtr m_pParticleAliveIndices[2] = { nullptr };
+    RHIRenderBufferPtr m_pParticleSortIndices = nullptr;
+    RHIRenderBufferPtr m_pParticleSortTempIndices = nullptr;
+    RHIRenderBufferPtr m_pParticleDatas = nullptr;    
+    RHIRenderBufferPtr m_pParticleDrawIndirectArgs = nullptr;
+    RHIRenderBufferPtr m_pParticleDispatchEmitIndirectArgs = nullptr;
+    RHIRenderBufferPtr m_pParticleDispatchSimulateIndirectArgs = nullptr;
 
     Technique*      m_pTechParticleInit = nullptr;
     Technique*      m_pTechParticleTickBegin = nullptr;
@@ -155,8 +158,8 @@ protected:
     Technique*      m_pTechParticleRender = nullptr;
     Technique*      m_pTechParticleRenderNoTex = nullptr;
 
-    TexturePtr      m_pTexParticleColorOverLife = nullptr;
-    TexturePtr      m_pTexParticleSizeOverLife = nullptr;
+    RHITexturePtr   m_pTexParticleColorOverLife = nullptr;
+    RHITexturePtr   m_pTexParticleSizeOverLife = nullptr;
 
     ParticleSystemParam    m_Param;
 
@@ -171,6 +174,11 @@ protected:
     uint32_t        m_iMaxParticles = 0;
     uint32_t        m_iPreSimIndex = 0;
     uint32_t        m_iPostSimIndex = 1;
+
+    bool            m_bToCallInitParticles = false;
+    bool            m_bInit = false;
+    float           m_fTickDeltaTime = 0.0f;
+
 };
 
 SEEK_NAMESPACE_END

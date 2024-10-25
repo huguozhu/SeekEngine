@@ -57,6 +57,7 @@ public: // virutal factory
     
     virtual RHIRenderBufferPtr      CreateEmptyVertexBuffer(uint32_t size, ResourceFlags flags) = 0;
     virtual RHIRenderBufferPtr      CreateEmptyIndexBuffer(uint32_t size, ResourceFlags flags) = 0;
+    virtual RHITexturePtr           CreateEmptyTexture2D(RHITexture::Desc desc) = 0;
 
     virtual RHIRenderBufferPtr      CreateConstantBuffer(uint32_t size, ResourceFlags flags) = 0;
     virtual RHIRenderBufferPtr      CreateStructuredBuffer  (uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIRenderBufferData* pData = nullptr) = 0;

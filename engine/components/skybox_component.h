@@ -1,18 +1,3 @@
-/*************************************************************************************************
-**
-**      Copyright (C) 2021. All rights reserved.
-**
-**      Name                   : skybox_component.h
-**
-**      Brief                  : skybox component
-**
-**      Additional             : None
-**
-**------------------------------------------------------------------------------------------------
-**
-**      History                : 2021-12-16  Created by Ted Hu
-**
-**************************************************************************************************/
 #pragma once
 
 #include "components/mesh_component.h"
@@ -25,15 +10,14 @@ public:
     SkyBoxComponent(Context* context);
     virtual ~SkyBoxComponent();
 
-    SResult               SetSkyBoxTex(TexturePtr t);
-    virtual SResult       OnRenderBegin(Technique* tech, MeshPtr mesh) override;
+    SResult               SetSkyBoxTex(RHITexturePtr t);
+    virtual SResult       OnRenderBegin(Technique* tech, RHIMeshPtr mesh) override;
     virtual SResult       Render() override;
 
 private:
-    //EffectPtr       m_pEffectSkyBox = nullptr;
-    Technique*      m_pTechSkyBox = nullptr;
-    TexturePtr      m_pTexSkyBox;
-    RenderBufferPtr m_GlobalParamsCBuffer;
+    Technique*          m_pTechSkyBox = nullptr;
+    RHITexturePtr       m_pTexSkyBox;
+    RHIRenderBufferPtr  m_GlobalParamsCBuffer;
 };
 
 SEEK_NAMESPACE_END

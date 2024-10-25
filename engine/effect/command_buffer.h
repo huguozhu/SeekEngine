@@ -21,7 +21,7 @@ enum class CommandType : uint8_t
 
     CreateShader,
     CreateProgram,
-    CreateTexture,
+    CreateTextureFromBitmap,
     CreateFrameBuffer,
     CreateShaderBuffer,
 
@@ -91,6 +91,7 @@ public:
     RHIMeshPtr CreateMesh();
     RHIRenderBufferPtr CreateVertexrBuffer(const void* data, uint32_t data_size, ResourceFlags flags);
     RHIRenderBufferPtr CreateIndexBuffer(const void* data, uint32_t data_size, ResourceFlags flags);
+    RHITexturePtr   CreateTexture2D(RHITexture::Desc desc, BitmapBuffer* pBitmap);
     
 
 

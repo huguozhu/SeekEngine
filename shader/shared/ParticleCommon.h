@@ -17,8 +17,6 @@ struct ParticleCounters
 };
 struct GpuEmitParam
 {
-	float4	particle_color;
-
 	float3 	position;
 	uint 	max_particles;
 	

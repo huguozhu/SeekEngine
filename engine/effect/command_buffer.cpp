@@ -119,6 +119,15 @@ void RendererCommandManager::ExecCommands(CommandBuffer& cb)
             buf->Create(data, data_size);
             break;
         }
+        case (uint8_t)CommandType::CreateTextureFromBitmap:
+        {
+            RHITexture* pTex = nullptr;
+            BitmapBuffer* pBitmap = nullptr;
+            cb.Read(pTex);
+            cb.Read(pBitmap);
+            pTex->Create(std::vector<BitmapBufferPtr>{pBitmap->shared_from_this()});
+            break;
+        }
         case (uint8_t)CommandType::End:
         {
             end = true;
@@ -199,6 +208,17 @@ RHIRenderBufferPtr RendererCommandManager::CreateIndexBuffer(const void* data, u
     cb.Write(data);
     cb.Write(data_size);
     return buf;
+}
+
+RHITexturePtr RendererCommandManager::CreateTexture2D(RHITexture::Desc desc, BitmapBuffer* pBitmap)
+{
+    MutexScope ms(m_CommnadGenerateMutex);
+    RHITexturePtr tex = m_pContext->RHIContextInstance().CreateEmptyTexture2D(desc);
+
+    CommandBuffer& cb = this->GetSubmitCommandBuffer(CommandType::CreateTextureFromBitmap);
+    cb.Write(tex.get());
+    cb.Write(pBitmap);
+    return tex;
 }
 
 

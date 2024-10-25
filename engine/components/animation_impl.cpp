@@ -1,7 +1,7 @@
 #include "components/animation_impl.h"
 #include "components/scene_component.h"
 #include "components/mesh_component.h"
-#include "rhi/mesh.h"
+#include "rhi/base/rhi_mesh.h"
 #include "math/math_utility.h"
 #include "utils/log.h"
 #include <cmath>
@@ -96,7 +96,7 @@ SResult TransformAnimationTrack::GetInterpolatedKeyFrame(float time, KeyFrame& k
 SResult TransformAnimationTrack::GetInterpolatedKeyFrame(float time, KeyFrame & kf, JointFusionMode jointFusionMode)
 {
     uint32_t kfIdx;
-    DVF_RETIF_FAIL(GetKeyFrameIdxByTime(time, kfIdx));
+    SEEK_RETIF_FAIL(GetKeyFrameIdxByTime(time, kfIdx));
 
     TransformKeyFrame& out = (TransformKeyFrame&)kf;
     TransformKeyFramePtr k0, k1, k2, k3;
@@ -120,14 +120,14 @@ SResult TransformAnimationTrack::GetInterpolatedKeyFrame(float time, KeyFrame & 
         float3 v;
         switch (m_eInterpolationType)
         {
-            case dvf::InterpolationType::Step:
+            case InterpolationType::Step:
                 v = v1;
                 break;
-            case dvf::InterpolationType::Linear:
-            case dvf::InterpolationType::SphericalLinear:
+            case InterpolationType::Linear:
+            case InterpolationType::SphericalLinear:
                 v = Math::Lerp(v1, v2, t);
                 break;
-            case dvf::InterpolationType::CubicSpline:
+            case InterpolationType::CubicSpline:
             {
                 float3 v0 = jointFusionMode == JointFusionMode::Cover ? k0->GetTranslate() : k0->GetOffsetTranslate();
                 float3 v3 = jointFusionMode == JointFusionMode::Cover ? k3->GetTranslate() : k3->GetOffsetTranslate();
@@ -144,14 +144,14 @@ SResult TransformAnimationTrack::GetInterpolatedKeyFrame(float time, KeyFrame & 
         float3 v;
         switch (m_eInterpolationType)
         {
-            case dvf::InterpolationType::Step:
+            case InterpolationType::Step:
                 v = v1;
                 break;
-            case dvf::InterpolationType::Linear:
-            case dvf::InterpolationType::SphericalLinear:
+            case InterpolationType::Linear:
+            case InterpolationType::SphericalLinear:
                 v = Math::Lerp(v1, v2, t);
                 break;
-            case dvf::InterpolationType::CubicSpline:
+            case InterpolationType::CubicSpline:
             {
                 float3 v0 = jointFusionMode == JointFusionMode::Cover ? k0->GetScale() : k0->GetOffsetScale();
                 float3 v3 = jointFusionMode == JointFusionMode::Cover ? k3->GetScale() : k3->GetOffsetScale();
@@ -168,14 +168,14 @@ SResult TransformAnimationTrack::GetInterpolatedKeyFrame(float time, KeyFrame & 
         Quaternion v;
         switch (m_eInterpolationType)
         {
-            case dvf::InterpolationType::Step:
+            case InterpolationType::Step:
                 v = v1;
                 break;
-            case dvf::InterpolationType::Linear:
-            case dvf::InterpolationType::SphericalLinear:
+            case InterpolationType::Linear:
+            case InterpolationType::SphericalLinear:
                 v = Math::QuatLerp(v1, v2, t);
                 break;
-            case dvf::InterpolationType::CubicSpline:
+            case InterpolationType::CubicSpline:
             {
                 Quaternion v0 = jointFusionMode == JointFusionMode::Cover ? k0->GetRotate() : k0->GetOffsetRotate();
                 Quaternion v3 = jointFusionMode == JointFusionMode::Cover ? k3->GetRotate() : k3->GetOffsetRotate();
@@ -222,7 +222,7 @@ SResult MorphTargetAnimationTrack::Run(float time, MorphTargetWeightFusionMode w
     MorphTargetKeyFrame kf(nullptr);
     this->GetInterpolatedKeyFrame(time, kf);
 
-    std::vector<MeshPtr>& meshes = ((MeshComponent*)m_pSceneComponent.get())->GetMeshes();
+    std::vector<RHIMeshPtr>& meshes = ((MeshComponent*)m_pSceneComponent.get())->GetMeshes();
     std::vector<float> const& weights = kf.GetWeights();
     for (auto& mesh : meshes)
     {
@@ -261,7 +261,7 @@ SResult MorphTargetAnimationTrack::Run(float time, MorphTargetWeightFusionMode w
     std::vector<std::string>& morphTargetNames = meshes[0]->GetMorphInfo().morph_target_names;
     for (auto& linkageSceneComponent : m_pLinkageSceneComponents)
     {
-        std::vector<MeshPtr>& linkageMeshes = ((MeshComponent*)linkageSceneComponent.get())->GetMeshes();
+        std::vector<RHIMeshPtr>& linkageMeshes = ((MeshComponent*)linkageSceneComponent.get())->GetMeshes();
         for (auto& linkageMesh : linkageMeshes)
         {
             if (linkageMesh->GetMorphInfo().morph_target_type != MorphTargetType::None)
@@ -320,7 +320,7 @@ MorphTargetKeyFramePtr MorphTargetAnimationTrack::CreateMorphTargetKeyFrame()
 SResult MorphTargetAnimationTrack::GetInterpolatedKeyFrame(float time, KeyFrame & kf)
 {
     uint32_t kfIdx;
-    DVF_RETIF_FAIL(GetKeyFrameIdxByTime(time, kfIdx));
+    SEEK_RETIF_FAIL(GetKeyFrameIdxByTime(time, kfIdx));
 
     MorphTargetKeyFrame& out = (MorphTargetKeyFrame&)kf;
     MorphTargetKeyFramePtr kf0 = std::static_pointer_cast<MorphTargetKeyFrame>(m_vKeyFrames[kfIdx]);

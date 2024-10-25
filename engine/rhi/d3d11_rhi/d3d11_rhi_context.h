@@ -79,6 +79,7 @@ public:
 
     virtual RHIRenderBufferPtr  CreateEmptyVertexBuffer(uint32_t size, ResourceFlags flags) override;
     virtual RHIRenderBufferPtr  CreateEmptyIndexBuffer(uint32_t size, ResourceFlags flags) override;
+    virtual RHITexturePtr       CreateEmptyTexture2D(RHITexture::Desc desc) override;
 
     virtual RHIRenderBufferPtr  CreateConstantBuffer(uint32_t size, ResourceFlags usage) override;
     virtual RHIRenderBufferPtr  CreateStructuredBuffer  (uint32_t size, ResourceFlags usage, uint32_t structure_byte_stride, RHIRenderBufferData* pData) override;

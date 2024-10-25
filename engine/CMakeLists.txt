@@ -6,16 +6,25 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/components/entity.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/entity.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/component.h
+
+    ${SEEK_ENGINE_SOURCE_DIR}/components/animation_component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/animation_component.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/components/animation_impl.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/animation_impl.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/camera_component.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/camera_component.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/components/mesh_component.h
-    ${SEEK_ENGINE_SOURCE_DIR}/components/mesh_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/light_component.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/light_component.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/components/mesh_component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/mesh_component.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/components/particle_component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/particle_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/scene_component.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/scene_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/skeletal_mesh_component.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/skeletal_mesh_component.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/components/skybox_component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/skybox_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/shape_mesh_component.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/shape_mesh_component.cpp
 

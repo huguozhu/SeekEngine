@@ -34,7 +34,7 @@ protected:
     bool                    m_bExternalMemory = false;
 };
 
-class BitmapBuffer : public Buffer
+class BitmapBuffer : public Buffer, public std::enable_shared_from_this<BitmapBuffer>
 {
 public:
     DISALLOW_COPY_AND_ASSIGN(BitmapBuffer)

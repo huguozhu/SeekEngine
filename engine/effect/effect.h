@@ -23,6 +23,9 @@ public:
     Technique* GetTechnique(const std::string& name, const std::vector<EffectPredefine>& user_predefines);
     Technique* GetTechnique(const std::string& name);
 
+    SResult LoadTechnique(const std::string& name, const RenderStateDesc* pDefaultRenderStateDesc,
+        const char* vertexShaderName, const char* pixelShaderName, const char* computeShaderName);
+
 private:
     void LoadDefaultVirtualTechniques();
 

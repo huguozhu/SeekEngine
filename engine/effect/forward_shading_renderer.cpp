@@ -13,6 +13,8 @@
 #include "components/light_component.h"
 #include "components/skeletal_mesh_component.h"
 #include "components/camera_component.h"
+#include "components/skybox_component.h"
+#include "components/particle_component.h"
 #include "scene_manager/scene_manager.h"
 #include <algorithm>
 
@@ -123,12 +125,19 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
         else
             return false;
     });
-    if (m_renderableMeshes.empty())
+    if (m_renderableMeshes.empty() &&
+        m_pContext->SceneManagerInstance().GetSkyBoxComponent() == nullptr &&
+        m_pContext->SceneManagerInstance().GetParticleComponents().size() == 0)
         return S_Success;
 
     // analyze the whole pipeline by the configuration, and prepare the framebuffer for each render pass
     // in furture, need a framegraph to do this
     SResult ret = PrepareFrameBuffer();
+
+    if (m_pContext->SceneManagerInstance().GetSkyBoxComponent())
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderSkyBoxJob, this)));
+    if (m_pContext->SceneManagerInstance().GetParticleComponents().size() > 0)
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderParticlesJob, this)));
     
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderSceneJob, this)));
     
@@ -197,7 +206,45 @@ RendererReturnValue ForwardShadingRenderer::RenderSceneJob()
     m_eCurRenderStage = RenderStage::None;
     return RRV_NextJob;
 }
+RendererReturnValue ForwardShadingRenderer::RenderSkyBoxJob()
+{
+    m_eCurRenderStage = RenderStage::None;
 
+    RHIContext::RenderPassInfo info;
+    info.name = "RenderSkybox";
+    info.fb = m_pRenderSceneFB.get();
+    m_pContext->RHIContextInstance().BeginRenderPass(info);
+
+    SkyBoxComponent* skybox = m_pContext->SceneManagerInstance().GetSkyBoxComponent();
+    if (skybox)
+        skybox->Render();
+
+    m_pContext->RHIContextInstance().EndRenderPass();
+
+    return RRV_NextJob;
+}
+RendererReturnValue ForwardShadingRenderer::RenderParticlesJob()
+{
+    m_eCurRenderStage = RenderStage::None;
+
+    RHIContext::RenderPassInfo info;
+    info.name = "RenderParticles";
+    info.fb = m_pRenderSceneFB.get();
+    m_pContext->RHIContextInstance().BeginRenderPass(info);
+
+    size_t particle_count;
+    std::vector<ParticleComponent*>& particles = m_pContext->SceneManagerInstance().GetParticleComponents();
+    for (uint32_t i = 0; i < particles.size(); ++i)
+    {
+        ParticleComponent* particle = particles[i];
+        if (particle)
+        {
+            particle->Render();
+        }
+    }
+    m_pContext->RHIContextInstance().EndRenderPass();
+    return RRV_NextJob;
+}
 SResult ForwardShadingRenderer::PrepareFrameBuffer()
 {
     // now, we will config framebuffer everytime

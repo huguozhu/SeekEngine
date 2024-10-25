@@ -3,6 +3,7 @@
 #include "components/mesh_component.h"
 #include "components/camera_component.h"
 #include "components/light_component.h"
+#include "components/skeletal_mesh_component.h"
 #include "components/entity.h"
 #include "math/math_utility.h"
 #include "math/frustum.h"
@@ -292,11 +293,11 @@ void SceneManager::UpdateSkeletonMatrics()
 {
     for (MeshComponent* mesh_component : m_vMeshComponentList)
     {
-        //if (mesh_component->GetComponentType() == ComponentType::SkeletalMesh)
-        //{
-        //    SkeletalMeshComponent* skeletal_component = (SkeletalMeshComponent*)mesh_component;
-        //    skeletal_component->UpdateJointFinalMatrices();
-        //}
+        if (mesh_component->GetComponentType() == ComponentType::SkeletalMesh)
+        {
+            SkeletalMeshComponent* skeletal_component = (SkeletalMeshComponent*)mesh_component;
+            skeletal_component->UpdateJointFinalMatrices();
+        }
     }
 }
 
