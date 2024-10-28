@@ -175,9 +175,11 @@ protected:
     uint32_t        m_iPreSimIndex = 0;
     uint32_t        m_iPostSimIndex = 1;
 
+    uint32_t        m_iRenderCountThisFrame = 0;
     bool            m_bToCallInitParticles = false;
     bool            m_bInit = false;
     float           m_fTickDeltaTime = 0.0f;
+    RHIFencePtr     m_pFence = nullptr;
 
 };
 

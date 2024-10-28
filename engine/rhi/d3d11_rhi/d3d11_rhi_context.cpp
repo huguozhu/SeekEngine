@@ -9,6 +9,7 @@
 #include "rhi/d3d11_rhi/d3d11_framebuffer.h"
 #include "rhi/d3d11_rhi/d3d11_translate.h"
 #include "rhi/d3d11_rhi/d3d11_texture.h"
+#include "rhi/d3d11_rhi/d3d11_fence.h"
 
 #include "rhi/base/rhi_mesh.h"
 #include "rhi/base/rhi_program.h"
@@ -802,7 +803,10 @@ void D3D11RHIContext::BindSampler(ShaderType stage, uint32_t binding, const RHIS
     ID3D11SamplerState* d3d_sampler = sampler == nullptr ? nullptr : ((D3D11Sampler*)sampler)->GetD3D11SamplerState();
     SetD3DSamplers(stage, binding, 1, &d3d_sampler);
 }
-
+RHIFencePtr D3D11RHIContext::CreateFence()
+{
+    return MakeSharedPtr<D3D11RHIFence>(m_pContext);
+}
 void OutputD3D11DebugInfo()
 {
     if (!DXGIGetDebugInterface)

@@ -131,6 +131,8 @@ public:
     virtual void BindTexture(ShaderType stage, uint32_t binding, const  RHITexture* texture, const char* name) override;
     virtual void BindRWTexture(ShaderType stage, uint32_t binding, const  RHITexture* rw_texture, const char* name) override;
     virtual void BindSampler(ShaderType stage, uint32_t binding, const RHISampler* sampler, const char* name) override;
+
+    virtual RHIFencePtr CreateFence() override;
 };
 
 SEEK_NAMESPACE_END

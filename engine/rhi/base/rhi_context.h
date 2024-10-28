@@ -112,6 +112,8 @@ public: // virutal factory
     virtual void                    BindRWTexture(ShaderType stage, uint32_t binding, const RHITexture* rw_texture, const char* name) = 0;
     virtual void                    BindSampler(ShaderType stage, uint32_t binding, const RHISampler* sampler, const char* name) = 0;
 
+    virtual RHIFencePtr             CreateFence() { return nullptr; }
+
 protected:
     // Functions that only can been called by Context
     friend class Context;
