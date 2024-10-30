@@ -95,7 +95,6 @@ public:
     bool HasPrecomputedIBL() { return m_pIBLDiffuseTex && m_pIBLSpecularTex && m_pIBLBrdfTex; }
 
 private:
-
     RenderInitInfo              m_InitInfo{};
     Semaphore                   m_MainThreadSemaphore;
 

@@ -338,7 +338,6 @@ SResult ParticleComponent::InitParticles()
 {
     m_pParticleInitParam->Update(&m_iMaxParticles, sizeof(uint));
     m_pTechParticleInit->Dispatch((m_iMaxParticles + PARTICLE_CS_X_SIZE - 1) / PARTICLE_CS_X_SIZE, 1, 1);
-    if (0) this->SelectDebugInfo();
     return S_Success;
 }
 SResult ParticleComponent::TickBegin(float delta_time)
@@ -353,7 +352,6 @@ SResult ParticleComponent::TickBegin(float delta_time)
     }
     m_pParticleTickBeginParam->Update(&emit_count, sizeof(emit_count));    
     m_pTechParticleTickBegin->Dispatch(1, 1, 1);
-    if (0) this->SelectDebugInfo();
     return S_Success;
 }
 SResult ParticleComponent::EmitParticles()
@@ -362,8 +360,7 @@ SResult ParticleComponent::EmitParticles()
     this->FillGpuEmitParam(&param);
     m_pParticleEmitParam->Update(&param, sizeof(GpuEmitParam));   
     m_pTechParticleEmit->SetParam("alive_pre_simulate_indices", m_pParticleAliveIndices[m_iPreSimIndex]);
-    m_pTechParticleEmit->DispatchIndirect(m_pParticleDispatchEmitIndirectArgs);
-    if (0) this->SelectDebugInfo();
+    m_pTechParticleEmit->DispatchIndirect(m_pParticleDispatchEmitIndirectArgs);    
     return S_Success;
 }
 SResult ParticleComponent::SimulateParticles(float delta_time)
@@ -374,7 +371,6 @@ SResult ParticleComponent::SimulateParticles(float delta_time)
     m_pTechParticleSimulate->SetParam("alive_pre_simulate_indices", m_pParticleAliveIndices[m_iPreSimIndex]);
     m_pTechParticleSimulate->SetParam("alive_post_simulate_indices", m_pParticleAliveIndices[m_iPostSimIndex]);    
     m_pTechParticleSimulate->DispatchIndirect(m_pParticleDispatchSimulateIndirectArgs);
-    if (1) this->SelectDebugInfo();
     return S_Success;
 }
 SResult ParticleComponent::CullingParticles()
@@ -388,13 +384,11 @@ SResult ParticleComponent::CullingParticles()
     m_pParticleCullingParam->Update(&param, sizeof(GpuCullingParam));
     m_pTechParticleCulling->SetParam("alive_post_simulate_indices", m_pParticleAliveIndices[m_iPostSimIndex]);
     m_pTechParticleCulling->DispatchIndirect(m_pParticleDispatchSimulateIndirectArgs);
-    if (1) this->SelectDebugInfo();
     return S_Success;
 }
 SResult ParticleComponent::PreSortParticles()
 {    
     m_pTechParticlePreSort->Dispatch((m_iRenderCountThisFrame + BITONIC_BLOCK_SIZE - 1) / BITONIC_BLOCK_SIZE, 1, 1);
-    if (1) this->SelectDebugInfo();
     return S_Success;
 }
 SResult ParticleComponent::SortParticles()
@@ -448,7 +442,6 @@ SResult ParticleComponent::SortParticles()
         m_pTechParticleBitonicSort->SetParam("sort_indices", m_pParticleSortIndices);
         m_pTechParticleBitonicSort->Dispatch(size / BITONIC_BLOCK_SIZE, 1, 1); 
     }
-    if (1) this->SelectDebugInfo();
     return S_Success;
 }
 
@@ -541,7 +534,6 @@ SResult ParticleComponent::Render()
     CameraComponent* pCam = m_pContext->SceneManagerInstance().GetActiveCamera();
     if (!pCam)
         return SEEK_ERR_INVALID_INIT;
-    if (1) this->SelectDebugInfo();
     float4x4 const& view = pCam->GetViewMatrix().Transpose();
     float4x4 const& proj = pCam->GetProjMatrix().Transpose();
     GpuRenderParam param { view, proj, m_Param.tex_rows_cols };
@@ -567,7 +559,8 @@ SResult ParticleComponent::Tick_GPU(float delta_time)
     if (m_bToCallInitParticles)
     {
         this->InitParticles();
-        GpuSyncFence();
+        if (0) this->SelectDebugInfo();
+        //GpuSyncFence();
         m_bToCallInitParticles = false;
     }
 
@@ -581,17 +574,22 @@ SResult ParticleComponent::Tick_GPU(float delta_time)
     for (uint32_t i = 0; i < RANDOM_FLOAT_NUM; ++i)
         random_floats[i] = Math::GenerateRandom(0.0, 1.0);
     m_pRandomFloats->Update(&random_floats, sizeof(float) * RANDOM_FLOAT_NUM);    
+
     SEEK_RETIF_FAIL(this->TickBegin(delta_time));
-    GpuSyncFence();
+    if (1) this->SelectDebugInfo();
+    //GpuSyncFence();
 
     SEEK_RETIF_FAIL(this->EmitParticles());
-    GpuSyncFence();
+    if (1) this->SelectDebugInfo();
+    //GpuSyncFence();
 
     SEEK_RETIF_FAIL(this->SimulateParticles(delta_time));
-    GpuSyncFence();
+    if (1) this->SelectDebugInfo();
+    //GpuSyncFence();
 
     SEEK_RETIF_FAIL(this->CullingParticles());
-    GpuSyncFence();
+    if (1) this->SelectDebugInfo();
+    //GpuSyncFence();
 
     if (m_Param.particle_tex)
     {
@@ -599,13 +597,14 @@ SResult ParticleComponent::Tick_GPU(float delta_time)
         BufferPtr buf1 = MakeSharedPtr<Buffer>(m_pParticleCounters->GetSize(), (uint8_t*)&counters);
         m_pParticleCounters->CopyBack(buf1);
         m_iRenderCountThisFrame = counters.render_count;
-        GpuSyncFence();
         
         SEEK_RETIF_FAIL(this->PreSortParticles());
-        GpuSyncFence();
+        if (1) this->SelectDebugInfo();
+        //GpuSyncFence();
 
         SEEK_RETIF_FAIL(this->SortParticles());
-        GpuSyncFence();
+        if (1) this->SelectDebugInfo();
+        //GpuSyncFence();
     }
     m_iPreSimIndex  = 1 - m_iPreSimIndex;
     m_iPostSimIndex = 1 - m_iPostSimIndex;
@@ -679,7 +678,7 @@ void ParticleComponent::RegisterParticleCallback(ParticleCallback cb, void* user
 }
 void ParticleComponent::SelectDebugInfo()
 {
-    return;
+    //return;
     ParticleCounters counters = { 0 };
     BufferPtr buf1 = MakeSharedPtr<Buffer>(m_pParticleCounters->GetSize(), (uint8_t*)&counters);
     m_pParticleCounters->CopyBack(buf1);

@@ -164,6 +164,18 @@ void RendererCommandManager::SwapCommandBuffer()
 ******************************************************************************/
 void RendererCommandManager::InitRenderer(void* native_wnd)
 {
+    if (!m_pContext->IsMultiThreaded())
+    {
+        RHIContext& rc = m_pContext->RHIContextInstance();
+        rc.Init();        
+        if (native_wnd)
+        {
+            rc.AttachNativeWindow("", native_wnd);
+            rc.SetFinalRHIFrameBuffer(rc.GetScreenRHIFrameBuffer());
+        }
+        return;
+    }
+
     MutexScope ms(m_CommnadGenerateMutex);
     CommandBuffer& cb = this->GetSubmitCommandBuffer(CommandType::InitRenderer);
     cb.Write(native_wnd);
@@ -171,6 +183,11 @@ void RendererCommandManager::InitRenderer(void* native_wnd)
 }
 void RendererCommandManager::InitEffect(Effect* effect)
 {
+    if (!m_pContext->IsMultiThreaded())
+    {
+        effect->Initialize();
+        return;
+    }
     MutexScope ms(m_CommnadGenerateMutex);
     CommandBuffer& cb = this->GetSubmitCommandBuffer(CommandType::InitEffect);
     cb.Write(effect);
@@ -178,8 +195,10 @@ void RendererCommandManager::InitEffect(Effect* effect)
 }
 RHIMeshPtr RendererCommandManager::CreateMesh()
 {
-    MutexScope ms(m_CommnadGenerateMutex);
+    if (!m_pContext->IsMultiThreaded())
+        return m_pContext->RHIContextInstance().CreateMesh();
 
+    MutexScope ms(m_CommnadGenerateMutex);
     RHIMeshPtr pMesh = m_pContext->RHIContextInstance().CreateMesh();
 
     CommandBuffer& cb = this->GetSubmitCommandBuffer(CommandType::CreateMesh);
@@ -188,6 +207,9 @@ RHIMeshPtr RendererCommandManager::CreateMesh()
 }
 RHIRenderBufferPtr RendererCommandManager::CreateVertexrBuffer(const void* data, uint32_t data_size, ResourceFlags flags)
 {
+    if (!m_pContext->IsMultiThreaded())
+        return m_pContext->RHIContextInstance().CreateVertexBuffer(data_size, flags, new RHIRenderBufferData(data_size, data));
+
     MutexScope ms(m_CommnadGenerateMutex);
     RHIRenderBufferPtr buf = m_pContext->RHIContextInstance().CreateEmptyVertexBuffer(data_size, flags);
 
@@ -200,6 +222,9 @@ RHIRenderBufferPtr RendererCommandManager::CreateVertexrBuffer(const void* data,
 
 RHIRenderBufferPtr RendererCommandManager::CreateIndexBuffer(const void* data, uint32_t data_size, ResourceFlags flags)
 {
+    if (!m_pContext->IsMultiThreaded())
+        return m_pContext->RHIContextInstance().CreateVertexBuffer(data_size, flags, new RHIRenderBufferData(data_size, data));
+
     MutexScope ms(m_CommnadGenerateMutex);
     RHIRenderBufferPtr buf = m_pContext->RHIContextInstance().CreateEmptyIndexBuffer(data_size, flags);
 
@@ -212,6 +237,9 @@ RHIRenderBufferPtr RendererCommandManager::CreateIndexBuffer(const void* data, u
 
 RHITexturePtr RendererCommandManager::CreateTexture2D(RHITexture::Desc desc, BitmapBuffer* pBitmap)
 {
+    if (!m_pContext->IsMultiThreaded())
+        return m_pContext->RHIContextInstance().CreateTexture2D(desc, pBitmap->shared_from_this());
+
     MutexScope ms(m_CommnadGenerateMutex);
     RHITexturePtr tex = m_pContext->RHIContextInstance().CreateEmptyTexture2D(desc);
 
