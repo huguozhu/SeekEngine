@@ -567,6 +567,7 @@ SResult ParticleComponent::Tick_GPU(float delta_time)
     if (m_bToCallInitParticles)
     {
         this->InitParticles();
+        GpuSyncFence();
         m_bToCallInitParticles = false;
     }
 
@@ -581,37 +582,30 @@ SResult ParticleComponent::Tick_GPU(float delta_time)
         random_floats[i] = Math::GenerateRandom(0.0, 1.0);
     m_pRandomFloats->Update(&random_floats, sizeof(float) * RANDOM_FLOAT_NUM);    
     SEEK_RETIF_FAIL(this->TickBegin(delta_time));
-    uint64_t id = m_pFence->Signal();
-    m_pFence->Wait(id);
+    GpuSyncFence();
 
     SEEK_RETIF_FAIL(this->EmitParticles());
-    id = m_pFence->Signal();
-    m_pFence->Wait(id);
+    GpuSyncFence();
 
     SEEK_RETIF_FAIL(this->SimulateParticles(delta_time));
-    id = m_pFence->Signal();
-    m_pFence->Wait(id);
+    GpuSyncFence();
 
     SEEK_RETIF_FAIL(this->CullingParticles());
-    id = m_pFence->Signal();
-    m_pFence->Wait(id);
+    GpuSyncFence();
 
     if (m_Param.particle_tex)
     {
         ParticleCounters counters = { 0 };
         BufferPtr buf1 = MakeSharedPtr<Buffer>(m_pParticleCounters->GetSize(), (uint8_t*)&counters);
         m_pParticleCounters->CopyBack(buf1);
-        id = m_pFence->Signal();
-        m_pFence->Wait(id);
-
         m_iRenderCountThisFrame = counters.render_count;
+        GpuSyncFence();
+        
         SEEK_RETIF_FAIL(this->PreSortParticles());
-        id = m_pFence->Signal();
-        m_pFence->Wait(id);
+        GpuSyncFence();
 
         SEEK_RETIF_FAIL(this->SortParticles());
-        id = m_pFence->Signal();
-        m_pFence->Wait(id);
+        GpuSyncFence();
     }
     m_iPreSimIndex  = 1 - m_iPreSimIndex;
     m_iPostSimIndex = 1 - m_iPostSimIndex;
@@ -723,6 +717,11 @@ void ParticleComponent::SelectDebugInfo()
     m_pParticleSortIndices->CopyBack(buf9);
 
     buf1 = buf1;
+}
+void ParticleComponent::GpuSyncFence()
+{
+    uint64_t id = m_pFence->Signal();
+    m_pFence->Wait(id);
 }
 SEEK_NAMESPACE_END
 

@@ -124,6 +124,7 @@ private:
     SResult FillSimulateParam(void* param, float delta_time); // ParticleSimulateParam*
 
     void SelectDebugInfo();
+    void GpuSyncFence();
     
 protected:
     RHIRenderBufferPtr m_pParticleAliveIndicesParam = nullptr;

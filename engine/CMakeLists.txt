@@ -106,6 +106,8 @@ set(ENGINE_CODE
     # d3d11_rhi
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_adapter.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_adapter.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_fence.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_fence.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_framebuffer.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_framebuffer.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_mesh.h
