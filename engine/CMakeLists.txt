@@ -138,6 +138,10 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_window.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_window.cpp
 
+    # d3d12 rhi
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_rhi_context.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_rhi_context.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_rhi_context_factory.cpp
 
     # vulkan rhi
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan_rhi/vulkan_rhi.h

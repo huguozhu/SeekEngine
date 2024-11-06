@@ -20,19 +20,24 @@ SEEK_NAMESPACE_BEGIN
 extern "C"
 {
     void MakeD3D11RHIContext(Context* context, RHIContextPtrUnique& out);
+    void MakeD3D12RHIContext(Context* context, RHIContextPtrUnique& out);
     void MakeVulkanRHIContext(Context* context, RHIContextPtrUnique& out);
 }
 
 Context::Context()
 {
     m_InitInfo.multi_thread = false;
+    m_InitInfo.rhi_type = RHIType::D3D12;
 }
 Context::~Context()
 {
 }
 SResult Context::InitRHIContext()
 {
-    MakeD3D11RHIContext(this, m_pRHIContext);
+    if (m_InitInfo.rhi_type == RHIType::D3D11)
+        MakeD3D11RHIContext(this, m_pRHIContext);
+    else if (m_InitInfo.rhi_type == RHIType::D3D12)
+        MakeD3D12RHIContext(this, m_pRHIContext);
     SResult ret = m_pRHIContext->Init();
     if (SEEK_CHECKFAILED(ret))
     {
@@ -75,6 +80,16 @@ SResult Context::Init(const RenderInitInfo& init_info)
         }
 
         ret = this->InitRHIContext();
+		{
+			// to delete after testing
+	        RHIContext& rc = this->RHIContextInstance();
+	        rc.Init();
+	        if (init_info.native_wnd)
+	        {
+	            rc.AttachNativeWindow("", init_info.native_wnd);
+	            rc.SetFinalRHIFrameBuffer(rc.GetScreenRHIFrameBuffer());
+	        }
+		}
         if (SEEK_CHECKFAILED(ret))
             break;
         if (!m_pResourceManager)
