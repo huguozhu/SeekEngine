@@ -48,7 +48,6 @@ struct RenderInitInfo
     //AntiAliasingMode        anti_aliasing_mode = AntiAliasingMode::None;
 };
 
-class CommandBuffer;
 class Context
 {
 public:
@@ -93,6 +92,9 @@ public:
     const RHITexturePtr& GetIBLSpecularTexture() { return m_pIBLSpecularTex; }
     const RHITexturePtr& GetIBLBrdfTex() { return m_pIBLBrdfTex; }
     bool HasPrecomputedIBL() { return m_pIBLDiffuseTex && m_pIBLSpecularTex && m_pIBLBrdfTex; }
+
+private:
+    SResult InitRHIContext();
 
 private:
     RenderInitInfo              m_InitInfo{};

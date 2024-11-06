@@ -30,49 +30,90 @@ Context::Context()
 Context::~Context()
 {
 }
-
-SResult Context::Init(const RenderInitInfo& init_info)
+SResult Context::InitRHIContext()
 {
-    if (!m_pThreadManager && m_InitInfo.multi_thread)
+    MakeD3D11RHIContext(this, m_pRHIContext);
+    SResult ret = m_pRHIContext->Init();
+    if (SEEK_CHECKFAILED(ret))
     {
-        m_pThreadManager = MakeUniquePtrMacro(ThreadManager, this);
-        m_pThreadManager->Init();
+        LOG_ERROR("m_pRHIContext->Init() error, ret:0X%X", ret);
+        m_pRHIContext.reset();
+        return ret;
     }
-    if (!m_pRHIContext)
+
+    CapabilitySet const& cap = m_pRHIContext->GetCapabilitySet();
+    /// Set sampleCount
+    uint32_t num_samples = Math::Min<uint32_t>(m_InitInfo.num_samples, CAP_MAX_TEXTURE_SAMPLE_COUNT);
+    if (!cap.TextureSampleCountSupport[num_samples])
     {
-        MakeD3D11RHIContext(this, m_pRHIContext); 
+        for (; num_samples > 0; num_samples--)
+        {
+            if (cap.TextureSampleCountSupport[num_samples]) break;
+        }
+        if (num_samples < 1) num_samples = 1;
+        LOG_INFO("Not support TextureSampleCount %d, set to %d", m_InitInfo.num_samples, num_samples);
+        m_InitInfo.num_samples = num_samples;
     }
-    if (!m_pSceneManager)
+    return S_Success;
+}
+SResult Context::Init(const RenderInitInfo& init_info)
+{    
+    SResult ret = S_Success;
+    do
     {
-        m_pSceneManager = MakeUniquePtrMacro(SceneManager, this);
-    }
-    if (!m_pResourceManager)
-    {
-        m_pResourceManager = MakeUniquePtrMacro(ResourceManager, this);
-    }
-    if (!m_pRendererCommandManager)
-    {
-        m_pRendererCommandManager = MakeUniquePtrMacro(RendererCommandManager, this);
-        m_pRendererCommandManager->InitRenderer(init_info.native_wnd);
-    }
-    if (!m_pSceneRenderer)
-    {
+        if (!m_pThreadManager && m_InitInfo.multi_thread)
+        {
+            m_pThreadManager = MakeUniquePtrMacro(ThreadManager, this);
+            ret = m_pThreadManager->Init();
+            if (SEEK_CHECKFAILED(ret))
+                break;
+        }
+        if (!m_pRendererCommandManager)
+        {
+            m_pRendererCommandManager = MakeUniquePtrMacro(RendererCommandManager, this);
+            //m_pRendererCommandManager->InitRenderer(init_info.native_wnd);
+        }
+
+        ret = this->InitRHIContext();
+        if (SEEK_CHECKFAILED(ret))
+            break;
+        if (!m_pResourceManager)
+        {
+            m_pResourceManager = MakeUniquePtrMacro(ResourceManager, this);
+        }
+        if (!m_pSceneManager)
+        {
+            m_pSceneManager = MakeUniquePtrMacro(SceneManager, this);
+        }
+        
+        
+        if (!m_pSceneRenderer)
         {
             m_pSceneRenderer = MakeUniquePtrMacro(ForwardShadingRenderer, this);
+            ret = m_pSceneRenderer->Init();
+            if (SEEK_CHECKFAILED(ret))
+                break;
         }
-    }
+        if (!m_pEffect)
+        {
+            m_pEffect = MakeUniquePtr<Effect>(this);
+            m_pRendererCommandManager->InitEffect(m_pEffect.get());
+        }
+        return S_Success;
+    } while (0);
 
-    if (!m_pEffect)
-    {
-        m_pEffect = MakeUniquePtr<Effect>(this);
-        m_pRendererCommandManager->InitEffect(m_pEffect.get());
-    }
-
-    return S_Success;
+    this->Uninit();
+    return ret;
 }
 void Context::Uninit()
 {
     m_pThreadManager.reset();
+    m_pRHIContext.reset();
+    m_pSceneManager.reset();
+    m_pSceneRenderer.reset();
+    m_pResourceManager.reset();
+    m_pRendererCommandManager.reset();
+    m_pEffect.reset();
 }
 void Context::SetViewport(Viewport vp)
 {
@@ -97,8 +138,9 @@ SResult Context::Update()
     m_dCurTime = cur_time;
     m_dDeltaTime = m_dCurTime - last_time;
 
+
     SEEK_RETIF_FAIL(this->BeginRender());
-    SEEK_RETIF_FAIL(SceneManagerInstance().Tick((float)m_dDeltaTime));
+	SEEK_RETIF_FAIL(SceneManagerInstance().Tick((float)m_dDeltaTime));
     if (m_InitInfo.multi_thread == false)
         SEEK_RETIF_FAIL(this->RenderFrame());
     SEEK_RETIF_FAIL(this->EndRender());
@@ -146,7 +188,6 @@ SResult Context::RenderFrame()
                 break;
         }
     }
-
 
     m_FrameCount++;
     return S_Success;
