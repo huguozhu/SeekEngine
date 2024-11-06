@@ -132,7 +132,10 @@ SResult Context::Update()
     double last_time = m_dCurTime;
     float cur_time = m_pTimer->CurrentTimeSinceEpoch_S();
     float time_interval = cur_time - last_time;
-    if (time_interval < 0.033)
+    float  limit_time = 0.0;
+    if (m_InitInfo.fps_limit_type == FPSLimit::FPS_30) limit_time = 0.033f;
+    if (m_InitInfo.fps_limit_type == FPSLimit::FPS_60) limit_time = 0.0167f;
+    if (time_interval < limit_time)
         return S_Success;
 
     m_dCurTime = cur_time;

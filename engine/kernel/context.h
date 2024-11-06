@@ -28,6 +28,13 @@ enum class LightingMode
 };
 static const float PBR_INTENSITY_COEFF = 120000.0f;
 
+enum class FPSLimit
+{
+    NoLImit,
+    FPS_30,
+    FPS_60,
+};
+
 struct RenderInitInfo
 {
     bool                    debug = false;
@@ -46,6 +53,7 @@ struct RenderInitInfo
     bool                    enable_ambient_occlusion = false;
     bool                    enable_capture = false;
     //AntiAliasingMode        anti_aliasing_mode = AntiAliasingMode::None;
+    FPSLimit                fps_limit_type = FPSLimit::FPS_60;
 };
 
 class Context
@@ -116,7 +124,7 @@ private:
     double                      m_dDeltaTime = 0.0;
 
 
-    float4                      m_fClearColor = float4(1.0f, 1.0f, 0.0f, 1.0f);
+    float4                      m_fClearColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
     Viewport                    m_sViewport;
     bool                        m_bViewportChanged = false;
 
