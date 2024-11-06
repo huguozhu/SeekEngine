@@ -116,7 +116,6 @@ private:
     SResult EmitParticles();
     SResult SimulateParticles(float delta_time);
     SResult CullingParticles();
-    SResult PreSortParticles();
     SResult SortParticles();
 
     float3 GetCurEmitPos();
@@ -176,7 +175,6 @@ protected:
     uint32_t        m_iPreSimIndex = 0;
     uint32_t        m_iPostSimIndex = 1;
 
-    uint32_t        m_iRenderCountThisFrame = 0;
     bool            m_bToCallInitParticles = false;
     bool            m_bInit = false;
     float           m_fTickDeltaTime = 0.0f;

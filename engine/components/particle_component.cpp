@@ -386,21 +386,23 @@ SResult ParticleComponent::CullingParticles()
     m_pTechParticleCulling->DispatchIndirect(m_pParticleDispatchSimulateIndirectArgs);
     return S_Success;
 }
-SResult ParticleComponent::PreSortParticles()
-{    
-    m_pTechParticlePreSort->Dispatch((m_iRenderCountThisFrame + BITONIC_BLOCK_SIZE - 1) / BITONIC_BLOCK_SIZE, 1, 1);
-    return S_Success;
-}
 SResult ParticleComponent::SortParticles()
 {
+    ParticleCounters counters = { 0 };
+    BufferPtr buf1 = MakeSharedPtr<Buffer>(m_pParticleCounters->GetSize(), (uint8_t*)&counters);
+    m_pParticleCounters->CopyBack(buf1);
+
+    // PreSort
+    m_pTechParticlePreSort->Dispatch((counters.render_count + BITONIC_BLOCK_SIZE - 1) / BITONIC_BLOCK_SIZE, 1, 1);
+
     // sort level <= BITONIC_BLOCK_SIZE
-    uint size = to2power(m_iRenderCountThisFrame);
+    uint size = to2power(counters.render_count);
     for (uint32_t level = 2; level <= size && level <= BITONIC_BLOCK_SIZE; level *= 2)
     {
         GpuSortParam param{ level, level, 0, 0};
         m_pParticleSortParam->Update(&param, sizeof(GpuSortParam));        
 
-        uint32_t dispatch_x = (m_iRenderCountThisFrame + BITONIC_BLOCK_SIZE - 1) / BITONIC_BLOCK_SIZE;
+        uint32_t dispatch_x = (counters.render_count + BITONIC_BLOCK_SIZE - 1) / BITONIC_BLOCK_SIZE;
         m_pTechParticleBitonicSort->Dispatch(dispatch_x, 1, 1);
     }
 
@@ -593,15 +595,6 @@ SResult ParticleComponent::Tick_GPU(float delta_time)
 
     if (m_Param.particle_tex)
     {
-        ParticleCounters counters = { 0 };
-        BufferPtr buf1 = MakeSharedPtr<Buffer>(m_pParticleCounters->GetSize(), (uint8_t*)&counters);
-        m_pParticleCounters->CopyBack(buf1);
-        m_iRenderCountThisFrame = counters.render_count;
-        
-        SEEK_RETIF_FAIL(this->PreSortParticles());
-        if (1) this->SelectDebugInfo();
-        //GpuSyncFence();
-
         SEEK_RETIF_FAIL(this->SortParticles());
         if (1) this->SelectDebugInfo();
         //GpuSyncFence();
