@@ -18,11 +18,15 @@ int APP_RUN(AppFramework* app)
 
 SResult AppFramework::InitContext(int width, int height, void* device, void* native_wnd)
 {
-    m_pContext = MakeSharedPtr<Context>();
-
     RenderInitInfo info;
+    info.debug = false;
     info.device = device;
     info.native_wnd = native_wnd;    
+    info.lighting_mode = LightingMode::Phong;
+    info.preferred_adapter = 0;
+    info.HDR = false;
+
+    m_pContext = MakeSharedPtr<Context>();
     SEEK_RETIF_FAIL(m_pContext->Init(info));
     return S_Success;
 }
@@ -94,6 +98,9 @@ SResult AppFramework::Run()
         SEEK_RETIF_FAIL(this->OnCreate());
         m_bInit = true;
     }
+
+    m_pContext->RHIContextInstance().AttachNativeWindow("", wnd);
+    m_pContext->RHIContextInstance().SetFinalRHIFrameBuffer(m_pContext->RHIContextInstance().GetScreenRHIFrameBuffer());
     m_pContext->SetViewport(Viewport(0, 0, DEFAULT_WND_WIDTH, DEFAULT_WND_HEIGHT));
 
     bool get_msg = false;

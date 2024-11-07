@@ -15,10 +15,10 @@ enum class RHIType
 {
     Unknown,
     D3D11,
-    D3D12,
-    Vulkan,
-    Metal,
-    GLES,
+    D3D12,      // not supported fully
+    Vulkan,     // not supported fully
+    Metal,      // not supported yet
+    GLES,       // not supported yet
 };
 
 enum class LightingMode

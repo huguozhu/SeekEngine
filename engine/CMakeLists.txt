@@ -144,9 +144,9 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_rhi_context_factory.cpp
 
     # vulkan rhi
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan_rhi/vulkan_rhi.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan_rhi/vulkan_rhi.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan_rhi/vulkan_rhi_factory.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan_rhi/vulkan_rhi_context.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan_rhi/vulkan_rhi_context.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan_rhi/vulkan_rhi_context_factory.cpp
 
     # resource
     ${SEEK_ENGINE_SOURCE_DIR}/resource/resource_mgr.h
