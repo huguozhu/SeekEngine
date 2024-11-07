@@ -1,0 +1,49 @@
+//STAGE:ps
+#include "Common.dsh"
+
+Texture2D src_rgba;
+#define WaterMarkType_Single 0
+#define WaterMarkType_Repeat 1
+
+struct WaterMarkDesc
+{
+	int src_width;
+	int src_height;
+	int dst_width;
+	int dst_height;
+	
+    float radian;
+    int normal_x;
+    int normal_y;
+    float transparent;
+    int watermark_type; 
+}; 
+
+
+cbuffer waterMarkDesc
+{
+    WaterMarkDesc desc;
+};
+
+
+
+float4 main(in float2 iTc : TEXCOORD) : SV_Target
+{
+    float2 p = iTc - float2(0.5, 0.5);
+    float2 dst_tc;
+    dst_tc.x = cos(-desc.radian) * p.x;
+    dst_tc.y = sin(-desc.radian) * p.y;
+    dst_tc = dst_tc + float2(0.5, 0.5); 
+    if (WaterMarkType_Repeat == desc.watermark_type)
+    {
+        // step1:
+        
+
+        // step2:
+
+
+        // step3:
+        
+    }
+    return src_rgba.Sample(linear_sampler, dst_tc);
+}

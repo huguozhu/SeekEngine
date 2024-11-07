@@ -36,7 +36,7 @@ static decltype(&::DXGIGetDebugInterface1) DXGIGetDebugInterface1 = nullptr;
 static DllLoader __d3d11DllLoader("d3d11.dll");
 static decltype(&::D3D11CreateDevice) D3D11CreateDevice = nullptr;
 
-const char* GetD3DFeatureLevelStr(D3D_FEATURE_LEVEL feature_level)
+const char* GetD3D11FeatureLevelStr(D3D_FEATURE_LEVEL feature_level)
 {
     switch (feature_level)
     {
@@ -310,7 +310,7 @@ SResult D3D11RHIContext::Init()
             LOG_ERROR("D3D11CreateDevice Error, hr:%x", hr);
             break;
         }
-        LOG_INFO("device supported feature level %s", GetD3DFeatureLevelStr(out_feature_level));
+        LOG_INFO("device supported feature level %s", GetD3D11FeatureLevelStr(out_feature_level));
 
         //if (auto dxgi_device = pDevice.try_as<IDXGIDevice2>())
         //ComPtr<IDXGIDevice1> dxgi_device = nullptr;
