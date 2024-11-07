@@ -17,7 +17,7 @@
 
 SEEK_NAMESPACE_BEGIN
 
-extern "C"
+extern "C" 
 {
     void MakeD3D11RHIContext(Context* context, RHIContextPtrUnique& out);
     void MakeD3D12RHIContext(Context* context, RHIContextPtrUnique& out);
