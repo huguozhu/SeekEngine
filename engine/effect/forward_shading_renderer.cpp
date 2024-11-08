@@ -18,6 +18,8 @@
 #include "scene_manager/scene_manager.h"
 #include <algorithm>
 
+#include "shader/shared/WaterMark.h"
+
 #define SEEK_MACRO_FILE_UID 31     // this code is auto generated, don't touch it!!!
 
 SEEK_NAMESPACE_BEGIN
@@ -26,7 +28,12 @@ ForwardShadingRenderer::ForwardShadingRenderer(Context* context)
     : SceneRenderer(context)
 {
     m_eRendererType = RendererType::Forward;
-    m_pRenderSceneFB = m_pContext->RHIContextInstance().CreateEmptyRHIFrameBuffer();
+    m_pRenderSceneFB = m_pContext->RHIContextInstance().CreateEmptyRHIFrameBuffer();    
+
+    m_pWatermarkPostProcess = MakeSharedPtr<PostProcess>(m_pContext, "WaterMartk");
+    m_pWatermarkPostProcess->Init("WaterMark");
+    m_pWatermarkCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(sizeof(WaterMarkDesc), RESOURCE_FLAG_CPU_WRITE);    
+    m_pWatermarkPostProcess->SetParam("waterMarkDesc", m_pWatermarkCBuffer);
 }
 
 SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Technique** tech)
@@ -111,7 +118,7 @@ SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tech
     return *tech ? S_Success : ERR_INVALID_SHADER;
 }
 SResult ForwardShadingRenderer::Init()
-{
+{    
     return SceneRenderer::Init();
 }
 SResult ForwardShadingRenderer::BuildRenderJobList()
@@ -143,6 +150,8 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
     
     if (m_pContext->IsHDR())
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::ToneMappingJob, this)));
+    if (m_pContext->EnableWaterWark())
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::WatermarkJob, this)));
 
     // the last job should be FinishJob()
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::FinishJob, this)));
@@ -257,7 +266,7 @@ SResult ForwardShadingRenderer::PrepareFrameBuffer()
     }
     
     m_pRenderSceneFB->Reset();
-    
+
     // TODO: need a better solution to handle the intermediate resources
     RHIContext& rc = m_pContext->RHIContextInstance();
     if (m_pContext->IsHDR())
@@ -304,12 +313,42 @@ SResult ForwardShadingRenderer::PrepareFrameBuffer()
         const RHIFrameBuffer* finalFB = rc.GetFinalRHIFrameBuffer().get();
         m_pToneMappingPostProcess->SetOutput(0, finalFB->GetRenderTarget(RHIFrameBuffer::Attachment::Color0));
         m_pToneMappingPostProcess->GetFrameBuffer()->SetViewport(m_RenderViewport);
-    }
+    }     
     else
     {
+
+        RHITexture::Desc desc;
+        if (!m_pRenderSceneColorTex)
+        {
+            PixelFormat pf = PixelFormat::R8G8B8A8_UNORM;
+            desc.type = TextureType::Tex2D;
+            desc.width = m_RenderViewport.width;
+            desc.height = m_RenderViewport.height;
+            desc.depth = 1;
+            desc.num_mips = 1;
+            desc.num_samples = 1;
+            desc.format = pf;
+            desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SHADER_RESOURCE;
+            m_pRenderSceneColorTex = rc.CreateTexture2D(desc);
+        }
+        if (!m_pRenderSceneDepthTex)
+        {
+            desc.format = PixelFormat::D32F;
+            desc.flags = RESOURCE_FLAG_RENDER_TARGET;
+            m_pRenderSceneDepthTex = rc.CreateTexture2D(desc);
+        }
+        m_pRenderSceneFB->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pRenderSceneColorTex));
+        m_pRenderSceneFB->AttachDepthStencilView(rc.CreateDepthStencilView(m_pRenderSceneDepthTex));
+
+
+        m_pWatermarkPostProcess->SetParam("src_rgba", m_pRenderSceneColorTex);
+        WaterMarkDesc wm_desc = { 0 };
+        wm_desc.radian = Math::PI / 4;
+        m_pWatermarkCBuffer->Update(&wm_desc,sizeof(wm_desc));
+
         const RHIFrameBuffer* finalFB = rc.GetFinalRHIFrameBuffer().get();
-        m_pRenderSceneFB->AttachTargetView(RHIFrameBuffer::Attachment::Color0, finalFB->GetRenderTarget(RHIFrameBuffer::Attachment::Color0));
-        m_pRenderSceneFB->AttachDepthStencilView(finalFB->GetDepthStencilView());
+        m_pWatermarkPostProcess->SetOutput(0, finalFB->GetRenderTarget(RHIFrameBuffer::Attachment::Color0));
+        m_pWatermarkPostProcess->GetFrameBuffer()->SetViewport(m_RenderViewport);
     }
     
     m_pRenderSceneFB->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, { m_pContext->GetClearColor() });

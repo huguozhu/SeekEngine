@@ -58,6 +58,16 @@ RendererReturnValue SceneRenderer::ToneMappingJob()
 
     return RRV_NextJob;
 }
+RendererReturnValue SceneRenderer::WatermarkJob()
+{
+    m_eCurRenderStage = RenderStage::None;
+    RHIContext& rc = m_pContext->RHIContextInstance();
+
+    SResult ret = m_pWatermarkPostProcess->Run();
+    if (ret != S_Success)
+        LOG_ERROR_PRIERR(ret, "SceneRenderer::WatermarkJob() m_pWatermarkPostProcess->Run() failed.");
+    return RRV_NextJob;
+}
 
 RendererReturnValue SceneRenderer::FinishJob()
 {

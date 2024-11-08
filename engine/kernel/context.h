@@ -38,9 +38,11 @@ enum class FPSLimit
 struct RenderInitInfo
 {
     bool                    debug = false;
-    bool                    profile = false;
     bool                    multi_thread = true;
-    bool                    immediate_rendering_mode = false;
+    bool                    enable_watermark = true;
+    bool                    enable_transparent = false;
+    bool                    enable_ambient_occlusion = false;
+    bool                    enable_capture = false;
     RHIType                 rhi_type = RHIType::D3D11;
     bool                    HDR = false;
     uint32_t                num_samples = 1;
@@ -49,9 +51,7 @@ struct RenderInitInfo
     RendererType            renderer_type = RendererType::Forward;
     void*                   native_wnd = nullptr;
     void*                   device = nullptr;
-    bool                    enable_transparent = false;
-    bool                    enable_ambient_occlusion = false;
-    bool                    enable_capture = false;
+
     //AntiAliasingMode        anti_aliasing_mode = AntiAliasingMode::None;
     FPSLimit                fps_limit_type = FPSLimit::FPS_60;
 };
@@ -75,9 +75,11 @@ public:
     void                SetClearColor(float4 color) { m_fClearColor = color; }
     float4              GetClearColor() const { return m_fClearColor; }
 
-    RenderInitInfo&     GetRenderInitInfo()           { return m_InitInfo; }
     bool                IsMultiThreaded()       const { return m_InitInfo.multi_thread; }
+    bool                EnableWaterWark()       const { return m_InitInfo.enable_watermark; }
     bool                IsDebug()               const { return m_InitInfo.debug; }
+    bool                EnableTransparent()     const { return m_InitInfo.enable_transparent; }
+    bool                EnableAmbientOcclusion()const { return m_InitInfo.enable_ambient_occlusion;}    
     int32_t             GetPreferredAdapter()   const { return m_InitInfo.preferred_adapter; }
     uint32_t            GetNumSamples()         const { return m_InitInfo.num_samples; }
     bool                IsHDR()                 const { return m_InitInfo.HDR; }

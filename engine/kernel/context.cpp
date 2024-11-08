@@ -27,7 +27,7 @@ extern "C"
 Context::Context()
 {
     m_InitInfo.multi_thread = false;
-    m_InitInfo.rhi_type = RHIType::D3D12;
+    m_InitInfo.rhi_type = RHIType::D3D11;
 }
 Context::~Context()
 {
@@ -103,6 +103,11 @@ SResult Context::Init(const RenderInitInfo& init_info)
             m_pSceneManager = MakeUniquePtrMacro(SceneManager, this);
         }
         
+        if (!m_pEffect)
+        {
+            m_pEffect = MakeUniquePtr<Effect>(this);
+            m_pRendererCommandManager->InitEffect(m_pEffect.get());
+        }
         
         if (!m_pSceneRenderer)
         {
@@ -111,11 +116,7 @@ SResult Context::Init(const RenderInitInfo& init_info)
             if (SEEK_CHECKFAILED(ret))
                 break;
         }
-        if (!m_pEffect)
-        {
-            m_pEffect = MakeUniquePtr<Effect>(this);
-            m_pRendererCommandManager->InitEffect(m_pEffect.get());
-        }
+        
         return S_Success;
     } while (0);
 

@@ -50,6 +50,7 @@ public:
     RendererReturnValue     DoRenderJob();
 
     RendererReturnValue     ToneMappingJob();
+    RendererReturnValue     WatermarkJob();
     RendererReturnValue     FinishJob();
 
     RendererType            GetRendererType() { return m_eRendererType; }
@@ -82,6 +83,8 @@ protected:
 
     // ToneMapping
     PostProcessPtr                                  m_pToneMappingPostProcess = nullptr;
+    PostProcessPtr                                  m_pWatermarkPostProcess = nullptr;
+    RHIRenderBufferPtr                              m_pWatermarkCBuffer = nullptr;
     
     //Viewport m_viewport;
     bool m_bRenderSizeChanged = false;

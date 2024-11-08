@@ -7,6 +7,7 @@ set(shader_shared_files
     ${SEEK_SHADER_SOURCE_DIR}/shared/common.h
     ${SEEK_SHADER_SOURCE_DIR}/shared/ParticleCommon.h
     ${SEEK_SHADER_SOURCE_DIR}/shared/SkyBox.h
+    ${SEEK_SHADER_SOURCE_DIR}/shared/WaterMark.h
 )
 
 set(shader_header_files
@@ -31,6 +32,7 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/ToneMappingPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/SkyBoxVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/SkyBoxPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/WaterMarkPS.dsf
 
     ${SEEK_SHADER_SOURCE_DIR}/ParticleInitCS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/ParticleTickBeginCS.dsf

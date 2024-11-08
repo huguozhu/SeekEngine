@@ -209,7 +209,7 @@ void MeshComponent::FillMaterialParam(Technique* tech, RHIMeshPtr& pMesh)
 
         int32_t has_tex_metallic_roughness = pMaterial->metallic_roughness_tex ? 1 : 0;
 
-        if (!m_pContext->GetRenderInitInfo().enable_ambient_occlusion)
+        if (!m_pContext->EnableAmbientOcclusion())
             has_tex_occlusion = 0;
 
         materialInfo.hasBasicTex = int4{ has_tex_albedo, has_tex_normal, has_tex_occlusion, has_tex_emissive };

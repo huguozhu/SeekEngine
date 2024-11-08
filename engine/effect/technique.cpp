@@ -318,7 +318,7 @@ SResult Technique::Render(RHIMeshPtr const& mesh)
 {
     RHIContext& rc = m_pContext->RHIContextInstance();
     RHIRenderStatePtr state;
-    if (m_pContext->GetRenderInitInfo().enable_transparent && mesh->GetMaterial() && mesh->GetMaterial()->alpha_mode != AlphaMode::Opaque)
+    if (m_pContext->EnableTransparent() && mesh->GetMaterial() && mesh->GetMaterial()->alpha_mode != AlphaMode::Opaque)
     {
         if (!m_RenderStateForTransparent)
         {
