@@ -1,6 +1,7 @@
 #include "effect/scene_renderer.h"
 #include "effect/effect.h"
 #include "effect/postprocess.h"
+#include "effect/watermark_postprocess.h"
 #include "components/camera_component.h"
 #include "components/light_component.h"
 #include "math/matrix.h"

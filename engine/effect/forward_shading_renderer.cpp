@@ -1,6 +1,7 @@
 #include "effect/forward_shading_renderer.h"
 #include "effect/technique.h"
 #include "effect/postprocess.h"
+#include "effect/watermark_postprocess.h"
 #include "effect/effect.h"
 #include "kernel/context.h"
 #include "rhi/base/rhi_context.h"
@@ -30,10 +31,9 @@ ForwardShadingRenderer::ForwardShadingRenderer(Context* context)
     m_eRendererType = RendererType::Forward;
     m_pRenderSceneFB = m_pContext->RHIContextInstance().CreateEmptyRHIFrameBuffer();    
 
-    m_pWatermarkPostProcess = MakeSharedPtr<PostProcess>(m_pContext, "WaterMartk");
-    m_pWatermarkPostProcess->Init("WaterMark");
-    m_pWatermarkCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(sizeof(WaterMarkDesc), RESOURCE_FLAG_CPU_WRITE);    
-    m_pWatermarkPostProcess->SetParam("waterMarkDesc", m_pWatermarkCBuffer);
+    m_pWatermarkPostProcess = MakeSharedPtr<WaterMarkPostProcess>(m_pContext);
+    m_pWatermarkPostProcess->Init();
+    
 }
 
 SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Technique** tech)
@@ -339,13 +339,16 @@ SResult ForwardShadingRenderer::PrepareFrameBuffer()
         }
         m_pRenderSceneFB->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pRenderSceneColorTex));
         m_pRenderSceneFB->AttachDepthStencilView(rc.CreateDepthStencilView(m_pRenderSceneDepthTex));
-
-
-        m_pWatermarkPostProcess->SetParam("src_rgba", m_pRenderSceneColorTex);
+        
+        m_pWatermarkPostProcess->SetSrcTex(m_pRenderSceneColorTex);
         WaterMarkDesc wm_desc = { 0 };
         wm_desc.radian = Math::PI / 4;
-        m_pWatermarkCBuffer->Update(&wm_desc,sizeof(wm_desc));
+        wm_desc.src_width = m_pRenderSceneColorTex->Width();
+        wm_desc.src_height = m_pRenderSceneColorTex->Height();
+        wm_desc.dst_width = m_RenderViewport.width;
+        wm_desc.dst_height = m_RenderViewport.height;
 
+        m_pWatermarkPostProcess->SetWaterMarkDesc(wm_desc);
         const RHIFrameBuffer* finalFB = rc.GetFinalRHIFrameBuffer().get();
         m_pWatermarkPostProcess->SetOutput(0, finalFB->GetRenderTarget(RHIFrameBuffer::Attachment::Color0));
         m_pWatermarkPostProcess->GetFrameBuffer()->SetViewport(m_RenderViewport);

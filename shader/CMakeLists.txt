@@ -33,6 +33,7 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/SkyBoxVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/SkyBoxPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/WaterMarkPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/WaterMarkVS.dsf
 
     ${SEEK_SHADER_SOURCE_DIR}/ParticleInitCS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/ParticleTickBeginCS.dsf

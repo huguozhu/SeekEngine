@@ -83,8 +83,8 @@ protected:
 
     // ToneMapping
     PostProcessPtr                                  m_pToneMappingPostProcess = nullptr;
-    PostProcessPtr                                  m_pWatermarkPostProcess = nullptr;
-    RHIRenderBufferPtr                              m_pWatermarkCBuffer = nullptr;
+    WaterMarkPostProcessPtr                         m_pWatermarkPostProcess = nullptr;
+    
     
     //Viewport m_viewport;
     bool m_bRenderSizeChanged = false;

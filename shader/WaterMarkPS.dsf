@@ -11,21 +11,12 @@ cbuffer waterMarkDesc
 
 float4 main(in float2 iTc : TEXCOORD) : SV_Target
 {
-    float2 p = iTc - float2(0.5, 0.5);
-    float2x2 rotate_matrix = 
-    {
-        cos(desc.radian), -sin(desc.radian),
-        sin(desc.radian), cos(desc.radian)
-    };
-    p = mul(rotate_matrix, p);
-    p += float2(0.5, 0.5);
-
     if (WaterMarkType_Repeat == desc.watermark_type)
     {
         // step1:
         // step2:
         // step3:
     }
-    float4 src = src_rgba.Sample(linear_sampler, p);
+    float4 src = src_rgba.Sample(linear_sampler, iTc);
     return src;// * 0.5 + (1.0, iTc.x, 0.0, 0.2) * 0.5;
 }

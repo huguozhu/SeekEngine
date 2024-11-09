@@ -10,7 +10,7 @@
 SEEK_NAMESPACE_BEGIN
 
 
-static DllLoader __dxgiDllLoader("dxgi.dll");
+static DllLoader __dxgiDllLoader12("dxgi.dll");
 static decltype(&::CreateDXGIFactory1) CreateDXGIFactory1 = nullptr;
 static decltype(&::CreateDXGIFactory2) CreateDXGIFactory2 = nullptr;
 
@@ -60,9 +60,9 @@ SResult D3D12RHIContext::Init()
     //}
 
     do {
-        if (!__dxgiDllLoader.Load())
+        if (!__dxgiDllLoader12.Load())
         {
-            LOG_ERROR("load %s fail", __dxgiDllLoader.dllname.c_str());
+            LOG_ERROR("load %s fail", __dxgiDllLoader12.dllname.c_str());
             return ERR_NOT_SUPPORT;
         }
 
@@ -74,12 +74,17 @@ SResult D3D12RHIContext::Init()
 
         if (!CreateDXGIFactory2)
         {
-            CreateDXGIFactory2 = (decltype(CreateDXGIFactory2))__dxgiDllLoader.FindSymbol("CreateDXGIFactory2");
+            CreateDXGIFactory2 = (decltype(CreateDXGIFactory2))__dxgiDllLoader12.FindSymbol("CreateDXGIFactory2");
         }
 
-        if (!CreateDXGIFactory2 && !CreateDXGIFactory1)
+        if (!CreateDXGIFactory2)
         {
-            CreateDXGIFactory1 = (decltype(CreateDXGIFactory1))__dxgiDllLoader.FindSymbol("CreateDXGIFactory1");
+            CreateDXGIFactory2 = (decltype(CreateDXGIFactory2))__dxgiDllLoader12.FindSymbol("CreateDXGIFactory2");
+        }
+
+        if (!CreateDXGIFactory2 || !CreateDXGIFactory1)
+        {
+            CreateDXGIFactory1 = (decltype(CreateDXGIFactory1))__dxgiDllLoader12.FindSymbol("CreateDXGIFactory1");
             if (!CreateDXGIFactory1)
             {
                 LOG_ERROR("no CreateDXGIFactory1 entry point");
@@ -92,7 +97,7 @@ SResult D3D12RHIContext::Init()
 
         if (!DXGIGetDebugInterface1)
         {
-            DXGIGetDebugInterface1 = (decltype(DXGIGetDebugInterface1))__dxgiDllLoader.FindSymbol("DXGIGetDebugInterface1");
+            DXGIGetDebugInterface1 = (decltype(DXGIGetDebugInterface1))__dxgiDllLoader12.FindSymbol("DXGIGetDebugInterface1");
             if (!DXGIGetDebugInterface1)
             {
                 LOG_WARNING("no DXGIGetDebugInterface1 entry point");
@@ -101,7 +106,7 @@ SResult D3D12RHIContext::Init()
 
         if (!D3D12GetDebugInterface)
         {
-            D3D12GetDebugInterface = (decltype(D3D12GetDebugInterface))__dxgiDllLoader.FindSymbol("D3D12GetDebugInterface");
+            D3D12GetDebugInterface = (decltype(D3D12GetDebugInterface))__dxgiDllLoader12.FindSymbol("D3D12GetDebugInterface");
         }
 
 

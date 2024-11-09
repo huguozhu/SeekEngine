@@ -1,0 +1,32 @@
+//STAGE:vs
+#include "Common.dsh"
+#include "shared/WaterMark.h"
+
+cbuffer waterMarkDesc
+{
+    WaterMarkDesc desc;
+};
+
+struct VSOutput
+{
+	float2 texCoord	: TEXCOORD;
+	float4 pos		: SV_POSITION;
+};
+
+struct VSInput
+{
+	float3 posNDC	: POSITION;
+};
+
+VSOutput main(VSInput input)
+{
+	VSOutput output;
+	output.texCoord = TexCoordFromPosNDC(input.posNDC);
+	float2 pos = input.posNDC.xy * 1.414;
+	float radian = desc.radian;
+	pos = mul(float2x2(
+		cos(radian), -sin(radian),
+        sin(radian), cos(radian)), pos);
+	output.pos = float4(pos.xy, input.posNDC.z, 1.0);
+	return output;
+}

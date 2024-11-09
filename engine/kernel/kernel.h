@@ -58,6 +58,7 @@ CLASS_DECLARE(VirtualTechnique)
 CLASS_DECLARE(SceneRenderer);
 CLASS_DECLARE(EffectParam);
 CLASS_DECLARE(PostProcess);
+CLASS_DECLARE(WaterMarkPostProcess);
 CLASS_DECLARE(HDRPostProcess);
 CLASS_DECLARE(LDRPostProcess);
 
