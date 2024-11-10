@@ -316,7 +316,6 @@ SResult ForwardShadingRenderer::PrepareFrameBuffer()
     }     
     else
     {
-
         RHITexture::Desc desc;
         if (!m_pRenderSceneColorTex)
         {
@@ -347,6 +346,7 @@ SResult ForwardShadingRenderer::PrepareFrameBuffer()
         wm_desc.src_height = m_pRenderSceneColorTex->Height();
         wm_desc.dst_width = m_RenderViewport.width;
         wm_desc.dst_height = m_RenderViewport.height;
+        wm_desc.watermark_type = WaterMarkType_Single;
 
         m_pWatermarkPostProcess->SetWaterMarkDesc(wm_desc);
         const RHIFrameBuffer* finalFB = rc.GetFinalRHIFrameBuffer().get();

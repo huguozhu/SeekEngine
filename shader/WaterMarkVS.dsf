@@ -22,11 +22,7 @@ VSOutput main(VSInput input)
 {
 	VSOutput output;
 	output.texCoord = TexCoordFromPosNDC(input.posNDC);
-	float2 pos = input.posNDC.xy * 1.414;
-	float radian = desc.radian;
-	pos = mul(float2x2(
-		cos(radian), -sin(radian),
-        sin(radian), cos(radian)), pos);
+	float2 pos = input.posNDC.xy * 1.0;
 	output.pos = float4(pos.xy, input.posNDC.z, 1.0);
 	return output;
 }

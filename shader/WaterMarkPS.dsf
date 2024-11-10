@@ -11,12 +11,20 @@ cbuffer waterMarkDesc
 
 float4 main(in float2 iTc : TEXCOORD) : SV_Target
 {
-    if (WaterMarkType_Repeat == desc.watermark_type)
+    float2 tc = iTc - float2(0.5, 0.5);
+    if (WaterMarkType_Single == desc.watermark_type)
     {
+        float v = (float)desc.dst_width / (float)desc.dst_height;
+        tc.x *= v; 
+        float radian = desc.radian;
+        tc = mul(float2x2(
+		cos(radian), -sin(radian),
+        sin(radian), cos(radian)), tc);
+        tc.x /= v;
         // step1:
         // step2:
         // step3:
     }
-    float4 src = src_rgba.Sample(linear_sampler, iTc);
-    return src;// * 0.5 + (1.0, iTc.x, 0.0, 0.2) * 0.5;
+    tc += float2(0.5, 0.5);
+    return src_rgba.Sample(linear_sampler, tc);
 }
