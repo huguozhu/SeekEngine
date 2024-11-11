@@ -9,6 +9,7 @@
 #include "components/scene_component.h"
 #include "components/shape_mesh_component.h"
 #include "components/particle_component.h"
+#include "components/watermark_component.h"
 
 // effect
 #include "effect/command_buffer.h"

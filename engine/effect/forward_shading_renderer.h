@@ -16,6 +16,7 @@ public:
     // Rendering Jobs
     RendererReturnValue RenderSceneJob();
     RendererReturnValue RenderSkyBoxJob();
+    RendererReturnValue WatermarkJob();
     RendererReturnValue RenderParticlesJob();
 
     SResult PrepareFrameBuffer();

@@ -169,6 +169,7 @@ struct RenderStateDesc
     static const RenderStateDesc& PostProcess();
     static const RenderStateDesc& Skybox();
     static const RenderStateDesc& Particle();
+    static const RenderStateDesc& WaterMark();
 
 
     size_t   Hash() const;

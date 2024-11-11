@@ -6,7 +6,39 @@
 
 #define DEFAULT_RENDER_WIDTH  1280
 #define DEFAULT_RENDER_HEIGHT 720
+void Particles::CreateWaterMarkEntity()
+{
+    m_pWaterMarkEntity = MakeSharedPtr<Entity>(m_pContext.get(), "WaterMarkEntity");
+    WaterMarkComponentPtr pWatermark = MakeSharedPtr<WaterMarkComponent>(m_pContext.get());
+    m_pWaterMarkEntity->AddSceneComponent(pWatermark);
+    m_pWaterMarkEntity->AddToTopScene();
 
+    RHITexturePtr watermark_tex = nullptr;
+    std::string bmp_path = FullPath("02.Particles/nine_birds_3x3.png");
+    BitmapBufferPtr bmp_bitmap = ImageDecodeFromFile(bmp_path, ImageType::PNG);
+    if (bmp_bitmap)
+    {
+        RHITexture::Desc desc;
+        desc.width = bmp_bitmap->Width();
+        desc.height = bmp_bitmap->Height();
+        desc.type = TextureType::Tex2D;
+        desc.format = bmp_bitmap->Format();
+        desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_CPU_WRITE;
+        watermark_tex = m_pContext->RendererCommandManagerInstance().CreateTexture2D(desc, bmp_bitmap.get());
+    }
+    if (watermark_tex)
+    {
+        pWatermark->SetWaterMarkTex(watermark_tex);
+        WaterMarkDesc desc = { 0 };
+        desc.src_width = watermark_tex->Width();
+        desc.src_height = watermark_tex->Height();
+        desc.radian = Math::PI * 0.25;
+        desc.normal_x = 0;
+        desc.normal_y = 0;
+        desc.watermark_type = WaterMarkType_Single;
+        pWatermark->SetWaterMarkDesc(desc);
+    }
+}
 void Particles::CreateParticleEntities()
 {
     const uint32_t file_index = 3;
@@ -180,7 +212,7 @@ void Particles::CreateParticleEntities()
         }
 
 
-        EntityPtr pParticleEntity = MakeSharedPtr<Entity>(m_pContext.get());
+        EntityPtr pParticleEntity = MakeSharedPtr<Entity>(m_pContext.get(), "ParticleEntity");
         ParticleComponentPtr pParticle = MakeSharedPtr<ParticleComponent>(m_pContext.get(), params[i]);
         pParticle->Play();
         m_pParticleComponentList.push_back(pParticle);
@@ -192,7 +224,7 @@ void Particles::CreateParticleEntities()
 }
 SResult Particles::OnCreate()
 {
-    m_pCameraEntity = MakeSharedPtr<Entity>(m_pContext.get());
+    m_pCameraEntity = MakeSharedPtr<Entity>(m_pContext.get(), "CameraEntity");
     CameraComponentPtr pCam = MakeSharedPtr<CameraComponent>(m_pContext.get());
     pCam->ProjPerspectiveParams(Math::PI / 4, DEFAULT_RENDER_WIDTH * 1.0f / DEFAULT_RENDER_HEIGHT, 0.1f, 1000.0f);
     pCam->SetLookAt(float3(0, 0, -5), float3(0, 0, 0), float3(0, 1, 0));
@@ -200,6 +232,7 @@ SResult Particles::OnCreate()
     m_pCameraEntity->AddToTopScene();
 
     CreateParticleEntities();
+    CreateWaterMarkEntity();
     return S_Success;
 }
 

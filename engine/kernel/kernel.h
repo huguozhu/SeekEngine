@@ -58,7 +58,6 @@ CLASS_DECLARE(VirtualTechnique)
 CLASS_DECLARE(SceneRenderer);
 CLASS_DECLARE(EffectParam);
 CLASS_DECLARE(PostProcess);
-CLASS_DECLARE(WaterMarkPostProcess);
 CLASS_DECLARE(HDRPostProcess);
 CLASS_DECLARE(LDRPostProcess);
 
@@ -83,6 +82,7 @@ CLASS_DECLARE(SphereMeshComponent);
 CLASS_DECLARE(ConeMeshComponent);
 CLASS_DECLARE(TerrainMeshComponent);
 CLASS_DECLARE(PlaneMeshComponent);
+CLASS_DECLARE(WaterMarkComponent);
 
 CLASS_DECLARE(KeyFrame);
 CLASS_DECLARE(TransformKeyFrame);

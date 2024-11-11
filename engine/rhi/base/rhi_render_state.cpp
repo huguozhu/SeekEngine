@@ -106,8 +106,26 @@ const RenderStateDesc& RenderStateDesc::Particle()
 
         rb.eSrcBlendAlpha = BlendFactor::DstAlpha;
         rb.eDstBlendAlpha = BlendFactor::One;
+    }    
+    return desc;
+}
+const RenderStateDesc& RenderStateDesc::WaterMark()
+{
+    static RenderStateDesc desc;
+    desc.rasterizer.eCullMode = CullMode::None;
+    desc.depthStencil.bDepthEnable = false;
+    desc.depthStencil.bDepthWriteMask = false;
+
+    desc.blend.bIndependentBlendEnable = false;
+    for (auto& rb : desc.blend.stTargetBlend)
+    {
+        rb.bBlendEnable = true;
+        rb.eSrcBlendColor = BlendFactor::SrcAlpha;
+        rb.eDstBlendColor = BlendFactor::InvSrcAlpha;
+
+        rb.eSrcBlendAlpha = BlendFactor::DstAlpha;
+        rb.eDstBlendAlpha = BlendFactor::One;
     }
-    
     return desc;
 }
 //////////////////////////////////////////////////////////////////////////

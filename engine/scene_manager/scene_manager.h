@@ -36,9 +36,10 @@ public:
     size_t                              NumLightComponent() const { return m_vLightList.size(); }
     LightComponent*                     GetLightComponentByIndex(size_t index);
 
-
     SkyBoxComponent*                    GetSkyBoxComponent() { return m_pSkyBoxComponent;}
     std::vector<ParticleComponent*>&    GetParticleComponents() { return m_vParticleComponents; }
+    std::vector<WaterMarkComponent*>&   GetWaterMarkComponents() { return m_vWaterMarkComponents; }
+
     virtual SResult                     Tick(float delta_time);
 
     Rect<uint32_t>                      GetRenderRect() const { return m_RenderRect; }
@@ -103,6 +104,7 @@ protected:
     std::vector<LightComponent*>                        m_vLightList;
     SkyBoxComponent*                                    m_pSkyBoxComponent = nullptr;
     std::vector<ParticleComponent*>                     m_vParticleComponents;
+    std::vector<WaterMarkComponent*>                    m_vWaterMarkComponents;
     CameraComponent*                                    m_pActiveCamera = nullptr;
     int32_t                                             m_iActiveLightIndex = -1;
 

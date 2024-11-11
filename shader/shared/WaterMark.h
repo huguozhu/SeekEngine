@@ -11,8 +11,6 @@ struct WaterMarkDesc
 {
 	uint32_t src_width;
 	uint32_t src_height;
-	uint32_t dst_width;
-	uint32_t dst_height;
 	
     float radian;
     uint32_t normal_x;

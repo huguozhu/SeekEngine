@@ -206,7 +206,8 @@ SResult SceneManager::Tick(float delta_time)
     // Tick that require sequencing: here is a temporary process. TODO...
     for (Entity* entity : m_vCurEntities)
     {
-        for (ComponentPtr component : entity->GetOwnedComponents())
+        std::vector<ComponentPtr>& comps = entity->GetOwnedComponents();
+        for (ComponentPtr component : comps)
         {
             if (component->GetComponentType() == ComponentType::Animation)
                 SEEK_RETIF_FAIL(component->Tick(delta_time));
@@ -214,7 +215,8 @@ SResult SceneManager::Tick(float delta_time)
     }
     for (Entity* entity : m_vCurEntities)
     {
-        for (ComponentPtr component : entity->GetOwnedComponents())
+        std::vector<ComponentPtr>& comps = entity->GetOwnedComponents();
+        for (ComponentPtr component : comps)
         {
             if (component->GetComponentType() != ComponentType::Animation)
                 SEEK_RETIF_FAIL(component->Tick(delta_time));
@@ -280,6 +282,10 @@ void SceneManager::AddToEntityRecursion(SceneComponentPtr scene_component)
     if (scene_component->GetComponentType() == ComponentType::ParticleSystem)
     {
         m_vParticleComponents.push_back((ParticleComponent*)scene_component.get());
+    }
+    if (scene_component->GetComponentType() == ComponentType::WaterMark)
+    {
+        m_vWaterMarkComponents.push_back((WaterMarkComponent*)scene_component.get());
     }
 
     size_t child_num = scene_component->NumChildren();

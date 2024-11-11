@@ -1,7 +1,6 @@
 #include "effect/forward_shading_renderer.h"
 #include "effect/technique.h"
 #include "effect/postprocess.h"
-#include "effect/watermark_postprocess.h"
 #include "effect/effect.h"
 #include "kernel/context.h"
 #include "rhi/base/rhi_context.h"
@@ -16,6 +15,7 @@
 #include "components/camera_component.h"
 #include "components/skybox_component.h"
 #include "components/particle_component.h"
+#include "components/watermark_component.h"
 #include "scene_manager/scene_manager.h"
 #include <algorithm>
 
@@ -29,11 +29,7 @@ ForwardShadingRenderer::ForwardShadingRenderer(Context* context)
     : SceneRenderer(context)
 {
     m_eRendererType = RendererType::Forward;
-    m_pRenderSceneFB = m_pContext->RHIContextInstance().CreateEmptyRHIFrameBuffer();    
-
-    m_pWatermarkPostProcess = MakeSharedPtr<WaterMarkPostProcess>(m_pContext);
-    m_pWatermarkPostProcess->Init();
-    
+    m_pRenderSceneFB = m_pContext->RHIContextInstance().CreateEmptyRHIFrameBuffer(); 
 }
 
 SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Technique** tech)
@@ -148,10 +144,10 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
     
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderSceneJob, this)));
     
+    if (m_pContext->SceneManagerInstance().GetWaterMarkComponents().size() > 0)
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::WatermarkJob, this)));
     if (m_pContext->IsHDR())
-        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::ToneMappingJob, this)));
-    if (m_pContext->EnableWaterWark())
-        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::WatermarkJob, this)));
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::ToneMappingJob, this)));    
 
     // the last job should be FinishJob()
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::FinishJob, this)));
@@ -232,6 +228,26 @@ RendererReturnValue ForwardShadingRenderer::RenderSkyBoxJob()
 
     return RRV_NextJob;
 }
+RendererReturnValue ForwardShadingRenderer::WatermarkJob()
+{
+    m_eCurRenderStage = RenderStage::None;
+    RHIContext::RenderPassInfo info;
+    info.name = "Watermark";
+    info.fb = m_pRenderSceneFB.get();
+    m_pContext->RHIContextInstance().BeginRenderPass(info);
+
+    std::vector<WaterMarkComponent*>& watermarks = m_pContext->SceneManagerInstance().GetWaterMarkComponents();
+    for (uint32_t i = 0; i < watermarks.size(); ++i)
+    {
+        WaterMarkComponent* watermark = watermarks[i];
+        if (watermark)
+        {
+            watermark->Render();
+        }
+    }
+    m_pContext->RHIContextInstance().EndRenderPass();
+    return RRV_NextJob;
+}
 RendererReturnValue ForwardShadingRenderer::RenderParticlesJob()
 {
     m_eCurRenderStage = RenderStage::None;
@@ -241,7 +257,6 @@ RendererReturnValue ForwardShadingRenderer::RenderParticlesJob()
     info.fb = m_pRenderSceneFB.get();
     m_pContext->RHIContextInstance().BeginRenderPass(info);
 
-    size_t particle_count;
     std::vector<ParticleComponent*>& particles = m_pContext->SceneManagerInstance().GetParticleComponents();
     for (uint32_t i = 0; i < particles.size(); ++i)
     {
@@ -316,42 +331,9 @@ SResult ForwardShadingRenderer::PrepareFrameBuffer()
     }     
     else
     {
-        RHITexture::Desc desc;
-        if (!m_pRenderSceneColorTex)
-        {
-            PixelFormat pf = PixelFormat::R8G8B8A8_UNORM;
-            desc.type = TextureType::Tex2D;
-            desc.width = m_RenderViewport.width;
-            desc.height = m_RenderViewport.height;
-            desc.depth = 1;
-            desc.num_mips = 1;
-            desc.num_samples = 1;
-            desc.format = pf;
-            desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SHADER_RESOURCE;
-            m_pRenderSceneColorTex = rc.CreateTexture2D(desc);
-        }
-        if (!m_pRenderSceneDepthTex)
-        {
-            desc.format = PixelFormat::D32F;
-            desc.flags = RESOURCE_FLAG_RENDER_TARGET;
-            m_pRenderSceneDepthTex = rc.CreateTexture2D(desc);
-        }
-        m_pRenderSceneFB->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pRenderSceneColorTex));
-        m_pRenderSceneFB->AttachDepthStencilView(rc.CreateDepthStencilView(m_pRenderSceneDepthTex));
-        
-        m_pWatermarkPostProcess->SetSrcTex(m_pRenderSceneColorTex);
-        WaterMarkDesc wm_desc = { 0 };
-        wm_desc.radian = Math::PI / 4;
-        wm_desc.src_width = m_pRenderSceneColorTex->Width();
-        wm_desc.src_height = m_pRenderSceneColorTex->Height();
-        wm_desc.dst_width = m_RenderViewport.width;
-        wm_desc.dst_height = m_RenderViewport.height;
-        wm_desc.watermark_type = WaterMarkType_Single;
-
-        m_pWatermarkPostProcess->SetWaterMarkDesc(wm_desc);
         const RHIFrameBuffer* finalFB = rc.GetFinalRHIFrameBuffer().get();
-        m_pWatermarkPostProcess->SetOutput(0, finalFB->GetRenderTarget(RHIFrameBuffer::Attachment::Color0));
-        m_pWatermarkPostProcess->GetFrameBuffer()->SetViewport(m_RenderViewport);
+        m_pRenderSceneFB->AttachTargetView(RHIFrameBuffer::Attachment::Color0, finalFB->GetRenderTarget(RHIFrameBuffer::Attachment::Color0));
+        m_pRenderSceneFB->AttachDepthStencilView(finalFB->GetDepthStencilView());
     }
     
     m_pRenderSceneFB->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, { m_pContext->GetClearColor() });

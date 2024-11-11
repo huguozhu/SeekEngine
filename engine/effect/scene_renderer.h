@@ -50,7 +50,6 @@ public:
     RendererReturnValue     DoRenderJob();
 
     RendererReturnValue     ToneMappingJob();
-    RendererReturnValue     WatermarkJob();
     RendererReturnValue     FinishJob();
 
     RendererType            GetRendererType() { return m_eRendererType; }
@@ -82,9 +81,7 @@ protected:
     std::vector<RenderingJobPtrUnique>              m_vRenderingJobs;
 
     // ToneMapping
-    PostProcessPtr                                  m_pToneMappingPostProcess = nullptr;
-    WaterMarkPostProcessPtr                         m_pWatermarkPostProcess = nullptr;
-    
+    PostProcessPtr                                  m_pToneMappingPostProcess = nullptr;    
     
     //Viewport m_viewport;
     bool m_bRenderSizeChanged = false;

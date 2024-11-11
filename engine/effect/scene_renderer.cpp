@@ -1,7 +1,6 @@
 #include "effect/scene_renderer.h"
 #include "effect/effect.h"
 #include "effect/postprocess.h"
-#include "effect/watermark_postprocess.h"
 #include "components/camera_component.h"
 #include "components/light_component.h"
 #include "math/matrix.h"
@@ -57,16 +56,6 @@ RendererReturnValue SceneRenderer::ToneMappingJob()
     if (ret != S_Success)
         LOG_ERROR_PRIERR(ret, "SceneRenderer::ToneMappingJob() m_pToneMappingPostProcess->Run() failed.");
 
-    return RRV_NextJob;
-}
-RendererReturnValue SceneRenderer::WatermarkJob()
-{
-    m_eCurRenderStage = RenderStage::None;
-    RHIContext& rc = m_pContext->RHIContextInstance();
-
-    SResult ret = m_pWatermarkPostProcess->Run();
-    if (ret != S_Success)
-        LOG_ERROR_PRIERR(ret, "SceneRenderer::WatermarkJob() m_pWatermarkPostProcess->Run() failed.");
     return RRV_NextJob;
 }
 

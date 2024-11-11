@@ -65,6 +65,7 @@ public:
     SResult             Init(const RenderInitInfo& init_info);
     void                Uninit();
     void                SetViewport(Viewport vp);
+    Viewport            GetViewport() const { return m_sViewport; }
     
 
     SResult             Update();

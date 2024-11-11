@@ -3,11 +3,12 @@
 #include "scene_manager/scene_manager.h"
 #include "rhi/base/rhi_mesh.h"
 #include "rhi/base/rhi_texture.h"
+#include "rhi/base/rhi_render_buffer.h"
 #include "effect/scene_renderer.h"
 #include "effect/effect.h"
 #include "effect/technique.h"
 #include "kernel/context.h"
-#include "rhi/base/rhi_render_buffer.h"
+
 
 #define SEEK_MACRO_FILE_UID 75     // this code is auto generated, don't touch it!!!
 

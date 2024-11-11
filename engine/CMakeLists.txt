@@ -27,6 +27,8 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/components/skybox_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/shape_mesh_component.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/shape_mesh_component.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/components/watermark_component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/watermark_component.cpp
 
     # effect
     ${SEEK_ENGINE_SOURCE_DIR}/effect/command_buffer.h
@@ -46,8 +48,6 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/effect/technique.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/technique.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/variable.h
-    ${SEEK_ENGINE_SOURCE_DIR}/effect/watermark_postprocess.h
-    ${SEEK_ENGINE_SOURCE_DIR}/effect/watermark_postprocess.cpp
 
     # kernel
     ${SEEK_ENGINE_SOURCE_DIR}/kernel/kernel.h

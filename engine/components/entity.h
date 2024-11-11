@@ -51,7 +51,7 @@ public:
     void                    SetLocalScale(float3 const& s);
     
     Component*              GetComponent(ComponentType type) const;
-    std::vector<ComponentPtr>   GetOwnedComponents() { return m_vOwnedComponents; };
+    std::vector<ComponentPtr>&   GetOwnedComponents() { return m_vOwnedComponents; };
 
 protected:
     Context*                    m_pContext = nullptr;

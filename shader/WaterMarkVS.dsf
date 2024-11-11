@@ -22,7 +22,7 @@ VSOutput main(VSInput input)
 {
 	VSOutput output;
 	output.texCoord = TexCoordFromPosNDC(input.posNDC);
-	float2 pos = input.posNDC.xy * 1.0;
+	float2 pos = input.posNDC.xy * 0.5;
 	output.pos = float4(pos.xy, input.posNDC.z, 1.0);
 	return output;
 }
