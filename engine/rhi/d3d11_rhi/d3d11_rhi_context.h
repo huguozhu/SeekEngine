@@ -4,11 +4,11 @@
 #include "rhi/base/rhi_context.h"
 #include "rhi/base/rhi_definition.h"
 #include "rhi/base/rhi_render_buffer.h"
-#include "rhi/d3d11_rhi/d3d11_adapter.h"
+#include "rhi/d3d_rhi_common/d3d_adapter.h"
 #include "rhi/d3d11_rhi/d3d11_query.h"
 #include "rhi/d3d11_rhi/d3d11_framebuffer.h"
 #include "utils/dll_loader.h"
-#include <DXProgrammableCapture.h>
+
 
 SEEK_NAMESPACE_BEGIN
 class D3D11Adapter;
@@ -18,7 +18,7 @@ public:
     D3D11RHIContext(Context* context);
     virtual ~D3D11RHIContext();
 
-    D3D11AdapterPtr ActiveAdapter();
+    D3DAdapterPtr ActiveAdapter();
     void SetDXGIFactory1(IDXGIFactory1* p);
     IDXGIFactory1* GetDXGIFactory1() { return m_pDxgiFactory1.Get(); }
     void SetD3D11Device(ID3D11Device* p);
@@ -48,7 +48,7 @@ protected:
     IDXGIFactory6Ptr m_pDxgiFactory6 = nullptr;
     ID3D11DeviceContextPtr m_pDeviceContext = nullptr;
 
-    std::vector<D3D11AdapterPtr> m_vAdapterList;
+    std::vector<D3DAdapterPtr> m_vAdapterList;
     uint32_t m_iCurAdapterNo = INVALID_ADAPTER_INDEX;
     uint8_t m_iDxgiSubVer = 0;
 
@@ -57,7 +57,7 @@ protected:
 
     DXGI_SAMPLE_DESC m_msaa[CAP_MAX_TEXTURE_SAMPLE_COUNT + 1] = { {0, 0} };
 
-    ComPtr<IDXGraphicsAnalysis> m_pGraphicsAnalysis = nullptr;
+    IDXGraphicsAnalysisPtr m_pGraphicsAnalysis = nullptr;
 
     D3D11RHITimerQueryExecutor m_RHITimerQueryExecutor{ m_pContext };
 

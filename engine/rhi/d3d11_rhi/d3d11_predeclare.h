@@ -16,6 +16,7 @@
 #include <d3d11shader.h>
 #include <guiddef.h>
 #include <wrl/client.h>
+#include <DXProgrammableCapture.h>
 
 #include "kernel/kernel.h"
 
@@ -26,7 +27,7 @@ SEEK_NAMESPACE_BEGIN
 #endif
 
 template <class T> using ComPtr     = Microsoft::WRL::ComPtr<T>;
-
+using IDXGraphicsAnalysisPtr		= ComPtr<IDXGraphicsAnalysis>;
 using IDXGIFactory1Ptr              = ComPtr<IDXGIFactory1>;
 using IDXGIFactory2Ptr              = ComPtr<IDXGIFactory2>;
 using IDXGIFactory3Ptr              = ComPtr<IDXGIFactory3>;

@@ -11,7 +11,7 @@ public:
     D3D11Window(Context* context);
     virtual ~D3D11Window() override;
 
-    SResult Create(D3D11Adapter* adapter, std::string const& name, void* native_wnd);
+    SResult Create(D3DAdapter* adapter, std::string const& name, void* native_wnd);
     void Destroy();
 
 private:
@@ -21,7 +21,7 @@ private:
     std::string m_szName;
     HWND m_hWnd = nullptr;
 
-    D3D11Adapter* m_pAdapter = nullptr;
+    D3DAdapter* m_pAdapter = nullptr;
 
     DXGI_SWAP_CHAIN_DESC m_stSwapChainDesc;
     IDXGISwapChainPtr m_pSwapChain = nullptr;

@@ -1,6 +1,5 @@
 #include "rhi/d3d11_rhi/d3d11_predeclare.h"
 #include "rhi/d3d11_rhi/d3d11_rhi_context.h"
-#include "rhi/d3d11_rhi/d3d11_adapter.h"
 #include "rhi/d3d11_rhi/d3d11_window.h"
 #include "rhi/d3d11_rhi/d3d11_program.h"
 #include "rhi/d3d11_rhi/d3d11_mesh.h"
@@ -10,6 +9,7 @@
 #include "rhi/d3d11_rhi/d3d11_translate.h"
 #include "rhi/d3d11_rhi/d3d11_texture.h"
 #include "rhi/d3d11_rhi/d3d11_fence.h"
+#include "rhi/d3d_rhi_common/d3d_adapter.h"
 
 #include "rhi/base/rhi_mesh.h"
 #include "rhi/base/rhi_program.h"
@@ -194,7 +194,7 @@ SResult D3D11RHIContext::Init()
             IDXGIAdapter1Ptr dxgi_adapter = nullptr;
             while (SUCCEEDED(EnumAdaptersProc(adapter_no, dxgi_adapter.ReleaseAndGetAddressOf(), preferToUseDxgiFactory1)))
             {
-                m_vAdapterList.push_back(MakeSharedPtr<D3D11Adapter>(adapter_no++, dxgi_adapter.Get()));
+                m_vAdapterList.push_back(MakeSharedPtr<D3DAdapter>(adapter_no++, dxgi_adapter.Get()));
             }
 
             if (!m_vAdapterList.empty() || preferToUseDxgiFactory1)
@@ -420,7 +420,7 @@ SResult D3D11RHIContext::CheckCapabilitySetSupport()
     return S_Success;
 }
 
-D3D11AdapterPtr D3D11RHIContext::ActiveAdapter()
+D3DAdapterPtr D3D11RHIContext::ActiveAdapter()
 {
     if (m_iCurAdapterNo != INVALID_ADAPTER_INDEX)
         return m_vAdapterList[m_iCurAdapterNo];
@@ -446,7 +446,7 @@ void D3D11RHIContext::SetD3D11DeviceContext(ID3D11DeviceContext* p)
 SResult D3D11RHIContext::AttachNativeWindow(std::string const& name, void* native_wnd)
 {
     SResult res = S_Success;
-    D3D11AdapterPtr pAdapter = this->ActiveAdapter();
+    D3DAdapterPtr pAdapter = this->ActiveAdapter();
     if (native_wnd)
     {
         D3D11WindowPtr win = MakeSharedPtr<D3D11Window>(m_pContext);

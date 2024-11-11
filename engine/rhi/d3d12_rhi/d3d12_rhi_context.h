@@ -1,9 +1,9 @@
 #pragma once
 #include "rhi/base/rhi_context.h"
-
+#include "rhi/d3d12_rhi/d3d12_predeclare.h"
+#include "rhi/d3d_rhi_common/d3d_adapter.h"
 
 SEEK_NAMESPACE_BEGIN
-
 
 class D3D12RHIContext : public RHIContext
 {
@@ -84,7 +84,18 @@ protected:
     virtual RHISamplerPtr           CreateSampler(SamplerDesc const& desc) override { return nullptr; }
     virtual RHIRenderStatePtr       CreateRenderState(RenderStateDesc const& desc) override { return nullptr; }
 
+    IDXGraphicsAnalysisPtr          m_pGraphicsAnalysis = nullptr;
 
+    IDXGIFactory1Ptr                m_pDxgiFactory1 = nullptr;
+    IDXGIFactory2Ptr                m_pDxgiFactory2 = nullptr;
+    IDXGIFactory3Ptr                m_pDxgiFactory3 = nullptr;
+    IDXGIFactory4Ptr                m_pDxgiFactory4 = nullptr;
+    IDXGIFactory5Ptr                m_pDxgiFactory5 = nullptr;
+    IDXGIFactory6Ptr                m_pDxgiFactory6 = nullptr;
+    
+    std::vector<D3DAdapterPtr> m_vAdapterList;
+    uint32_t m_iCurAdapterNo = INVALID_ADAPTER_INDEX;
+    uint8_t m_iDxgiSubVer = 0;
 
     virtual const std::string GetName() const { return "D3D12RHIContext"; }
 };

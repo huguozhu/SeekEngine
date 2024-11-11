@@ -2,8 +2,8 @@
 #include "rhi/d3d11_rhi/d3d11_predeclare.h"
 #include "rhi/d3d11_rhi/d3d11_rhi_context.h"
 #include "rhi/d3d11_rhi/d3d11_window.h"
-#include "rhi/d3d11_rhi/d3d11_adapter.h"
 #include "rhi/d3d11_rhi/d3d11_texture.h"
+#include "rhi/d3d_rhi_common/d3d_adapter.h"
 
 #include "kernel/context.h"
 
@@ -25,7 +25,7 @@ D3D11Window::~D3D11Window()
     Destroy();
 }
 
-SResult D3D11Window::Create(D3D11Adapter* adapter, std::string const& name, void* native_wnd)
+SResult D3D11Window::Create(D3DAdapter* adapter, std::string const& name, void* native_wnd)
 {
     m_pAdapter = adapter;
     m_szName = name;
