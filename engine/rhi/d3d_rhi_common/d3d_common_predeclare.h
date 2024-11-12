@@ -1,9 +1,6 @@
 ﻿#pragma once
 
 #include <windows.h>
-#include <d3d11.h>
-#include <d3d11_1.h>
-#include <d3d11_2.h>
 #include <dxgi.h>
 #include <dxgi1_2.h>
 #include <dxgi1_3.h>
@@ -12,13 +9,13 @@
 #include <dxgi1_6.h>
 #include <dxgiformat.h>
 #include <dxgidebug.h>
-#include <d3dcompiler.h>
-#include <d3d11shader.h>
 #include <guiddef.h>
 #include <wrl/client.h>
+#include <d3dcompiler.h>
 #include <DXProgrammableCapture.h>
 
-#include "kernel/kernel.h"
+#include "kernel/context.h"
+
 
 SEEK_NAMESPACE_BEGIN
 
@@ -26,7 +23,7 @@ SEEK_NAMESPACE_BEGIN
 #define SAFE_RELEASE(p)      { if (p) { (p)->Release(); (p)=NULL; } }
 #endif
 
-template <class T> using ComPtr     = Microsoft::WRL::ComPtr<T>;
+template<class T> using ComPtr     = Microsoft::WRL::ComPtr<T>;
 using IDXGraphicsAnalysisPtr		= ComPtr<IDXGraphicsAnalysis>;
 using IDXGIFactoryPtr               = ComPtr<IDXGIFactory>;
 using IDXGIFactory1Ptr              = ComPtr<IDXGIFactory1>;

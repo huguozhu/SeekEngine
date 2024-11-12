@@ -16,6 +16,10 @@ static decltype(&::CreateDXGIFactory1) Func_CreateDXGIFactory1 = nullptr;
 static decltype(&::CreateDXGIFactory2) Func_CreateDXGIFactory2 = nullptr;
 static decltype(&::DXGIGetDebugInterface1) Func_DXGIGetDebugInterface1 = nullptr;
 
+static DllLoader s_dxgi_debug("dxgidebug.dll");
+static decltype(&::DXGIGetDebugInterface) Func_DXGIGetDebugInterface = nullptr;
+static ComPtr<IDXGIInfoQueue> s_dxgiInfoQueue = nullptr;
+
 
 SResult DxgiHelper::Init(int32_t preferred_adapter, bool debug)
 {
@@ -188,6 +192,18 @@ SResult DxgiHelper::Init(int32_t preferred_adapter, bool debug)
 
     return S_Success;
 }
+void DxgiHelper::Uninit()
+{
+    m_vAdapterList.clear();
+    m_iCurAdapterNo = INVALID_ADAPTER_INDEX;
+    m_iDxgiSubVer = 0;
+    m_pDxgiFactory1.Reset();
+    m_pDxgiFactory2.Reset();
+    m_pDxgiFactory3.Reset();
+    m_pDxgiFactory4.Reset();
+    m_pDxgiFactory5.Reset();
+    m_pDxgiFactory6.Reset();
+}
 D3DAdapterPtr DxgiHelper::ActiveAdapter()
 {
     if (m_iCurAdapterNo != INVALID_ADAPTER_INDEX)
@@ -200,5 +216,58 @@ void DxgiHelper::SetDXGIFactory1(IDXGIFactory1* p)
     m_pDxgiFactory1 = p;
 }
 
+void OutputD3DCommonDebugInfo()
+{
+    if (!Func_DXGIGetDebugInterface)
+    {
+        if (!s_dxgi_debug.Load())
+        {
+            LOG_ERROR("no %s.dll", s_dxgi_debug.dllname.c_str());
+            return;
+        }
+        Func_DXGIGetDebugInterface = (decltype(Func_DXGIGetDebugInterface))s_dxgi_debug.FindSymbol("DXGIGetDebugInterface");
+        if (!Func_DXGIGetDebugInterface)
+        {
+            LOG_ERROR("Function DXGIGetDebugInterface not found.");
+            return;
+        }
+    }
+
+    if (!s_dxgiInfoQueue)
+    {
+        HRESULT hr = Func_DXGIGetDebugInterface(__uuidof(IDXGIInfoQueue), (void**)s_dxgiInfoQueue.GetAddressOf());
+        if (FAILED(hr))
+        {
+            LOG_ERROR("DXGIGetDebugInterface Error, hr=%x", hr);
+            return;
+        }
+    }
+
+    ComPtr<IDXGIDebug> dxgiDebug;
+    if (SUCCEEDED(s_dxgiInfoQueue.As(&dxgiDebug)))
+    {
+        dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
+    }
+    dxgiDebug.Reset();
+
+    UINT64 message_count = s_dxgiInfoQueue->GetNumStoredMessages(DXGI_DEBUG_ALL);
+    for (UINT64 i = 0; i < message_count; i++)
+    {
+        SIZE_T messageLength = 0;
+        if (s_dxgiInfoQueue->GetMessage(DXGI_DEBUG_ALL, i, nullptr, &messageLength) == S_FALSE)
+        {
+            DXGI_INFO_QUEUE_MESSAGE* pMessage = (DXGI_INFO_QUEUE_MESSAGE*)malloc(messageLength);
+            if (pMessage && s_dxgiInfoQueue->GetMessage(DXGI_DEBUG_ALL, i, pMessage, &messageLength) == S_OK)
+            {
+                LOG_INFO("DXGI Debug: %s", pMessage->pDescription);
+            }
+            if (pMessage)
+            {
+                free(pMessage);
+            }
+        }
+    }
+    s_dxgiInfoQueue->ClearStoredMessages(DXGI_DEBUG_ALL);
+}
 
 SEEK_NAMESPACE_END

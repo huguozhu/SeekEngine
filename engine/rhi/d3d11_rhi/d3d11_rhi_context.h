@@ -45,7 +45,6 @@ protected:
 
     DXGI_SAMPLE_DESC m_msaa[CAP_MAX_TEXTURE_SAMPLE_COUNT + 1] = { {0, 0} };
 
-
     D3D11RHITimerQueryExecutor m_RHITimerQueryExecutor{ m_pContext };
 
     D3D11RHIFrameBuffer* m_pCurrentRHIFrameBuffer = nullptr;

@@ -1,5 +1,4 @@
 #include "rhi/d3d11_rhi/d3d11_predeclare.h"
-#include "rhi/d3d11_rhi/d3d11_predeclare.h"
 #include "rhi/d3d_rhi_common/d3d_adapter.h"
 
 

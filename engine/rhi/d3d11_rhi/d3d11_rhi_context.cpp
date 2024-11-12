@@ -19,18 +19,8 @@
 
 SEEK_NAMESPACE_BEGIN
 
-static const UINT VENDOR_INTEL = 0x8086;
-static const UINT VENDOR_AMD = 0x1002;
-static const UINT VENDOR_NVIDIA = 0x10de;
-static const UINT VENDOR_MICROSOFT = 0x1414;
-
-static DllLoader __dxgiDebugDllLoader("dxgidebug.dll");
-static decltype(&::DXGIGetDebugInterface) DXGIGetDebugInterface = nullptr;
-static ComPtr<IDXGIInfoQueue> __dxgiInfoQueue = nullptr;
-
-
-static DllLoader __d3d11DllLoader("d3d11.dll");
-static decltype(&::D3D11CreateDevice) D3D11CreateDevice = nullptr;
+static DllLoader s_d3d11("d3d11.dll");
+static decltype(&::D3D11CreateDevice) FUNC_D3D11CreateDevice = nullptr;
 
 const char* GetD3D11FeatureLevelStr(D3D_FEATURE_LEVEL feature_level)
 {
@@ -64,16 +54,16 @@ SResult D3D11RHIContext::Init()
     SEEK_RETIF_FAIL(DxgiHelper::Init(m_pContext->GetPreferredAdapter(), m_pContext->IsDebug()));
     do {        
 
-        if (!__d3d11DllLoader.Load())
+        if (!s_d3d11.Load())
         {
-            LOG_ERROR("load %s fail", __d3d11DllLoader.dllname.c_str());
+            LOG_ERROR("load %s fail", s_d3d11.dllname.c_str());
             return ERR_NOT_SUPPORT;
         }
 
-        if (!D3D11CreateDevice)
+        if (!FUNC_D3D11CreateDevice)
         {
-            D3D11CreateDevice = (decltype(D3D11CreateDevice))__d3d11DllLoader.FindSymbol("D3D11CreateDevice");
-            if (!D3D11CreateDevice)
+            FUNC_D3D11CreateDevice = (decltype(FUNC_D3D11CreateDevice))s_d3d11.FindSymbol("D3D11CreateDevice");
+            if (!FUNC_D3D11CreateDevice)
             {
                 LOG_ERROR("no D3D11CreateDevice entry point");
                 return ERR_NOT_SUPPORT;
@@ -108,7 +98,7 @@ SResult D3D11RHIContext::Init()
         uint32_t feature_level_count = sizeof(feature_levels) / sizeof(D3D_FEATURE_LEVEL);
         while (feature_level_start_index < feature_level_count)
         {
-            hr = D3D11CreateDevice(m_vAdapterList[m_iCurAdapterNo]->DXGIAdapter(),
+            hr = FUNC_D3D11CreateDevice(m_vAdapterList[m_iCurAdapterNo]->DXGIAdapter(),
                 D3D_DRIVER_TYPE_UNKNOWN,
                 nullptr,
                 flags,
@@ -193,15 +183,7 @@ void D3D11RHIContext::Uninit()
     }
     m_pDeviceContext.Reset();
     m_pDevice.Reset();
-    m_vAdapterList.clear();
-    m_iCurAdapterNo = INVALID_ADAPTER_INDEX;
-    m_iDxgiSubVer = 0;
-    m_pDxgiFactory1.Reset();
-    m_pDxgiFactory2.Reset();
-    m_pDxgiFactory3.Reset();
-    m_pDxgiFactory4.Reset();
-    m_pDxgiFactory5.Reset();
-    m_pDxgiFactory6.Reset();
+    DxgiHelper::Uninit();
 }
 
 SResult D3D11RHIContext::CheckCapabilitySetSupport()
@@ -621,59 +603,6 @@ void D3D11RHIContext::BindSampler(ShaderType stage, uint32_t binding, const RHIS
 RHIFencePtr D3D11RHIContext::CreateFence()
 {
     return MakeSharedPtr<D3D11RHIFence>(m_pContext);
-}
-void OutputD3D11DebugInfo()
-{
-    if (!DXGIGetDebugInterface)
-    {
-        if (!__dxgiDebugDllLoader.Load())
-        {
-            LOG_ERROR("no %s.dll", __dxgiDebugDllLoader.dllname.c_str());
-            return;
-        }
-        DXGIGetDebugInterface = (decltype(DXGIGetDebugInterface))__dxgiDebugDllLoader.FindSymbol("DXGIGetDebugInterface");
-        if (!DXGIGetDebugInterface)
-        {
-            LOG_ERROR("cannot find DXGIGetDebugInterface in");
-            return;
-        }
-    }
-
-    if (!__dxgiInfoQueue)
-    {
-        HRESULT hr = DXGIGetDebugInterface(__uuidof(IDXGIInfoQueue), (void**)__dxgiInfoQueue.GetAddressOf());
-        if (FAILED(hr))
-        {
-            LOG_ERROR("DXGIGetDebugInterface Error, hr=%x", hr);
-            return;
-        }
-    }
-
-    ComPtr<IDXGIDebug> dxgiDebug;
-    if (SUCCEEDED(__dxgiInfoQueue.As(&dxgiDebug)))
-    {
-        dxgiDebug->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_FLAGS(DXGI_DEBUG_RLO_DETAIL | DXGI_DEBUG_RLO_IGNORE_INTERNAL));
-    }
-    dxgiDebug.Reset();
-
-    UINT64 message_count = __dxgiInfoQueue->GetNumStoredMessages(DXGI_DEBUG_ALL);
-    for (UINT64 i = 0; i < message_count; i++)
-    {
-        SIZE_T messageLength = 0;
-        if (__dxgiInfoQueue->GetMessage(DXGI_DEBUG_ALL, i, nullptr, &messageLength) == S_FALSE)
-        {
-            DXGI_INFO_QUEUE_MESSAGE* pMessage = (DXGI_INFO_QUEUE_MESSAGE*)malloc(messageLength);
-            if (pMessage && __dxgiInfoQueue->GetMessage(DXGI_DEBUG_ALL, i, pMessage, &messageLength) == S_OK)
-            {
-                LOG_INFO("DXGI Debug: %s", pMessage->pDescription);
-            }
-            if (pMessage)
-            {
-                free(pMessage);
-            }
-        }
-    }
-    __dxgiInfoQueue->ClearStoredMessages(DXGI_DEBUG_ALL);
 }
 
 extern "C"

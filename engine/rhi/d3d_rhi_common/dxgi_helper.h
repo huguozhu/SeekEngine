@@ -10,6 +10,7 @@ class DxgiHelper
 {
 public:
     virtual SResult Init(int32_t preferred_adapter, bool debug);
+    virtual void Uninit();
 
     D3DAdapterPtr   ActiveAdapter();
     void            SetDXGIFactory1(IDXGIFactory1* p);

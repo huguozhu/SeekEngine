@@ -24,13 +24,21 @@ extern "C"
     void MakeVulkanRHIContext(Context* context, RHIContextPtrUnique& out);
 }
 
+#if defined(SEEK_PLATFORM_WINDOWS)
+extern void OutputD3DCommonDebugInfo();
+#endif
+
 Context::Context()
 {
     m_InitInfo.multi_thread = false;
-    m_InitInfo.rhi_type = RHIType::D3D11;
+    m_InitInfo.rhi_type = RHIType::D3D12;
+    m_InitInfo.debug = true;
 }
 Context::~Context()
 {
+#if defined(SEEK_PLATFORM_WINDOWS)
+    OutputD3DCommonDebugInfo();
+#endif
 }
 SResult Context::InitRHIContext()
 {
