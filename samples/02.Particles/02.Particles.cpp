@@ -14,17 +14,34 @@ void Particles::CreateWaterMarkEntity()
     m_pWaterMarkEntity->AddToTopScene();
 
     RHITexturePtr watermark_tex = nullptr;
-    std::string bmp_path = FullPath("02.Particles/nine_birds_3x3.png");
-    BitmapBufferPtr bmp_bitmap = ImageDecodeFromFile(bmp_path, ImageType::PNG);
-    if (bmp_bitmap)
+    std::string tex_path = FullPath("02.Particles/email_watermark.png");
+    BitmapBufferPtr bitmap = ImageDecodeFromFile(tex_path, ImageType::PNG);
+    if (bitmap)
     {
         RHITexture::Desc desc;
-        desc.width = bmp_bitmap->Width();
-        desc.height = bmp_bitmap->Height();
+        desc.width = bitmap->Width();
+        desc.height = bitmap->Height();
         desc.type = TextureType::Tex2D;
-        desc.format = bmp_bitmap->Format();
+        desc.format = bitmap->Format();
         desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_CPU_WRITE;
-        watermark_tex = m_pContext->RendererCommandManagerInstance().CreateTexture2D(desc, bmp_bitmap.get());
+        if (1)
+        {
+            uint32_t w = bitmap->Width();
+            uint32_t h = bitmap->Height();
+            uint8_t* data = bitmap->Data();
+            uint8_t v = 255;
+            for (uint32_t j = 0; j < h; j++)
+            {
+                for (uint32_t i = 0; i < w; i++)
+                {
+                    uint8_t* src = data + j * w * 4 + i * 4;
+                    if (src[0] >= v && src[1] >= v && src[2] >= v)
+                        src[3] = 0;
+                }
+            }
+
+        }
+        watermark_tex = m_pContext->RendererCommandManagerInstance().CreateTexture2D(desc, bitmap.get());
     }
     if (watermark_tex)
     {
@@ -32,7 +49,7 @@ void Particles::CreateWaterMarkEntity()
         WaterMarkDesc desc = { 0 };
         desc.src_width = watermark_tex->Width();
         desc.src_height = watermark_tex->Height();
-        desc.radian = Math::PI * 0.25;
+        desc.radian = Math::PI / 6;
         desc.normal_x = 0;
         desc.normal_y = 0;
         desc.watermark_type = WaterMarkType_Single;
