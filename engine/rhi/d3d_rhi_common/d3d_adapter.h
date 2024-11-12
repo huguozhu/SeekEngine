@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "kernel/kernel.h"
+#include "rhi/d3d_rhi_common/d3d_common_predeclare.h"
 
 SEEK_NAMESPACE_BEGIN
 

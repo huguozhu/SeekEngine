@@ -28,10 +28,6 @@ static DllLoader __dxgiDebugDllLoader("dxgidebug.dll");
 static decltype(&::DXGIGetDebugInterface) DXGIGetDebugInterface = nullptr;
 static ComPtr<IDXGIInfoQueue> __dxgiInfoQueue = nullptr;
 
-static DllLoader __dxgiDllLoader("dxgi.dll");
-static decltype(&::CreateDXGIFactory1) CreateDXGIFactory1 = nullptr;
-static decltype(&::CreateDXGIFactory2) CreateDXGIFactory2 = nullptr;
-static decltype(&::DXGIGetDebugInterface1) DXGIGetDebugInterface1 = nullptr;
 
 static DllLoader __d3d11DllLoader("d3d11.dll");
 static decltype(&::D3D11CreateDevice) D3D11CreateDevice = nullptr;
@@ -54,13 +50,8 @@ const char* GetD3D11FeatureLevelStr(D3D_FEATURE_LEVEL feature_level)
 }
 
 D3D11RHIContext::D3D11RHIContext(Context* context)
-    : RHIContext(context)
-    , m_iCurAdapterNo(INVALID_ADAPTER_INDEX)
-    , m_pDevice(nullptr)
-    , m_pDxgiFactory1(nullptr)
-    , m_pDeviceContext(nullptr)
-{
-    
+    : RHIContext(context), m_pDevice(nullptr), m_pDeviceContext(nullptr)
+{    
 }
 
 D3D11RHIContext::~D3D11RHIContext()
@@ -70,50 +61,13 @@ D3D11RHIContext::~D3D11RHIContext()
 
 SResult D3D11RHIContext::Init()
 {
-    do {
-        if (!__dxgiDllLoader.Load())
-        {
-            LOG_ERROR("load %s fail", __dxgiDllLoader.dllname.c_str());
-            return ERR_NOT_SUPPORT;
-        }
+    SEEK_RETIF_FAIL(DxgiHelper::Init(m_pContext->GetPreferredAdapter(), m_pContext->IsDebug()));
+    do {        
 
         if (!__d3d11DllLoader.Load())
         {
             LOG_ERROR("load %s fail", __d3d11DllLoader.dllname.c_str());
             return ERR_NOT_SUPPORT;
-        }
-
-        if (!CreateDXGIFactory2)
-        {
-            CreateDXGIFactory2 = (decltype(CreateDXGIFactory2))__dxgiDllLoader.FindSymbol("CreateDXGIFactory2");
-        }
-
-        if (!CreateDXGIFactory2 && !CreateDXGIFactory1)
-        {
-            CreateDXGIFactory1 = (decltype(CreateDXGIFactory1))__dxgiDllLoader.FindSymbol("CreateDXGIFactory1");
-            if (!CreateDXGIFactory1)
-            {
-                LOG_ERROR("no CreateDXGIFactory1 entry point");
-                return ERR_NOT_SUPPORT;
-            }
-        }
-
-        if (!DXGIGetDebugInterface1)
-        {
-            DXGIGetDebugInterface1 = (decltype(DXGIGetDebugInterface1))__dxgiDllLoader.FindSymbol("DXGIGetDebugInterface1");
-            if (!DXGIGetDebugInterface1)
-            {
-                LOG_WARNING("no DXGIGetDebugInterface1 entry point");
-            }
-        }
-
-        if (DXGIGetDebugInterface1 && !m_pGraphicsAnalysis)
-        {
-            HRESULT hr = DXGIGetDebugInterface1(0, __uuidof(IDXGraphicsAnalysis), (void**)m_pGraphicsAnalysis.GetAddressOf());
-            if (FAILED(hr))
-            {
-                LOG_WARNING("DXGIGetDebugInterface1 fail, %x", hr);
-            }
         }
 
         if (!D3D11CreateDevice)
@@ -125,132 +79,6 @@ SResult D3D11RHIContext::Init()
                 return ERR_NOT_SUPPORT;
             }
         }
-
-        HRESULT hr = S_OK;
-        if (CreateDXGIFactory2)
-        {
-            UINT dxgi_factory_flag = 0;
-            if (m_pContext->IsDebug())
-            {
-                dxgi_factory_flag |= DXGI_CREATE_FACTORY_DEBUG;
-            }
-            hr = CreateDXGIFactory2(dxgi_factory_flag, __uuidof(IDXGIFactory1), (void**)m_pDxgiFactory1.GetAddressOf());
-            if (FAILED(hr))
-            {
-                LOG_WARNING("CreateDXGIFactory2 Error, hr=%x, try CreateDXGIFactory1", hr);
-                // no break, try CreateDXGIFactory1
-            }
-        }
-
-        if (!m_pDxgiFactory1)
-        {
-            hr = CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)m_pDxgiFactory1.GetAddressOf());
-            if (FAILED(hr))
-            {
-                LOG_WARNING("CreateDXGIFactory1 Error, hr=%x, ", hr);
-                break;
-            }
-        }
-
-        m_iDxgiSubVer = 1;
-        if (SUCCEEDED(m_pDxgiFactory1.As(&m_pDxgiFactory2)))
-        {
-            m_iDxgiSubVer = 2;
-            if (SUCCEEDED(m_pDxgiFactory1.As(&m_pDxgiFactory3)))
-            {
-                m_iDxgiSubVer = 3;
-                if (SUCCEEDED(m_pDxgiFactory1.As(&m_pDxgiFactory4)))
-                {
-                    m_iDxgiSubVer = 4;
-                    if (SUCCEEDED(m_pDxgiFactory1.As(&m_pDxgiFactory5)))
-                    {
-                        m_iDxgiSubVer = 5;
-                        if (SUCCEEDED(m_pDxgiFactory1.As(&m_pDxgiFactory6)))
-                        {
-                            m_iDxgiSubVer = 6;
-                        }
-                    }
-                }
-            }
-        }
-        LOG_INFO("dxgi runtime version: 1.%d", m_iDxgiSubVer);
-
-        auto EnumAdaptersProc = [this](UINT adapter_no, IDXGIAdapter1** dxgi_adapter, bool useDxgiFactory1) -> HRESULT
-        {
-            if (m_pDxgiFactory6 && !useDxgiFactory1)
-            {
-                return m_pDxgiFactory6->EnumAdapterByGpuPreference(adapter_no, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, __uuidof(IDXGIAdapter1), (void**)dxgi_adapter);
-            }
-            else
-            {
-                // EnumAdapters1 first returns the adapter with the output on which the desktop primary is displayed.
-                return m_pDxgiFactory1->EnumAdapters1(adapter_no, dxgi_adapter);
-            }
-        };
-
-        bool preferToUseDxgiFactory1 = !m_pDxgiFactory6;
-        UINT adapter_no = 0;
-        do {
-            IDXGIAdapter1Ptr dxgi_adapter = nullptr;
-            while (SUCCEEDED(EnumAdaptersProc(adapter_no, dxgi_adapter.ReleaseAndGetAddressOf(), preferToUseDxgiFactory1)))
-            {
-                m_vAdapterList.push_back(MakeSharedPtr<D3DAdapter>(adapter_no++, dxgi_adapter.Get()));
-            }
-
-            if (!m_vAdapterList.empty() || preferToUseDxgiFactory1)
-                break;
-            
-            LOG_INFO("use IDXGIFactory6::EnumAdapterByGpuPreference enum adapters fail, try IDXGIFactory1");
-            preferToUseDxgiFactory1 = true;
-        } while (1);
-
-        LOG_INFO("available adapters:");
-        for (size_t i = 0; i != m_vAdapterList.size(); i++)
-        {
-            LOG_INFO("  %2d: %ls", i, m_vAdapterList[i]->DXGIAdapterDesc().Description);
-            LOG_INFO("    - VendorID: 0x%04x", m_vAdapterList[i]->DXGIAdapterDesc().VendorId);
-            LOG_INFO("    - DeviceId: 0x%04x", m_vAdapterList[i]->DXGIAdapterDesc().DeviceId);
-            LOG_INFO("    - SubSysId: 0x%04x", m_vAdapterList[i]->DXGIAdapterDesc().SubSysId);
-            LOG_INFO("    - Revision: 0x%04x", m_vAdapterList[i]->DXGIAdapterDesc().Revision);
-            LOG_INFO("    - AdapterLuid: %lu %lu", m_vAdapterList[i]->DXGIAdapterDesc().AdapterLuid.HighPart, m_vAdapterList[i]->DXGIAdapterDesc().AdapterLuid.LowPart);
-        }
-
-        if (adapter_no > 0)
-            m_iCurAdapterNo = 0;
-
-        if (m_iCurAdapterNo == INVALID_ADAPTER_INDEX)
-        {
-            LOG_ERROR("no suitable adapter");
-            break;
-        }
-
-        // prefer to use Intel&AMD than Nvidia
-        if (m_vAdapterList[m_iCurAdapterNo]->DXGIAdapterDesc().VendorId == VENDOR_NVIDIA)
-        {
-            for (size_t i = 0; i != m_vAdapterList.size(); i++)
-            {
-                if (i == m_iCurAdapterNo)
-                    continue;
-
-                if (m_vAdapterList[i]->DXGIAdapterDesc().VendorId == VENDOR_INTEL ||
-                    m_vAdapterList[i]->DXGIAdapterDesc().VendorId == VENDOR_AMD)
-                {
-                    m_iCurAdapterNo = i;
-                    break;
-                }
-            }
-        }
-
-        int32_t preferred_adapter = m_pContext->GetPreferredAdapter();
-        if (m_iCurAdapterNo != preferred_adapter && preferred_adapter < m_vAdapterList.size()) {
-            m_iCurAdapterNo = preferred_adapter;
-            LOG_INFO("user set preferred adapter %d", preferred_adapter);
-        }
-        else if (preferred_adapter >= m_vAdapterList.size()){
-            LOG_INFO("invalid preferred adapter %d, out of range [0, %d], use default adapter", preferred_adapter, m_vAdapterList.size() - 1);
-        }
-
-        LOG_INFO("using adapter: %ls", m_vAdapterList[m_iCurAdapterNo]->DXGIAdapterDesc().Description);
 
         UINT flags = 0;
         if (m_pContext->IsDebug())
@@ -275,6 +103,7 @@ SResult D3D11RHIContext::Init()
             }
         }
 
+        HRESULT hr = S_OK;
         D3D_FEATURE_LEVEL out_feature_level;
         uint32_t feature_level_count = sizeof(feature_levels) / sizeof(D3D_FEATURE_LEVEL);
         while (feature_level_start_index < feature_level_count)
@@ -416,21 +245,7 @@ SResult D3D11RHIContext::CheckCapabilitySetSupport()
                 m_CapabilitySet.TextureSupport[i][(uint32_t)TextureFormatSupportType::RenderTarget] = true;
         }
     }
-
     return S_Success;
-}
-
-D3DAdapterPtr D3D11RHIContext::ActiveAdapter()
-{
-    if (m_iCurAdapterNo != INVALID_ADAPTER_INDEX)
-        return m_vAdapterList[m_iCurAdapterNo];
-    else
-        return nullptr;
-}
-
-void D3D11RHIContext::SetDXGIFactory1(IDXGIFactory1* p)
-{
-    m_pDxgiFactory1 = p;
 }
 
 void D3D11RHIContext::SetD3D11Device(ID3D11Device* p)

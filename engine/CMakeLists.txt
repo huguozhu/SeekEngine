@@ -105,8 +105,11 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/viewport.h
     
     # d3d_rhi_common
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_rhi_common/d3d_common_predeclare.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_rhi_common/d3d_adapter.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_rhi_common/d3d_adapter.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_rhi_common/dxgi_helper.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_rhi_common/dxgi_helper.cpp
 
     # d3d11_rhi
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_fence.h

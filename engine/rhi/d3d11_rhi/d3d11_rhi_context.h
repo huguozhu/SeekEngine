@@ -5,6 +5,7 @@
 #include "rhi/base/rhi_definition.h"
 #include "rhi/base/rhi_render_buffer.h"
 #include "rhi/d3d_rhi_common/d3d_adapter.h"
+#include "rhi/d3d_rhi_common/dxgi_helper.h"
 #include "rhi/d3d11_rhi/d3d11_query.h"
 #include "rhi/d3d11_rhi/d3d11_framebuffer.h"
 #include "utils/dll_loader.h"
@@ -12,20 +13,17 @@
 
 SEEK_NAMESPACE_BEGIN
 class D3D11Adapter;
-class D3D11RHIContext : public RHIContext
+class D3D11RHIContext : public RHIContext, public DxgiHelper
 {
 public:
     D3D11RHIContext(Context* context);
     virtual ~D3D11RHIContext();
 
-    D3DAdapterPtr ActiveAdapter();
-    void SetDXGIFactory1(IDXGIFactory1* p);
-    IDXGIFactory1* GetDXGIFactory1() { return m_pDxgiFactory1.Get(); }
     void SetD3D11Device(ID3D11Device* p);
     ID3D11Device* GetD3D11Device() { return m_pDevice.Get(); }
     void SetD3D11DeviceContext(ID3D11DeviceContext* p);
     ID3D11DeviceContext* GetD3D11DeviceContext() { return m_pDeviceContext.Get(); }
-    uint8_t GetDxgiSubVerion() { return m_iDxgiSubVer; }
+
     DXGI_SAMPLE_DESC GetDxgiSampleDesc(UINT sampleCount) { return m_msaa[sampleCount]; }
 
     void SetD3DRasterizerState(ID3D11RasterizerState* state);
@@ -40,24 +38,13 @@ public:
 
 protected:
     ID3D11DevicePtr m_pDevice = nullptr;
-    IDXGIFactory1Ptr m_pDxgiFactory1 = nullptr;
-    IDXGIFactory2Ptr m_pDxgiFactory2 = nullptr;
-    IDXGIFactory3Ptr m_pDxgiFactory3 = nullptr;
-    IDXGIFactory4Ptr m_pDxgiFactory4 = nullptr;
-    IDXGIFactory5Ptr m_pDxgiFactory5 = nullptr;
-    IDXGIFactory6Ptr m_pDxgiFactory6 = nullptr;
     ID3D11DeviceContextPtr m_pDeviceContext = nullptr;
-
-    std::vector<D3DAdapterPtr> m_vAdapterList;
-    uint32_t m_iCurAdapterNo = INVALID_ADAPTER_INDEX;
-    uint8_t m_iDxgiSubVer = 0;
 
     // D3D11.0 has no dxgi debug, so we still need this
     //ComPtr<ID3D11InfoQueue> m_pD3D11InfoQueue;
 
     DXGI_SAMPLE_DESC m_msaa[CAP_MAX_TEXTURE_SAMPLE_COUNT + 1] = { {0, 0} };
 
-    IDXGraphicsAnalysisPtr m_pGraphicsAnalysis = nullptr;
 
     D3D11RHITimerQueryExecutor m_RHITimerQueryExecutor{ m_pContext };
 
