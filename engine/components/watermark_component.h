@@ -18,13 +18,19 @@ public:
     virtual SResult       OnRenderBegin(Technique* tech, RHIMeshPtr mesh) override;
     virtual SResult       Render() override;
 
+    SResult WaterMarkGenerate();
+
 
 private:
-    Technique*          m_pTechWaterMark = nullptr;
+    Technique*          m_pTechWaterMarkRender = nullptr;
+    Technique*          m_pTechWaterMarkGenerate = nullptr;
+
     WaterMarkDesc       m_sDesc = { 0 };
     RHIRenderBufferPtr  m_pWaterMarkDescCBuffer = nullptr;
     RHIRenderBufferPtr  m_pWaterMarkTargetSizeCBuffer = nullptr;
     RHITexturePtr       m_pWaterMarkTex = nullptr;
+    bool                m_bDirty = true;
+    RHITexturePtr       m_pRepeatWaterMark = nullptr;
 };
 
 SEEK_NAMESPACE_END

@@ -39,7 +39,6 @@ void Particles::CreateWaterMarkEntity()
                         src[3] = 0;
                 }
             }
-
         }
         watermark_tex = m_pContext->RendererCommandManagerInstance().CreateTexture2D(desc, bitmap.get());
     }
@@ -50,9 +49,10 @@ void Particles::CreateWaterMarkEntity()
         desc.src_width = watermark_tex->Width();
         desc.src_height = watermark_tex->Height();
         desc.radian = Math::PI / 6;
-        desc.normal_x = 0;
-        desc.normal_y = 0;
+        desc.offset_x = watermark_tex->Width() * 0.5;
+        desc.offset_y = watermark_tex->Height() * 4.0;
         desc.watermark_type = WaterMarkType_Single;
+        desc.watermark_type = WaterMarkType_Repeat;        
         pWatermark->SetWaterMarkDesc(desc);
     }
 }

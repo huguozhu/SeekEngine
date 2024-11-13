@@ -2,33 +2,29 @@
 #include "Common.dsh"
 #include "shared/WaterMark.h"
 
-Texture2D watermark_tex;
-
 cbuffer waterMarkDesc
 {
     WaterMarkDesc desc;
 };
-
 cbuffer targetSize
 {
     float target_width;
     float target_height;
-}
+};
+Texture2D watermark_tex;
 
 float4 main(in float2 iTc : TEXCOORD) : SV_Target
 {
     float2 tc = iTc - float2(0.5, 0.5);
-    if (WaterMarkType_Single == desc.watermark_type)
-    {
-        //float v = (float)desc.src_width / (float)desc.src_height;
-        float v = (float)target_width / (float)target_height;
-        tc.x *= v; 
-        float radian = desc.radian;
-        tc = mul(float2x2(
-		cos(radian), -sin(radian),
-        sin(radian), cos(radian)), tc);
-        tc.x /= v;
-    }
+
+    float v = (float)target_width / (float)target_height;
+    tc.x *= v; 
+    float radian = desc.radian;
+    tc = mul(float2x2(
+    cos(radian), -sin(radian),
+    sin(radian), cos(radian)), tc);
+    tc.x /= v;
+        
     tc += float2(0.5, 0.5);
     float4 final = watermark_tex.Sample(linear_sampler, tc);
     return final;

@@ -1,0 +1,24 @@
+//STAGE:cs
+#include "Common.dsh"
+#include "shared/WaterMark.h"
+
+cbuffer waterMarkDesc
+{
+    WaterMarkDesc desc;
+};
+cbuffer targetSize
+{
+    float target_width;
+    float target_height;
+};
+
+Texture2D<float4> watermark_tex;
+RWTexture2D<float4> repeat_watermark_target;
+
+
+[numthreads(Gen_WaterMark_CS_SIZE, Gen_WaterMark_CS_SIZE, 1)]
+void main(uint3 DTid : SV_DispatchThreadID)
+{
+	uint2 src_xy = uint2(DTid.x % (uint)desc.src_width, DTid.y % (uint)desc.src_height);
+	repeat_watermark_target[DTid.xy] = watermark_tex[src_xy];
+}
