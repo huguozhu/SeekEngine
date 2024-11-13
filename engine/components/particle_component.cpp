@@ -561,8 +561,6 @@ SResult ParticleComponent::Tick_GPU(float delta_time)
     if (m_bToCallInitParticles)
     {
         this->InitParticles();
-        if (0) this->SelectDebugInfo();
-        //GpuSyncFence();
         m_bToCallInitParticles = false;
     }
 
@@ -578,27 +576,12 @@ SResult ParticleComponent::Tick_GPU(float delta_time)
     m_pRandomFloats->Update(&random_floats, sizeof(float) * RANDOM_FLOAT_NUM);    
 
     SEEK_RETIF_FAIL(this->TickBegin(delta_time));
-    if (1) this->SelectDebugInfo();
-    //GpuSyncFence();
-
     SEEK_RETIF_FAIL(this->EmitParticles());
-    if (1) this->SelectDebugInfo();
-    //GpuSyncFence();
-
     SEEK_RETIF_FAIL(this->SimulateParticles(delta_time));
-    if (1) this->SelectDebugInfo();
-    //GpuSyncFence();
-
     SEEK_RETIF_FAIL(this->CullingParticles());
-    if (1) this->SelectDebugInfo();
-    //GpuSyncFence();
-
     if (m_Param.particle_tex)
-    {
         SEEK_RETIF_FAIL(this->SortParticles());
-        if (1) this->SelectDebugInfo();
-        //GpuSyncFence();
-    }
+
     m_iPreSimIndex  = 1 - m_iPreSimIndex;
     m_iPostSimIndex = 1 - m_iPostSimIndex;
     return S_Success;
@@ -671,7 +654,6 @@ void ParticleComponent::RegisterParticleCallback(ParticleCallback cb, void* user
 }
 void ParticleComponent::SelectDebugInfo()
 {
-    //return;
     ParticleCounters counters = { 0 };
     BufferPtr buf1 = MakeSharedPtr<Buffer>(m_pParticleCounters->GetSize(), (uint8_t*)&counters);
     m_pParticleCounters->CopyBack(buf1);

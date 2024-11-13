@@ -554,15 +554,56 @@ void Technique::Uncommit()
 
             switch (param.dataType)
             {
-            case EffectDataType::Texture:
-                rc.BindTexture((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
-                break;
-            case EffectDataType::RWTexture:
-                rc.BindRWTexture((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
-                break;
-            default:
+            case EffectDataType::ConstantBuffer:
+            {
+                rc.BindConstantBuffer((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
                 break;
             }
+            case EffectDataType::Buffer:
+            {
+                rc.BindRHIRenderBuffer((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
+                break;
+            }
+            case EffectDataType::RWBuffer:
+            {
+                rc.BindRWRHIRenderBuffer((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
+                break;
+            }
+            default:
+            {
+                if (m_pContext->GetRHIType() != RHIType::GLES)
+                {
+                    switch (param.dataType)
+                    {
+                    case EffectDataType::Texture:
+                    {
+                        rc.BindTexture((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
+                        break;
+                    }
+                    case EffectDataType::RWTexture:
+                    {
+                        rc.BindRWTexture((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
+                        break;
+                    }
+                    case EffectDataType::Sampler:
+                    {
+                        rc.BindSampler((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
+                        break;
+                    }
+                    default:
+                        break;
+                    }
+                }
+                else
+                {
+                    if (param.dataType == EffectDataType::SampledTexture)
+                    {
+                        rc.BindTexture((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
+                    }
+                }
+            }
+            }
+
         }
     }
 }
