@@ -57,11 +57,12 @@ SResult WaterMarkComponent::OnRenderBegin(Technique* tech, RHIMeshPtr mesh)
 }
 SResult WaterMarkComponent::Render()
 {
+    RHIContext& rc = m_pContext->RHIContextInstance();
     // Step1: Create Constant Buffer & Update Datas
     if (!m_pWaterMarkDescCBuffer)
-        m_pWaterMarkDescCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(sizeof(WaterMarkDesc), RESOURCE_FLAG_CPU_WRITE | RESOURCE_FLAG_SHADER_RESOURCE);
+        m_pWaterMarkDescCBuffer = rc.CreateConstantBuffer(sizeof(WaterMarkDesc), RESOURCE_FLAG_CPU_WRITE | RESOURCE_FLAG_SHADER_RESOURCE);
     if (!m_pWaterMarkTargetSizeCBuffer)
-        m_pWaterMarkTargetSizeCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(sizeof(float2), RESOURCE_FLAG_CPU_WRITE | RESOURCE_FLAG_SHADER_RESOURCE);
+        m_pWaterMarkTargetSizeCBuffer = rc.CreateConstantBuffer(sizeof(float2), RESOURCE_FLAG_CPU_WRITE | RESOURCE_FLAG_SHADER_RESOURCE);
     Viewport vp = m_pContext->GetViewport();
     float w = vp.width;
     float h = vp.height;
@@ -80,41 +81,73 @@ SResult WaterMarkComponent::Render()
         m_pTechWaterMarkRender->SetParam("waterMarkDesc", m_pWaterMarkDescCBuffer);
         m_pTechWaterMarkRender->SetParam("targetSize", m_pWaterMarkTargetSizeCBuffer);
     }
-    if (m_sDesc.watermark_type == WaterMarkType_Repeat && !m_pTechWaterMarkGenerate)
+
+    // Step3: Create & Update the RepeatWaterMark Texture
+    if (!m_pRepeatWaterMark ||
+        (m_pRepeatWaterMark->Width() != w || m_pRepeatWaterMark->Height() != h))
     {
-        std::string tech_name = "WaterMarkGenerate";
-        Effect& effect = m_pContext->EffectInstance();
-        SEEK_RETIF_FAIL(effect.LoadTechnique(tech_name, &RenderStateDesc::WaterMark(),
-            nullptr, nullptr, "WaterMarkGenerateCS"));
-        m_pTechWaterMarkGenerate = effect.GetTechnique(tech_name);
+        if (m_pRepeatWaterMark)
+            m_pRepeatWaterMark.reset();        
+        RHITexture::Desc desc;
+        desc.width = w;
+        desc.height = h;
+        desc.type = TextureType::Tex2D;
+        desc.format = PixelFormat::R8G8B8A8_UNORM;
+        desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_SHADER_WRITE;
+        m_pRepeatWaterMark = rc.CreateTexture2D(desc);
     }
 
-    // Step3: Create & Execute WaterMarkGenerate CS
-    if (m_sDesc.watermark_type == WaterMarkType_Repeat && m_bDirty)
+    // Step4: Generate full Watermark Texture
+    // Two methods: 1) using CS     2) using Texture Copy
+    bool use_cs_to_generate_watermark = 0;
+    if (m_sDesc.watermark_type == WaterMarkType_Repeat)
     {
-        if (!m_pRepeatWaterMark ||
-            (m_pRepeatWaterMark->Width() != w || m_pRepeatWaterMark->Height() != h) )
+        if (use_cs_to_generate_watermark)
         {
-            if (m_pRepeatWaterMark)
-                m_pRepeatWaterMark.reset();
-            RHIContext& rc = m_pContext->RHIContextInstance();
-            RHITexture::Desc desc;
-            desc.width = w;
-            desc.height = h;
-            desc.type = TextureType::Tex2D;
-            desc.format = PixelFormat::R8G8B8A8_UNORM;
-            desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_SHADER_WRITE;
-            m_pRepeatWaterMark = rc.CreateTexture2D(desc);
-        }
-        m_pWaterMarkDescCBuffer->Update(&m_sDesc, sizeof(WaterMarkDesc));
-        m_pTechWaterMarkGenerate->SetParam("waterMarkDesc", m_pWaterMarkDescCBuffer);
-        m_pTechWaterMarkGenerate->SetParam("targetSize", m_pWaterMarkTargetSizeCBuffer);
-        m_pTechWaterMarkGenerate->SetParam("watermark_tex", m_pWaterMarkTex);
-        m_pTechWaterMarkGenerate->SetParam("repeat_watermark_target", m_pRepeatWaterMark);
+            if (!m_pTechWaterMarkGenerate)
+            {
+                std::string tech_name = "WaterMarkGenerate";
+                Effect& effect = m_pContext->EffectInstance();
+                SEEK_RETIF_FAIL(effect.LoadTechnique(tech_name, &RenderStateDesc::WaterMark(),
+                    nullptr, nullptr, "WaterMarkGenerateCS"));
+                m_pTechWaterMarkGenerate = effect.GetTechnique(tech_name);
+            }
 
-        uint32_t dispatch_x = (w + Gen_WaterMark_CS_SIZE - 1) / Gen_WaterMark_CS_SIZE;
-        uint32_t dispatch_y = (h + Gen_WaterMark_CS_SIZE - 1) / Gen_WaterMark_CS_SIZE;
-        m_pTechWaterMarkGenerate->Dispatch(dispatch_x, dispatch_y, 1);
+            if (m_bDirty)
+            {
+                m_pWaterMarkDescCBuffer->Update(&m_sDesc, sizeof(WaterMarkDesc));
+                m_pTechWaterMarkGenerate->SetParam("waterMarkDesc", m_pWaterMarkDescCBuffer);
+                m_pTechWaterMarkGenerate->SetParam("targetSize", m_pWaterMarkTargetSizeCBuffer);
+                m_pTechWaterMarkGenerate->SetParam("watermark_tex", m_pWaterMarkTex);
+                m_pTechWaterMarkGenerate->SetParam("repeat_watermark_target", m_pRepeatWaterMark);
+
+                uint32_t dispatch_x = (w + Gen_WaterMark_CS_SIZE - 1) / Gen_WaterMark_CS_SIZE;
+                uint32_t dispatch_y = (h + Gen_WaterMark_CS_SIZE - 1) / Gen_WaterMark_CS_SIZE;
+                m_pTechWaterMarkGenerate->Dispatch(dispatch_x, dispatch_y, 1);
+            }
+        }
+        else
+        {
+            int center_left_x = w * 0.5 - m_sDesc.src_width * 0.5;
+            int center_top_y = w * 0.5 - m_sDesc.src_height * 0.5;
+
+            int offset_x_same_line = m_sDesc.offset_x + m_sDesc.src_width;
+            int tile_x_count = w / offset_x_same_line + 2;
+            int tile_y_count = h / m_sDesc.offset_y + 2;
+
+            for (int tile_y     = (int)(-(tile_y_count + 1) * 0.5 - 1); tile_y <= (int)((tile_y_count + 1) * 0.5); tile_y++)
+            {                
+                for (int tile_x = (int)(-(tile_x_count + 1) * 0.5 - 1); tile_x <= (int)((tile_x_count + 1) * 0.5); tile_x++)
+                {
+                    int dst_x = center_left_x + tile_y * m_sDesc.offset_x + tile_x * offset_x_same_line;
+                    int dst_y = center_top_y  + tile_y * m_sDesc.offset_y;
+                    //if (dst_x < 0 || dst_y < 0 || dst_x > w || dst_y > h)
+                    if (dst_x > w || dst_y > h)
+                        continue;
+                    rc.CopyTextureRegion(m_pWaterMarkTex, m_pRepeatWaterMark, dst_x, dst_y);
+                }
+            }
+        }
     }
     m_bDirty = false;
 

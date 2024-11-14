@@ -90,7 +90,8 @@ public: // virutal factory
     virtual void                    EndComputePass() = 0;
 
     virtual SResult                 SyncTexture(RHITexturePtr tex) { return ERR_NOT_IMPLEMENTED; }
-    virtual SResult                 CopyTexture(RHITexturePtr tex_src, RHITexturePtr tex_dst) { return ERR_NOT_IMPLEMENTED; }
+    virtual SResult                 CopyTexture(RHITexturePtr tex_src, RHITexturePtr tex_dst) { return ERR_NOT_IMPLEMENTED; }    
+    virtual SResult                 CopyTextureRegion(RHITexturePtr tex_src, RHITexturePtr tex_dst, int32_t dst_x = 0, int32_t dst_y = 0, int32_t dst_z = 0) { return ERR_NOT_IMPLEMENTED; }
 
     virtual SResult                 BindContext() { return S_Success; }
     virtual SResult                 DetachContext() { return S_Success; }

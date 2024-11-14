@@ -538,7 +538,53 @@ SResult D3D11RHIContext::CopyTexture(RHITexturePtr tex_src, RHITexturePtr tex_ds
 
     return S_Success;
 }
+SResult D3D11RHIContext::CopyTextureRegion(RHITexturePtr tex_src, RHITexturePtr tex_dst, int32_t dst_x, int32_t dst_y, int32_t dst_z)
+{
+    D3D11Texture* src = dynamic_cast<D3D11Texture*>(tex_src.get());
+    D3D11Texture* dst = dynamic_cast<D3D11Texture*>(tex_dst.get());
+    uint32_t src_width = tex_src->Width();
+    uint32_t src_height = tex_src->Height();
+    uint32_t src_depth = tex_src->Depth();
+    uint32_t dst_width = tex_dst->Width();
+    uint32_t dst_height = tex_dst->Height();
+    uint32_t dst_depth = tex_dst->Depth();
 
+    INT left = 0;
+    INT top = 0;
+    INT front = 0;
+    INT right = Math::Min(src_width, dst_width - dst_x);
+    INT bottom = Math::Min(src_height, dst_height - dst_y);
+    INT back = Math::Min(src_depth, dst_depth - dst_z);
+
+    if (dst_x < 0)
+    {
+        left = src_width + dst_x;
+        right = src_width;
+        dst_x = 0;
+    }
+    if (dst_y < 0)
+    {
+        top = src_height + dst_y;
+        bottom = src_height;
+        dst_y;
+    }
+    if (dst_z < 0)
+    {
+        front = src_depth + dst_z;
+        back = src_depth;
+        dst_z = 0;
+    }
+    if (left < 0 || top < 0 || front < 0)
+        return ERR_INVALID_ARG;
+
+    D3D11_BOX box = {
+        (UINT)left,  (UINT)top,     (UINT)front,
+        (UINT)right, (UINT)bottom,  (UINT)back};
+
+    m_pDeviceContext->CopySubresourceRegion(dst->GetD3DTexture(), 0, dst_x, dst_y, dst_z, src->GetD3DTexture(), 0, &box);
+
+    return S_Success;
+}
 void D3D11RHIContext::BeginCapture()
 {
     if (m_pGraphicsAnalysis)

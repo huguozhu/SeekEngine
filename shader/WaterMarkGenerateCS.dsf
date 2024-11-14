@@ -55,7 +55,6 @@ bool IsValidPosX(int pos_x, int tile_y, out int tile_x)
 [numthreads(Gen_WaterMark_CS_SIZE, Gen_WaterMark_CS_SIZE, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-	
 	int tile_x;		// center = (tile_x, tile_y) = (0,0)
 	int tile_y;
 	bool valid = false;

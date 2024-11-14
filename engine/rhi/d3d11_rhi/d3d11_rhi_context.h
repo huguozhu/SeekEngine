@@ -104,6 +104,7 @@ public:
 
     virtual SResult SyncTexture(RHITexturePtr tex) override { return S_Success; }
     virtual SResult CopyTexture(RHITexturePtr tex_src, RHITexturePtr tex_dst) override;
+    virtual SResult CopyTextureRegion(RHITexturePtr tex_src, RHITexturePtr tex_dst, int32_t dst_x = 0, int32_t dst_y = 0, int32_t dst_z = 0) override;
 
     virtual void BeginCapture() override;
     virtual void EndCapture() override;
