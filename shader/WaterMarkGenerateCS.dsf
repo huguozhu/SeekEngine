@@ -15,10 +15,65 @@ cbuffer targetSize
 Texture2D<float4> watermark_tex;
 RWTexture2D<float4> repeat_watermark_target;
 
+bool IsValidPosY(int pos_y, out int tile_y)
+{
+	int center_top_y 	= target_height * 0.5 - desc.src_height * 0.5;
+	int center_bottom_y = target_height * 0.5 + desc.src_height * 0.5;
+	int count_y = target_height / desc.offset_y + 2;
+	for (int j = (int)(-count_y * 0.5); j <= (int)(count_y*0.5); j++)
+	{
+		if (pos_y > center_top_y    + j * desc.offset_y && 
+			pos_y < center_bottom_y + j * desc.offset_y )
+			{
+				tile_y = j;
+				return true;
+			}
+			
+	}
+	return false;
+}
+bool IsValidPosX(int pos_x, int tile_y, out int tile_x)
+{
+	int center_left_x 	= target_width * 0.5 - desc.src_width * 0.5;
+	int center_right_x	= target_width * 0.5 + desc.src_width * 0.5;
+
+	int offset_x_same_line = desc.offset_x + desc.src_width;
+	int count_x = target_width / offset_x_same_line + 2;
+	
+	for (int i = (int)-count_x * 0.5 - 1; i <= (int)(count_x*0.5); i++)
+	{
+		if (pos_x > center_left_x  + tile_y * (int)desc.offset_x + i * offset_x_same_line &&
+			pos_x < center_right_x + tile_y * (int)desc.offset_x + i * offset_x_same_line )
+		{
+			tile_x = i;
+			return true;
+		}
+	}
+	return false;
+}
 
 [numthreads(Gen_WaterMark_CS_SIZE, Gen_WaterMark_CS_SIZE, 1)]
 void main(uint3 DTid : SV_DispatchThreadID)
 {
-	uint2 src_xy = uint2(DTid.x % (uint)desc.src_width, DTid.y % (uint)desc.src_height);
-	repeat_watermark_target[DTid.xy] = watermark_tex[src_xy];
+	
+	int tile_x;		// center = (tile_x, tile_y) = (0,0)
+	int tile_y;
+	bool valid = false;
+	if (IsValidPosY((int)DTid.y, tile_y) && IsValidPosX((int)DTid.x, tile_y, tile_x))
+		valid = true;
+
+	if (valid)
+	{
+		int center_left_x 	= target_width * 0.5 - desc.src_width * 0.5;
+		int center_top_y	= target_height * 0.5 - desc.src_height * 0.5;
+		int offset_x_same_line = desc.offset_x + desc.src_width;
+
+		int left_x = center_left_x + tile_y * (int)desc.offset_x + tile_x * offset_x_same_line;
+		int top_y = center_top_y + tile_y * desc.offset_y;
+
+		uint2 src_xy = uint2(DTid.x -left_x, DTid.y - top_y);
+		repeat_watermark_target[DTid.xy] = watermark_tex[src_xy];
+	}
+	else
+		repeat_watermark_target[DTid.xy] = float4(0.0, 0.0, 0.0, 0.0);
 }
