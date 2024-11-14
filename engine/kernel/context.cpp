@@ -12,6 +12,7 @@
 #include "utils/log.h"
 #include "utils/timer.h"
 #include "utils/error.h"
+#include "math/color.h"
 
 #define SEEK_MACRO_FILE_UID 28     // this code is auto generated, don't touch it!!!
 
@@ -33,6 +34,7 @@ Context::Context()
     m_InitInfo.multi_thread = false;
     m_InitInfo.rhi_type = RHIType::D3D11;
     m_InitInfo.debug = true;
+    m_fClearColor = float4(1, 1, 0, 1);
 }
 Context::~Context()
 {
@@ -160,7 +162,7 @@ SResult Context::Update()
     float time_interval = cur_time - last_time;
     float  limit_time = 0.0;
     if (m_InitInfo.fps_limit_type == FPSLimit::FPS_30) limit_time = 0.033f;
-    if (m_InitInfo.fps_limit_type == FPSLimit::FPS_60) limit_time = 0.0167f;
+    else if (m_InitInfo.fps_limit_type == FPSLimit::FPS_60) limit_time = 0.0167f;
     if (time_interval < limit_time)
         return S_Success;
 

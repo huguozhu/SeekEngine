@@ -549,6 +549,15 @@ SResult D3D11RHIContext::CopyTextureRegion(RHITexturePtr tex_src, RHITexturePtr 
     uint32_t dst_height = tex_dst->Height();
     uint32_t dst_depth = tex_dst->Depth();
 
+    if (dst_x + src_width <= 0 ||
+        dst_y + src_height <= 0 ||
+        dst_z + src_depth <= 0)
+        return ERR_INVALID_ARG;
+    if (dst_x >= dst_width  || 
+        dst_y >= dst_height ||
+        dst_z >= dst_depth  )
+        return ERR_INVALID_ARG;
+
     INT left = 0;
     INT top = 0;
     INT front = 0;
@@ -574,8 +583,6 @@ SResult D3D11RHIContext::CopyTextureRegion(RHITexturePtr tex_src, RHITexturePtr 
         back = src_depth;
         dst_z = 0;
     }
-    if (left < 0 || top < 0 || front < 0)
-        return ERR_INVALID_ARG;
 
     D3D11_BOX box = {
         (UINT)left,  (UINT)top,     (UINT)front,
