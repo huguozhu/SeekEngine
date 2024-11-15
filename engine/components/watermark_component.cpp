@@ -134,20 +134,19 @@ SResult WaterMarkComponent::Render()
                 int center_top_y =  h * 0.5 - m_sDesc.src_height * 0.5;
 
                 int offset_x_same_line = m_sDesc.offset_x + m_sDesc.src_width;
-                int tile_x_count = w / offset_x_same_line + 2;
-                int tile_y_count = h / m_sDesc.offset_y + 2;
+                int tile_x_count = w / offset_x_same_line + 6;
+                int tile_y_count = h / m_sDesc.offset_y   + 6;
 
-                for (int tile_y = (int)(-(tile_y_count + 1) * 0.5 - 2); tile_y <= (int)((tile_y_count + 1) * 0.5 + 2); tile_y++)
+                for (    int tile_y = (int)(-tile_y_count / 2); tile_y <= (int)(tile_y_count / 2); tile_y++)
                 {
-                    for (int tile_x = (int)(-(tile_x_count + 1) * 0.5 - 1); tile_x <= (int)((tile_x_count + 1) * 0.5 + 2); tile_x++)
+                    for (int tile_x = (int)(-tile_x_count / 2); tile_x <= (int)(tile_x_count / 2); tile_x++)
                     {
                         int dst_x = center_left_x + tile_y * m_sDesc.offset_x + tile_x * offset_x_same_line;
-                        int dst_y = center_top_y + tile_y * m_sDesc.offset_y;
-                        if (dst_x > w || dst_y > h)
-                            continue;
-                        if (dst_x + m_sDesc.src_width < 0 ||
+                        int dst_y = center_top_y +  tile_y * m_sDesc.offset_y;
+                        if (dst_x > w || dst_y > h ||
+                            dst_x + m_sDesc.src_width < 0 ||
                             dst_y + m_sDesc.src_height < 0)
-                            continue;
+                            continue;                       
                         rc.CopyTextureRegion(m_pWaterMarkTex, m_pRepeatWaterMark, dst_x, dst_y);
                     }
                 }
