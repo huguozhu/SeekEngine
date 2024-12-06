@@ -575,7 +575,7 @@ SResult D3D11RHIContext::CopyTextureRegion(RHITexturePtr tex_src, RHITexturePtr 
     {
         top = src_height + dst_y;
         bottom = src_height;
-        dst_y;
+        dst_y = 0;
     }
     if (dst_z < 0)
     {
