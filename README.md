@@ -10,3 +10,12 @@
 ### D3D11
 ### D3D12
 
+
+> 后续需要实现的功能：
+> 1. D3d12/Vulkan
+> 2. GPU Driven Pipeline
+>   a. GPU 可见性剔除（GPU Culling）
+>   b. 间接渲染（Indirect Rendering），包括：使用DrawIndirect()
+>   c. GPU管理场景数据（将物体位置、材质、LOD级别保存到GPU缓存中）
+>   d. 动态LOD选择  
+>   
