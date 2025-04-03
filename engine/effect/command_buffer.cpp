@@ -223,7 +223,7 @@ RHIRenderBufferPtr RendererCommandManager::CreateVertexrBuffer(const void* data,
 RHIRenderBufferPtr RendererCommandManager::CreateIndexBuffer(const void* data, uint32_t data_size, ResourceFlags flags)
 {
     if (!m_pContext->IsMultiThreaded())
-        return m_pContext->RHIContextInstance().CreateVertexBuffer(data_size, flags, new RHIRenderBufferData(data_size, data));
+        return m_pContext->RHIContextInstance().CreateIndexBuffer(data_size, flags, new RHIRenderBufferData(data_size, data));
 
     MutexScope ms(m_CommnadGenerateMutex);
     RHIRenderBufferPtr buf = m_pContext->RHIContextInstance().CreateEmptyIndexBuffer(data_size, flags);
