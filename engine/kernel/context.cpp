@@ -31,7 +31,7 @@ extern void OutputD3DCommonDebugInfo();
 
 Context::Context()
 {
-    m_InitInfo.multi_thread = false;
+    m_InitInfo.multi_thread = 0;
     m_InitInfo.rhi_type = RHIType::D3D11;
     m_InitInfo.debug = true;
     m_fClearColor = float4(1, 1, 0, 1);

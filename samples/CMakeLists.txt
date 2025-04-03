@@ -58,4 +58,4 @@ endfunction(add_sample_project)
 
 add_sample_project(01.Tutorial)
 add_sample_project(02.Particles)
-
+add_sample_project(03.MeshLoader)

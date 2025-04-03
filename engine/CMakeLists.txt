@@ -49,6 +49,13 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/effect/technique.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/variable.h
 
+    # importer
+    ${SEEK_ENGINE_SOURCE_DIR}/importer/gltf2.h
+    ${SEEK_ENGINE_SOURCE_DIR}/importer/gltf2_loader.h
+    ${SEEK_ENGINE_SOURCE_DIR}/importer/gltf2_loader.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/importer/loader.h
+
+
     # kernel
     ${SEEK_ENGINE_SOURCE_DIR}/kernel/kernel.h
     ${SEEK_ENGINE_SOURCE_DIR}/kernel/context.h
