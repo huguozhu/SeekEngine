@@ -1,0 +1,69 @@
+//STAGE:ps
+#include "common.dsh"
+#include "shared/ColorReplace.h"
+
+Texture2D inputImage;
+
+cbuffer GlobalParams
+{
+    ColorReplaceGlobalParams global_params;
+}
+
+struct VSOutput
+{
+    float2 texCoord : TEXCOORD;
+    float4 pos : SV_POSITION;
+};
+
+struct PSOutput
+{
+    float4 color : SV_Target0;
+};
+
+float3 RGB2LAB(float3 rgb)
+{
+    return LinearRGB_2_LAB(rgb, XYZ_WHITE_REF_D65);
+}
+
+float3 LAB2RGB(float3 lab)
+{
+    return LAB_2_LinearRGB(lab, XYZ_WHITE_REF_D65);
+}
+
+PSOutput main(VSOutput input)
+{
+    PSOutput output;
+    float4 inRGB = inputImage.Sample(linear_sampler, input.texCoord);
+    if (inRGB.w == 0.0)
+    {
+        output.color = inRGB;
+        return output;
+    }
+
+    float algoFlag = inputImage.Load(int3(0, 1, 0)).x;
+    if (algoFlag == 0.0)
+    {
+        output.color = float4(global_params.dstColor, inRGB.w);
+        return output; 
+    }
+    else
+    {
+        // temporal solution, use [0,0] in inputImage as source color
+        float3 _srcColor = inputImage.Load(int3(0, 0, 0)).xyz;
+
+        float3 inLab = RGB2LAB(inRGB.xyz);
+        float3 srcLab = RGB2LAB(_srcColor);
+        float3 dstLab = RGB2LAB(global_params.dstColor);
+        
+        float3 diff = dstLab - srcLab;
+        //float coff = abs(inLab.x - srcLab.x) + abs(inLab.y - srcLab.y) + abs(inLab.z - srcLab.z);
+        //coff = 1.0f - coff / 255 * 2.5;
+        //coff = max(min(coff, 1.0f), 0.0f);
+
+        float3 outLab = inLab + diff;
+        outLab = max(min(outLab, 255.0), 0.0);
+
+        output.color = float4(LAB2RGB(outLab), inRGB.w);
+        return output;
+    }
+}

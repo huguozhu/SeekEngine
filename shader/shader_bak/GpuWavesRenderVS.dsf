@@ -1,0 +1,28 @@
+//STAGE:vs
+#include "common.dsh"
+#include "shared/Waves.h"
+
+cbuffer GlobalParams
+{
+    WavesGlobalParams global_params;
+};
+
+Texture2D displacement_tex;
+		
+float4 main(
+	in 	float3 iPos	        : POSITION,
+	in 	float2 iTc	        : TEXCOORD,
+    out float2 oTc          : TEXCOORD)	: SV_POSITION
+{
+    oTc     = iTc;
+
+    float4 pos = float4(iPos, 1.0);
+    pos.y      += displacement_tex.SampleLevel(linear_sampler, iTc, 0).r;
+    float left  = displacement_tex.SampleLevel(linear_sampler, iTc, 0, int2(-1,  0)).r;
+    float right = displacement_tex.SampleLevel(linear_sampler, iTc, 0, int2( 1,  0)).r;
+    float top   = displacement_tex.SampleLevel(linear_sampler, iTc, 0, int2( 0, -1)).r;
+    float bottom= displacement_tex.SampleLevel(linear_sampler, iTc, 0, int2( 0,  1)).r;
+    
+    float4 oPos = mul(pos, global_params.mvpMatrix);
+    return oPos;
+}

@@ -1,0 +1,14 @@
+//STAGE:vs
+
+void main(
+	in 	float3 	iPos 	: POSITION,
+	in 	float2 	iTc		: TEXCOORD,
+	in 	float3 	iInstPos: INSTANCE,
+	in 	float2 	iInstTc	: INSTANCE1,
+	out float2	oTc		: TEXCOORD,
+	out float4	oPos	: SV_POSITION)
+{
+	oPos = float4(iPos + iInstPos, 1.0); 
+    oTc = iTc + iInstTc;
+	oTc.y = 1.0 - oTc.y;
+}

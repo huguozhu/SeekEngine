@@ -1,0 +1,9 @@
+//STAGE:ps
+
+SamplerState bilinear_sampler;
+Texture2D albedoTex;
+
+float4 main(in float2 iTc : TEXCOORD) : SV_Target
+{
+   return albedoTex.Sample(bilinear_sampler, iTc);
+}

@@ -1,0 +1,23 @@
+//STAGE:ps
+#include "common.dsh"
+
+Texture2D tex_equirectangular;
+
+static const float2 invAtan = float2(0.1591, 0.3183);
+
+float2 SampleSphericalMap(float3 v)
+{
+    float2 uv = float2(atan2(v.z, v.x), asin(v.y));
+    uv *= invAtan;
+    uv += 0.5;
+	uv.y = 1.0 - uv.y;
+    return uv;
+}		
+		
+float4 main(
+	in float3 iWorldPos : POSITION) : SV_Target
+{
+	float2 uv = SampleSphericalMap(normalize(iWorldPos));
+	float4 color = tex_equirectangular.Sample(linear_sampler, uv);
+	return color;
+}

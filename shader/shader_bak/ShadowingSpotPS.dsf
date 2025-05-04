@@ -1,0 +1,35 @@
+//STAGE:ps
+#include "common.dsh"
+#include "Shadow.dsh"
+
+Texture2D depth_tex;
+
+cbuffer cameraInfo
+{
+	CameraInfo cameraInfo;
+};
+
+cbuffer lightInfo
+{
+    LightInfo lightInfo;
+};
+
+cbuffer deferredLightingInfo
+{
+	DeferredLightingInfo deferredLightingInfo;
+}
+
+
+float4 main(
+	in 	float4 iPosView	: POSITION,
+	in 	float2 iTc		: TEXCOORD) : SV_Target
+{
+	float depth = depth_tex.Sample(point_sampler, iTc).x;
+	float depth_view = ViewSpaceDepth(depth, cameraInfo.nearFarPlane.x, cameraInfo.nearFarPlane.y);
+	float3 pos_view = (iPosView.xyz / iPosView.w) * (depth_view / cameraInfo.nearFarPlane.y);
+	float4 pos_world4 = mul(float4(pos_view, 1.0), deferredLightingInfo.lightVolumeInvView);
+	float3 pos_world = pos_world4.xyz / pos_world4.w;
+
+	float shadow = CalcSpotDirectionalLightShadow(lightInfo, pos_world, 0);
+	return float4(shadow, shadow, shadow, shadow);
+}

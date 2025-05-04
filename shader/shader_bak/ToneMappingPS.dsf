@@ -1,0 +1,12 @@
+//STAGE:ps
+#include "common.dsh"
+#include "ToneMapping.dsh"
+
+Texture2D src_rgba;
+
+float4 main(in float2 iTc : TEXCOORD) : SV_Target
+{
+	float4 hdr = src_rgba.Sample(linear_sampler, iTc);
+	float3 ldr = ACESToneMapping(hdr.rgb, 1.0);
+	return float4(ldr, hdr.a);
+}

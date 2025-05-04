@@ -1,0 +1,124 @@
+#pragma once
+
+#include "common.dsh"
+#include "shared/Sprite2D.h"
+
+cbuffer GlobalParams
+{
+    Sprite2DGlobalParams global_params;
+}
+
+#if ENABLE_ADVANCE
+
+cbuffer AdvanceGlobalParams
+{
+    Sprite2DAdvanceGlobalParams advance_global_params;
+}
+
+float4 run(float2 iTc, float4 iPos, float4 rgba)
+{
+    if (global_params.srgb_to_rgb == 1)
+        rgba = srgb2rgb(rgba);
+
+    float alpha = global_params.alpha * rgba.w;
+
+    float2 pixel_pos = iPos.xy;
+    float2 p = pixel_pos - advance_global_params.rect_center;
+
+    // rounded corner
+    int coff = p.x < 0 ?
+        (p.y < 0 ? advance_global_params.rounded_corner_enable[0] : advance_global_params.rounded_corner_enable[2])
+        :
+        (p.y < 0 ? advance_global_params.rounded_corner_enable[1] : advance_global_params.rounded_corner_enable[3]);
+
+    float radius = advance_global_params.rounded_corner_radius * coff;
+
+    float2 q = abs(p) - (advance_global_params.rect_corner - radius - 0.5);
+    float shape_distance = length(max(q, 0.0)) - radius - 0.5 + min(max(q.x, q.y), 0.0);
+    alpha *= 1.0 - smoothstep(0, 1.0, shape_distance);
+
+    // border
+    float border_distance = shape_distance + advance_global_params.border_width;
+    rgba.xyz = lerp(rgba.xyz, advance_global_params.border_simple_color.xyz, smoothstep(-0.5, 0.5, border_distance));
+    return float4(rgba.xyz, alpha);
+}
+
+#else // ENABLE_ADVANCE
+
+float4 run(float2 iTc, float4 iPos, float4 rgba)
+{
+    if (global_params.srgb_to_rgb == 1)
+        rgba = srgb2rgb(rgba);
+
+    float alpha = global_params.alpha * rgba.w;
+    return float4(rgba.xyz, alpha);
+}
+
+#endif // ENABLE_ADVANCE
+
+
+float weight(float x)
+{
+    float a = abs(x);
+    float w = 0.0;
+    if (a < 1.0)
+    {
+        w = .5*(2.+a*a*(-5.+a*3.));
+    }
+    else if (a < 2.0)
+    {
+        w = .5*(4.+a*(-8.+a*(5.-a)));
+    }
+    return w;
+}
+
+float3 sampling_yuv(Texture2D textureY, Texture2D textureU, Texture2D textureV, float2 iTc, float4 iPos)
+{
+    if (global_params.present_mode == 1)
+    {
+        float2 texSize;
+        textureY.GetDimensions(texSize.x, texSize.y); // 1280 720
+
+        const float u = textureU.Sample(point_sampler, iTc).r;
+        const float v = textureV.Sample(point_sampler, iTc).r;
+
+        float  blur = 0.75;
+        float2 ratio = float2(texSize.x / global_params.valid_rt_size.x, texSize.y / global_params.valid_rt_size.y); // 1280/320 720/180 = 4
+        float2 scale = max(ratio, 1.0) * blur; // 3
+
+        float2 r = 2.0 * scale; // 6
+        float2 scaleInv = 1.0 / scale; // 1/3
+
+        float2 zero = float2(0.0, 0.0);
+        float2 halfpoint = float2(0.5, 0.5);
+
+        float2 center = iTc * texSize;
+        float2 begin = clamp(ceil(center - r), zero, texSize) + halfpoint;
+        float2 end   = clamp(floor(center + r), zero, texSize) + halfpoint;
+
+        float sum = 0.0;
+        float wsum = 0.0;
+        float i, j;
+        float2 dis = (begin - center) * scaleInv;
+        for (i = begin.y; i < end.y; i += 1.0)
+        {
+            float2 tdis = dis;
+            for (j = begin.x; j < end.x; j += 1.0 )
+            {
+                float w = weight(tdis.x) * weight(tdis.y);
+                sum += textureY.SampleLevel(point_sampler, float2(j / texSize.x, i / texSize.y), 0).r * w;
+                wsum += w;
+                tdis.x += scaleInv.x;
+            }
+            dis.y += scaleInv.y;
+        }
+        sum = clamp(sum / wsum, 0.0, 1.0);
+        return float3(sum, u, v);
+    }
+    else
+    {
+        return float3(textureY.Sample(linear_sampler, iTc).r,
+                      textureU.Sample(linear_sampler, iTc).r,
+                      textureV.Sample(linear_sampler, iTc).r);
+    }
+}

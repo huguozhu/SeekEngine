@@ -1,0 +1,252 @@
+//PREDEFINE:LIGHT_MODE=0,1
+//PREDEFINE:HAS_NORMAL_TEX=0,1
+//PREDEFINE:ENABLE_TAA=0,1
+//PREDEFINE:ENABLE_ENHANCE=0,1
+//STAGE:ps
+#include "common.dsh"
+#include "Lighting.dsh"
+#if ENABLE_ENHANCE == 1
+#include "Shadow.dsh"
+#endif
+
+cbuffer materialInfo
+{
+    MaterialInfo materialInfo;
+};
+
+cbuffer lightInfo
+{
+    LightInfo lightInfo[6];
+};
+
+cbuffer cameraInfo
+{
+    CameraInfo cameraInfo;
+};
+
+SamplerState prefilter_map_sampler;
+
+Texture2D albedoTex;
+Texture2D normalTex;
+Texture2D metallicRoughnessTex;
+Texture2D occlusionTex;
+
+#if ENABLE_ENHANCE == 1
+TextureCube irradianceTex;
+TextureCube prefilterTex;
+Texture2D brdf2dlutTex;
+Texture2D emissiveTex;
+#endif
+
+float3 CalcEnvironmentAmbient(MaterialParam materialParam, float2 texcoord, float3 N, float3 V)
+{
+	float ambientOcclusion = 1.0;
+    [branch]
+	if (materialInfo.hasBasicTex.z)
+	{
+		ambientOcclusion = 1.0 + materialInfo.occlusionFactor * (occlusionTex.Sample(linear_sampler, texcoord).r - 1.0);
+	}
+	
+	float3 diffuse = 0.0;
+#if HAS_NORMAL_TEX == 1 && ENABLE_ENHANCE == 1
+    [branch]
+	if (materialInfo.hasPbrTex.y)
+	{
+		float3 irradiance = irradianceTex.Sample(linear_sampler, N).rgb;
+		diffuse = irradiance * materialParam.albedo;
+	}
+#endif
+	
+	const float MAX_REFLECTION_LOD = 4.0;		
+	float3 specular = 0.0;
+#if ENABLE_ENHANCE == 1
+    [branch]
+	if (materialInfo.hasPbrTex.z && materialInfo.hasPbrTex.w)
+	{
+		float3 R = reflect(-V, N); 
+		float3 prefilterdColor = prefilterTex.SampleLevel(prefilter_map_sampler, R, materialParam.roughness * MAX_REFLECTION_LOD).rgb;		
+		float2 brdf = brdf2dlutTex.Sample(linear_sampler, float2(max(dot(N, V), 0.0), materialParam.roughness)).rg;
+		specular = prefilterdColor * (materialParam.fresnel * brdf.x + brdf.y);
+	}
+#endif
+	
+	float3 kSpecular = materialParam.fresnel;
+	float3 kDiffuse = float3(1.0, 1.0, 1.0) - kSpecular;
+	kDiffuse *= 1.0 - materialParam.metallic;
+	float3 ambient = (kDiffuse * diffuse + specular) * ambientOcclusion;
+	return ambient;
+}
+
+
+float3 CalcLighting(MaterialParam materialParam, LightInfo lightInfo, float2 iTexcoord, float3 posWorld, float3 N, float3 V, float shadow)
+{
+    float3 Lo;
+    [branch]
+    if (lightInfo.type == LIGHT_TYPE_AMBIENT)
+    {
+        float ambientOcclusion = 1.0;
+        [branch]
+        if (materialInfo.hasBasicTex.z)
+        {
+            ambientOcclusion = 1.0 + materialInfo.occlusionFactor * (occlusionTex.Sample(linear_sampler, iTexcoord).r - 1.0);
+        }
+        Lo = CalcLightingIBL(materialParam, lightInfo, ambientOcclusion);
+    }
+    else
+    {
+        float3 L;
+        float lightAttenuation = 1.0;
+        [branch]
+        if (lightInfo.type == LIGHT_TYPE_DIRECTIONAL)
+        {
+            L = normalize(-lightInfo.direction);
+            lightAttenuation = 1.0;
+        }
+        else if (lightInfo.type == LIGHT_TYPE_SPOT)
+        {
+            L = normalize(lightInfo.posWorld - posWorld);
+            float3 posToLight = lightInfo.posWorld - posWorld;
+            lightAttenuation = GetDistanceAttenuation(posToLight, lightInfo.falloffRadius);
+            lightAttenuation *= GetSpotAngleAttenuation(L, lightInfo.direction, lightInfo.inOutCutoff);
+        }
+        else if (lightInfo.type == LIGHT_TYPE_POINT)
+        {
+            L = normalize(lightInfo.posWorld - posWorld);
+            float3 posToLight = lightInfo.posWorld - posWorld;
+            lightAttenuation = GetDistanceAttenuation(posToLight, lightInfo.falloffRadius);
+        }
+#if LIGHT_MODE == 1
+        Lo = CalcLightingBRDF(materialParam, lightInfo, lightAttenuation, N, L, V, shadow);
+#else
+        Lo = CalcLightingPhong(materialParam, lightInfo, lightAttenuation, N, L, V, shadow);
+#endif
+    }
+    return Lo;
+}
+
+struct VSOutput
+{
+    float2 texCoord     : TEXCOORD;
+    float3 normal       : NORMAL;
+#if HAS_NORMAL_TEX
+    float4 tangent      : TANGENT;
+#endif // HAS_NORMAL_TEX
+    float3 posWorld     : POSITION0;
+#if ENABLE_TAA
+    float4 prePos       : POSITION1;
+    float4 unjitterPos  : POSITION2;
+#endif // ENABLE_TAA
+    float4 pos          : SV_POSITION;
+};
+
+struct PSOutput
+{
+    float4 color    : SV_Target0;
+#if ENABLE_TAA
+    float2 velocity : SV_Target1;
+#endif
+};
+
+MaterialParam CalcMaterialParam(MaterialInfo materialInfo, float2 texCoord, float3 N, float3 V)
+{
+	MaterialParam materialParam;
+	
+	materialParam.albedo = materialInfo.albedoFactor.xyz;
+	materialParam.alpha  = materialInfo.albedoFactor.w;
+    [branch]
+    if (materialInfo.hasBasicTex.x)
+    {
+        float4 albedo = albedoTex.Sample(linear_sampler, texCoord);
+        materialParam.albedo *= albedo.xyz;
+        materialParam.alpha = albedo.w;
+    }
+	
+	materialParam.metallic = materialInfo.metallicFactor;
+    materialParam.roughness = materialInfo.roughnessFactor;
+    [branch]
+    if (materialInfo.hasPbrTex.x)
+    {
+        float3 _rgb = metallicRoughnessTex.Sample(linear_sampler, texCoord).rgb;
+        materialParam.metallic *= _rgb.b;
+        materialParam.roughness *= _rgb.g;
+    }
+	
+		
+	float3 specularColor = CalcSpecularColor(materialParam.albedo, materialParam.metallic);
+    float3 F0 = specularColor;
+	materialParam.fresnel = F_Schlick(max(dot(N, V), 0.0), F0);
+	
+	return materialParam;
+}
+
+PSOutput main(VSOutput input)
+{
+    PSOutput output;
+
+    float3 normal = input.normal;
+#if HAS_NORMAL_TEX == 1
+    [branch]
+    if (materialInfo.hasBasicTex.y)
+    {
+        float3 pixelNormal = normalTex.Sample(linear_sampler, input.texCoord).rgb;
+        pixelNormal = pixelNormal * 2.0 - 1.0;
+		
+        float3 T = normalize(input.tangent.xyz);
+		float3 N = normalize(normal);
+		T = normalize(T - dot(T, N) * N);
+		float3 B = cross(N, T) * input.tangent.w;
+		
+        float3x3 TBN = float3x3(T, B, N);
+        normal = mul(pixelNormal, TBN);
+    }
+#endif
+
+    float3 color = float3(0.0, 0.0, 0.0);
+    float3 N = normalize(normal);
+    float3 V = normalize(cameraInfo.posWorld - input.posWorld);
+	MaterialParam materialParam = CalcMaterialParam(materialInfo, input.texCoord, N, V);
+	
+    [unroll]
+    for (uint lightIdx = 0; lightIdx < 6; lightIdx++)
+    {
+        [flatten]
+        if (lightInfo[lightIdx].type >= 0)
+        {
+            float shadow = 0.0;
+#if ENABLE_ENHANCE == 1
+            [branch]
+            if (lightInfo[lightIdx].castShadow == 1)
+            {
+                [branch]
+                if (lightInfo[lightIdx].type == LIGHT_TYPE_DIRECTIONAL || lightInfo[lightIdx].type == LIGHT_TYPE_SPOT)
+                    shadow = CalcSpotDirectionalLightShadow(lightInfo[lightIdx], input.posWorld, lightInfo[lightIdx].shadowMapIndex);
+                else if (lightInfo[lightIdx].type == LIGHT_TYPE_POINT)
+                    shadow = CalcPointLightShadow(cameraInfo, lightInfo[lightIdx], input.posWorld);
+            }
+#endif
+            color += CalcLighting(materialParam, lightInfo[lightIdx], input.texCoord, input.posWorld, N, V, shadow);
+        }
+    }
+
+#if ENABLE_ENHANCE == 1
+	float3 emissive = materialInfo.emissiveFactor;
+    [branch]
+	if (materialInfo.hasBasicTex.w)
+		emissive = emissiveTex.Sample(linear_sampler, input.texCoord).rgb;
+	AddEmissive(emissive, color);
+
+	color.rgb += CalcEnvironmentAmbient(materialParam, input.texCoord, N, V);
+#endif
+
+    output.color = float4(color, materialParam.alpha);
+	
+
+#if ENABLE_TAA
+    float4 prePos = input.prePos / input.prePos.w;
+    float4 unjitterPos = input.unjitterPos / input.unjitterPos.w;
+    prePos.xy = prePos.xy / float2(2.0f, -2.0f) + float2(0.5f, 0.5f);
+    unjitterPos.xy = unjitterPos.xy / float2(2.0f, -2.0f) + float2(0.5f, 0.5f);
+    output.velocity = float2(unjitterPos.x - prePos.x, unjitterPos.y - prePos.y);
+#endif
+    return output;
+}

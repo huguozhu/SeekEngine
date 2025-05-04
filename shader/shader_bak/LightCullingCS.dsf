@@ -1,0 +1,157 @@
+//STAGE:cs
+
+#include "common.dsh"
+
+
+int IsOverlapPoint(float4 frustum_planes[6], float3 light_pos, float light_radius)
+{
+    int overlap = 1;
+    [unroll]
+    for (int i=0; i<6; ++i)
+    {
+        float d = dot(frustum_planes[i], float4(light_pos, 1.0));
+        overlap *= ( d > -light_radius);
+    }
+    return overlap;
+}
+
+int IsOverlapSpot(float4 frustum_planes[6], float3 spotlight_aabb_min, float3 spotlight_aabb_max)
+{
+    int overlap = 1;
+    [unroll]
+    for (int i=0; i<6; ++i)
+    {
+        float3 v = frustum_planes[i].xyz < 0 ? spotlight_aabb_min : spotlight_aabb_max;
+        overlap *= (dot(frustum_planes[i], float4(v, 1.0)) >= 0);
+    }
+    return overlap;
+}
+
+
+// current tile light list
+groupshared uint gs_TileLightNum;
+groupshared uint gs_MinZ;
+groupshared uint gs_MaxZ;
+
+cbuffer cameraInfo
+{
+    CameraInfo cameraInfo;
+}
+cbuffer deferredLightingInfo
+{
+	DeferredLightingInfo deferredLightingInfo;
+}
+cbuffer c_view_matrix
+{
+	float4x4 c_view_matrix;
+}
+cbuffer c_proj_matrix
+{
+	float4x4 c_proj_matrix;
+}
+cbuffer c_frame_size
+{
+	float2 c_frame_size;
+}
+Texture2D depth_tex;
+StructuredBuffer<LightInfo> light_infos;
+RWStructuredBuffer<TileInfo> tile_infos_rw;
+
+void ConstructTileViewFrustumCS(uint3 group_id, float2 min_max_z, float2 frame_size, float4x4 proj_matrix, out float4 frustumPlanes[6])
+{
+    float n = min_max_z.x;
+    float f = min_max_z.y;
+	float2 tile_scale = frame_size / TILE_SIZE;
+    float2 tile_bias = tile_scale - 1.0f - 2.0f * float2(group_id.xy);
+	
+    float4 column1 = float4(proj_matrix._11 * tile_scale.x, 0.0f, 	 tile_bias.x, 0.0f);
+    float4 column2 = float4(0.0f, proj_matrix._22 * tile_scale.y,	-tile_bias.y, 0.0f);
+    float4 column4 = float4(0.0f, 0.0f, 1.0f, 0.0f);
+
+    frustumPlanes[0] = column4 - column1;   // right  plane
+    frustumPlanes[1] = column4 + column1;   // left   plane
+    frustumPlanes[2] = column4 - column2;   // top    plane
+    frustumPlanes[3] = column4 + column2;   // bottom plane
+    frustumPlanes[4] = float4(0.0f, 0.0f, 1.0f, -n);	// near   plane
+    frustumPlanes[5] = float4(0.0f, 0.0f, -1.0f, f);	// far    plane
+    
+	// normalize frustum, near&far plane already normalized
+    [unroll]
+    for (uint i = 0; i < 4; ++i)
+    {
+        frustumPlanes[i] /= length(frustumPlanes[i].xyz);
+    }
+}
+
+[numthreads (TILE_SIZE, TILE_SIZE, 1)]
+void main(
+	uint3 group_id				: SV_GroupID,
+	uint3 dispatch_thread_id	: SV_DispatchThreadID,
+	uint  group_index			: SV_GroupIndex)
+{	
+	float min_z = cameraInfo.nearFarPlane.x;
+	float max_z = cameraInfo.nearFarPlane.y;
+
+	/*
+	int3 global_coord = int3(dispatch_thread_id.xy, 0);
+	float depth = depth_tex_cs.Load(global_coord).x;
+	float depth_view = ViewSpaceDepth(depth, cameraInfo.nearFarPlane.x, cameraInfo.nearFarPlane.y);
+	bool valid_pixel = (depth_view >= cameraInfo.nearFarPlane.x && depth_view < cameraInfo.nearFarPlane.y);
+	[flatten]
+	if (valid_pixel)
+	{
+		min_z = min(min_z, depth_view);
+		max_z = max(max_z, depth_view);
+	}
+	*/
+
+	// init gourpshared params
+	if (group_index == 0)
+	{
+		gs_TileLightNum = 0;
+		gs_MinZ = 0x7f7fffff;	// max float value
+		gs_MaxZ = 0;
+	}
+
+	GroupMemoryBarrierWithGroupSync();
+	if (max_z >= min_z)
+	{
+		InterlockedMin(gs_MinZ, asuint(min_z));
+		InterlockedMax(gs_MaxZ, asuint(max_z));
+	}
+	GroupMemoryBarrierWithGroupSync();
+	
+	float min_tile_z = asfloat(gs_MinZ);
+	float max_tile_z = asfloat(gs_MaxZ);
+	float4 frustum_planes[6];
+	ConstructTileViewFrustumCS(group_id, float2(min_tile_z, max_tile_z), c_frame_size, c_proj_matrix, frustum_planes);
+
+	uint dispatch_width = (c_frame_size.x + TILE_SIZE - 1) / TILE_SIZE;
+	uint tile_buffer_index = group_id.y * dispatch_width + group_id.x;
+
+	uint light_num = deferredLightingInfo.light_num;
+	uint light_index_start = deferredLightingInfo.light_index_start;
+		
+	[loop]
+	for (uint light_index = light_index_start + group_index; light_index < light_index_start + light_num; light_index += TILE_SIZE*TILE_SIZE)
+	{
+		LightInfo light_info = light_infos[light_index];
+		float4 pos_view = mul(float4(light_info.posWorld, 1.0), c_view_matrix);
+		pos_view /= pos_view.w;
+		int in_frustum = IsOverlapPoint(frustum_planes, pos_view.xyz, light_info.falloffRadius);
+		[branch]
+		if (in_frustum)
+		{
+			uint list_index;
+			InterlockedAdd(gs_TileLightNum, 1, list_index);
+			tile_infos_rw[tile_buffer_index].light_indices[list_index] = light_index;
+		}
+	}
+
+	GroupMemoryBarrierWithGroupSync();
+	if (group_index == 0)
+	{		
+		tile_infos_rw[tile_buffer_index].light_num = gs_TileLightNum;
+ 	}
+
+}

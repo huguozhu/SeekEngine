@@ -1,0 +1,45 @@
+//PREDEFINE:JOINT_BIND_SIZE=0,4,8
+//PREDEFINE:MORPH_TYPE=0,1
+//STAGE=vs
+#include "common.dsh"
+#include "MorphTarget.dsh"
+#include "Skeleton.dsh"
+
+cbuffer modelInfo
+{
+    ModelInfo modelInfo;
+};
+
+void main(
+    in  uint vertex_id      : SV_VertexID,
+    in  float3 iPos         : POSITION,
+#if JOINT_BIND_SIZE > 0 
+    in  float4 iBlendWeight : BLENDWEIGHT,
+    in  uint4  iBlendIndex  : BLENDINDEX,
+#if JOINT_BIND_SIZE > 4
+    in  float4 iBlendWeight1: BLENDWEIGHT1,
+    in  uint4  iBlendIndex1 : BLENDINDEX1,
+#endif
+#endif
+	out float3 oPosWorld	: POSITION,
+    out float4 oPos         : SV_POSITION)
+{
+    float4 pos = float4(iPos, 1.0);
+    float4 normal = 0;
+
+#if MORPH_TYPE != MORPH_COMONENT_NONE
+    CalcMorphTarget(vertex_id, pos, normal);
+#endif
+
+#if JOINT_BIND_SIZE > 4
+    float4x4 skin_mat = CalcSkeletonMatrixEx(iBlendWeight, iBlendIndex, iBlendWeight1, iBlendIndex1);
+    pos = mul(pos, skin_mat);   
+#elif JOINT_BIND_SIZE > 0
+    float4x4 skin_mat = CalcSkeletonMatrix(iBlendWeight, iBlendIndex);
+    pos = mul(pos, skin_mat);
+#endif
+	
+    pos.w = 1.0;
+	oPos 		= mul(pos, modelInfo.mvpMatrix);	
+	oPosWorld	= mul(pos, modelInfo.modelMatrix).xyz;
+}

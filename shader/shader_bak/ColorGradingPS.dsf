@@ -1,0 +1,32 @@
+//STAGE:ps
+#include "common.dsh"
+
+
+Texture2D src_tex;
+Texture2D lut_tex;	// lut image size 512x512 ---> lut 64x64x64
+
+float4 main(in float2 iTc : TEXCOORD) : SV_Target
+{
+	float4 sColor = src_tex.Sample(linear_sampler, iTc);
+
+	float sChanB = sColor.b * 63.0;
+	float2 tc1;
+	tc1.x = floor(sChanB * 0.125);
+	tc1.y = floor(sChanB) - tc1.x * 8.0;
+	tc1.x = tc1.x * 0.125 + 0.123046875 * sColor.r + 0.0009765625;
+	tc1.y = tc1.y * 0.125 + 0.123046875 * sColor.g + 0.0009765625;
+
+	float2 tc2;
+	tc2.x = floor(ceil(sChanB) / 7.999);
+	tc2.y = ceil(sChanB) - tc2.x * 8.0;
+	tc2.x = tc2.x * 0.125 + 0.123046875 * sColor.r + 0.0009765625;
+	tc2.y = tc2.y * 0.125 + 0.123046875 * sColor.g + 0.0009765625;
+
+	float4 color1 = lut_tex.Sample(linear_sampler, tc1);
+	float4 color2 = lut_tex.Sample(linear_sampler, tc2);
+
+	float4 tColor = lerp(color1, color2, frac(sChanB));
+	tColor.a = sColor.a;
+	tColor = saturate(tColor);
+	return tColor;
+}

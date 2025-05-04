@@ -1,0 +1,20 @@
+//STAGE:ps
+//PREDEFINE:ENABLE_ADVANCE=0,1
+#include "ColorSpaceCvt_common.dsh"
+
+Texture2D Texture0; // hardcode in imge_component.cpp
+
+float4 main(
+	in float2 iTc : TEXCOORD,
+	float4 	 iPos : SV_POSITION) : SV_Target
+{
+	float4 yuv422 = Texture0.Sample(linear_sampler, iTc);
+#if defined(DVF_MSL_MACOS) || defined(DVF_MSL_IOS)
+	float4 ycbcr = float4(yuv422.g, yuv422.b, yuv422.r, 1.0);
+#else
+	float4 ycbcr = float4(yuv422.g, yuv422.r, yuv422.b, 1.0);
+#endif
+	float4 tmp = yuv2rgb(ycbcr);
+
+	return run(iTc, iPos, tmp);
+}

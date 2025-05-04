@@ -1,0 +1,24 @@
+//STAGE:cs
+
+#include "shared/Waves.h"
+cbuffer GlobalParams
+{
+    WavesGlobalParams global_params;
+};
+
+RWTexture2D<float> curr_positions;
+
+[numthreads(1, 1, 1)]
+void main( uint3 DTid : SV_DispatchThreadID )
+{
+    uint x = global_params.disturb_index.x;
+    uint y = global_params.disturb_index.y;
+    
+    float half_magnitude = 0.5f * global_params.disturb_magnitude;
+    
+    curr_positions[uint2(x,   y  )] += global_params.disturb_magnitude;
+    curr_positions[uint2(x+1, y  )] += half_magnitude;
+    curr_positions[uint2(x-1, y  )] += half_magnitude;
+    curr_positions[uint2(x,   y+1)] += half_magnitude;
+    curr_positions[uint2(x,   y-1)] += half_magnitude;
+}

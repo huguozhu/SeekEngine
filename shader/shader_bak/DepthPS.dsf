@@ -1,0 +1,22 @@
+//STAGE:ps
+#include "common.dsh"
+
+Texture2D src_depth;
+
+struct DepthGlobalParams
+{
+	float2 camera_n_f;
+};
+
+cbuffer GlobalParams
+{
+	DepthGlobalParams global_params;
+}
+
+float4 main(
+	in float2 iTc : TEXCOORD) : SV_Target
+{
+	float depth = src_depth.Sample(point_sampler, iTc).r;
+	float linear_depth = LinearizeDepth(depth, global_params.camera_n_f.x, global_params.camera_n_f.y);
+	return linear_depth;
+}	

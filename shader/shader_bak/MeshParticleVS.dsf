@@ -1,0 +1,25 @@
+//STAGE:vs
+
+cbuffer mvpMatrix
+{
+    float4x4 mvpMatrix;
+}
+
+void main(
+	in 	float3 	iPos 	: POSITION,
+	in 	float2 	iTc		: TEXCOORD,
+	in 	float3 	iInstPos: INSTANCE,
+	in 	float2 	iInstTc	: INSTANCE1,
+	in  float3  iInstRotate0 : INSTANCE2,
+	in  float3  iInstRotate1 : INSTANCE3,
+	in  float3  iInstRotate2 : INSTANCE4,
+	out float2	oTc		: TEXCOORD, 
+	out float4	oPos	: SV_POSITION)
+{
+    float3x3 rotateMat = float3x3(iInstRotate0, iInstRotate1, iInstRotate2);
+    oTc = iTc + iInstTc;
+	oTc.y = 1.0 - oTc.y;
+    float3 pos_rotate = mul(iPos, rotateMat);
+    float4 pos = float4(pos_rotate + iInstPos, 1.0);
+	oPos = mul(pos, mvpMatrix);
+}

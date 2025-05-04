@@ -1,0 +1,105 @@
+//STAGE:ps
+//PREDEFINE:USE_CSM=0,1
+#include "common.dsh"
+
+#if USE_CSM == 0
+#include "Shadow.dsh"
+#endif
+
+cbuffer lightInfo
+{
+    LightInfo lightInfo;
+};
+
+cbuffer cameraInfo
+{
+	CameraInfo cameraInfo;
+};
+
+cbuffer deferredLightingInfo
+{
+	DeferredLightingInfo deferredLightingInfo;
+}
+Texture2D depth_tex;
+
+
+#if USE_CSM == 1
+cbuffer csmDistance
+{
+	float4 csmDistance;
+}
+cbuffer csmLightVPMatrices
+{
+	float4x4 csmLightVPMatrices[NUM_CSM_LEVELS];
+}
+cbuffer lightViewMatrix
+{
+	float4x4 lightViewMatrix;
+}
+Texture2D cascadedShadowMap0;
+Texture2D cascadedShadowMap1;
+Texture2D cascadedShadowMap2;
+Texture2D cascadedShadowMap3;
+float CalcDirectionalLightCascadedShadow(LightInfo lightInfo, float3 posWorld)
+{		
+	float4 pos_light_vs = mul(float4(posWorld, 1.0), lightViewMatrix);
+	pos_light_vs = pos_light_vs / pos_light_vs.w;
+	
+	if (pos_light_vs.z > lightInfo.nearFarPlane.y || pos_light_vs.z < lightInfo.nearFarPlane.x)
+		return 0.0;
+
+	// select cascaded layer
+	int layer = NUM_CSM_LEVELS - 1;
+	for (int i = 0; i < NUM_CSM_LEVELS; ++i)
+	{
+		if (pos_light_vs.z <= csmDistance[i])
+		{
+			layer = i;
+			break;
+		}
+	}
+	
+	float shadow = 0.0;
+	[branch]
+	if (layer != -1 && layer < NUM_CSM_LEVELS)
+	{
+		float4 posInCsmLightSpace4 = mul(float4(posWorld, 1.0), csmLightVPMatrices[layer]);
+		float3 posInCsmLightSpace = posInCsmLightSpace4.xyz / posInCsmLightSpace4.w;
+		posInCsmLightSpace.xy = TexCoordFromPosNDC(posInCsmLightSpace);
+
+		float closest_depth[NUM_CSM_LEVELS];
+		closest_depth[0] = cascadedShadowMap0.SampleLevel(shadow_map_sampler, posInCsmLightSpace.xy, 0).x;
+		closest_depth[1] = cascadedShadowMap1.SampleLevel(shadow_map_sampler, posInCsmLightSpace.xy, 0).x;
+		closest_depth[2] = cascadedShadowMap2.SampleLevel(shadow_map_sampler, posInCsmLightSpace.xy, 0).x;
+		closest_depth[3] = cascadedShadowMap3.SampleLevel(shadow_map_sampler, posInCsmLightSpace.xy, 0).x;
+
+		for (int i = 0; i < layer; i++)
+		{
+			if (closest_depth[i] < 0.99)
+			{
+				shadow = 1.0;
+				return shadow;
+			}
+		}
+		shadow = posInCsmLightSpace.z - lightInfo.shadowBias > closest_depth[layer] ? 1.0 : 0.0;
+	}
+	return shadow;
+}
+#endif
+
+float4 main(
+	in 	float4 iPosView	: POSITION,
+	in 	float2 iTc		: TEXCOORD) : SV_Target
+{
+	float depth = depth_tex.Sample(point_sampler, iTc).x;
+	float depth_view = ViewSpaceDepth(depth, cameraInfo.nearFarPlane.x, cameraInfo.nearFarPlane.y);
+	float3 pos_view = (iPosView.xyz / iPosView.w) * (depth_view / cameraInfo.nearFarPlane.y);
+	float4 pos_world = mul(float4(pos_view, 1.0), deferredLightingInfo.lightVolumeInvView);
+	pos_world = pos_world / pos_world.w;
+#if USE_CSM == 1
+	float shadow = CalcDirectionalLightCascadedShadow(lightInfo, pos_world.xyz);
+#elif USE_CSM == 0
+	float shadow = CalcSpotDirectionalLightShadow(lightInfo, pos_world.xyz);
+#endif	
+	return float4(shadow, shadow, shadow, shadow);
+}

@@ -1,0 +1,17 @@
+//STAGE:ps
+//PREDEFINE:ENABLE_ADVANCE=0,1
+#include "ColorSpaceCvt_common.dsh"
+
+Texture2D Texture0; // hardcode in imge_component.cpp
+Texture2D Texture1;
+Texture2D Texture2;
+
+float4 main(
+	in float2 iTc : TEXCOORD,
+	float4 	 iPos : SV_POSITION) : SV_Target
+{
+	float4 ycbcr = float4(sampling_yuv(Texture0, Texture1, Texture2, iTc, iPos), 1.0);
+	float4 tmp = yuv2rgb(ycbcr);
+
+	return run(iTc, iPos, tmp);
+}

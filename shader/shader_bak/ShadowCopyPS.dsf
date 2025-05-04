@@ -1,0 +1,11 @@
+//STAGE:ps
+#include "common.dsh"
+
+Texture2D shadow_map_tex;
+
+float4 main(
+	in float2 iTc		: TexCoord0) : SV_Target
+{	
+	float depth = shadow_map_tex.Sample(point_sampler, iTc).x;
+	return float4(depth, depth, depth, depth);
+}

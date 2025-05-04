@@ -1,0 +1,105 @@
+//STAGE:ps
+//PREDEFINE:HAS_SHADOW=0,1
+//PREDEFINE:TILE_CULLING=0,1
+#include "common.dsh"
+#include "Lighting.dsh"
+
+#if HAS_SHADOW == 1
+#include "Shadow.dsh"
+#endif
+
+
+cbuffer cameraInfo
+{
+	CameraInfo cameraInfo;
+}
+cbuffer deferredLightingInfo
+{
+	DeferredLightingInfo deferredLightingInfo;
+}
+
+#if TILE_CULLING == 1
+cbuffer c_frame_size
+{
+	float2 c_frame_size;
+}
+StructuredBuffer<TileInfo> tile_infos;
+#endif
+StructuredBuffer<LightInfo> light_infos;
+
+Texture2D gbuffer0;
+Texture2D gbuffer1;
+Texture2D depth_tex;
+Texture2D shadowing_tex;
+
+float4 main(
+	in 	float4 iPosView	: POSITION,
+	in 	float2 iTc		: TEXCOORD) : SV_Target
+{	
+	float4 gb0 = gbuffer0.Sample(point_sampler, iTc);
+	float4 gb1 = gbuffer1.Sample(point_sampler, iTc);
+	float3 normal = BestFitNormal_Decode(gb0.xyz);
+	float3 albedo = gb1.xyz;
+	float roughness = gb0.w;
+	float metallic = gb1.w;
+	
+	float depth = depth_tex.Sample(point_sampler, iTc).x;
+	float depth_view = ViewSpaceDepth(depth, cameraInfo.nearFarPlane.x, cameraInfo.nearFarPlane.y);
+	float3 pos_view = (iPosView.xyz / iPosView.w) * (depth_view / cameraInfo.nearFarPlane.y);
+	float4 pos_world4 = mul(float4(pos_view, 1.0), deferredLightingInfo.lightVolumeInvView);
+	float3 pos_world = pos_world4.xyz / pos_world4.w;
+		
+	float3 V = normalize(cameraInfo.posWorld - pos_world);
+	float3 N = normalize(normal);	
+	float3 Lo = 0;
+	
+#if TILE_CULLING == 1
+	uint dispatch_width = (c_frame_size.x + TILE_SIZE - 1) / TILE_SIZE;
+	uint tile_index = (uint)(iTc.y * c_frame_size.y / TILE_SIZE) * dispatch_width + (uint)(iTc.x * c_frame_size.x / TILE_SIZE);
+	[loop]
+	for (uint i=0; i < tile_infos[tile_index].light_num; i++)
+	{
+		uint light_index = tile_infos[tile_index].light_indices[i];
+		LightInfo lightInfo = light_infos[light_index];
+#elif TILE_CULLING == 0
+	[loop]
+	for (uint i=0; i<deferredLightingInfo.light_num; i++)
+	{
+		uint light_index = i + deferredLightingInfo.light_index_start;
+		LightInfo lightInfo = light_infos[light_index];
+#endif
+		
+		float shadow = 0;
+#if HAS_SHADOW == 1
+		shadow = shadowing_tex.SampleLevel(shadow_map_sampler, iTc, 0)[lightInfo.shadowMapIndex];
+#endif
+		float3 L;
+		float lightAttenuation = 1.0;
+		[branch]
+		if (lightInfo.type == LIGHT_TYPE_DIRECTIONAL)
+		{
+			L = normalize(-lightInfo.direction);
+			lightAttenuation = 1.0;
+		}
+		else if (lightInfo.type == LIGHT_TYPE_SPOT)
+		{
+			L = normalize(lightInfo.posWorld - pos_world);
+			float3 posToLight = lightInfo.posWorld - pos_world;
+			lightAttenuation = GetDistanceAttenuation(posToLight, lightInfo.falloffRadius);
+			lightAttenuation *= GetSpotAngleAttenuation(L, lightInfo.direction, lightInfo.inOutCutoff);
+		}
+		else if (lightInfo.type == LIGHT_TYPE_POINT)
+		{
+			L = normalize(lightInfo.posWorld - pos_world);
+			float3 posToLight = lightInfo.posWorld - pos_world;
+			lightAttenuation = GetDistanceAttenuation(posToLight, lightInfo.falloffRadius);
+		}
+		float NoL = dot(N, L);
+		[branch]
+		if (NoL > 0.0)
+		{	
+			Lo += CalcLightingBRDF(albedo, metallic, roughness, lightInfo.color, lightInfo.intensity, lightAttenuation, N, L, V, shadow);
+		}
+	}
+	return float4(Lo, 1.0);
+}
