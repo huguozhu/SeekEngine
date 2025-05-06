@@ -122,4 +122,31 @@ protected:
     float                   m_fSensitivity = 100.0f;
 };
 
+/******************************************************************************
+ * LightCameraComponent
+ ******************************************************************************/
+class LightCameraComponent : public CameraComponent
+{
+public:
+    LightCameraComponent(Context* context, CameraProjectionType type = CameraProjectionType::Perspective, std::string const& name = "CameraComponet");
+    virtual ~LightCameraComponent();
+};
+/******************************************************************************
+ * CSMLightCameraComponent
+ ******************************************************************************/
+class CsmCameraComponent : public SceneComponent
+{
+public:
+    CsmCameraComponent(Context* context, std::string const& name = "CSMCameraComponent");
+    virtual ~CsmCameraComponent();
+
+    void SetParam(float width, float height, float near_plane, float far_plane);
+    CameraComponent* GetCameraByCSMIndex(uint32_t index);
+
+    float4& GetCsmFarDistance() { return m_fCsmFarDistances; }
+
+private:
+    CameraComponentPtr  m_pCSMCameras[NUM_CSM_LEVELS];
+    float4              m_fCsmFarDistances;
+};
 SEEK_NAMESPACE_END

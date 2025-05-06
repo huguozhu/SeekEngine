@@ -28,7 +28,10 @@ enum class LightIntensityUnit : uint32_t
 
 enum LightAttrib : uint32_t
 {
-    IndirectLighting    = 1UL << 2,
+    CastShadow = 1UL << 0,
+    SoftShadow = 1UL << 1,
+    CascadedShadow = 1UL << 2,         // only support Directional Light in Deferred Shading
+    IndirectLighting = 1UL << 3,
 };
 
 class LightComponent : public SceneComponent
@@ -43,6 +46,12 @@ public:
     void            SetEnable(bool v) { m_bIsEnable = v; }
     bool            IsEnable() { return m_bIsEnable; }
 
+    void            CastShadow(bool v);
+    bool            CastShadow();
+    void            SoftShadow(bool v);
+    bool            SoftShadow();
+    virtual void    CascadedShadow(bool v);
+    bool            CascadedShadow();
     void            IndirectLighting(bool v);
     bool            IndirectLighting();
 
@@ -66,6 +75,9 @@ public:
 
     virtual void    SetInOutCutoff(float2 cutoff) {}
 
+    virtual void                UpdateShadowMapCamera() {}
+    virtual CameraComponent*    GetShadowMapCamera(size_t index = 0) = 0;
+
 protected:
     LightComponent(Context* context, LightType lightType, std::string const& name = "LightComponent");
 
@@ -74,6 +86,7 @@ protected:
     Color               m_cColor = Color::White;
     uint32_t            m_iAttrib = 0;
     bool                m_bIsEnable = true;
+    float               m_fShadowBias = 0.005;          // [0.0, 1.0]
     float               m_fFalloffRadius = 10.0;
     float               m_fIntensity = 1.0;
 
@@ -92,6 +105,8 @@ public:
     virtual ~AmbientLightComponent();
     float GetAmbientFactor() const { return m_fAmbientFactor; }
 
+    virtual CameraComponent* GetShadowMapCamera(size_t index = 0) override { return nullptr; }
+
 private:
     float m_fAmbientFactor = 0.1f;       // default ambient factor = 0.1
 };
@@ -104,6 +119,19 @@ class DirectionalLightComponent : public LightComponent
 public:
     DirectionalLightComponent(Context* context, std::string const& name = "DirectionalLightComponent");
     virtual ~DirectionalLightComponent();
+
+    virtual CameraComponent* GetShadowMapCamera(size_t index = 0) override;
+
+    virtual void    CascadedShadow(bool v) override;
+
+    // CSM
+    CsmCameraComponent* GetCSMCamera() { return m_pCsmCamera.get(); }
+
+protected:
+    CameraComponentPtr      m_pSMCamera = nullptr;
+
+    // for CSM & Orthographic param
+    CsmCameraComponentPtr   m_pCsmCamera = nullptr;
 };
 
 /******************************************************************************
@@ -118,8 +146,11 @@ public:
     virtual  void SetInOutCutoff(float2 cutoff) override;
     float2 GetInOutCutoff() { return m_fInOutCutoff; }
 
+    virtual CameraComponent* GetShadowMapCamera(size_t index = 0) override;
+
 protected:
     float2              m_fInOutCutoff = float2(float(Math::PI * 0.3f), float(Math::PI * 0.375f));
+    CameraComponentPtr  m_pSMCamera = nullptr;
 };
 
 /******************************************************************************
@@ -130,5 +161,11 @@ class PointLightComponent : public LightComponent
 public:
     PointLightComponent(Context* context, std::string const& name = "PointLightComponent");
     virtual ~PointLightComponent();
+
+    virtual void UpdateShadowMapCamera() override;
+    virtual CameraComponent* GetShadowMapCamera(size_t index = 0) override;
+
+protected:
+    std::array<CameraComponentPtr, 6> m_aSMCameras;
 };
 SEEK_NAMESPACE_END

@@ -124,3 +124,35 @@ struct LightInfo
 #endif
 };
 
+// deferred shading
+#define MAX_DEFERRED_LIGHTS_NUM         2048
+#define MAX_DEFERRED_LIGHTS_INDICES     ((MAX_DEFERRED_LIGHTS_NUM >> 3) - 1)
+
+#define TILE_SIZE                       16
+
+#define NUM_CSM_LEVELS                  4
+
+struct DeferredLightingInfo
+{
+    float4x4    lightVolumeMV;
+    float4x4    lightVolumeInvView;
+    int         light_index_start;
+    int         light_num;
+    int2        t1;
+
+#ifdef DVF_CPP
+    DeferredLightingInfo()
+    {
+        lightVolumeMV = float4x4::Identity();
+        lightVolumeInvView = float4x4::Identity();
+        light_index_start = 0;
+        light_num = 0;
+    }
+#endif
+};
+
+struct TileInfo
+{
+    uint light_num;
+    uint light_indices[MAX_DEFERRED_LIGHTS_INDICES];
+};

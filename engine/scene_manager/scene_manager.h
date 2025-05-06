@@ -41,6 +41,7 @@ public:
     std::vector<WaterMarkComponent*>&   GetWaterMarkComponents() { return m_vWaterMarkComponents; }
 
     virtual SResult                     Tick(float delta_time);
+    
 
     Rect<uint32_t>                      GetRenderRect() const { return m_RenderRect; }
 

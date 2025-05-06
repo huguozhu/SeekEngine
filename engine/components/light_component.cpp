@@ -61,6 +61,30 @@ LightComponentPtr LightComponent::CreateLightComponent(Context* context, LightTy
     pLightComponent->SetName(name);
     return pLightComponent;
 }
+void LightComponent::CastShadow(bool v)
+{
+    m_iAttrib |= v ? (m_iAttrib | LightAttrib::CastShadow) : (m_iAttrib & !(LightAttrib::CastShadow));
+}
+bool LightComponent::CastShadow()
+{
+    return m_iAttrib & LightAttrib::CastShadow;
+}
+void LightComponent::SoftShadow(bool v)
+{
+    m_iAttrib |= v ? (m_iAttrib | LightAttrib::SoftShadow) : (m_iAttrib & !(LightAttrib::SoftShadow));
+}
+bool LightComponent::SoftShadow()
+{
+    return m_iAttrib & LightAttrib::SoftShadow;
+}
+void LightComponent::CascadedShadow(bool v)
+{
+    m_iAttrib |= v ? (m_iAttrib | LightAttrib::CascadedShadow) : (m_iAttrib & !(LightAttrib::CascadedShadow));
+}
+bool LightComponent::CascadedShadow()
+{
+    return m_iAttrib & LightAttrib::CascadedShadow;
+}
 void LightComponent::IndirectLighting(bool v)
 {
     m_iAttrib |= v ? (m_iAttrib | LightAttrib::IndirectLighting) : (m_iAttrib & !(LightAttrib::IndirectLighting));
@@ -177,9 +201,34 @@ AmbientLightComponent::~AmbientLightComponent()
 DirectionalLightComponent::DirectionalLightComponent(Context* context, std::string const& name)
     : LightComponent(context, LightType::Directional, name)
 {
+    m_pSMCamera = MakeSharedPtr<LightCameraComponent>(context);
+    m_pSMCamera->ProjOrthographicParams(10, 10, DEFAULT_SM_CAMERA_NEAR, DEFAULT_SM_CAMERA_FAR);
+    m_pSMCamera->SetName("Directional SM Camera");
+    m_pSMCamera->SetParent(this);
+    this->AddChild(m_pSMCamera);
 }
 DirectionalLightComponent::~DirectionalLightComponent()
 {
+    if (m_pSMCamera)
+        m_pSMCamera->SetParent(nullptr);
+    //if (m_pCsmCamera)
+    //    m_pCsmCamera->SetParent(nullptr);
+}
+void DirectionalLightComponent::CascadedShadow(bool v)
+{
+    LightComponent::CascadedShadow(v);
+    //if (v && !m_pCsmCamera)
+    //{
+    //    // only deferred shading use CSM
+    //    m_pCsmCamera = MakeSharedPtr<CsmCameraComponent>(m_pContext);
+    //    m_pCsmCamera->SetParam(10, 10, DEFAULT_SM_CAMERA_NEAR, DEFAULT_SM_CAMERA_FAR);
+    //    m_pCsmCamera->SetParent(this);
+    //    this->AddChild(m_pCsmCamera);
+    //}
+}
+CameraComponent* DirectionalLightComponent::GetShadowMapCamera(size_t)
+{
+    return m_pSMCamera.get();
 }
 /******************************************************************************
  * SpotLightComponent
@@ -187,24 +236,95 @@ DirectionalLightComponent::~DirectionalLightComponent()
 SpotLightComponent::SpotLightComponent(Context* context, std::string const& name)
     : LightComponent(context, LightType::Spot, name)
 {
+    m_pSMCamera = MakeSharedPtr<LightCameraComponent>(context);
+    m_pSMCamera->ProjPerspectiveParams(m_fInOutCutoff[1] * 2.0, 1.0, DEFAULT_SM_CAMERA_NEAR, DEFAULT_SM_CAMERA_FAR);
+    m_pSMCamera->SetName("Spot SM Camera");
+    m_pSMCamera->SetParent(this);
+    this->AddChild(m_pSMCamera);
 }
 SpotLightComponent::~SpotLightComponent()
 {
+    if (m_pSMCamera)
+        m_pSMCamera->SetParent(nullptr);
 }
 void SpotLightComponent::SetInOutCutoff(float2 cutoff)
 {
     m_fInOutCutoff = cutoff;
+    if (m_pSMCamera)
+    {
+        m_pSMCamera->ProjPerspectiveParams(cutoff[1] * 2.0, 1.0, DEFAULT_SM_CAMERA_NEAR, DEFAULT_SM_CAMERA_FAR);
+    }
+}
+CameraComponent* SpotLightComponent::GetShadowMapCamera(size_t)
+{
+    return m_pSMCamera.get();
 }
 /******************************************************************************
  * PointLightComponent
  ******************************************************************************/
+static std::vector<float3> lookat_offset = {
+        float3(1.0f,   0.0f,  0.0f),
+        float3(-1.0f,  0.0f,  0.0f),
+        float3(0.0f,   1.0f,  0.0f),
+        float3(0.0f,  -1.0f,  0.0f),
+        float3(0.0f,   0.0f,  1.0f),
+        float3(0.0f,   0.0f, -1.0f),
+};
+static std::vector<float3> up = {
+    float3(0.0f,  1.0f,  0.0),
+    float3(0.0f,  1.0f,  0.0),
+    float3(0.0f,  0.0f,  1.0),
+    float3(0.0f,  0.0f,  1.0),
+    float3(0.0f,  1.0f,  0.0),
+    float3(0.0f,  1.0f,  0.0),
+};
 PointLightComponent::PointLightComponent(Context* context, std::string const& name)
     : LightComponent(context, LightType::Point, name)
 {    
+    m_fShadowBias = 0.05;
+    Matrix4 proj = Math::PerspectiveLH(90.0 * Math::DEG2RAD, 1.0, DEFAULT_SM_CAMERA_NEAR, DEFAULT_SM_CAMERA_FAR);
+    for (uint32_t face = (uint32_t)CubeFaceType::Positive_X; face < (uint32_t)CubeFaceType::Num; face++)
+    {
+        m_aSMCameras[face] = MakeSharedPtr<LightCameraComponent>(context);
+        float3 pos = this->GetWorldTransform().GetTranslation();
+        Matrix4 view = Math::LookAtLH(pos, pos + lookat_offset[face], up[face]);
+        m_aSMCameras[face]->SetViewMatrix(view);
+        m_aSMCameras[face]->SetProjMatrix(proj);
+        m_aSMCameras[face]->SetName("Point SM Camera_" + std::to_string(face));
+        m_aSMCameras[face]->SetNearPlane(DEFAULT_SM_CAMERA_NEAR);
+        m_aSMCameras[face]->SetFarPlane(DEFAULT_SM_CAMERA_FAR);
+
+        m_aSMCameras[face]->SetParent(this);
+        this->AddChild(m_aSMCameras[face]);
+    }
 }
 PointLightComponent::~PointLightComponent()
 {
-    
+    for (uint32_t i = 0; i < 6; i++)
+    {
+        m_aSMCameras[i]->SetParent(nullptr);
+    }
+}
+
+void PointLightComponent::UpdateShadowMapCamera()
+{
+    //    if (m_bWorldDirty)
+    {
+        //m_bWorldDirty = false;
+        for (uint32_t face = (uint32_t)CubeFaceType::Positive_X; face < (uint32_t)CubeFaceType::Num; face++)
+        {
+            float3 pos = this->GetWorldTransform().GetTranslation();
+            Matrix4 view = Math::LookAtLH(pos, pos + lookat_offset[face], up[face]);
+            m_aSMCameras[face]->SetViewMatrix(view);
+        }
+    }
+
+}
+CameraComponent* PointLightComponent::GetShadowMapCamera(size_t index)
+{
+    if (index > 5)
+        return nullptr;
+    return m_aSMCameras[index].get();
 }
 
 SEEK_NAMESPACE_END

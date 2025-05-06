@@ -12,6 +12,7 @@ public:
     virtual SResult     Init() override;
     virtual SResult     BuildRenderJobList() override;
     virtual SResult     GetEffectTechniqueToRender(RHIMeshPtr mesh, Technique** tech) override;
+    void    AppendShadowMapJobs(uint32_t light_index);
 
     // Rendering Jobs
     RendererReturnValue RenderSceneJob();
@@ -29,7 +30,7 @@ protected:
     RHITexturePtr       m_pRenderSceneDepthTex;
     RHIFrameBufferPtr   m_pRenderSceneFB;
 
-    std::vector<MeshPair> m_renderableMeshes;
+    
 };
 
 SEEK_NAMESPACE_END

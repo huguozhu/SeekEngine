@@ -45,6 +45,8 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/effect/postprocess.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/scene_renderer.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/scene_renderer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/shadow_layer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/shadow_layer.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/technique.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/technique.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/variable.h

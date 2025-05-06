@@ -16,6 +16,12 @@ enum RendererReturnValue : uint32_t
 enum class RenderStage : uint8_t
 {
     None,
+    PreZ,
+    GenerateShadowMap,
+    GenerateCubeShadowMap,
+    GenerateCascadedShadowMap,
+    GenerateReflectiveShadowMap,
+    GenerateGBuffer,
     RenderScene,
 };
 
@@ -57,6 +63,10 @@ public:
     void                    SetCurRenderStage(RenderStage stage) { m_eCurRenderStage = stage; }
 
     SResult                 FillLightInfoByLightIndex(LightInfo& info, CameraComponent*  pCamera, size_t light_index);
+    virtual SResult         RenderScene(uint32_t scope = (uint32_t)RenderScope::ALL);
+
+
+
 
     void SetViewport(const Viewport& viewport)
     {
@@ -88,6 +98,11 @@ protected:
     
     Viewport m_RenderViewport;  // for intermediate resources during rendering, left/top are always 0
     Viewport m_FinalViewport;   // for user provided render target, draw on the specialed area
+
+    std::vector<MeshPair> m_renderableMeshes;
+
+    // ShadowMap & Cascaded ShadowMap
+    ShadowLayerPtr                                  m_pShadowLayer = nullptr;
 };
 
 SEEK_NAMESPACE_END

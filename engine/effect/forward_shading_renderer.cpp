@@ -2,6 +2,7 @@
 #include "effect/technique.h"
 #include "effect/postprocess.h"
 #include "effect/effect.h"
+#include "effect/shadow_layer.h"
 #include "kernel/context.h"
 #include "rhi/base/rhi_context.h"
 #include "rhi/base/rhi_framebuffer.h"
@@ -137,6 +138,23 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
     // in furture, need a framegraph to do this
     SResult ret = PrepareFrameBuffer();
 
+
+    // Shadow Map jobs
+    SceneManager& sm = m_pContext->SceneManagerInstance();
+    size_t light_count = sm.NumLightComponent();
+	if (light_count > 0 && m_pContext->EnableShadow())
+	{
+        m_pShadowLayer->AnalyzeLightShadow();
+        for (size_t i = 0; i < light_count; i++)
+        {
+            LightComponent* pLight = sm.GetLightComponentByIndex(i);
+            if (pLight->IsEnable() && pLight->CastShadow())
+            {
+                this->AppendShadowMapJobs((uint32_t)i);
+            }
+        }
+	}
+
     if (m_pContext->SceneManagerInstance().GetSkyBoxComponent())
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderSkyBoxJob, this)));
     if (m_pContext->SceneManagerInstance().GetParticleComponents().size() > 0)
@@ -158,56 +176,11 @@ RendererReturnValue ForwardShadingRenderer::RenderSceneJob()
 {
     SResult res;
     m_eCurRenderStage = RenderStage::RenderScene;
-    if (m_renderableMeshes.empty())
-        return RRV_NextJob;
 
-    for (auto& mesh : m_renderableMeshes)
-    {
-        Technique* tech = nullptr;
-        RHIMeshPtr pMesh = mesh.first->GetMeshByIndex(mesh.second);
-        if (!pMesh->GetTechnique())
-        {
-            // auto choose a technique
-            GetEffectTechniqueToRender(pMesh, &tech);
-            pMesh->SetTechnique(tech);
-        }
-    }
-
-    // the SceneManager can supply the sort method
-    float3 base = m_pContext->SceneManagerInstance().GetActiveCamera()->GetWorldTransform().GetTranslation();
-    std::sort(m_renderableMeshes.begin(), m_renderableMeshes.end(), [base](const MeshPair& m1, const MeshPair& m2)->bool {
-        float dis1 = Math::Distance(base, m1.first->GetMeshByIndex(m1.second)->GetAABBoxWorld().Center());
-        float dis2 = Math::Distance(base, m2.first->GetMeshByIndex(m2.second)->GetAABBoxWorld().Center());
-
-        if (m1.first->GetMeshByIndex(m1.second)->GetMaterial()->alpha_mode == AlphaMode::Blend &&
-            m2.first->GetMeshByIndex(m2.second)->GetMaterial()->alpha_mode == AlphaMode::Blend)
-        {
-            return dis1 > dis2;
-        }
-        else if (m1.first->GetMeshByIndex(m1.second)->GetMaterial()->alpha_mode == AlphaMode::Blend)
-        {
-            return false;
-        }
-        else if (m2.first->GetMeshByIndex(m2.second)->GetMaterial()->alpha_mode == AlphaMode::Blend)
-        {
-            return true;
-        }
-        else
-        {
-            return dis1 < dis2;
-        }
-    });
-    
-    RHIContext::RenderPassInfo info;
-    info.name = "RenderScene";
-    info.fb = m_pRenderSceneFB.get();
-    m_pContext->RHIContextInstance().BeginRenderPass(info);
-    for (MeshPair& mesh_id : m_renderableMeshes)
-    {
-        res = mesh_id.first->RenderMesh(mesh_id.second);
-    }
+    m_pContext->RHIContextInstance().BeginRenderPass({"RenderScene" , m_pRenderSceneFB.get()});
+    this->RenderScene();
     m_pContext->RHIContextInstance().EndRenderPass();
-    
+
     m_eCurRenderStage = RenderStage::None;
     return RRV_NextJob;
 }
@@ -345,7 +318,34 @@ SResult ForwardShadingRenderer::PrepareFrameBuffer()
     
     return S_Success;
 }
+void ForwardShadingRenderer::AppendShadowMapJobs(uint32_t light_index)
+{
+    SceneManager& sc = m_pContext->SceneManagerInstance();
+    LightComponent* pLight = sc.GetLightComponentByIndex(light_index);
+    if (!pLight) return;
 
+    LightType type = pLight->GetLightType();
+    switch (type)
+    {
+    case LightType::Point:
+    {
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ShadowLayer::GenerateShadowMapJob, m_pShadowLayer.get(), light_index)));
+        break;
+    }
+    case LightType::Directional:
+    case LightType::Spot:
+    {
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ShadowLayer::GenerateShadowMapJob, m_pShadowLayer.get(), light_index)));
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadowLayer::PostProcessShadowMapJob, (ForwardShadowLayer*)m_pShadowLayer.get(), light_index)));
+        break;
+    }
+    case LightType::Ambient:
+    case LightType::Unknown:
+    case LightType::Num:
+        break;
+    }
+    return;
+}
 SEEK_NAMESPACE_END
 
 #undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

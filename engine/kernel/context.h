@@ -43,6 +43,7 @@ struct RenderInitInfo
     bool                    enable_transparent = false;
     bool                    enable_ambient_occlusion = false;
     bool                    enable_capture = false;
+    bool                    enable_shadow = false;
     RHIType                 rhi_type = RHIType::D3D11;
     bool                    HDR = false;
     uint32_t                num_samples = 1;
@@ -81,6 +82,7 @@ public:
     bool                IsDebug()               const { return m_InitInfo.debug; }
     bool                EnableTransparent()     const { return m_InitInfo.enable_transparent; }
     bool                EnableAmbientOcclusion()const { return m_InitInfo.enable_ambient_occlusion;}    
+	bool                EnableShadow()          const { return m_InitInfo.enable_shadow; }
     int32_t             GetPreferredAdapter()   const { return m_InitInfo.preferred_adapter; }
     uint32_t            GetNumSamples()         const { return m_InitInfo.num_samples; }
     bool                IsHDR()                 const { return m_InitInfo.HDR; }

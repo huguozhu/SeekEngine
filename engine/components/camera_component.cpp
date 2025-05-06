@@ -258,6 +258,66 @@ void CameraComponent::SetWorldDirty()
     m_bViewDirty = true;
 }
 
+/******************************************************************************
+ * LightCameraComponent
+ ******************************************************************************/
+LightCameraComponent::LightCameraComponent(Context* context, CameraProjectionType type, std::string const& name)
+    :CameraComponent(context, type, name)
+{
+    m_eComponentType = ComponentType::LightCamera;
+}
+LightCameraComponent::~LightCameraComponent()
+{
+
+}
+
+/******************************************************************************
+ * CSMCameraComponent
+ ******************************************************************************/
+CsmCameraComponent::CsmCameraComponent(Context* context, std::string const& name)
+    : SceneComponent(context, name, ComponentType::CsmCamera)
+{
+    for (uint32_t i = 0; i < NUM_CSM_LEVELS; ++i)
+    {
+        m_pCSMCameras[i] = MakeSharedPtr<LightCameraComponent>(context);
+        m_pCSMCameras[i]->SetName("Directional CSM Camera Level " + std::to_string(i));
+        m_pCSMCameras[i]->SetParent(this);
+        this->AddChild(m_pCSMCameras[i]);
+    }
+}
+CsmCameraComponent::~CsmCameraComponent()
+{
+    for (uint32_t i = 0; i < NUM_CSM_LEVELS; ++i)
+    {
+        m_pCSMCameras[i]->SetParent(nullptr);
+    }
+}
+static float CSM_FAR_DISTANCE_RATE[NUM_CSM_LEVELS] = { 0.02, 0.05, 0.2, 1.0 };
+//static float CSM_FAR_DISTANCE_RATE[NUM_CSM_LEVELS] = { 1.0, 1.0, 1.0, 1.0 };
+void CsmCameraComponent::SetParam(float width, float height, float near_plane, float far_plane)
+{
+    for (uint32_t i = 0; i < NUM_CSM_LEVELS; ++i)
+    {
+        if (i == 0)
+        {
+            m_pCSMCameras[i]->ProjOrthographicParams(width, height, near_plane, CSM_FAR_DISTANCE_RATE[i] * far_plane);
+        }
+        else
+        {
+            m_pCSMCameras[i]->ProjOrthographicParams(width, height, CSM_FAR_DISTANCE_RATE[i - 1] * far_plane, CSM_FAR_DISTANCE_RATE[i] * far_plane);
+        }
+        m_fCsmFarDistances[i] = CSM_FAR_DISTANCE_RATE[i] * far_plane;
+    }
+}
+CameraComponent* CsmCameraComponent::GetCameraByCSMIndex(uint32_t index)
+{
+    CameraComponent* pCam = nullptr;
+    if (index < NUM_CSM_LEVELS)
+    {
+        pCam = m_pCSMCameras[index].get();
+    }
+    return pCam;
+}
 SEEK_NAMESPACE_END
 
 #undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

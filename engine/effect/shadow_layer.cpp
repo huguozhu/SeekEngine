@@ -156,16 +156,18 @@ RendererReturnValue ShadowLayer::GenerateShadowMapJob(uint32_t light_index)
     if (light_type == LightType::Spot || light_type == LightType::Directional)
     {
         sr.SetCurRenderStage(RenderStage::GenerateShadowMap);
-        rc.BindRHIFrameBuffer(m_pSmFb);
+        //rc.BindRHIFrameBuffer(m_pSmFb);
         //m_pSmFb->Clear();
+
         m_pSmFb->SetColorLoadOption(RHIFrameBuffer::Color0, RHIFrameBuffer::LoadAction::Clear);
         m_pSmFb->SetDepthLoadOption(RHIFrameBuffer::LoadAction::Clear);
-
+        m_pContext->RHIContextInstance().BeginRenderPass({ "GenerateShadowMap", m_pSmFb.get() });
         sc.SetActiveCamera(pLight->GetShadowMapCamera());
-        SResult res = sc.RenderScene((uint32_t)RenderScope::Opacity);
+        SResult res = sr.RenderScene((uint32_t)RenderScope::Opacity);
+        m_pContext->RHIContextInstance().EndRenderPass();
         if (res != S_Success)
         {
-            LOG_ERROR_PRIERR(res, "ForwardShadingRenderer::GenerateShadowMapJob() failed.");
+            LOG_ERROR_PRIERR(res, "GenerateShadowMapJob() failed.");
         }
         sc.SetActiveCamera(nullptr);
         sr.SetCurRenderStage(RenderStage::None);
@@ -177,17 +179,28 @@ RendererReturnValue ShadowLayer::GenerateShadowMapJob(uint32_t light_index)
         uint32_t cube_shadow_map_index = m_vShadowIndex[light_index].second;
         for (uint32_t i = (uint32_t)CubeFaceType::Positive_X; i < (uint32_t)CubeFaceType::Num; i++)
         {
-            SResult res = rc.BindFrameBuffer(m_pCubeSmFb[i]);
+            // rc.BindFrameBuffer(m_pCubeSmFb[i]);            
             if (0 == cube_shadow_map_index)
-                res = m_pCubeSmFb[i]->Clear(FrameBuffer::CBM_ALL, float4(1.0f), 1.0f);
+            {
+                //res = m_pCubeSmFb[i]->Clear(FrameBuffer::CBM_ALL, float4(1.0f), 1.0f);
+                m_pCubeSmFb[i]->SetColorLoadOption(RHIFrameBuffer::Color0, float4(1.0f));
+                m_pCubeSmFb[i]->SetDepthLoadOption(1.0f);
+            }
+            else
+            {
+                m_pCubeSmFb[i]->SetColorLoadOption(RHIFrameBuffer::Color0, {});
+                m_pCubeSmFb[i]->SetDepthLoadOption({});
+            }
 
+            SResult res = m_pContext->RHIContextInstance().BeginRenderPass({ "GenerateCubeShadowMap", m_pCubeSmFb[i].get() });
             sc.SetActiveCamera(pLight->GetShadowMapCamera(i));
-            res = sc.RenderScene((uint32_t)RenderScope::Opacity);
+            res = sr.RenderScene((uint32_t)RenderScope::Opacity);
             if (res != S_Success)
             {
-                LOG_ERROR_PRIERR(res, "ForwardShadingRenderer::GenerateShadowMapJob() Point Light failed.");
+                LOG_ERROR_PRIERR(res, "GenerateShadowMapJob() Point Light failed.");
             }
             sc.SetActiveCamera(nullptr);
+            m_pContext->RHIContextInstance().EndRenderPass();
         }
         sr.SetCurRenderStage(RenderStage::None);
     }
@@ -197,7 +210,7 @@ RendererReturnValue ShadowLayer::GenerateShadowMapJob(uint32_t light_index)
 RendererReturnValue ShadowLayer::GenerateCascadedShadowMapJob(uint32_t light_index)
 {
     SceneManager& sc = m_pContext->SceneManagerInstance();
-    RenderContext& rc = m_pContext->RenderContextInstance();
+    RHIContext& rc = m_pContext->RHIContextInstance();
     SceneRenderer& sr = m_pContext->SceneRendererInstance();
 
     LightComponent* pLight = sc.GetLightComponentByIndex(light_index);
@@ -207,15 +220,19 @@ RendererReturnValue ShadowLayer::GenerateCascadedShadowMapJob(uint32_t light_ind
         sr.SetCurRenderStage(RenderStage::GenerateCascadedShadowMap);
         for (uint32_t i = 0; i < NUM_CSM_LEVELS; ++i)
         {
-            rc.BindFrameBuffer(m_vCsmFb[i]);
-            m_vCsmFb[i]->Clear(FrameBuffer::CBM_Color | FrameBuffer::CBM_Depth, float4(pLight->GetShadowMapCamera()->GetNearFarPlane().y(), 0.0, 0.0, 0.0), 1.0);
+            //rc.BindFrameBuffer(m_vCsmFb[i]);
+            //m_vCsmFb[i]->Clear(FrameBuffer::CBM_Color | FrameBuffer::CBM_Depth, float4(pLight->GetShadowMapCamera()->GetNearFarPlane().y(), 0.0, 0.0, 0.0), 1.0);
+            m_vCsmFb[i]->SetColorLoadOption(RHIFrameBuffer::Color0, float4(pLight->GetShadowMapCamera()->GetFarPlane(), 0.0, 0.0, 0.0));
+            m_vCsmFb[i]->SetDepthLoadOption(1.0f);
+            SResult res = m_pContext->RHIContextInstance().BeginRenderPass({ "GenerateCascadedShadowMap", m_vCsmFb[i].get() });
 
             sc.SetActiveCamera(((DirectionalLightComponent*)pLight)->GetCSMCamera()->GetCameraByCSMIndex(i));
-            SResult res = sc.RenderScene((uint32_t)RenderScope::Opacity);
-            if (res != DVF_Success)
+            res = sr.RenderScene((uint32_t)RenderScope::Opacity);
+            if (res != S_Success)
             {
                 LOG_ERROR_PRIERR(res, "ShadowLayer::GenerateCascadedShadowMapJob() failed.");
             }
+            m_pContext->RHIContextInstance().EndRenderPass();
         }
         sc.SetActiveCamera(nullptr);
         sr.SetCurRenderStage(RenderStage::None);
@@ -238,30 +255,36 @@ int32_t ShadowLayer::GetShadowMapIndexByLightIndex(size_t light_index)
 {
     return m_vShadowIndex[light_index].first;
 }
-Effect* ShadowLayer::GetShadowEffect(uint32_t morph_count)
+Technique* ShadowLayer::GetShadowTechnique(uint32_t morph_count)
 {
-    Effect* pEffect = nullptr;
-    if (m_ShadowEffects.find(morph_count) != m_ShadowEffects.end())
-        pEffect = m_ShadowEffects[morph_count].get();
-    else
-    {
-        static std::string morhp_size_macro_name = "MORPH_SIZE";
-        std::string morph_size_value = std::to_string(morph_count);
-        std::vector<std::pair<std::string, std::string>> v;
-        v.push_back(std::make_pair(morhp_size_macro_name, morph_size_value));
+ //   Effect& effect = m_pContext->EffectInstance();
+ //   Technique* pTech = nullptr;
 
-        // FIXME: BAD! we load same effect files many times
-        EffectPtr effect_new = MakeSharedPtr<Effect>(m_pContext);
-        SResult ret = effect_new->Load("shadow.effect", &v);
-        if (ret != DVF_Success)
-        {
-            LOG_ERROR("ShadowLayer::GetShadowEffect() Load failed.");
-            return nullptr;
-        }
-        m_ShadowEffects[morph_count] = effect_new;
-        pEffect = effect_new.get();
-    }
-    return pEffect;
+	//std::string tech_name = "shadow_morph_count" + std::to_string(morph_count);
+ //   //effect.LoadTechnique(tech_name, )
+
+ //   if (m_ShadowEffects.find(morph_count) != m_ShadowEffects.end())
+ //       pEffect = m_ShadowEffects[morph_count].get();
+ //   else
+ //   {
+ //       static std::string morhp_size_macro_name = "MORPH_SIZE";
+ //       std::string morph_size_value = std::to_string(morph_count);
+ //       std::vector<std::pair<std::string, std::string>> v;
+ //       v.push_back(std::make_pair(morhp_size_macro_name, morph_size_value));
+
+ //       // FIXME: BAD! we load same effect files many times
+ //       EffectPtr effect_new = MakeSharedPtr<Effect>(m_pContext);
+ //       SResult ret = effect_new->Load("shadow.effect", &v);
+ //       if (ret != S_Success)
+ //       {
+ //           LOG_ERROR("ShadowLayer::GetShadowEffect() Load failed.");
+ //           return nullptr;
+ //       }
+ //       m_ShadowEffects[morph_count] = effect_new;
+ //       pEffect = effect_new.get();
+ //   }
+ //   return pEffect;
+    return nullptr;
 }
 
 
@@ -276,6 +299,7 @@ ForwardShadowLayer::ForwardShadowLayer(Context* context)
 SResult ForwardShadowLayer::InitResource()
 {
     ShadowLayer::InitResource();
+	Effect& effect = m_pContext->EffectInstance();
     // Shadow Map PostProcess
     for (uint32_t i = 0; i < MAX_SHADOW_LIGHT_NUM; i++)
     {
@@ -289,11 +313,12 @@ SResult ForwardShadowLayer::InitResource()
             "ShadowCopyB",
             "ShadowCopyA"
         };
-        m_pShadowCopy[i]->Init("shadow.effect", tech_names[i], param_names, 1, NULL_PREDEFINES);
+        SEEK_RETIF_FAIL(effect.LoadTechnique(tech_names[i], &RenderStateDesc::Default3D(), 0, 0, 0));
+        m_pShadowCopy[i]->Init(tech_names[i]);
         m_pShadowCopy[i]->SetClear(false);
     }
 
-    return DVF_Success;
+    return S_Success;
 }
 RendererReturnValue ForwardShadowLayer::PostProcessShadowMapJob(uint32_t light_index)
 {
@@ -328,165 +353,165 @@ RendererReturnValue ForwardShadowLayer::PostProcessShadowMapJob(uint32_t light_i
 /******************************************************************************
  * DeferredShadowLayer
  ******************************************************************************/
-DeferredShadowLayer::DeferredShadowLayer(Context* context)
-    :ShadowLayer(context)
-{
-
-}
-SResult DeferredShadowLayer::InitResource()
-{
-    ShadowLayer::InitResource();
-
-    RenderContext& rc = m_pContext->RenderContextInstance();
-
-    Texture::Desc desc;
-    desc.width = SM_SIZE;
-    desc.height = SM_SIZE;
-    desc.depth = 1;
-    desc.num_mips = 1;
-    desc.num_samples = 1;
-    desc.type = TextureType::Tex2D;
-    desc.format = PixelFormat::R8G8B8A8_UNORM;
-    desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_COPY_BACK;
-    m_pShadowingTex = rc.CreateTexture2D(desc);
-    m_pShadowingFb = rc.CreateFrameBuffer();
-    m_pShadowingFb->AttachTargetView(FrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pShadowingTex));
-
-
-    std::vector<EffectPredefine> no_csm_predefine;
-    std::vector<EffectPredefine> use_csm_predefine;
-
-    EffectPredefine predefine;
-    predefine.name = "USE_CSM";
-    predefine.value = "0";
-    no_csm_predefine.push_back(predefine);
-    
-    predefine.value = "1";
-    use_csm_predefine.push_back(predefine);
-
-    m_pShadow0Effect = this->GetShadowEffect(0);
-    m_pQuadMesh = QuadMesh_GetMesh(rc);
-    m_pShadowingTechs[(uint32_t)LightType::Ambient][0] = nullptr;
-    m_pShadowingTechs[(uint32_t)LightType::Ambient][1] = nullptr;
-    m_pShadowingTechs[(uint32_t)LightType::Directional][0] = m_pShadow0Effect->GetTechnique("ShadowingDirectional", no_csm_predefine);
-    m_pShadowingTechs[(uint32_t)LightType::Directional][1] = m_pShadow0Effect->GetTechnique("ShadowingDirectional", use_csm_predefine);
-    m_pShadowingTechs[(uint32_t)LightType::Spot][0] = m_pShadow0Effect->GetTechnique("ShadowingSpot");
-    m_pShadowingTechs[(uint32_t)LightType::Spot][1] = nullptr;
-    m_pShadowingTechs[(uint32_t)LightType::Point][0] = m_pShadow0Effect->GetTechnique("ShadowingPoint");
-    m_pShadowingTechs[(uint32_t)LightType::Point][1] = nullptr;
-
-    m_pShadowingRenderStates[0] = rc.GetRenderState(RenderStateDesc::ShadowCopyR());
-    m_pShadowingRenderStates[1] = rc.GetRenderState(RenderStateDesc::ShadowCopyG());
-    m_pShadowingRenderStates[2] = rc.GetRenderState(RenderStateDesc::ShadowCopyB());
-    m_pShadowingRenderStates[3] = rc.GetRenderState(RenderStateDesc::ShadowCopyA());
-
-    m_pParamDepthTex            = m_pShadow0Effect->GetParamByName("depth_tex");
-    m_pParamShadowTex           = m_pShadow0Effect->GetParamByName("shadowTex");
-    m_pParamCubeShadowTex       = m_pShadow0Effect->GetParamByName("cubeShadowTex");
-    m_pParamCsmTex[0]           = m_pShadow0Effect->GetParamByName("cascadedShadowMap0");
-    m_pParamCsmTex[1]           = m_pShadow0Effect->GetParamByName("cascadedShadowMap1");
-    m_pParamCsmTex[2]           = m_pShadow0Effect->GetParamByName("cascadedShadowMap2");
-    m_pParamCsmTex[3]           = m_pShadow0Effect->GetParamByName("cascadedShadowMap3");
-    m_pParamCsmDistance         = m_pShadow0Effect->GetParamByName("csmDistance");
-    m_pParamCsmLightVPMatrices  = m_pShadow0Effect->GetParamByName("csmLightVPMatrices");
-    m_pParamLightViewMatrices   = m_pShadow0Effect->GetParamByName("lightViewMatrix");
-
-    m_pParamCameraInfo = m_pShadow0Effect->GetParamByName("cameraInfo");
-    m_pParamLightInfo = m_pShadow0Effect->GetParamByName("lightInfo");
-    m_pParamDeferredLightingInfo = m_pShadow0Effect->GetParamByName("deferredLightingInfo");
-
-    return DVF_Success;
-}
-RendererReturnValue DeferredShadowLayer::PostProcessShadowMapJob(uint32_t light_index)
-{
-    SceneManager& sm = m_pContext->SceneManagerInstance();
-    SceneRenderer& sr = m_pContext->SceneRendererInstance();
-    RenderContext& rc = m_pContext->RenderContextInstance();
-    SResult res = DVF_Success;
-
-    if (light_index >= m_vShadowIndex.size() ||
-        m_vShadowIndex[light_index].first >= MAX_SHADOW_LIGHT_NUM ||
-        m_vShadowIndex[light_index].second >= MAX_SHADOW_LIGHT_NUM)
-    {
-        LOG_ERROR("ShadowLayer::PostProcessShadowMapJob(): Invalid ShadowIndex.");
-        return RRV_NextJob;
-    }
-
-    CameraComponent* pCam = sm.GetActiveCamera();
-    LightInfo lightInfo;
-    LightComponent* pLight = sm.GetLightComponentByIndex(light_index);
-    LightType light_type = pLight->GetLightType();
-    sr.FillLightInfoByLightIndex(lightInfo, pCam, light_index);
-    m_pParamLightInfo->UpdateConstantBuffer(&lightInfo, sizeof(lightInfo));
-
-    CameraInfo cameraInfo;
-    if (pCam)
-    {
-        cameraInfo.posWorld = pCam->GetWorldTransform().GetTranslation();
-        cameraInfo.nearFarPlane = pCam->GetNearFarPlane();
-    }
-    m_pParamCameraInfo->UpdateConstantBuffer(&cameraInfo, sizeof(cameraInfo));
-
-    DeferredLightingInfo deferred_info;
-    deferred_info.lightVolumeMV = pCam ? pCam->GetInvProjMatrix().Transpose() : Matrix4::Identity();
-    deferred_info.lightVolumeInvView = pCam ? pCam->GetInvViewMatrix().Transpose() : Matrix4::Identity();
-    m_pParamDeferredLightingInfo->UpdateConstantBuffer(&deferred_info, sizeof(deferred_info));
-
-    uint32_t use_csm = pLight->CascadedShadow() ? 1 : 0;
-
-    *m_pParamDepthTex = sr.GetSceneDepthStencilTex();
-    *m_pParamShadowTex = m_pSmDepthTex;
-    if (light_type == LightType::Point)
-        *m_pParamCubeShadowTex = m_pCubeSmTex;
-    else if (light_type == LightType::Directional && use_csm)
-    {
-        for (uint32_t i = 0; i < NUM_CSM_LEVELS; ++i)
-        {
-            if (m_pParamCsmTex[i])
-                *m_pParamCsmTex[i] = m_vCsmDepthTex[i];
-        }
-        if (m_pParamCsmDistance)
-        {
-            float4& far_distance = ((DirectionalLightComponent*)pLight)->GetCSMCamera()->GetCsmFarDistance();
-            m_pParamCsmDistance->UpdateConstantBuffer(&far_distance[0], sizeof(float4));
-        }
-        if (m_pParamCsmLightVPMatrices)
-        {
-            std::vector<Matrix4> vp_matrices;
-            for (uint32_t i = 0; i < NUM_CSM_LEVELS; ++i)
-            {
-                Matrix4 vp = ((DirectionalLightComponent*)pLight)->GetCSMCamera()->GetCameraByCSMIndex(i)->GetViewProjMatrix();
-                vp_matrices.push_back(vp.Transpose());
-            }
-            m_pParamCsmLightVPMatrices->UpdateConstantBuffer(&vp_matrices[0], sizeof(Matrix4) * vp_matrices.size());
-        }
-        if (m_pParamLightViewMatrices)
-        {
-            Matrix4 view = pLight->GetShadowMapCamera()->GetViewMatrix().Transpose();
-            float4 pos = float4(0, 0, 0, 1) * view.Transpose();
-            pos = pos;
-            m_pParamLightViewMatrices->UpdateConstantBuffer(&view, sizeof(Matrix4));
-        }
-    }
-
-    rc.BindFrameBuffer(m_pShadowingFb);
-    uint32_t shadow_map_index = m_vShadowIndex[light_index].first;
-    if (shadow_map_index == 0)
-        m_pShadowingFb->Clear(FrameBuffer::CBM_Color, float4(1, 1, 1, 1));
-    
-    Technique* pTech = m_pShadowingTechs[(uint32_t)light_type][use_csm];
-    m_pQuadMesh->SetRenderState(m_pShadowingRenderStates[shadow_map_index]);
-    res = rc.Render(pTech->GetProgram().get(), m_pQuadMesh);
-    m_pQuadMesh->SetRenderState(nullptr);
-
-#if 0
-    static int draw = 1;
-    if (draw)
-    {
-        m_pShadowingTex->DumpToFile("d:\\shadowing.rgba");
-        --draw;
-    }
-#endif
-    return RRV_NextJob;
-}
+//DeferredShadowLayer::DeferredShadowLayer(Context* context)
+//    :ShadowLayer(context)
+//{
+//
+//}
+//SResult DeferredShadowLayer::InitResource()
+//{
+//    ShadowLayer::InitResource();
+//
+//    RenderContext& rc = m_pContext->RenderContextInstance();
+//
+//    Texture::Desc desc;
+//    desc.width = SM_SIZE;
+//    desc.height = SM_SIZE;
+//    desc.depth = 1;
+//    desc.num_mips = 1;
+//    desc.num_samples = 1;
+//    desc.type = TextureType::Tex2D;
+//    desc.format = PixelFormat::R8G8B8A8_UNORM;
+//    desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_COPY_BACK;
+//    m_pShadowingTex = rc.CreateTexture2D(desc);
+//    m_pShadowingFb = rc.CreateFrameBuffer();
+//    m_pShadowingFb->AttachTargetView(FrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pShadowingTex));
+//
+//
+//    std::vector<EffectPredefine> no_csm_predefine;
+//    std::vector<EffectPredefine> use_csm_predefine;
+//
+//    EffectPredefine predefine;
+//    predefine.name = "USE_CSM";
+//    predefine.value = "0";
+//    no_csm_predefine.push_back(predefine);
+//    
+//    predefine.value = "1";
+//    use_csm_predefine.push_back(predefine);
+//
+//    m_pShadow0Effect = this->GetShadowEffect(0);
+//    m_pQuadMesh = QuadMesh_GetMesh(rc);
+//    m_pShadowingTechs[(uint32_t)LightType::Ambient][0] = nullptr;
+//    m_pShadowingTechs[(uint32_t)LightType::Ambient][1] = nullptr;
+//    m_pShadowingTechs[(uint32_t)LightType::Directional][0] = m_pShadow0Effect->GetTechnique("ShadowingDirectional", no_csm_predefine);
+//    m_pShadowingTechs[(uint32_t)LightType::Directional][1] = m_pShadow0Effect->GetTechnique("ShadowingDirectional", use_csm_predefine);
+//    m_pShadowingTechs[(uint32_t)LightType::Spot][0] = m_pShadow0Effect->GetTechnique("ShadowingSpot");
+//    m_pShadowingTechs[(uint32_t)LightType::Spot][1] = nullptr;
+//    m_pShadowingTechs[(uint32_t)LightType::Point][0] = m_pShadow0Effect->GetTechnique("ShadowingPoint");
+//    m_pShadowingTechs[(uint32_t)LightType::Point][1] = nullptr;
+//
+//    m_pShadowingRenderStates[0] = rc.GetRenderState(RenderStateDesc::ShadowCopyR());
+//    m_pShadowingRenderStates[1] = rc.GetRenderState(RenderStateDesc::ShadowCopyG());
+//    m_pShadowingRenderStates[2] = rc.GetRenderState(RenderStateDesc::ShadowCopyB());
+//    m_pShadowingRenderStates[3] = rc.GetRenderState(RenderStateDesc::ShadowCopyA());
+//
+//    m_pParamDepthTex            = m_pShadow0Effect->GetParamByName("depth_tex");
+//    m_pParamShadowTex           = m_pShadow0Effect->GetParamByName("shadowTex");
+//    m_pParamCubeShadowTex       = m_pShadow0Effect->GetParamByName("cubeShadowTex");
+//    m_pParamCsmTex[0]           = m_pShadow0Effect->GetParamByName("cascadedShadowMap0");
+//    m_pParamCsmTex[1]           = m_pShadow0Effect->GetParamByName("cascadedShadowMap1");
+//    m_pParamCsmTex[2]           = m_pShadow0Effect->GetParamByName("cascadedShadowMap2");
+//    m_pParamCsmTex[3]           = m_pShadow0Effect->GetParamByName("cascadedShadowMap3");
+//    m_pParamCsmDistance         = m_pShadow0Effect->GetParamByName("csmDistance");
+//    m_pParamCsmLightVPMatrices  = m_pShadow0Effect->GetParamByName("csmLightVPMatrices");
+//    m_pParamLightViewMatrices   = m_pShadow0Effect->GetParamByName("lightViewMatrix");
+//
+//    m_pParamCameraInfo = m_pShadow0Effect->GetParamByName("cameraInfo");
+//    m_pParamLightInfo = m_pShadow0Effect->GetParamByName("lightInfo");
+//    m_pParamDeferredLightingInfo = m_pShadow0Effect->GetParamByName("deferredLightingInfo");
+//
+//    return DVF_Success;
+//}
+//RendererReturnValue DeferredShadowLayer::PostProcessShadowMapJob(uint32_t light_index)
+//{
+//    SceneManager& sm = m_pContext->SceneManagerInstance();
+//    SceneRenderer& sr = m_pContext->SceneRendererInstance();
+//    RenderContext& rc = m_pContext->RenderContextInstance();
+//    SResult res = DVF_Success;
+//
+//    if (light_index >= m_vShadowIndex.size() ||
+//        m_vShadowIndex[light_index].first >= MAX_SHADOW_LIGHT_NUM ||
+//        m_vShadowIndex[light_index].second >= MAX_SHADOW_LIGHT_NUM)
+//    {
+//        LOG_ERROR("ShadowLayer::PostProcessShadowMapJob(): Invalid ShadowIndex.");
+//        return RRV_NextJob;
+//    }
+//
+//    CameraComponent* pCam = sm.GetActiveCamera();
+//    LightInfo lightInfo;
+//    LightComponent* pLight = sm.GetLightComponentByIndex(light_index);
+//    LightType light_type = pLight->GetLightType();
+//    sr.FillLightInfoByLightIndex(lightInfo, pCam, light_index);
+//    m_pParamLightInfo->UpdateConstantBuffer(&lightInfo, sizeof(lightInfo));
+//
+//    CameraInfo cameraInfo;
+//    if (pCam)
+//    {
+//        cameraInfo.posWorld = pCam->GetWorldTransform().GetTranslation();
+//        cameraInfo.nearFarPlane = pCam->GetNearFarPlane();
+//    }
+//    m_pParamCameraInfo->UpdateConstantBuffer(&cameraInfo, sizeof(cameraInfo));
+//
+//    DeferredLightingInfo deferred_info;
+//    deferred_info.lightVolumeMV = pCam ? pCam->GetInvProjMatrix().Transpose() : Matrix4::Identity();
+//    deferred_info.lightVolumeInvView = pCam ? pCam->GetInvViewMatrix().Transpose() : Matrix4::Identity();
+//    m_pParamDeferredLightingInfo->UpdateConstantBuffer(&deferred_info, sizeof(deferred_info));
+//
+//    uint32_t use_csm = pLight->CascadedShadow() ? 1 : 0;
+//
+//    *m_pParamDepthTex = sr.GetSceneDepthStencilTex();
+//    *m_pParamShadowTex = m_pSmDepthTex;
+//    if (light_type == LightType::Point)
+//        *m_pParamCubeShadowTex = m_pCubeSmTex;
+//    else if (light_type == LightType::Directional && use_csm)
+//    {
+//        for (uint32_t i = 0; i < NUM_CSM_LEVELS; ++i)
+//        {
+//            if (m_pParamCsmTex[i])
+//                *m_pParamCsmTex[i] = m_vCsmDepthTex[i];
+//        }
+//        if (m_pParamCsmDistance)
+//        {
+//            float4& far_distance = ((DirectionalLightComponent*)pLight)->GetCSMCamera()->GetCsmFarDistance();
+//            m_pParamCsmDistance->UpdateConstantBuffer(&far_distance[0], sizeof(float4));
+//        }
+//        if (m_pParamCsmLightVPMatrices)
+//        {
+//            std::vector<Matrix4> vp_matrices;
+//            for (uint32_t i = 0; i < NUM_CSM_LEVELS; ++i)
+//            {
+//                Matrix4 vp = ((DirectionalLightComponent*)pLight)->GetCSMCamera()->GetCameraByCSMIndex(i)->GetViewProjMatrix();
+//                vp_matrices.push_back(vp.Transpose());
+//            }
+//            m_pParamCsmLightVPMatrices->UpdateConstantBuffer(&vp_matrices[0], sizeof(Matrix4) * vp_matrices.size());
+//        }
+//        if (m_pParamLightViewMatrices)
+//        {
+//            Matrix4 view = pLight->GetShadowMapCamera()->GetViewMatrix().Transpose();
+//            float4 pos = float4(0, 0, 0, 1) * view.Transpose();
+//            pos = pos;
+//            m_pParamLightViewMatrices->UpdateConstantBuffer(&view, sizeof(Matrix4));
+//        }
+//    }
+//
+//    rc.BindFrameBuffer(m_pShadowingFb);
+//    uint32_t shadow_map_index = m_vShadowIndex[light_index].first;
+//    if (shadow_map_index == 0)
+//        m_pShadowingFb->Clear(FrameBuffer::CBM_Color, float4(1, 1, 1, 1));
+//    
+//    Technique* pTech = m_pShadowingTechs[(uint32_t)light_type][use_csm];
+//    m_pQuadMesh->SetRenderState(m_pShadowingRenderStates[shadow_map_index]);
+//    res = rc.Render(pTech->GetProgram().get(), m_pQuadMesh);
+//    m_pQuadMesh->SetRenderState(nullptr);
+//
+//#if 0
+//    static int draw = 1;
+//    if (draw)
+//    {
+//        m_pShadowingTex->DumpToFile("d:\\shadowing.rgba");
+//        --draw;
+//    }
+//#endif
+//    return RRV_NextJob;
+//}
 SEEK_NAMESPACE_END

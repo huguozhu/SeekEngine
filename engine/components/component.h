@@ -9,6 +9,8 @@ enum class ComponentType : uint8_t
     Unknown,
     Scene,
     Camera,
+    LightCamera,
+	CsmCamera,
     Light,
     Mesh,
     SkeletalMesh,

@@ -60,12 +60,14 @@ CLASS_DECLARE(EffectParam);
 CLASS_DECLARE(PostProcess);
 CLASS_DECLARE(HDRPostProcess);
 CLASS_DECLARE(LDRPostProcess);
+CLASS_DECLARE(ShadowLayer);
 
 // Component
 CLASS_DECLARE(Entity);
 CLASS_DECLARE(Component);
 CLASS_DECLARE(SceneComponent);
 CLASS_DECLARE(CameraComponent);
+CLASS_DECLARE(CsmCameraComponent);
 CLASS_DECLARE(LightComponent);
 CLASS_DECLARE(DirectionalLightComponent);
 CLASS_DECLARE(SpotLightComponent);
