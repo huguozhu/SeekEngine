@@ -1,0 +1,20 @@
+//STAGE:ps
+
+cbuffer cameraNearFarPlane
+{
+	float2 cameraNearFarPlane;
+}
+
+cbuffer cubeLightPos
+{
+	float3 cubeLightPos;
+}
+
+float4 main(
+	in float3 iPosWorld : POSITION
+) : SV_Target
+{
+	float light_distance = length(iPosWorld - cubeLightPos);
+	light_distance = light_distance / cameraNearFarPlane.y;
+	return light_distance;
+}

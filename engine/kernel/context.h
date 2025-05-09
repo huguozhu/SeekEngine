@@ -43,7 +43,7 @@ struct RenderInitInfo
     bool                    enable_transparent = false;
     bool                    enable_ambient_occlusion = false;
     bool                    enable_capture = false;
-    bool                    enable_shadow = false;
+    bool                    enable_shadow = true;
     RHIType                 rhi_type = RHIType::D3D11;
     bool                    HDR = false;
     uint32_t                num_samples = 1;

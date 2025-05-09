@@ -59,6 +59,28 @@ SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tech
 
     switch (m_eCurRenderStage)
     {
+        case RenderStage::GenerateShadowMap:
+        case RenderStage::GenerateCubeShadowMap:
+        case RenderStage::GenerateCascadedShadowMap:
+        {
+            predefines.push_back(jointBindSizePredefine);
+            predefines.push_back(morphTypePredefine);
+
+            uint32_t has_tex_normal = 0;
+            EffectPredefine hasNormalTexPredefine;
+            hasNormalTexPredefine.name = "HAS_MATERIAL_NORMAL";
+            hasNormalTexPredefine.value = std::to_string(has_tex_normal);
+            predefines.push_back(hasNormalTexPredefine);
+            
+            if (m_eCurRenderStage == RenderStage::GenerateShadowMap)
+                virtualTech = effect.GetVirtualTechnique("GenerateShadowMap");
+            else if (m_eCurRenderStage == RenderStage::GenerateCubeShadowMap)
+                virtualTech = effect.GetVirtualTechnique("GenerateCubeShadowMap");
+            else
+                virtualTech = effect.GetVirtualTechnique("GenerateCascadedShadowMap");
+            break;
+        }       
+
         case RenderStage::RenderScene:
         {
             EffectPredefine lightModePredefine;
@@ -102,6 +124,9 @@ SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tech
             break;
         }
         case RenderStage::None:
+        case RenderStage::GenerateGBuffer:
+        case RenderStage::PreZ:
+        case RenderStage::GenerateReflectiveShadowMap:
             break;
     }
 
@@ -116,6 +141,19 @@ SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tech
 }
 SResult ForwardShadingRenderer::Init()
 {    
+    if (m_pContext->EnableShadow())
+    {
+        if (!m_pShadowLayer)
+        {
+            m_pShadowLayer = MakeSharedPtr<ForwardShadowLayer>(m_pContext);
+            SResult ret = m_pShadowLayer->InitResource();
+            if (SEEK_CHECKFAILED(ret))
+            {
+                LOG_ERROR_PRIERR(ret, "ForwardShadingRenderer::Init Shadow InitResource fail.");
+                return ret;
+            }
+        }
+    }
     return SceneRenderer::Init();
 }
 SResult ForwardShadingRenderer::BuildRenderJobList()

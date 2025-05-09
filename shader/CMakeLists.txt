@@ -13,7 +13,6 @@ set(shader_shared_files
 set(shader_header_files
     ${SEEK_SHADER_SOURCE_DIR}/BRDF.dsh
     ${SEEK_SHADER_SOURCE_DIR}/Common.dsh
-    ${SEEK_SHADER_SOURCE_DIR}/ColorSpaceCvt_common.dsh
     ${SEEK_SHADER_SOURCE_DIR}/Lighting.dsh
     ${SEEK_SHADER_SOURCE_DIR}/MorphTarget.dsh
     ${SEEK_SHADER_SOURCE_DIR}/Skeleton.dsh
@@ -25,13 +24,19 @@ set(shader_header_files
 
 set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/CopyPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/EmptyPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/ForwardRenderingCommonPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/GenerateCascadedShadowMapPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/GenerateCubeShadowMapPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/GenerateReflectiveShadowMapPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/MeshRenderingVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/PostProcessVS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/RGBAToAI420CS.dsf
+
     ${SEEK_SHADER_SOURCE_DIR}/ToneMappingPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/SkyBoxVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/SkyBoxPS.dsf
+
+
     ${SEEK_SHADER_SOURCE_DIR}/WaterMarkPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/WaterMarkVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/WaterMarkGenerateCS.dsf
