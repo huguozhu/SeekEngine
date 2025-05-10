@@ -113,6 +113,11 @@ SResult PostProcess::SetOutput(uint32_t index, RHITexturePtr const& tex)
     {
         RHIContext& rc = m_pContext->RHIContextInstance();
         m_pFrameBuffer->AttachTargetView((RHIFrameBuffer::Attachment)(RHIFrameBuffer::Color0 + index), rc.CreateRenderTargetView(tex));
+        if (0 == index)
+        {
+            m_pFrameBuffer->SetViewport({ 0, 0, tex->Width(), tex->Height() });
+        }
+
     }
     return S_Success;
 }

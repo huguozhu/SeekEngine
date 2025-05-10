@@ -128,6 +128,34 @@ const RenderStateDesc& RenderStateDesc::WaterMark()
     }
     return desc;
 }
+const RenderStateDesc& RenderStateDesc::ShadowCopyR()
+{
+    static RenderStateDesc desc;
+    desc.depthStencil.bDepthEnable = false;
+    for (auto& rb : desc.blend.stTargetBlend) rb.bColorWriteMask = ColorWriteMask::CWM_Red;
+    return desc;
+}
+const RenderStateDesc& RenderStateDesc::ShadowCopyG()
+{
+    static RenderStateDesc desc;
+    desc.depthStencil.bDepthEnable = false;
+    for (auto& rb : desc.blend.stTargetBlend) rb.bColorWriteMask = ColorWriteMask::CWM_Green;
+    return desc;
+}
+const RenderStateDesc& RenderStateDesc::ShadowCopyB()
+{
+    static RenderStateDesc desc;
+    desc.depthStencil.bDepthEnable = false;
+    for (auto& rb : desc.blend.stTargetBlend) rb.bColorWriteMask = ColorWriteMask::CWM_Blue;
+    return desc;
+}
+const RenderStateDesc& RenderStateDesc::ShadowCopyA()
+{
+    static RenderStateDesc desc;
+    desc.depthStencil.bDepthEnable = false;
+    for (auto& rb : desc.blend.stTargetBlend) rb.bColorWriteMask = ColorWriteMask::CWM_Alpha;
+    return desc;
+}
 //////////////////////////////////////////////////////////////////////////
 
 size_t RenderStateDesc::Hash() const

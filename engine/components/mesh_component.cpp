@@ -127,6 +127,11 @@ SResult MeshComponent::OnRenderBegin(Technique* tech, RHIMeshPtr mesh)
         this->FillMaterialParam(tech, mesh);
         break;
     }
+    case RenderStage::GenerateShadowMap:
+    {
+
+        break;
+    }
     default:
         LOG_ERROR("MeshComponent::OnRenderBegin invalid RenderStage");
     }

@@ -159,8 +159,8 @@ RendererReturnValue ShadowLayer::GenerateShadowMapJob(uint32_t light_index)
         //rc.BindRHIFrameBuffer(m_pSmFb);
         //m_pSmFb->Clear();
 
-        m_pSmFb->SetColorLoadOption(RHIFrameBuffer::Color0, RHIFrameBuffer::LoadAction::Clear);
-        m_pSmFb->SetDepthLoadOption(RHIFrameBuffer::LoadAction::Clear);
+        m_pSmFb->SetColorLoadOption(RHIFrameBuffer::Color0, float4(0.0f, 0.0f, 0.0f, 0.0f));
+        m_pSmFb->SetDepthLoadOption(1.0f);
         m_pContext->RHIContextInstance().BeginRenderPass({ "GenerateShadowMap", m_pSmFb.get() });
         sc.SetActiveCamera(pLight->GetShadowMapCamera());
         SResult res = sr.RenderScene((uint32_t)RenderScope::Opacity);
@@ -304,17 +304,20 @@ SResult ForwardShadowLayer::InitResource()
     for (uint32_t i = 0; i < MAX_SHADOW_LIGHT_NUM; i++)
     {
         m_pShadowCopy[i] = MakeSharedPtr<PostProcess>(m_pContext, "ShadowCopy");
-        static std::vector<std::string> param_names = {
-            "shadow_map_tex",
-        };
         static std::vector<std::string> tech_names = {
             "ShadowCopyR",
             "ShadowCopyG",
             "ShadowCopyB",
             "ShadowCopyA"
         };
-        SEEK_RETIF_FAIL(effect.LoadTechnique(tech_names[i], &RenderStateDesc::Default3D(), 0, 0, 0));
-        m_pShadowCopy[i]->Init(tech_names[i]);
+		static std::vector<RenderStateDesc> render_states = {
+			RenderStateDesc::ShadowCopyR(),
+			RenderStateDesc::ShadowCopyG(),
+			RenderStateDesc::ShadowCopyB(),
+			RenderStateDesc::ShadowCopyA()
+		};
+        SEEK_RETIF_FAIL(effect.LoadTechnique(tech_names[i], &render_states[i], "PostProcessVS", "ShadowCopyPS", nullptr));
+        m_pShadowCopy[i]->Init(tech_names[i]);        
         m_pShadowCopy[i]->SetClear(false);
     }
 
@@ -344,7 +347,7 @@ RendererReturnValue ForwardShadowLayer::PostProcessShadowMapJob(uint32_t light_i
     if (light_type == LightType::Spot ||
         light_type == LightType::Directional)
     {
-        m_pShadowCopy[filtered_shadow_map_index]->SetParam(0, m_pSmDepthTex);
+        m_pShadowCopy[filtered_shadow_map_index]->SetParam("shadow_map_tex", m_pSmDepthTex);
         m_pShadowCopy[filtered_shadow_map_index]->SetOutput(0, m_pFilteredSmTex);
         m_pShadowCopy[filtered_shadow_map_index]->Run();
     }

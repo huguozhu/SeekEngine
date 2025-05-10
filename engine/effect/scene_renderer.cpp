@@ -99,15 +99,18 @@ SResult SceneRenderer::RenderScene(uint32_t scope)
     if (m_renderableMeshes.empty())
         return S_Success;
 
-    for (auto& mesh : m_renderableMeshes)
+    // to delete these codes, repeat at MeshComponent::RenderMesh()
     {
-        Technique* tech = nullptr;
-        RHIMeshPtr pMesh = mesh.first->GetMeshByIndex(mesh.second);
-        if (!pMesh->GetTechnique())
+        for (auto& mesh : m_renderableMeshes)
         {
-            // auto choose a technique
-            GetEffectTechniqueToRender(pMesh, &tech);
-            pMesh->SetTechnique(tech);
+            Technique* tech = nullptr;
+            RHIMeshPtr pMesh = mesh.first->GetMeshByIndex(mesh.second);
+            if (!pMesh->GetTechnique())
+            {
+                // auto choose a technique
+                GetEffectTechniqueToRender(pMesh, &tech);
+                pMesh->SetTechnique(tech);
+            }
         }
     }
 
