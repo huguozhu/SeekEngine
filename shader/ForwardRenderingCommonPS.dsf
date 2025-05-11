@@ -6,6 +6,7 @@
 //STAGE:ps
 #include "Common.dsh"
 #include "Lighting.dsh"
+#include "Shadow.dsh"
 
 cbuffer materialInfo
 {
@@ -182,6 +183,15 @@ PSOutput main(VSOutput input)
         if (lightInfo[lightIdx].type >= 0)
         {
             float shadow = 0.0;
+            [branch]
+            if (lightInfo[lightIdx].castShadow == 1)
+            {
+                [branch]
+                if (lightInfo[lightIdx].type == LIGHT_TYPE_DIRECTIONAL || lightInfo[lightIdx].type == LIGHT_TYPE_SPOT)
+                    shadow = CalcSpotDirectionalLightShadow(lightInfo[lightIdx], input.posWorld, lightInfo[lightIdx].shadowMapIndex);
+                else if (lightInfo[lightIdx].type == LIGHT_TYPE_POINT)
+                    shadow = CalcPointLightShadow(cameraInfo, lightInfo[lightIdx], input.posWorld);
+            }
             color += CalcLighting(materialParam, lightInfo[lightIdx], input.texCoord, input.posWorld, N, V, shadow);
         }
     }

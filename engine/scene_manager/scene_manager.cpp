@@ -406,10 +406,19 @@ RHIRenderBufferPtr& SceneManager::GetLightInfoCBuffer()
         info.falloffRadius = light->GetFalloffRadius();
         info.posWorld = light->GetLightPos();
         info.intensity = light->GetIntensity() * exposure;
+        info.castShadow = (int)m_pContext->EnableShadow() ? (int)light->CastShadow() : 0;
+        info.useSoftShadow = (int)light->SoftShadow();
+        info.shadowBias = light->GetShadowBias();
         if (LightType::Spot == type)
         {
             float2 inOutCutoff = ((SpotLightComponent*)light)->GetInOutCutoff();
             info.inOutCutoff = float2(cos(inOutCutoff.x()), cos(inOutCutoff.y()));
+        }
+
+        if (LightType::Spot == type || LightType::Directional == type)
+        {
+            Matrix4 const& light_vp = light->GetShadowMapCamera()->GetViewProjMatrix();
+            info.lightViewProj = light_vp.Transpose();
         }
     }
 

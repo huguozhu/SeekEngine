@@ -66,6 +66,9 @@ public:
     void            SetLightPos(float3 pos);
     Quaternion      GetRotation();
 
+    float           GetShadowBias() { return m_fShadowBias; }
+    void            SetShadowBias(float v) { m_fShadowBias = v; }
+
     void            SetIntensity(float intensity, LightIntensityUnit unit = LightIntensityUnit::Lumen_Lux);
     float           GetIntensity()       const { return m_fIntensity; }
     float           GetIntensityOrigin() const { return m_fIntensityOrigin; }

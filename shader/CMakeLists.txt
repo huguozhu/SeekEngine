@@ -20,6 +20,7 @@ set(shader_header_files
     ${SEEK_SHADER_SOURCE_DIR}/CommonCBuffer.dsh
     ${SEEK_SHADER_SOURCE_DIR}/VertexCommon.dsh
     ${SEEK_SHADER_SOURCE_DIR}/ParticleCommon.dsh
+    ${SEEK_SHADER_SOURCE_DIR}/Shadow.dsh
 )
 
 set(shader_sources_files

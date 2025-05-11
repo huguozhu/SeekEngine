@@ -62,6 +62,7 @@ public:
     RenderStage             GetCurRenderStage() const { return m_eCurRenderStage; }
     void                    SetCurRenderStage(RenderStage stage) { m_eCurRenderStage = stage; }
 
+    ShadowLayerPtr          GetShadowLayer() { return m_pShadowLayer; }
     SResult                 FillLightInfoByLightIndex(LightInfo& info, CameraComponent*  pCamera, size_t light_index);
     virtual SResult         RenderScene(uint32_t scope = (uint32_t)RenderScope::ALL);
 

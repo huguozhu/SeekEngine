@@ -6,6 +6,7 @@
 #include "rhi/base/rhi_texture.h"
 #include "rhi/base/rhi_render_buffer.h"
 #include "effect/scene_renderer.h"
+#include "effect/shadow_layer.h"
 #include "kernel/context.h"
 #include "math/color.h"
 #include <math.h>
@@ -125,11 +126,14 @@ SResult MeshComponent::OnRenderBegin(Technique* tech, RHIMeshPtr mesh)
         tech->SetParam("cameraInfo", m_pContext->SceneManagerInstance().GetViewInfoCBuffer());
 
         this->FillMaterialParam(tech, mesh);
+                
+        tech->SetParam("shadowTex", m_pContext->SceneRendererInstance().GetShadowLayer()->GetFilteredShadowMap());
+        tech->SetParam("cubeShadowTex", m_pContext->SceneRendererInstance().GetShadowLayer()->GetCubeShadowMap());
+        
         break;
     }
     case RenderStage::GenerateShadowMap:
     {
-
         break;
     }
     default:

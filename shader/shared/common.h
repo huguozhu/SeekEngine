@@ -101,6 +101,7 @@ struct MaterialInfo
 
 struct LightInfo
 {
+    float4x4 lightViewProj;
     float3 color;
     int type;
     float3 direction;
@@ -108,11 +109,16 @@ struct LightInfo
     float3 posWorld;
     float intensity;
     float2 inOutCutoff;
-    int2 t1;
+    int castShadow;
+    int shadowMapIndex;
+    int useSoftShadow;
+    float shadowBias;
+    float2 nearFarPlane;
 
 #ifdef SEEK_CPP
     LightInfo()
     {
+        lightViewProj = float4x4::Identity();
         color = float3(0.0f, 0.0f, 0.0f);
         type = 0xffffffff;
         direction = float3(0.0f, 0.0f, 0.0f);
@@ -120,6 +126,11 @@ struct LightInfo
         posWorld = float3(0.0f, 0.0f, 0.0f);
         intensity = 0.0f;
         inOutCutoff = float2(0.0f, 0.0f);
+        castShadow = 0;
+        shadowMapIndex = 0;
+        useSoftShadow = 0;
+        shadowBias = 0.0;
+		nearFarPlane = float2(0.0f, 0.0f);
     }
 #endif
 };
