@@ -131,6 +131,10 @@ SResult PostProcess::SetOutput(uint32_t index, RHIRenderViewPtr const& target)
         return ERR_INVALID_ARG;
     
     m_pFrameBuffer->AttachTargetView((RHIFrameBuffer::Attachment)(RHIFrameBuffer::Color0 + index), target);
+    if (0 == index)
+    {
+        m_pFrameBuffer->SetViewport({ 0, 0, target->Width(), target->Height() });
+    }
     return S_Success;
 }
 

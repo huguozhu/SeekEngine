@@ -20,6 +20,10 @@ void RHIFrameBuffer::AttachTargetView(Attachment att, RHIRenderViewPtr const& vi
 
     m_vRenderTargets[att] = view;
     m_bViewDirty = true;
+    if (Attachment::Color0 == att)
+    {
+         this->SetViewport({ 0, 0, view->Width(), view->Height() });
+    }
 }
 
 void RHIFrameBuffer::AttachDepthStencilView(RHIRenderViewPtr const& view)
