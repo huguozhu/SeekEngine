@@ -85,6 +85,9 @@ SResult PostProcess::Run()
         RHIContext::RenderPassInfo info;
         info.name = m_szName;
         info.fb = m_pFrameBuffer.get();
+        RHIFrameBuffer::LoadAction la = m_bClear ? RHIFrameBuffer::LoadAction::Clear : RHIFrameBuffer::LoadAction::Load;
+        for (int i = 0; i < RHIFrameBuffer::MAX_COLOR_ATTACHMENTS; i++)
+            m_pFrameBuffer->SetColorLoadOption(RHIFrameBuffer::Attachment(i), la);
         rc.BeginRenderPass(info);
         ret = RunGraphicsPipeline();
         rc.EndRenderPass();

@@ -5,6 +5,8 @@
 #include "components/light_component.h"
 #include "components/skeletal_mesh_component.h"
 #include "components/entity.h"
+#include "effect/scene_renderer.h"
+#include "effect/shadow_layer.h"
 #include "math/math_utility.h"
 #include "math/frustum.h"
 #include "math/transform.h"
@@ -387,7 +389,7 @@ RHIRenderBufferPtr& SceneManager::GetLightInfoCBuffer()
         if (!light->IsEnable())
             continue;
 
-        LightInfo& info = lightInfo[lightIndex++];
+        LightInfo& info = lightInfo[lightIndex];
 
         float exposure = 1.0;
         if (m_pContext->GetLightingMode() == LightingMode::PBR)
@@ -409,6 +411,13 @@ RHIRenderBufferPtr& SceneManager::GetLightInfoCBuffer()
         info.castShadow = (int)m_pContext->EnableShadow() ? (int)light->CastShadow() : 0;
         info.useSoftShadow = (int)light->SoftShadow();
         info.shadowBias = light->GetShadowBias();
+        if (light->GetShadowMapCamera())
+        {
+            CameraComponent* pCamera = light->GetShadowMapCamera();
+            info.nearFarPlane = float2(pCamera->GetNearPlane(), pCamera->GetFarPlane());
+        }
+        if (info.castShadow)
+            info.shadowMapIndex = m_pContext->SceneRendererInstance().GetShadowLayer()->GetShadowMapIndexByLightIndex(lightIndex);
         if (LightType::Spot == type)
         {
             float2 inOutCutoff = ((SpotLightComponent*)light)->GetInOutCutoff();
@@ -420,6 +429,7 @@ RHIRenderBufferPtr& SceneManager::GetLightInfoCBuffer()
             Matrix4 const& light_vp = light->GetShadowMapCamera()->GetViewProjMatrix();
             info.lightViewProj = light_vp.Transpose();
         }
+        lightIndex++;
     }
 
     m_LightInfoCBuffer->Update(&lightInfo, sizeof(lightInfo));

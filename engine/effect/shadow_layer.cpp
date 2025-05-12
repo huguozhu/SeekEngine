@@ -159,7 +159,7 @@ RendererReturnValue ShadowLayer::GenerateShadowMapJob(uint32_t light_index)
         //rc.BindRHIFrameBuffer(m_pSmFb);
         //m_pSmFb->Clear();
 
-        m_pSmFb->SetColorLoadOption(RHIFrameBuffer::Color0, float4(0.0f, 0.0f, 0.0f, 0.0f));
+        m_pSmFb->SetColorLoadOption(RHIFrameBuffer::Color0, RHIFrameBuffer::LoadAction::DontCare);
         m_pSmFb->SetDepthLoadOption(1.0f);
         m_pContext->RHIContextInstance().BeginRenderPass({ "GenerateShadowMap", m_pSmFb.get() });
         sc.SetActiveCamera(pLight->GetShadowMapCamera());
@@ -173,7 +173,7 @@ RendererReturnValue ShadowLayer::GenerateShadowMapJob(uint32_t light_index)
         sr.SetCurRenderStage(RenderStage::None);
 
         #if 0
-            static int draw = 1;
+            static int draw = 2;
             if (draw)
             {
                 m_pSmDepthTex->DumpToFile("d:\\sm_depth.g16l");
@@ -326,8 +326,11 @@ SResult ForwardShadowLayer::InitResource()
 			RenderStateDesc::ShadowCopyA()
 		};
         SEEK_RETIF_FAIL(effect.LoadTechnique(tech_names[i], &render_states[i], "PostProcessVS", "ShadowCopyPS", nullptr));
-        m_pShadowCopy[i]->Init(tech_names[i]);        
-        m_pShadowCopy[i]->SetClear(false);
+        m_pShadowCopy[i]->Init(tech_names[i]);
+        if (0 == i)
+            m_pShadowCopy[i]->SetClear(true);
+        else
+            m_pShadowCopy[i]->SetClear(false);
     }
 
     return S_Success;
@@ -359,6 +362,14 @@ RendererReturnValue ForwardShadowLayer::PostProcessShadowMapJob(uint32_t light_i
         m_pShadowCopy[filtered_shadow_map_index]->SetParam("shadow_map_tex", m_pSmDepthTex);
         m_pShadowCopy[filtered_shadow_map_index]->SetOutput(0, m_pFilteredSmTex);
         m_pShadowCopy[filtered_shadow_map_index]->Run();
+#if 0
+        static int draw = 2;
+        if (draw)
+        {
+            m_pFilteredSmTex->DumpToFile("d:\\m_pFilteredSmTex.rgba");
+            --draw;
+        }
+#endif
     }
     return RRV_NextJob;
 }

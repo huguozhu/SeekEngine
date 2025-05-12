@@ -48,34 +48,33 @@ SResult Lighting::OnCreate()
     m_pLightEntity[0]->AddSceneComponent(pLight);
     //m_pLightEntity[0]->AddToTopScene();
 
-    float p = 5.0;
+    float p = 3.0;
     float3 directional_pos = float3(-p, p, p);
     pLight = MakeSharedPtr<DirectionalLightComponent>(m_pContext.get());
     pLight->SetColor(Color::White);
     pLight->SetDirection(float3(p, -p, -p));
     pLight->SetIntensity(0.5);
     pLight->CastShadow(1);
-	//pLight->SetWorldTranslation(directional_pos); 
+	pLight->SetWorldTranslation(directional_pos); 
     //pLight->CascadedShadow(1);
     m_pLightEntity[1] = MakeSharedPtr<Entity>(m_pContext.get(), "Directional Light");
-    m_pLightEntity[1]->GetRootComponent()->SetWorldTranslation(directional_pos);
     m_pLightEntity[1]->AddSceneComponent(pLight);
     m_pLightEntity[1]->AddToTopScene();
 
-    float3 spot_pos = float3(-p, p, -p);
+    float3 spot_pos = float3(-p, p, 0);
     float3 look_at = float3(0, 0, 0);
     float cutoff_in = Math::DEG2RAD * 25;
     float cutoff_out = Math::DEG2RAD * 45;
     pLight = MakeSharedPtr<SpotLightComponent>(m_pContext.get());
     pLight->SetColor(Color::Red);
     pLight->SetDirection(look_at - spot_pos);
+	pLight->SetWorldTranslation(spot_pos);
     pLight->SetInOutCutoff(float2(cutoff_in, cutoff_out));
     pLight->SetIntensity(50.24);
     pLight->CastShadow(1);
     m_pLightEntity[2] = MakeSharedPtr<Entity>(m_pContext.get(), "Spot Light");
-    m_pLightEntity[2]->SetWorldTranslation(spot_pos);
     m_pLightEntity[2]->AddSceneComponent(pLight);
-    //m_pLightEntity[2]->AddToTopScene();
+    m_pLightEntity[2]->AddToTopScene();
 
     spot_pos = float3(p, p, -p);
     look_at = float3(0, 0, 0);
