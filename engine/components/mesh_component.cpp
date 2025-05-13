@@ -132,6 +132,25 @@ SResult MeshComponent::OnRenderBegin(Technique* tech, RHIMeshPtr mesh)
         
         break;
     }
+    case RenderStage::GenerateCubeShadowMap:
+    {
+        if (!m_GenCubeShaodowCBuffer)
+        {
+            m_GenCubeShaodowCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(sizeof(GenCubeShadowInfo), RESOURCE_FLAG_CPU_WRITE);
+        }
+
+        if (!cam)
+        {
+			LOG_ERROR("MeshComponent::OnRenderBegin GenerateCubeShadowMap cam is null");
+			return ERR_INVALID_ARG;
+        }
+        GenCubeShadowInfo cubeInfo;
+        cubeInfo.cameraFarPlane = 5.0f;//cam->GetFarPlane();
+        cubeInfo.cubeLightPos = cam->GetWorldTransform().GetTranslation();
+        m_ModelInfoCBuffer->Update(&cubeInfo, sizeof(GenCubeShadowInfo));
+        tech->SetParam("genCubeShadowInfo", m_GenCubeShaodowCBuffer);
+        break;
+    }
     case RenderStage::GenerateShadowMap:
     {
         break;

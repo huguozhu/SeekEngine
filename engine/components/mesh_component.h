@@ -62,7 +62,8 @@ protected:
     VisibleMark                 m_eVisibleMark = VisibleMark::Yes;
     bool                        m_bIsInstance = false;
 
-    RHIRenderBufferPtr             m_ModelInfoCBuffer;
+    RHIRenderBufferPtr          m_ModelInfoCBuffer;
+    RHIRenderBufferPtr          m_GenCubeShaodowCBuffer;
 };
 
 SEEK_NAMESPACE_END

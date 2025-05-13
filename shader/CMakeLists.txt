@@ -32,6 +32,7 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/GenerateReflectiveShadowMapPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/MeshRenderingVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/PostProcessVS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/PreZMeshRenderingVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/ShadowCopyPS.dsf
 
     ${SEEK_SHADER_SOURCE_DIR}/ToneMappingPS.dsf

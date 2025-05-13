@@ -1,20 +1,26 @@
 //STAGE:ps
-
-cbuffer cameraNearFarPlane
+#include "Common.dsh"
+cbuffer genCubeShadowInfo
 {
-	float2 cameraNearFarPlane;
+	GenCubeShadowInfo genCubeShadowInfo;
 }
 
-cbuffer cubeLightPos
+struct VSOutput
 {
-	float3 cubeLightPos;
-}
+    float3 posWorld     : POSITION0;
+    float4 pos          : SV_POSITION;
+};
+struct PSOutput
+{
+    float4 color    : SV_Target0;
+};
 
-float4 main(
-	in float3 iPosWorld : POSITION
-) : SV_Target
+PSOutput main(VSOutput input)
 {
-	float light_distance = length(iPosWorld - cubeLightPos);
-	light_distance = light_distance / cameraNearFarPlane.y;
-	return light_distance;
+	PSOutput output;
+
+	float light_distance = length(input.posWorld - genCubeShadowInfo.cubeLightPos);
+	light_distance = light_distance / genCubeShadowInfo.cameraFarPlane;
+	output.color = light_distance;
+	return output;
 }

@@ -300,9 +300,9 @@ PointLightComponent::PointLightComponent(Context* context, std::string const& na
 }
 PointLightComponent::~PointLightComponent()
 {
-    for (uint32_t i = 0; i < 6; i++)
+    for (uint32_t face = (uint32_t)CubeFaceType::Positive_X; face < (uint32_t)CubeFaceType::Num; face++)
     {
-        m_aSMCameras[i]->SetParent(nullptr);
+        m_aSMCameras[face]->SetParent(nullptr);
     }
 }
 

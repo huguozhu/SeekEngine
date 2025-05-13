@@ -167,3 +167,9 @@ struct TileInfo
     uint light_num;
     uint light_indices[MAX_DEFERRED_LIGHTS_INDICES];
 };
+
+struct GenCubeShadowInfo
+{
+    float cameraFarPlane;
+    float3 cubeLightPos;
+};

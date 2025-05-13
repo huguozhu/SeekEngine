@@ -156,8 +156,6 @@ RendererReturnValue ShadowLayer::GenerateShadowMapJob(uint32_t light_index)
     if (light_type == LightType::Spot || light_type == LightType::Directional)
     {
         sr.SetCurRenderStage(RenderStage::GenerateShadowMap);
-        //rc.BindRHIFrameBuffer(m_pSmFb);
-        //m_pSmFb->Clear();
 
         m_pSmFb->SetColorLoadOption(RHIFrameBuffer::Color0, RHIFrameBuffer::LoadAction::DontCare);
         m_pSmFb->SetDepthLoadOption(1.0f);
@@ -172,14 +170,14 @@ RendererReturnValue ShadowLayer::GenerateShadowMapJob(uint32_t light_index)
         sc.SetActiveCamera(nullptr);
         sr.SetCurRenderStage(RenderStage::None);
 
-        #if 0
-            static int draw = 2;
-            if (draw)
-            {
-                m_pSmDepthTex->DumpToFile("d:\\sm_depth.g16l");
-                --draw;
-            }
-        #endif
+    #if 0
+        static int draw = 2;
+        if (draw)
+        {
+            m_pSmDepthTex->DumpToFile("d:\\sm_depth.g16l");
+            --draw;
+        }
+    #endif
     }
     else if (light_type == LightType::Point)
     {
@@ -187,18 +185,11 @@ RendererReturnValue ShadowLayer::GenerateShadowMapJob(uint32_t light_index)
         pLight->UpdateShadowMapCamera();
         uint32_t cube_shadow_map_index = m_vShadowIndex[light_index].second;
         for (uint32_t i = (uint32_t)CubeFaceType::Positive_X; i < (uint32_t)CubeFaceType::Num; i++)
-        {
-            // rc.BindFrameBuffer(m_pCubeSmFb[i]);            
+        {   
             if (0 == cube_shadow_map_index)
             {
-                //res = m_pCubeSmFb[i]->Clear(FrameBuffer::CBM_ALL, float4(1.0f), 1.0f);
                 m_pCubeSmFb[i]->SetColorLoadOption(RHIFrameBuffer::Color0, float4(1.0f));
                 m_pCubeSmFb[i]->SetDepthLoadOption(1.0f);
-            }
-            else
-            {
-                m_pCubeSmFb[i]->SetColorLoadOption(RHIFrameBuffer::Color0, {});
-                m_pCubeSmFb[i]->SetDepthLoadOption({});
             }
 
             SResult res = m_pContext->RHIContextInstance().BeginRenderPass({ "GenerateCubeShadowMap", m_pCubeSmFb[i].get() });
@@ -210,6 +201,15 @@ RendererReturnValue ShadowLayer::GenerateShadowMapJob(uint32_t light_index)
             }
             sc.SetActiveCamera(nullptr);
             m_pContext->RHIContextInstance().EndRenderPass();
+#if 0
+            static int draw = 6;
+            if (draw)
+            {
+                //m_pCubeSmTex->DumpToFile("d:\\sm_cube.rgba", (CubeFaceType)i);
+                --draw;
+            }
+#endif
+
         }
         sr.SetCurRenderStage(RenderStage::None);
     }

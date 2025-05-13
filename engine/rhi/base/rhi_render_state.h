@@ -250,8 +250,11 @@ struct SamplerDesc
     static SamplerDesc PointSampler();
     static SamplerDesc LinearSampler();
     static SamplerDesc BilinearSampler();
+    static SamplerDesc PrefilterMapSampler();
     static SamplerDesc AnisotropicSampler();
     static SamplerDesc SkyboxSampler();
+    static SamplerDesc ShadowMapSampler();
+    static SamplerDesc NoiseSampler();
 
     size_t   Hash() const;
     bool     operator==(SamplerDesc const& rhs) const;

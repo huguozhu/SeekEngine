@@ -65,12 +65,6 @@ SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tech
         {
             predefines.push_back(jointBindSizePredefine);
             predefines.push_back(morphTypePredefine);
-
-            uint32_t has_tex_normal = 0;
-            EffectPredefine hasNormalTexPredefine;
-            hasNormalTexPredefine.name = "HAS_MATERIAL_NORMAL";
-            hasNormalTexPredefine.value = std::to_string(has_tex_normal);
-            predefines.push_back(hasNormalTexPredefine);
             
             if (m_eCurRenderStage == RenderStage::GenerateShadowMap)
                 virtualTech = effect.GetVirtualTechnique("GenerateShadowMap");

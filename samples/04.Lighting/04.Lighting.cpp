@@ -55,11 +55,12 @@ SResult Lighting::OnCreate()
     pLight->SetDirection(float3(p, -p, -p));
     pLight->SetIntensity(0.5);
     pLight->CastShadow(1);
+	pLight->SoftShadow(1);
 	pLight->SetWorldTranslation(directional_pos); 
     //pLight->CascadedShadow(1);
     m_pLightEntity[1] = MakeSharedPtr<Entity>(m_pContext.get(), "Directional Light");
     m_pLightEntity[1]->AddSceneComponent(pLight);
-    m_pLightEntity[1]->AddToTopScene();
+    //m_pLightEntity[1]->AddToTopScene();
 
     float3 spot_pos = float3(-p, p, 0);
     float3 look_at = float3(0, 0, 0);
@@ -72,9 +73,10 @@ SResult Lighting::OnCreate()
     pLight->SetInOutCutoff(float2(cutoff_in, cutoff_out));
     pLight->SetIntensity(50.24);
     pLight->CastShadow(1);
+	pLight->SoftShadow(1);
     m_pLightEntity[2] = MakeSharedPtr<Entity>(m_pContext.get(), "Spot Light");
     m_pLightEntity[2]->AddSceneComponent(pLight);
-    m_pLightEntity[2]->AddToTopScene();
+    //m_pLightEntity[2]->AddToTopScene();
 
     spot_pos = float3(p, p, -p);
     look_at = float3(0, 0, 0);
@@ -85,28 +87,28 @@ SResult Lighting::OnCreate()
     pLight->SetIntensity(5.24);
     pLight->CastShadow(1);
     pLight->SoftShadow(1);
+    pLight->SetWorldTranslation(spot_pos);
     m_pLightEntity[3] = MakeSharedPtr<Entity>(m_pContext.get(), "Spot Light");
-    m_pLightEntity[3]->SetWorldTranslation(spot_pos);
     m_pLightEntity[3]->AddSceneComponent(pLight);
     //m_pLightEntity[3]->AddToTopScene();
 
-    float3 point_pos = float3(0, 1.0, 1);
+    float3 point_pos = float3(0, 3.0, 0);
     pLight = MakeSharedPtr<PointLightComponent>(m_pContext.get());
     pLight->SetColor(Color::Green);    
     pLight->SetIntensity(45);
     pLight->CastShadow(1);
-    pLight->SoftShadow(1);
-    pLight->SetFalloffRadius(5.4);
+    //pLight->SoftShadow(1);
+    pLight->SetFalloffRadius(15.4);
+	pLight->SetWorldTranslation(point_pos);
     m_pLightEntity[4] = MakeSharedPtr<Entity>(m_pContext.get(), "Point Light");
-    m_pLightEntity[4]->SetWorldTranslation(point_pos);
     m_pLightEntity[4]->AddSceneComponent(pLight);
-    //m_pLightEntity[4]->AddToTopScene();
+    m_pLightEntity[4]->AddToTopScene();
 
     //BitmapBufferPtr bit = ImageDecodeFromFile(FullPath("asset/textures/boy.jpg"), ImageType::JPEG);
     //RHITexturePtr tex_boy = rc.CreateTexture2D(bit);
 
-    PlaneMeshComponentPtr pPlane = MakeSharedPtr<PlaneMeshComponent>(m_pContext.get(), 5.6f, 5.6f);
-    MaterialPtr material = pPlane->GetMeshByIndex(0)->GetMaterial();
+    PlaneMeshComponentPtr pPlane = MakeSharedPtr<PlaneMeshComponent>(m_pContext.get(), 7.6f, 7.6f);
+    //MaterialPtr material = pPlane->GetMeshByIndex(0)->GetMaterial();
     //material->albedo_tex = tex_boy;
     m_pPlaneEntity = MakeSharedPtr<Entity>(m_pContext.get());
     m_pPlaneEntity->SetWorldTranslation(float3(0, -0.5, 0));
@@ -115,22 +117,22 @@ SResult Lighting::OnCreate()
 
 
     SphereMeshComponentPtr pSphere = MakeSharedPtr<SphereMeshComponent>(m_pContext.get());
-    material = pSphere->GetMeshByIndex(0)->GetMaterial();
+    pSphere->SetWorldTranslation(float3(-2, 0.5, 0));
+    pSphere->SetWorldScale(float3(1.0f));
+    //material = pSphere->GetMeshByIndex(0)->GetMaterial();
     //material->albedo_tex = tex_boy;
     m_pSphereEntity = MakeSharedPtr<Entity>(m_pContext.get());
-    m_pSphereEntity->AddSceneComponent(pSphere);
-    m_pSphereEntity->SetWorldScale(float3(1.0f));
-    m_pSphereEntity->SetWorldTranslation(float3(0, 1.0, 0));
+    m_pSphereEntity->AddSceneComponent(pSphere);    
     m_pSphereEntity->AddToTopScene();
 
 
     ConeMeshComponentPtr pCone = MakeSharedPtr<ConeMeshComponent>(m_pContext.get());
-    material = pCone->GetMeshByIndex(0)->GetMaterial();
-    // material->albedo_tex = tex_boy;
+	pCone->SetWorldTranslation(float3(2, 1.0, 0));
+    //material = pCone->GetMeshByIndex(0)->GetMaterial();
+    //material->albedo_tex = tex_boy;
     m_pConeEntity = MakeSharedPtr<Entity>(m_pContext.get());
     m_pConeEntity->AddSceneComponent(pCone);
-    m_pConeEntity->SetWorldTranslation(float3(0, 1.0, 0));
-    //m_pConeEntity->AddToTopScene();
+    m_pConeEntity->AddToTopScene();
     
 
 #ifdef SEEK_PLATFORM_WINDOWS2r
