@@ -47,7 +47,7 @@ float CalcSpotDirectionalLightShadow(LightInfo lightInfo, float3 posWorld, int s
 float CalcPointLightShadow(CameraInfo cameraInfo, LightInfo lightInfo, float3 posWorld)
 {
 	float3 fragToLight = posWorld - lightInfo.posWorld;
-	float far_plane = cameraInfo.nearFarPlane.y;	
+    float far_plane = cameraInfo.farPlane;
 	float current_depth = length(fragToLight);
 	
 	float shadow = 0.0;

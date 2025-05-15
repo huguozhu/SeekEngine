@@ -90,7 +90,7 @@ SResult Lighting::OnCreate()
     pLight->SetWorldTranslation(spot_pos);
     m_pLightEntity[3] = MakeSharedPtr<Entity>(m_pContext.get(), "Spot Light");
     m_pLightEntity[3]->AddSceneComponent(pLight);
-    //m_pLightEntity[3]->AddToTopScene();
+    m_pLightEntity[3]->AddToTopScene();
 
     float3 point_pos = float3(0, 3.0, 0);
     pLight = MakeSharedPtr<PointLightComponent>(m_pContext.get());

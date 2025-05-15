@@ -25,17 +25,16 @@ public:
     RendererReturnValue GenerateCascadedShadowMapJob(uint32_t light_index);
     virtual RendererReturnValue PostProcessShadowMapJob(uint32_t light_index) = 0;
 
-    RHITexturePtr              GetFilteredShadowMap() { return m_pFilteredSmTex; }
-    RHITexturePtr              GetCubeShadowMap() { return m_pCubeSmTex; }
-    std::vector<RHITexturePtr> GetCascadedShadowMap() { return m_vCsmTex; }
-    int32_t                 GetShadowMapIndexByLightIndex(size_t light_index);
+    RHITexturePtr               GetFilteredShadowMap() { return m_pFilteredSmTex; }
+    RHITexturePtr               GetCubeShadowMap() { return m_pCubeSmTex; }
+    std::vector<RHITexturePtr>  GetCascadedShadowMap() { return m_vCsmTex; }
+    int32_t                     GetShadowMapIndexByLightIndex(size_t light_index);
 
-    Technique*                 GetShadowTechnique(uint32_t morph_count);
 
-    RHITexturePtr const&       GetSmDepthTex() { return m_pSmDepthTex; }
+    RHITexturePtr const&        GetSmDepthTex() { return m_pSmDepthTex; }
 
-    void                    SetCascadedIndex(uint32_t i) { m_iCascadedIndex = i; }
-    uint32_t                GetCascadedIndex() { return m_iCascadedIndex; }
+    void                        SetCascadedIndex(uint32_t i) { m_iCascadedIndex = i; }
+    uint32_t                    GetCascadedIndex() { return m_iCascadedIndex; }
 
     static const uint32_t               MAX_CASCADED_SHADOW_NUM = 4;
     static const uint32_t               MAX_SHADOW_LIGHT_NUM = 4;
@@ -84,45 +83,49 @@ public:
 
 private:
     // Shadow Map PostProcess
-    PostProcessPtr                      m_pShadowCopy[MAX_SHADOW_LIGHT_NUM] = { nullptr };
+    PostProcessPtr          m_pShadowCopy[MAX_SHADOW_LIGHT_NUM] = { nullptr };
 };
 
 
 /******************************************************************************
  * DeferredShadowLayer
  ******************************************************************************/
-//class DeferredShadowLayer : public ShadowLayer
-//{
-//private:
-//    // Shadow Map PostProcess
-//    Effect*                 m_pShadow0Effect = nullptr;
-//    Technique*              m_pShadowingTechs[(uint32_t)LightType::Num][2] = { nullptr };
-//    RHIRenderStatePtr       m_pShadowingRenderStates[4] = { nullptr };
-//
-//    RendererReturnValue     m_pShadowingTex = nullptr;
-//    RHIFrameBufferPtr       m_pShadowingFb = nullptr;
-//    RHIMeshPtr              m_pQuadMesh = nullptr;
-//
-//    // Effect Params
-//    EffectParam*            m_pParamCameraInfo = nullptr;        
-//    EffectParam*            m_pParamLightInfo = nullptr;
-//    EffectParam*            m_pParamDeferredLightingInfo = nullptr;
-//    EffectParam*            m_pParamDepthTex = nullptr;
-//    EffectParam*            m_pParamShadowTex = nullptr;
-//    EffectParam*            m_pParamCubeShadowTex = nullptr;
-//    EffectParam*            m_pParamCsmTex[NUM_CSM_LEVELS] = { nullptr };
-//    EffectParam*            m_pParamCsmDistance = nullptr;
-//    EffectParam*            m_pParamCsmLightVPMatrices = nullptr;
-//    EffectParam*            m_pParamLightViewMatrices = nullptr;
-//
-//public:
-//    DeferredShadowLayer(Context* context);
-//    ~DeferredShadowLayer() {}
-//
-//    virtual SResult InitResource();
-//    virtual RendererReturnValue PostProcessShadowMapJob(uint32_t light_index);
-//
-//    RHITexturePtr           GetShadowingTex() { return m_pShadowingTex; }
-//};
+class DeferredShadowLayer : public ShadowLayer
+{
+private:
+    // Shadow Map PostProcess
+    RHIRenderStatePtr       m_pShadowingRenderStates[4] = { nullptr };
+    Technique*              m_pShadowingTechs[(uint32_t)LightType::Num][2] = { nullptr };
+    
+
+    RHITexturePtr           m_pShadowingTex = nullptr;
+    RHIFrameBufferPtr       m_pShadowingFb = nullptr;
+    RHIMeshPtr              m_pQuadMesh = nullptr;
+
+    //// Effect Params
+    //EffectParam*            m_pParamCameraInfo = nullptr;        
+    //EffectParam*            m_pParamLightInfo = nullptr;	
+    //EffectParam*            m_pParamDeferredLightingInfo = nullptr;
+    // 
+    //EffectParam*            m_pParamDepthTex = nullptr;
+    //EffectParam*            m_pParamShadowTex = nullptr;
+    //EffectParam*            m_pParamCubeShadowTex = nullptr;
+    //EffectParam*            m_pParamCsmTex[NUM_CSM_LEVELS] = { nullptr };
+    //EffectParam*            m_pParamCsmDistance = nullptr;
+    //EffectParam*            m_pParamCsmLightVPMatrices = nullptr;
+    //EffectParam*            m_pParamLightViewMatrices = nullptr;
+
+    RHIRenderBufferPtr      m_pCameraInfoCBuffer = nullptr;
+    RHIRenderBufferPtr      m_pLightInfoCBuffer = nullptr;
+	RHIRenderBufferPtr      m_pDeferredLightingInfoCBuffer = nullptr;
+public:
+    DeferredShadowLayer(Context* context);
+    ~DeferredShadowLayer() {}
+
+    virtual SResult InitResource();
+    virtual RendererReturnValue PostProcessShadowMapJob(uint32_t light_index);
+
+    RHITexturePtr           GetShadowingTex() { return m_pShadowingTex; }
+};
 
 SEEK_NAMESPACE_END

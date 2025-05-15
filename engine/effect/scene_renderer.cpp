@@ -1,6 +1,7 @@
 #include "effect/scene_renderer.h"
 #include "effect/effect.h"
 #include "effect/postprocess.h"
+#include "effect/shadow_layer.h"
 #include "components/camera_component.h"
 #include "components/light_component.h"
 #include "math/matrix.h"
@@ -86,12 +87,28 @@ SResult SceneRenderer::FillLightInfoByLightIndex(LightInfo& info, CameraComponen
     info.falloffRadius = light->GetFalloffRadius();
     info.posWorld = light->GetLightPos();
     info.intensity = light->GetIntensity() * exposure;
-
+    info.castShadow = (int)m_pContext->EnableShadow() ? (int)light->CastShadow() : 0;
+    info.useSoftShadow = (int)light->SoftShadow();
+    info.shadowBias = light->GetShadowBias();
+    if (light->GetShadowMapCamera())
+    {
+        CameraComponent* pCamera = light->GetShadowMapCamera();
+        info.nearFarPlane = float2(pCamera->GetNearPlane(), pCamera->GetFarPlane());
+    }
+    if (info.castShadow)
+        info.shadowMapIndex = m_pContext->SceneRendererInstance().GetShadowLayer()->GetShadowMapIndexByLightIndex(light_index);
     if (LightType::Spot == type)
     {
         float2 inOutCutoff = ((SpotLightComponent*)light)->GetInOutCutoff();
         info.inOutCutoff = float2(cos(inOutCutoff.x()), cos(inOutCutoff.y()));
     }
+
+    if (LightType::Spot == type || LightType::Directional == type)
+    {
+        Matrix4 const& light_vp = light->GetShadowMapCamera()->GetViewProjMatrix();
+        info.lightViewProj = light_vp.Transpose();
+    }
+
     return S_Success;
 }
 SResult SceneRenderer::RenderScene(uint32_t scope)

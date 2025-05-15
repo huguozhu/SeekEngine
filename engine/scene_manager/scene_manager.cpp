@@ -450,7 +450,7 @@ RHIRenderBufferPtr& SceneManager::GetViewInfoCBuffer()
     {
         CameraInfo cameraInfo;
         cameraInfo.posWorld = GetActiveCamera()->GetWorldTransform().GetTranslation();
-        cameraInfo.nearFarPlane = float2(GetActiveCamera()->GetNearPlane(), GetActiveCamera()->GetFarPlane());
+        cameraInfo.farPlane = GetActiveCamera()->GetFarPlane();
         m_ViewInfoCBuffer->Update(&cameraInfo, sizeof(cameraInfo));
     }
     else

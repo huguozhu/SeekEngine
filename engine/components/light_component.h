@@ -8,14 +8,13 @@
 SEEK_NAMESPACE_BEGIN
 
 enum class LightType : uint32_t
-{
-    Unknown     = 0xffffffff,
+{    
     Ambient     = 0x00,
     Directional,
     Spot,
     Point,
-
     Num,
+    Unknown = 0xffffffff,
 };
 enum class LightIntensityUnit : uint32_t
 {
