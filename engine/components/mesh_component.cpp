@@ -147,7 +147,7 @@ SResult MeshComponent::OnRenderBegin(Technique* tech, RHIMeshPtr mesh)
         GenCubeShadowInfo cubeInfo;
         cubeInfo.cameraFarPlane = cam->GetFarPlane();
         cubeInfo.cubeLightPos = cam->GetWorldTransform().GetTranslation();
-        m_ModelInfoCBuffer->Update(&cubeInfo, sizeof(GenCubeShadowInfo));
+        m_GenCubeShaodowCBuffer->Update(&cubeInfo, sizeof(GenCubeShadowInfo));
         tech->SetParam("genCubeShadowInfo", m_GenCubeShaodowCBuffer);
         break;
     }
