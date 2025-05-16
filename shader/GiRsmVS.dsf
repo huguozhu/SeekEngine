@@ -1,0 +1,21 @@
+//STAGE:vs
+#include "common.dsh"
+#include "shared/GI.h"
+
+cbuffer cb_GiRsmParam
+{
+    GiRsmParam param;
+}
+
+void main(
+	in  float3 iPos			: POSITION,
+	out float4 oPosView	 	: POSITION,
+	out float2 oTc			: TEXCOORD,
+	out float4 oPos			: SV_POSITION)
+{	
+	float4 pos = float4(iPos, 1.0);
+	oPos = pos;
+	oPosView = mul(pos, param.inv_proj_matrix);
+	oPosView /= oPosView.w;
+	oTc = TexCoordFromPosNDC(iPos);
+}	

@@ -30,7 +30,7 @@ public:
     virtual SResult     RunGraphicsPipeline();
     virtual SResult     RunComputePipeline();
     
-    virtual SResult     SetOutput(uint32_t index, RHITexturePtr const& tex);
+    virtual SResult     SetOutput(uint32_t index, RHITexturePtr const& tex, CubeFaceType type = CubeFaceType::Positive_X);
     virtual SResult     SetOutput(uint32_t index, RHIRenderViewPtr const& target);
 
     template <typename T>
@@ -76,5 +76,28 @@ protected:
     RHIRenderBufferPtr  m_GlobalParamsCBuffer;
 };
 
+/******************************************************************************
+ * PostProcessChain
+ ******************************************************************************/
+class PostProcessChain : public PostProcess
+{
+public:
+    PostProcessChain(Context* context, std::string const& name, PostProcessRenderType type = PostProcessRenderType::Render_2D);
+    void AddPostProcess(PostProcessPtr const& pp);
+
+    virtual SResult   Run() override;
+    virtual SResult   SetOutput(uint32_t index, RHITexturePtr const& tex, CubeFaceType type = CubeFaceType::Positive_X) override;
+
+    template <typename T>
+    void SetParam(const std::string& name, const T& val)
+    {
+		if (m_vPPChain.size() > 0)
+			m_vPPChain[0]->SetParam(name, val);
+    }
+
+
+protected:
+    std::vector<PostProcessPtr>      m_vPPChain;
+};
 
 SEEK_NAMESPACE_END

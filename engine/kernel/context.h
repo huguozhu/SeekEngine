@@ -28,17 +28,30 @@ enum class LightingMode
 };
 static const float PBR_INTENSITY_COEFF = 120000.0f;
 
+enum class AntiAliasingMode
+{
+    None,
+    TAA,
+    FXAA,
+};
 enum class FPSLimit
 {
     NoLImit,
     FPS_30,
     FPS_60,
 };
-
+enum class GlobalIlluminationMode
+{
+    None,
+    RSM,
+    //LPV,
+    //VXGI,
+};
 struct RenderInitInfo
 {
     bool                    debug = false;
     bool                    multi_thread = true;
+    bool                    enable_profile = false;
     bool                    enable_watermark = true;
     bool                    enable_transparent = false;
     bool                    enable_ambient_occlusion = false;
@@ -53,8 +66,9 @@ struct RenderInitInfo
     void*                   native_wnd = nullptr;
     void*                   device = nullptr;
 
-    //AntiAliasingMode        anti_aliasing_mode = AntiAliasingMode::None;
+    AntiAliasingMode        anti_aliasing_mode = AntiAliasingMode::None;
     FPSLimit                fps_limit_type = FPSLimit::FPS_60;
+    GlobalIlluminationMode  gi_mode = GlobalIlluminationMode::None;
 };
 
 class Context
@@ -63,31 +77,34 @@ public:
     Context();
     ~Context();
 
-    SResult             Init(const RenderInitInfo& init_info);
-    void                Uninit();
-    void                SetViewport(Viewport vp);
-    Viewport            GetViewport() const { return m_sViewport; }
+    SResult                 Init(const RenderInitInfo& init_info);
+    void                    Uninit();
+    void                    SetViewport(Viewport vp);
+    Viewport                GetViewport() const { return m_sViewport; }
     
 
-    SResult             Update();
-    SResult             BeginRender();
-    SResult             RenderFrame();   // Called by Rendering Thread 
-    SResult             EndRender();
+    SResult                 Update();
+    SResult                 BeginRender();
+    SResult                 RenderFrame();   // Called by Rendering Thread 
+    SResult                 EndRender();
 
-    void                SetClearColor(float4 color) { m_fClearColor = color; }
-    float4              GetClearColor() const { return m_fClearColor; }
+    void                    SetClearColor(float4 color) { m_fClearColor = color; }
+    float4                  GetClearColor() const { return m_fClearColor; }
 
-    bool                IsMultiThreaded()       const { return m_InitInfo.multi_thread; }
-    bool                EnableWaterWark()       const { return m_InitInfo.enable_watermark; }
-    bool                IsDebug()               const { return m_InitInfo.debug; }
-    bool                EnableTransparent()     const { return m_InitInfo.enable_transparent; }
-    bool                EnableAmbientOcclusion()const { return m_InitInfo.enable_ambient_occlusion;}    
-	bool                EnableShadow()          const { return m_InitInfo.enable_shadow; }
-    int32_t             GetPreferredAdapter()   const { return m_InitInfo.preferred_adapter; }
-    uint32_t            GetNumSamples()         const { return m_InitInfo.num_samples; }
-    bool                IsHDR()                 const { return m_InitInfo.HDR; }
-    RHIType             GetRHIType()            const { return m_InitInfo.rhi_type; }
-    LightingMode        GetLightingMode()       const { return m_InitInfo.lighting_mode; }
+    bool                    IsMultiThreaded()           const { return m_InitInfo.multi_thread; }
+    bool                    EnableProfile()             const { return m_InitInfo.enable_profile; }
+    bool                    EnableWaterWark()           const { return m_InitInfo.enable_watermark; }
+    bool                    IsDebug()                   const { return m_InitInfo.debug; }
+    bool                    EnableTransparent()         const { return m_InitInfo.enable_transparent; }
+    bool                    EnableAmbientOcclusion()    const { return m_InitInfo.enable_ambient_occlusion;}    
+	bool                    EnableShadow()              const { return m_InitInfo.enable_shadow; }
+    int32_t                 GetPreferredAdapter()       const { return m_InitInfo.preferred_adapter; }
+    uint32_t                GetNumSamples()             const { return m_InitInfo.num_samples; }
+    bool                    IsHDR()                     const { return m_InitInfo.HDR; }
+    RHIType                 GetRHIType()                const { return m_InitInfo.rhi_type; }
+    LightingMode            GetLightingMode()           const { return m_InitInfo.lighting_mode; }
+    AntiAliasingMode        GetAntiAliasingMode()       const { return m_InitInfo.anti_aliasing_mode; }
+	GlobalIlluminationMode  GetGlobalIlluminationMode() const { return m_InitInfo.gi_mode; }
 
     RHIContext&         RHIContextInstance() { return *m_pRHIContext; }
     SceneManager&       SceneManagerInstance() { return *m_pSceneManager;}

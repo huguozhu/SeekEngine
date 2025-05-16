@@ -452,6 +452,7 @@ RendererReturnValue DeferredShadowLayer::PostProcessShadowMapJob(uint32_t light_
     if (pCam)
     {
         cameraInfo.posWorld = pCam->GetWorldTransform().GetTranslation();
+		cameraInfo.nearPlane = pCam->GetNearPlane();
         cameraInfo.farPlane = pCam->GetFarPlane();
     }
     m_pCameraInfoCBuffer->Update(&cameraInfo, sizeof(cameraInfo));

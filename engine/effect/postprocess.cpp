@@ -108,19 +108,24 @@ SResult PostProcess::RunComputePipeline()
     return S_Success;
 }
 
-SResult PostProcess::SetOutput(uint32_t index, RHITexturePtr const& tex)
+SResult PostProcess::SetOutput(uint32_t index, RHITexturePtr const& tex, CubeFaceType type)
 {
     if (nullptr == tex)
         m_pFrameBuffer->AttachTargetView((RHIFrameBuffer::Attachment)(RHIFrameBuffer::Color0 + index), nullptr);
     else
     {
         RHIContext& rc = m_pContext->RHIContextInstance();
-        m_pFrameBuffer->AttachTargetView((RHIFrameBuffer::Attachment)(RHIFrameBuffer::Color0 + index), rc.CreateRenderTargetView(tex));
-        if (0 == index)
+        if (tex->Type() == TextureType::Cube)
         {
-            m_pFrameBuffer->SetViewport({ 0, 0, tex->Width(), tex->Height() });
+            if ((uint8_t)type >= (uint8_t)CubeFaceType::Num)
+                return ERR_INVALID_ARG;
+			m_pFrameBuffer->AttachTargetView((RHIFrameBuffer::Attachment)(RHIFrameBuffer::Color0 + index), rc.CreateRenderTargetView(tex, type));
         }
+        else
+            m_pFrameBuffer->AttachTargetView((RHIFrameBuffer::Attachment)(RHIFrameBuffer::Color0 + index), rc.CreateRenderTargetView(tex));
 
+        if (0 == index)
+            m_pFrameBuffer->SetViewport({ 0, 0, tex->Width(), tex->Height() });
     }
     return S_Success;
 }
@@ -175,6 +180,32 @@ void PostProcess::UpdateGlobalParams(const void* data, uint32_t size, bool bForc
 
     if (m_GlobalParamsCBuffer)
         m_GlobalParamsCBuffer->Update(data, size);
+}
+/******************************************************************************
+ * PostProcessChain
+ ******************************************************************************/
+PostProcessChain::PostProcessChain(Context* context, std::string const& name, PostProcessRenderType type)
+    :PostProcess(context, name, type)
+{
+}
+
+SResult PostProcessChain::Run()
+{
+    for (auto const& pp : m_vPPChain)
+    {
+        SEEK_RETIF_FAIL(pp->Run());
+    }
+    return S_Success;
+}
+
+SResult PostProcessChain::SetOutput(uint32_t index, RHITexturePtr const& tex, CubeFaceType type)
+{
+    return m_vPPChain.back()->SetOutput(index, tex, type);
+}
+
+void PostProcessChain::AddPostProcess(PostProcessPtr const& pp)
+{
+    m_vPPChain.push_back(pp);
 }
 
 SEEK_NAMESPACE_END

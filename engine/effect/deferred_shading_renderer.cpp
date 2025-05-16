@@ -28,6 +28,14 @@
 
 SEEK_NAMESPACE_BEGIN
 
+#define BEGIN_TIMEQUERY(time_query) \
+    if (m_pContext->IsProfile()) \
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::BeginTimeQueryJob, this, time_query)));
+
+#define END_TIMEQUERY(time_query) \
+    if (m_pContext->IsProfile()) \
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::EndTimeQueryJob, this, time_query)));
+
 static bool use_tile_culling = 0;
 
 LightInfo DeferredShadingRenderer::s_LightInfos[MAX_DEFERRED_LIGHTS_NUM];
@@ -43,10 +51,99 @@ SResult DeferredShadingRenderer::Init()
     SResult ret = S_Success;
     RHIContext& rc = m_pContext->RHIContextInstance();
 
-    m_pQuadMesh = QuadMesh_GetMesh(rc);
-
     // Step1: Base Init & Create Shadow Layer
     ret = SceneRenderer::Init();
+
+    // to do: temp w/h to use
+    uint32_t w = 1280;
+    uint32_t h = 720;
+    m_pQuadMesh = QuadMesh_GetMesh(rc);
+
+    // Step1: create ShadowMap & Cascaded ShadowMap
+    {
+        RHITexture::Desc desc;
+        desc.type = TextureType::Tex2D;
+        desc.width = w;
+        desc.height = h;
+        desc.depth = 1;
+        desc.num_mips = 1;
+        desc.num_samples = m_pContext->GetNumSamples();
+        desc.format = PixelFormat::D32F;
+        desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_COPY_BACK;
+        m_pSceneDepthStencil = rc.CreateTexture2D(desc);
+
+        if (m_pContext->GetAntiAliasingMode() == AntiAliasingMode::TAA)
+        {
+            desc.format = PixelFormat::R16G16_SNORM;
+            desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SHADER_RESOURCE;
+            m_pSceneVelocity = rc.CreateTexture2D(desc);
+        }
+    }
+
+    // Step2: Create LDR Fb
+    {
+        PixelFormat pf = PixelFormat::R8G8B8A8_UNORM;
+        RHITexture::Desc desc;
+        desc.type = TextureType::Tex2D;
+        desc.width = w;
+        desc.height = h;
+        desc.depth = 1;
+        desc.num_mips = 1;
+        desc.num_samples = m_pContext->IsHDR() ? 1 : m_pContext->GetNumSamples();
+        desc.format = pf;
+        desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SHADER_RESOURCE;
+        m_pLDRColor = rc.CreateTexture2D(desc);
+
+        if (!m_pLDRFb)
+            m_pLDRFb = rc.CreateEmptyRHIFrameBuffer();
+        if (!m_pLDRPostProcess)
+            m_pLDRPostProcess = MakeSharedPtr<LDRPostProcess>(m_pContext);
+
+        m_pLDRPostProcess->SetParam(0, m_pLDRColor);
+        if (m_pContext->GetAntiAliasingMode() == AntiAliasingMode::TAA)
+        {
+            m_pLDRPostProcess->SetParam(2, m_pSceneVelocity);
+        }
+    }
+
+    // Step3: Create HDR Fb
+    if (m_pContext->IsHDR())
+    {
+        PixelFormat pf = PixelFormat::R16G16B16A16_FLOAT;
+        if (!rc.GetCapabilitySet().IsTextureSupport(pf, TextureFormatSupportType::RenderTarget))
+            pf = PixelFormat::R32G32B32A32_FLOAT;
+        RHITexture::Desc desc;
+        desc.type = TextureType::Tex2D;
+        desc.width = w;
+        desc.height = h;
+        desc.depth = 1;
+        desc.num_mips = 1;
+        desc.num_samples = m_pContext->GetNumSamples();
+        desc.format = pf;
+        desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SHADER_RESOURCE;
+        m_pHDRColor = rc.CreateTexture2D(desc);
+
+        if (!m_pHDRFb)
+            m_pHDRFb = rc.CreateEmptyRHIFrameBuffer();
+        if (!m_pHDRPostProcess)
+            m_pHDRPostProcess = MakeSharedPtr<HDRPostProcess>(m_pContext);
+
+        m_pHDRPostProcess->SetParam(0, m_pHDRColor);
+
+        m_pSceneColor = m_pHDRColor;
+        m_pSceneFb = m_pHDRFb;
+    }
+    else
+    {
+        m_pSceneColor = m_pLDRColor;
+        m_pSceneFb = m_pLDRFb;
+    }
+
+    if (m_pLDRFb)
+    {
+        m_pLDRFb->DetachAllTargetView();
+        m_pLDRFb->DetachDepthStencilView();
+    }
 
     if (m_pContext->EnableShadow())
     {
@@ -61,16 +158,13 @@ SResult DeferredShadingRenderer::Init()
             }
         }
     }
-
-    // to do: temp w/h to use
-	uint32_t tmp_w = 1280;
-	uint32_t tmp_h = 720;
+    
 
     // Step2: Create Texture
     RHITexture::Desc desc;
     desc.type = TextureType::Tex2D;
-    desc.width = tmp_w;
-    desc.height = tmp_h;
+    desc.width = w;
+    desc.height = h;
     desc.depth = 1;
     desc.num_mips = 1;
     desc.num_samples = 1;
@@ -108,8 +202,8 @@ SResult DeferredShadingRenderer::Init()
     m_pSsaoFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pSsaoColor));
 
     // Step4: Shadowing
-    desc.width = tmp_w / 2;
-    desc.height = tmp_h / 2;
+    desc.width = w / 2;
+    desc.height = h / 2;
     desc.format = PixelFormat::R8G8B8A8_UNORM;
     m_pShadowTex = rc.CreateTexture2D(desc);
     m_pShadowingFb = rc.CreateEmptyRHIFrameBuffer();
@@ -192,17 +286,17 @@ SResult DeferredShadingRenderer::Init()
         ((RSM*)m_pGI.get())->Init(m_pGBufferColor0, m_pGBufferColor1, m_pSceneDepthStencil);
     }
 
-    if (m_pContext->IsProfile())
+    if (m_pContext->EnableProfile())
     {
-        m_pTimeQueryGenShadowMap = rc.CreateTimeQuery();
-        m_pTimeQueryGenGBuffer = rc.CreateTimeQuery();
-        m_pTimeQuerySSAO = rc.CreateTimeQuery();
-        m_pTimeQueryLihgtCulling = rc.CreateTimeQuery();
-        m_pTimeQueryLighting = rc.CreateTimeQuery();
-        m_pTimeQueryGI = rc.CreateTimeQuery();
-        m_pTimeQuerySkybox = rc.CreateTimeQuery();
-        m_pTimeQueryHDR = rc.CreateTimeQuery();
-        m_pTimeQueryLDR = rc.CreateTimeQuery();
+        m_pTimeQueryGenShadowMap = rc.CreateRHITimerQuery();
+        m_pTimeQueryGenGBuffer = rc.CreateRHITimerQuery();
+        m_pTimeQuerySSAO = rc.CreateRHITimerQuery();
+        m_pTimeQueryLihgtCulling = rc.CreateRHITimerQuery();
+        m_pTimeQueryLighting = rc.CreateRHITimerQuery();
+        m_pTimeQueryGI = rc.CreateRHITimerQuery();
+        m_pTimeQuerySkybox = rc.CreateRHITimerQuery();
+        m_pTimeQueryHDR = rc.CreateRHITimerQuery();
+        m_pTimeQueryLDR = rc.CreateRHITimerQuery();
     }
     m_pLightInfoBuffer = rc.CreateByteAddressBuffer(sizeof(LightInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_CPU_WRITE, nullptr);
 
@@ -226,20 +320,20 @@ SResult DeferredShadingRenderer::Init()
     }
     return ret;
 }
-DVFResult DeferredShadingRenderer::BuildRenderJobList()
+SResult DeferredShadingRenderer::BuildRenderJobList()
 {
     m_vRenderingJobs.clear();
     SceneManager& sm = m_pContext->SceneManagerInstance();
     size_t light_count = sm.NumLightComponent();
     if (light_count == 0)
-        return DVF_Success;
+        return S_Success;
 
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::RenderPrepareJob, this)));
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::RenderPreZJob, this)));
 
     // Shadow Map job
     BEGIN_TIMEQUERY(m_pTimeQueryGenShadowMap);
-    if (m_pContext->IsUseShadow())
+    if (m_pContext->EnableShadow())
     {
         m_pShadowLayer->AnalyzeLightShadow();
         for (uint32_t i = 0; i < light_count; i++)
@@ -342,7 +436,7 @@ void DeferredShadingRenderer::AppendShadowMapJobs(uint32_t light_index)
     }
     return;
 }
-DVFResult DeferredShadingRenderer::GetEffectTechniqueToRender(MeshPtr mesh, Effect** effect, Technique** tech)
+SResult DeferredShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Effect** effect, Technique** tech)
 {
     if (!effect || !tech)
         return ERR_INVALID_ARG;
@@ -416,7 +510,7 @@ DVFResult DeferredShadingRenderer::GetEffectTechniqueToRender(MeshPtr mesh, Effe
         return ERR_INVALID_SHADER;
     }
 
-    return DVF_Success;
+    return S_Success;
 }
 void DeferredShadingRenderer::AppendGIJobs(uint32_t light_index)
 {
@@ -450,16 +544,15 @@ bool DeferredShadingRenderer::IsNeedShaderInvariant(RenderStage stage)
 {
     switch (stage)
     {
-    case dvf::RenderStage::PreZ:
-    case dvf::RenderStage::GenerateGBuffer:
+    case RenderStage::PreZ:
+    case RenderStage::GenerateGBuffer:
         return true;
         break;
-    case dvf::RenderStage::None:
-    case dvf::RenderStage::GenerateShadowMap:
-    case dvf::RenderStage::GenerateCubeShadowMap:
-    case dvf::RenderStage::GenerateCascadedShadowMap:
-    case dvf::RenderStage::RenderScene:
-    case dvf::RenderStage::Sprite2D:
+    case RenderStage::None:
+    case RenderStage::GenerateShadowMap:
+    case RenderStage::GenerateCubeShadowMap:
+    case RenderStage::GenerateCascadedShadowMap:
+    case RenderStage::RenderScene:
     default:
         return false;
         break;
@@ -479,8 +572,8 @@ Effect* DeferredShadingRenderer::GetDeferredEffect(uint32_t morph_count)
 
         // FIXME: BAD! we load same effect files many times
         EffectPtr effect_new = MakeSharedPtr<Effect>(m_pContext);
-        DVFResult res = effect_new->Load("deferred_shading.effect", &v);
-        if (res != DVF_Success)
+        SResult res = effect_new->Load("deferred_shading.effect", &v);
+        if (res != S_Success)
         {
             LOG_ERROR("DeferredShadingRenderer::LightingJob() Load failed.");
             return nullptr;
@@ -490,10 +583,10 @@ Effect* DeferredShadingRenderer::GetDeferredEffect(uint32_t morph_count)
     }
     return pEffect;
 }
-MeshPtr DeferredShadingRenderer::GetLightVolumeMesh(LightType type)
+RHIMeshPtr DeferredShadingRenderer::GetLightVolumeMesh(LightType type)
 {
-    MeshPtr pMesh = nullptr;
-    RenderContext& rc = m_pContext->RenderContextInstance();
+    RHIMeshPtr pMesh = nullptr;
+    RHIContext& rc = m_pContext->RHIContextInstance();
     switch (type)
     {
     case LightType::Directional:    pMesh = m_pQuadMesh;            break;
@@ -525,14 +618,14 @@ RendererReturnValue DeferredShadingRenderer::RenderPreZJob()
 {
     m_eCurRenderStage = RenderStage::PreZ;
 
-    DVFResult res = m_pContext->RenderContextInstance().BindFrameBuffer(m_pPreZFb);
-    if (res != DVF_Success)
+    SResult res = m_pContext->RHIContextInstance().BindRHIFrameBuffer(m_pPreZFb);
+    if (res != S_Success)
     {
         LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::RenderPreZJob() BindFrameBuffer failed.");
     }
 
     res = m_pContext->SceneManagerInstance().RenderScene((uint32_t)RenderScope::Opacity);
-    if (res != DVF_Success)
+    if (res != S_Success)
     {
         LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::RenderPreZJob() RenderScene failed.");
     }
@@ -551,14 +644,14 @@ RendererReturnValue DeferredShadingRenderer::RenderPreZJob()
 RendererReturnValue DeferredShadingRenderer::GenerateGBufferJob()
 {
     m_eCurRenderStage = RenderStage::GenerateGBuffer;
-    DVFResult res = m_pContext->RenderContextInstance().BindFrameBuffer(m_pGBufferFb);
-    if (res != DVF_Success)
+    SResult res = m_pContext->RHIContextInstance().BindRHIFrameBuffer(m_pGBufferFb);
+    if (res != S_Success)
     {
         LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::GenerateGBufferJob() BindFrameBuffer failed.");
     }
 
     res = m_pContext->SceneManagerInstance().RenderScene((uint32_t)RenderScope::Opacity);
-    if (res != DVF_Success)
+    if (res != S_Success)
     {
         LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::GenerateGBufferJob() RenderScene failed.");
     }
@@ -579,9 +672,9 @@ RendererReturnValue DeferredShadingRenderer::GenerateGBufferJob()
 RendererReturnValue DeferredShadingRenderer::SSAOJob()
 {
     SceneManager& sm = m_pContext->SceneManagerInstance();
-    RenderContext& rc = m_pContext->RenderContextInstance();    
-    DVFResult res = m_pContext->RenderContextInstance().BindFrameBuffer(m_pSsaoFb);
-    if (res != DVF_Success)
+    RHIContext& rc = m_pContext->RHIContextInstance();    
+    SResult res = m_pContext->RHIContextInstance().BindRHIFrameBuffer(m_pSsaoFb);
+    if (res != S_Success)
     {
         LOG_ERROR("DeferredShadingRenderer::SSAOJob() BindFrameBuffer failed.");
         return RRV_NextJob;
@@ -591,7 +684,7 @@ RendererReturnValue DeferredShadingRenderer::SSAOJob()
     if (cam)
     {
         cameraInfo.posWorld = cam->GetWorldTransform().GetTranslation();
-        cameraInfo.nearFarPlane = cam->GetNearFarPlane();
+        cameraInfo.farPlane = cam->GetFarPlane();
     }
 
     if (m_pQuadMesh || m_pSsaoEffect)
@@ -606,7 +699,7 @@ RendererReturnValue DeferredShadingRenderer::SSAOJob()
         
         m_pQuadMesh->SetRenderState(m_pSsaoTech->GetRenderState());
         res = rc.Render(m_pSsaoTech->GetProgram().get(), m_pQuadMesh);
-        if (res != DVF_Success)
+        if (res != S_Success)
         {
             LOG_ERROR("DeferredShadingRenderer::LightingJob() Render() failed.");
             return RRV_NextJob;
@@ -626,7 +719,7 @@ RendererReturnValue DeferredShadingRenderer::SSAOJob()
 RendererReturnValue DeferredShadingRenderer::LightingTileCullingJob()
 {
     SceneManager& sm = m_pContext->SceneManagerInstance();
-    RenderContext& rc = m_pContext->RenderContextInstance();
+    RHIContext& rc = m_pContext->RHIContextInstance();
 
     // Step1: Set Params
     CameraComponent* cam = sm.GetActiveCamera();
@@ -634,7 +727,7 @@ RendererReturnValue DeferredShadingRenderer::LightingTileCullingJob()
     if (cam)
     {
         cameraInfo.posWorld = cam->GetWorldTransform().GetTranslation();
-        cameraInfo.nearFarPlane = cam->GetNearFarPlane();
+        cameraInfo.farPlane = cam->GetFarPlane();
     }
     m_pParamCameraInfo->UpdateConstantBuffer(&cameraInfo, sizeof(cameraInfo));
 
@@ -674,8 +767,8 @@ RendererReturnValue DeferredShadingRenderer::LightingTileCullingJob()
     //Step1: Light culling
     uint32_t x = (m_pGBufferColor0->Width()  + TILE_SIZE - 1) / TILE_SIZE;
     uint32_t y = (m_pGBufferColor0->Height() + TILE_SIZE - 1) / TILE_SIZE;
-    DVFResult res = rc.Dispatch(m_pTileCullingTech->GetProgram().get(), x, y, 1);
-    if (res != DVF_Success)
+    SResult res = rc.Dispatch(m_pTileCullingTech->GetProgram().get(), x, y, 1);
+    if (res != S_Success)
     {
         LOG_ERROR("DeferredShadingRenderer::LightingTileCullingJob() Culling failed.");
         return RRV_NextJob;
@@ -701,8 +794,8 @@ RendererReturnValue DeferredShadingRenderer::LightingTileCullingJob()
 #endif
 
     //Step2: Rendering after light culling
-    res = m_pContext->RenderContextInstance().BindFrameBuffer(m_pLightingFb);
-    if (res != DVF_Success)
+    res = m_pContext->RHIContextInstance().BindRHIFrameBuffer(m_pLightingFb);
+    if (res != S_Success)
     {
         LOG_ERROR("DeferredShadingRenderer::LightingTileCullingJob() BindFrameBuffer failed.");
         return RRV_NextJob;
@@ -710,7 +803,7 @@ RendererReturnValue DeferredShadingRenderer::LightingTileCullingJob()
 
     m_pQuadMesh->SetRenderState(m_pLightingTech_Shadow_TileCulling->GetRenderState());
     res = rc.Render(m_pLightingTech_Shadow_TileCulling->GetProgram().get(), m_pQuadMesh);
-    if (res != DVF_Success)
+    if (res != S_Success)
     {
         LOG_ERROR("DeferredShadingRenderer::LightingTileCullingJob() Render() failed.");
         return RRV_NextJob;
@@ -721,7 +814,7 @@ RendererReturnValue DeferredShadingRenderer::LightingTileCullingJob()
 RendererReturnValue DeferredShadingRenderer::LightingJob()
 {
     SceneManager& sm = m_pContext->SceneManagerInstance();
-    RenderContext& rc = m_pContext->RenderContextInstance();
+    RHIContext& rc = m_pContext->RHIContextInstance();
         
     // Step1: Set Params
     Effect* pEffect = this->GetDeferredEffect(0);
@@ -730,7 +823,7 @@ RendererReturnValue DeferredShadingRenderer::LightingJob()
     if (cam)
     {
         cameraInfo.posWorld = cam->GetWorldTransform().GetTranslation();
-        cameraInfo.nearFarPlane = cam->GetNearFarPlane();
+        cameraInfo.farPlane = cam->GetFarPlane();
     }
     m_pParamCameraInfo->UpdateConstantBuffer(&cameraInfo, sizeof(cameraInfo));
 
@@ -767,7 +860,7 @@ RendererReturnValue DeferredShadingRenderer::LightingJob()
     uint32_t light_num_no_shadow = (uint32_t)light_no_shadow_list.size();
         
     // Step3: Render shadow light
-    DVFResult res = m_pContext->RenderContextInstance().BindFrameBuffer(m_pLightingFb);
+    SResult res = m_pContext->RHIContextInstance().BindRHIFrameBuffer(m_pLightingFb);
     if (light_num_has_shadow > 0)
     {
         for (uint32_t i = 0; i < light_num_has_shadow; i++)
@@ -783,7 +876,7 @@ RendererReturnValue DeferredShadingRenderer::LightingJob()
         m_pQuadMesh->SetRenderState(m_pLightingTech_HasShadow->GetRenderState());
         res = rc.Render(m_pLightingTech_HasShadow->GetProgram().get(), m_pQuadMesh);
         m_pQuadMesh->SetRenderState(nullptr);
-        if (res != DVF_Success)
+        if (res != S_Success)
         {
             LOG_ERROR("DeferredShadingRenderer::LightingJob() Render() failed.");
             return RRV_NextJob;
@@ -806,7 +899,7 @@ RendererReturnValue DeferredShadingRenderer::LightingJob()
         m_pQuadMesh->SetRenderState(m_pLightingTech_NoShadow->GetRenderState());
         res = rc.Render(m_pLightingTech_NoShadow->GetProgram().get(), m_pQuadMesh);
         m_pQuadMesh->SetRenderState(nullptr);
-        if (res != DVF_Success)
+        if (res != S_Success)
         {
             LOG_ERROR("DeferredShadingRenderer::LightingJob() Render() failed.");
             return RRV_NextJob;
@@ -816,32 +909,32 @@ RendererReturnValue DeferredShadingRenderer::LightingJob()
 }
 RendererReturnValue DeferredShadingRenderer::PrintTimeQueryJob()
 {
-    //if (m_pTimeQueryGenShadowMap)
-    //    LOG_INFO("Time: Gen Shadow Map %.2lf", m_pTimeQueryGenShadowMap->TimeElapsedInMS());
+    if (m_pTimeQueryGenShadowMap)
+        LOG_INFO("Time: Gen Shadow Map %.2lf", m_pTimeQueryGenShadowMap->TimeElapsedInMS());
 
-    //if (m_pTimeQueryGenGBuffer)
-    //    LOG_INFO("Time: Gen GBuffer %.2lf", m_pTimeQueryGenGBuffer->TimeElapsedInMS());
+    if (m_pTimeQueryGenGBuffer)
+        LOG_INFO("Time: Gen GBuffer %.2lf", m_pTimeQueryGenGBuffer->TimeElapsedInMS());
 
-    //if (m_pTimeQuerySSAO)
-    //    LOG_INFO("Time: SSAO %.2lf", m_pTimeQuerySSAO->TimeElapsedInMS());
+    if (m_pTimeQuerySSAO)
+        LOG_INFO("Time: SSAO %.2lf", m_pTimeQuerySSAO->TimeElapsedInMS());
 
-    //if (use_tile_culling && m_pTimeQueryLihgtCulling)
-    //    LOG_INFO("Time: Lighting with Culling %.2lf", m_pTimeQueryLihgtCulling->TimeElapsedInMS());
+    if (use_tile_culling && m_pTimeQueryLihgtCulling)
+        LOG_INFO("Time: Lighting with Culling %.2lf", m_pTimeQueryLihgtCulling->TimeElapsedInMS());
 
-    //if (!use_tile_culling && m_pTimeQueryLighting)
-    //    LOG_INFO("Time: Lighting %.2lf", m_pTimeQueryLighting->TimeElapsedInMS());
+    if (!use_tile_culling && m_pTimeQueryLighting)
+        LOG_INFO("Time: Lighting %.2lf", m_pTimeQueryLighting->TimeElapsedInMS());
 
-    //if (m_pTimeQueryGI)
-    //    LOG_INFO("Time: GI %.2lf", m_pTimeQueryGI->TimeElapsedInMS());
+    if (m_pTimeQueryGI)
+        LOG_INFO("Time: GI %.2lf", m_pTimeQueryGI->TimeElapsedInMS());
 
-    //if (m_pTimeQuerySkybox)
-    //    LOG_INFO("Time: SkyBox %.2lf", m_pTimeQuerySkybox->TimeElapsedInMS());
+    if (m_pTimeQuerySkybox)
+        LOG_INFO("Time: SkyBox %.2lf", m_pTimeQuerySkybox->TimeElapsedInMS());
 
-    //if (m_pTimeQueryHDR)
-    //    LOG_INFO("Time: HDR %.2lf", m_pTimeQueryHDR->TimeElapsedInMS());
+    if (m_pTimeQueryHDR)
+        LOG_INFO("Time: HDR %.2lf", m_pTimeQueryHDR->TimeElapsedInMS());
 
-    //if (m_pTimeQueryLDR)
-    //    LOG_INFO("Time: LDR %.2lf", m_pTimeQueryLDR->TimeElapsedInMS());
+    if (m_pTimeQueryLDR)
+        LOG_INFO("Time: LDR %.2lf", m_pTimeQueryLDR->TimeElapsedInMS());
 
     return RRV_NextJob;
 }

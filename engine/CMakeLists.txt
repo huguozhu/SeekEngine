@@ -31,10 +31,14 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/components/watermark_component.cpp
 
     # effect
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/blur.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/blur.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/command_buffer.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/command_buffer.cpp
     #${SEEK_ENGINE_SOURCE_DIR}/effect/deferred_shading_renderer.h
     #${SEEK_ENGINE_SOURCE_DIR}/effect/deferred_shading_renderer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/gi.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/gi.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/draw_call.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/draw_call.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/effect.h

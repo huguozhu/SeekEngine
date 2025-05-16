@@ -1,0 +1,75 @@
+//STAGE:ps
+#include "Lighting.dsh"
+#include "shared/GI.h"
+
+Texture2D gbuffer0;
+Texture2D gbuffer1;
+Texture2D gbuffer_depth;
+
+Texture2D rsm_color0;
+Texture2D rsm_color1;
+Texture2D rsm_color2;
+
+cbuffer cb_GiRsmParam
+{
+    GiRsmParam param;
+}
+cbuffer cb_VplCoordAndWeights
+{
+	float4 vpl_coord_weights[32];
+}
+cbuffer cb_CameraInfo
+{
+    CameraInfo cameraInfo;
+}
+
+
+float3 CalcVPLIrradiance(float3 vpl_flux, float3 vpl_pos, float3 vpl_normal, float3 frag_pos, float3 frag_normal, float weight)
+{
+	float3 vpl2frag = normalize(frag_pos - vpl_pos);
+	return vpl_flux * max(dot(vpl_normal, vpl2frag), 0) * max(dot(frag_normal, -vpl2frag), 0) * weight;
+}
+
+// ls : light space
+float4 main(
+	in 	float4 iPosView	: POSITION,
+	in 	float2 iTc		: TEXCOORD) : SV_Target
+{
+	float4 gb0 = gbuffer0.Sample(point_sampler, iTc);
+	float4 gb1 = gbuffer1.Sample(point_sampler, iTc);
+	float3 frag_normal = normalize(BestFitNormal_Decode(gb0.xyz));
+	float3 albedo = gb1.xyz;
+	
+	float depth = gbuffer_depth.Sample(point_sampler, iTc).x;
+	float depth_view = ViewSpaceDepth(depth, cameraInfo.nearPlane, cameraInfo.farPlane);
+	float3 pos_view = iPosView.xyz * (depth_view / cameraInfo.farPlane);
+	float4 pos_world = mul(float4(pos_view, 1.0), param.inv_view_matrix);
+	pos_world /= pos_world.w;
+	float4 pos_proj_ls = mul(pos_world, param.light_view_proj_matrix);
+	pos_proj_ls /= pos_proj_ls.w;
+	float2 tex_coord_rsm = TexCoordFromPosNDC(pos_proj_ls.xyz);
+
+	if (pos_proj_ls.z < 0 || pos_proj_ls.z > 1)
+		return float4(0, 0, 0, 1);
+			
+	float rsm_texel_size = 1.0 / param.radius_rsmsize.y;
+	float3 indirect_illumination = 0;
+	float3 total_flux = 0;
+	for (int i=0; i<VPL_NUM; i++)
+	{
+		float3 vpl_coord_weight = vpl_coord_weights[i].xyz;
+		float2 vpl_sample_pos = tex_coord_rsm + param.radius_rsmsize.x * vpl_coord_weight.xy * rsm_texel_size;
+
+		float3 rsm0 = rsm_color0.Sample(shadow_map_sampler, vpl_sample_pos).xyz;
+		float3 vpl_normal_world = normalize(BestFitNormal_Decode(rsm0));
+		
+		float3 vpl_pos_world = rsm_color1.Sample(shadow_map_sampler, vpl_sample_pos).xyz;
+		float3 vpl_flux = rsm_color2.Sample(shadow_map_sampler, vpl_sample_pos).xyz;
+		
+		indirect_illumination += CalcVPLIrradiance(vpl_flux, vpl_pos_world, vpl_normal_world, pos_world.xyz, frag_normal, vpl_coord_weight.z);
+		total_flux += vpl_flux * albedo;
+	}
+	float3 v = indirect_illumination * albedo * 0.000001;
+	return float4(indirect_illumination * albedo * 20.0, 1.0);
+	//return float4((v + total_flux) / VPL_NUM, 1.0);
+}	

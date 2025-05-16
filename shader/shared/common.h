@@ -54,7 +54,10 @@ struct SkeletalJointMat
 struct CameraInfo
 {
     float3 posWorld;
+    float t0;
+    float nearPlane;
     float farPlane;
+    float2 t1;
 };
 
 struct MaterialParam

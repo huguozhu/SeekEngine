@@ -5,6 +5,7 @@ endif()
 set(shader_shared_files
     ${SEEK_SHADER_SOURCE_DIR}/shared/ColorReplace.h
     ${SEEK_SHADER_SOURCE_DIR}/shared/common.h
+    ${SEEK_SHADER_SOURCE_DIR}/shared/GI.h
     ${SEEK_SHADER_SOURCE_DIR}/shared/ParticleCommon.h
     ${SEEK_SHADER_SOURCE_DIR}/shared/SkyBox.h
     ${SEEK_SHADER_SOURCE_DIR}/shared/WaterMark.h
@@ -24,12 +25,15 @@ set(shader_header_files
 )
 
 set(shader_sources_files
+    ${SEEK_SHADER_SOURCE_DIR}/BlurPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/CopyPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/EmptyPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/ForwardRenderingCommonPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/GenerateCascadedShadowMapPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/GenerateCubeShadowMapPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/GenerateReflectiveShadowMapPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/GiRsmPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/GiRsmVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/MeshRenderingVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/PostProcessVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/PreZMeshRenderingVS.dsf

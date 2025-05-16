@@ -2,7 +2,7 @@
 #include "components/particle_component.h"
 #include "math/color.h"
 
-#define DVF_MACRO_FILE_UID 46     // this code is auto generated, don't touch it!!!
+#define SEEK_MACRO_FILE_UID 46     // this code is auto generated, don't touch it!!!
 
 #define DEFAULT_RENDER_WIDTH  1280
 #define DEFAULT_RENDER_HEIGHT 720
@@ -270,4 +270,4 @@ int main()
 }
 #endif
 
-#undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

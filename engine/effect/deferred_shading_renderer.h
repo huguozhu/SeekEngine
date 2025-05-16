@@ -35,10 +35,24 @@ protected:
     friend class Context;
     DeferredShadingRenderer(Context* context);
 
-    RHIMeshPtr                         m_pQuadMesh = nullptr;
+    RHIMeshPtr                      m_pQuadMesh = nullptr;
 
-    // Effect & EffectParam
-    //Effect*                         m_pEffect0 = nullptr;
+    // 3D Scene FrameBuffer
+    RHITexturePtr                   m_pSceneColor = nullptr;
+    RHITexturePtr                   m_pSceneVelocity = nullptr; // For TAA
+    RHITexturePtr                   m_pSceneDepthStencil = nullptr;
+    RHIFrameBufferPtr               m_pSceneFb = nullptr;
+
+    RHITexturePtr                   m_pLDRColor = nullptr;
+    RHIFrameBufferPtr               m_pLDRFb = nullptr;
+
+    RHITexturePtr                   m_pHDRColor = nullptr;
+    RHIFrameBufferPtr               m_pHDRFb = nullptr;
+
+    // HDR
+    HDRPostProcessPtr               m_pHDRPostProcess = nullptr;
+    LDRPostProcessPtr               m_pLDRPostProcess = nullptr;
+
 
     EffectParam*                    m_pParamCameraInfo = nullptr;
     EffectParam*                    m_pParamGBuffer0 = nullptr;
@@ -56,17 +70,17 @@ protected:
     EffectParam*                    m_pParamTileInfo = nullptr;
 
     // FrameBuffer / Texture
-    RHITexturePtr                      m_pGBufferColor0 = nullptr;
-    RHITexturePtr                      m_pGBufferColor1 = nullptr;
-    RHITexturePtr                      m_pGBufferColor2 = nullptr;
+    RHITexturePtr                   m_pGBufferColor0 = nullptr;
+    RHITexturePtr                   m_pGBufferColor1 = nullptr;
+    RHITexturePtr                   m_pGBufferColor2 = nullptr;
 
-    RHITexturePtr                      m_pPreZColor = nullptr;
-    RHITexturePtr                      m_pSsaoColor = nullptr;
+    RHITexturePtr                   m_pPreZColor = nullptr;
+    RHITexturePtr                   m_pSsaoColor = nullptr;
     
-    RHIFrameBufferPtr                  m_pGBufferFb = nullptr;
-    RHIFrameBufferPtr                  m_pPreZFb = nullptr;
-    RHIFrameBufferPtr                  m_pLightingFb = nullptr;
-    RHIFrameBufferPtr                  m_pSsaoFb = nullptr;
+    RHIFrameBufferPtr               m_pGBufferFb = nullptr;
+    RHIFrameBufferPtr               m_pPreZFb = nullptr;
+    RHIFrameBufferPtr               m_pLightingFb = nullptr;
+    RHIFrameBufferPtr               m_pSsaoFb = nullptr;
 
     std::map<uint32_t, EffectPtr>   m_Effects; // key=morph_count
     Technique*                      m_pLightingTech_HasShadow =  nullptr;
@@ -90,15 +104,15 @@ protected:
     //GlobalIlluminationPtr           m_pGI = nullptr;
 
     // Query
-    //TimeQueryPtr                    m_pTimeQueryGenShadowMap = nullptr;
-    //TimeQueryPtr                    m_pTimeQueryGenGBuffer = nullptr;
-    //TimeQueryPtr                    m_pTimeQuerySSAO = nullptr;
-    //TimeQueryPtr                    m_pTimeQueryLihgtCulling = nullptr;
-    //TimeQueryPtr                    m_pTimeQueryLighting = nullptr;
-    //TimeQueryPtr                    m_pTimeQueryGI = nullptr;
-    //TimeQueryPtr                    m_pTimeQuerySkybox = nullptr;
-    //TimeQueryPtr                    m_pTimeQueryHDR = nullptr;
-    //TimeQueryPtr                    m_pTimeQueryLDR = nullptr;
+    TimeQueryPtr                    m_pTimeQueryGenShadowMap = nullptr;
+    TimeQueryPtr                    m_pTimeQueryGenGBuffer = nullptr;
+    TimeQueryPtr                    m_pTimeQuerySSAO = nullptr;
+    TimeQueryPtr                    m_pTimeQueryLihgtCulling = nullptr;
+    TimeQueryPtr                    m_pTimeQueryLighting = nullptr;
+    TimeQueryPtr                    m_pTimeQueryGI = nullptr;
+    TimeQueryPtr                    m_pTimeQuerySkybox = nullptr;
+    TimeQueryPtr                    m_pTimeQueryHDR = nullptr;
+    TimeQueryPtr                    m_pTimeQueryLDR = nullptr;
 
     // Tile Culling
     RHIRenderBufferPtr                 m_pLightInfoBuffer = nullptr;

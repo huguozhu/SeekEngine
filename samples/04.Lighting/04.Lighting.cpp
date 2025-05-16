@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include "04.Lighting.h" 
 
-#define DVF_MACRO_FILE_UID 91     // this code is auto generated, don't touch it!!!
+#define SEEK_MACRO_FILE_UID 91     // this code is auto generated, don't touch it!!!
 
 
 #define DEFAULT_RENDER_WIDTH  1280
@@ -205,4 +205,4 @@ int main()
     return APP_RUN(&theApp);
 }
 
-#undef DVF_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
