@@ -10,7 +10,7 @@ Texture2D rsm_color0;
 Texture2D rsm_color1;
 Texture2D rsm_color2;
 
-cbuffer cb_GiRsmParam
+cbuffer cb_GiRsmPSParam
 {
     GiRsmParam param;
 }

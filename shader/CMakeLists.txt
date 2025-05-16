@@ -8,6 +8,7 @@ set(shader_shared_files
     ${SEEK_SHADER_SOURCE_DIR}/shared/GI.h
     ${SEEK_SHADER_SOURCE_DIR}/shared/ParticleCommon.h
     ${SEEK_SHADER_SOURCE_DIR}/shared/SkyBox.h
+    ${SEEK_SHADER_SOURCE_DIR}/shared/Ssao.h
     ${SEEK_SHADER_SOURCE_DIR}/shared/WaterMark.h
 )
 
@@ -42,6 +43,8 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/ToneMappingPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/SkyBoxVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/SkyBoxPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/SsaoVS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/SsaoVS.dsf
 
 
     ${SEEK_SHADER_SOURCE_DIR}/WaterMarkPS.dsf

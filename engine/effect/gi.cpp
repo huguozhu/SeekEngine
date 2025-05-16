@@ -106,7 +106,8 @@ SResult RSM::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     m_pGiRsmPp->SetParam("cb_CameraInfo", m_pRsmCameraInfoCBuffer);
 
     m_pRsmParamCBuffer = rc.CreateConstantBuffer(sizeof(GiRsmParam), RESOURCE_FLAG_CPU_WRITE);
-    m_pGiRsmPp->SetParam("cb_GiRsmParam", m_pRsmParamCBuffer);
+    m_pGiRsmPp->SetParam("cb_GiRsmVSParam", m_pRsmParamCBuffer);
+    m_pGiRsmPp->SetParam("cb_GiRsmPSParam", m_pRsmParamCBuffer);
 
 	m_pVplCoordAndWeightsCBuffer = rc.CreateConstantBuffer(sizeof(float4) * VPL_NUM, RESOURCE_FLAG_CPU_WRITE);
     std::vector<float4> vplCoordAndWeights;

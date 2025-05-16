@@ -2,7 +2,7 @@
 #include "common.dsh"
 #include "shared/GI.h"
 
-cbuffer cb_GiRsmParam
+cbuffer cb_GiRsmVSParam
 {
     GiRsmParam param;
 }
