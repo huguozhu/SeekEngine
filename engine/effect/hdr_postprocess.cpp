@@ -9,12 +9,12 @@ SEEK_NAMESPACE_BEGIN
 HDRPostProcess::HDRPostProcess(Context* context)
     :PostProcess(context, "HDRPostProcess")
 {
-    static const std::string hdr_name = "ToneMapping";
+    static const std::string tech_name = "ToneMapping";
     Effect& effect = m_pContext->EffectInstance();
-    effect.LoadTechnique(hdr_name, &RenderStateDesc::PostProcess(), "PostProcessVS", "ToneMappingPS", nullptr);
+    effect.LoadTechnique(tech_name, &RenderStateDesc::PostProcess(), "PostProcessVS", "ToneMappingPS", nullptr);
 	
-    m_pToneMapping = MakeSharedPtr<PostProcess>(context, hdr_name);
-    m_pToneMapping->Init(hdr_name, NULL_PREDEFINES);
+    m_pToneMapping = MakeSharedPtr<PostProcess>(context, tech_name);
+    m_pToneMapping->Init(tech_name, NULL_PREDEFINES);
 }
 
 void HDRPostProcess::SetSrcTexture(RHITexturePtr const& tex2d)

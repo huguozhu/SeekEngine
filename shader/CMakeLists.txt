@@ -15,6 +15,7 @@ set(shader_shared_files
 set(shader_header_files
     ${SEEK_SHADER_SOURCE_DIR}/BRDF.dsh
     ${SEEK_SHADER_SOURCE_DIR}/Common.dsh
+    ${SEEK_SHADER_SOURCE_DIR}/IBL.dsh
     ${SEEK_SHADER_SOURCE_DIR}/Lighting.dsh
     ${SEEK_SHADER_SOURCE_DIR}/MorphTarget.dsh
     ${SEEK_SHADER_SOURCE_DIR}/Skeleton.dsh
@@ -28,15 +29,21 @@ set(shader_header_files
 set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/BlurPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/CopyPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/CubeMapVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/EmptyPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/EquirectangularToCubeMapPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/ForwardRenderingCommonPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/FxaaPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/GenBRDF2DLutPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/GenerateCascadedShadowMapPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/GenerateCubeShadowMapPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/GenerateReflectiveShadowMapPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/GiRsmPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/GiRsmVS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/GiRsmVS.dsf    
+    ${SEEK_SHADER_SOURCE_DIR}/IrradianceConvolutionPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/MeshRenderingVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/PostProcessVS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/PrefilterEnvPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/PreZMeshRenderingVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/ShadowCopyPS.dsf
 

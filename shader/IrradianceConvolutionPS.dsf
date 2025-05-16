@@ -1,0 +1,35 @@
+//STAGE:ps
+#include "Common.dsh"
+
+TextureCube texture_cube;
+TextureCube tex_env;
+
+float4 main(
+	in float3 iWorldPos : POSITION) : SV_Target
+{
+	float3 N = normalize(iWorldPos);
+	float3 irradiance = float3(0, 0, 0);
+	
+	float3 up = float3(0, 1, 0);
+	float3 right = normalize(cross(up, N));
+	up = normalize(cross(N, right));
+	
+	static const float sample_delta = 0.05;
+	float sample_count = 0.0;
+	for (float phi = 0.0; phi < PI * 2.0; phi += sample_delta)
+	{
+		for (float theta = 0.0; theta < PI * 0.5; theta += sample_delta)
+		{
+			// spherical to cartesian (in tangent space)
+			float3 tangent_sample = float3(sin(theta)*cos(phi), sin(theta)*sin(phi), cos(theta));
+			
+			// tangent space to world
+			float3 uvw = tangent_sample.x * right + tangent_sample.y * up + tangent_sample.z * N;
+			
+			irradiance += tex_env.Sample(linear_sampler, uvw).rgb * cos(theta) * sin(theta);
+			sample_count = sample_count + 1.0;
+		}	
+	}	
+	irradiance = irradiance / sample_count * PI;	
+	return float4(irradiance, 1.0);
+}

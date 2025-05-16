@@ -87,11 +87,11 @@ SResult RSM::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
 
     Effect& effect = m_pContext->EffectInstance();
 
-    static const std::string gi_name = "GiRsm";    
-    effect.LoadTechnique(gi_name, &RenderStateDesc::Default2D(), "GiRsmVS", "GiRsmPS", nullptr);
+    static const std::string tech_name = "GiRsm";
+    effect.LoadTechnique(tech_name, &RenderStateDesc::Default2D(), "GiRsmVS", "GiRsmPS", nullptr);
 
-    m_pGiRsmPp = MakeSharedPtr<PostProcess>(m_pContext, gi_name);
-    m_pGiRsmPp->Init(gi_name, NULL_PREDEFINES);
+    m_pGiRsmPp = MakeSharedPtr<PostProcess>(m_pContext, tech_name);
+    m_pGiRsmPp->Init(tech_name, NULL_PREDEFINES);
     m_pGiRsmPp->SetClear(false);
 
     m_pGiRsmPp->SetParam("gbuffer0", gbuffer0);

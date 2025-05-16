@@ -25,16 +25,16 @@ GaussianBlur::GaussianBlur(Context* context)
     global_params.is_horizontal = 0;
     m_pBlurYCBuffer->Update(&global_params, sizeof(global_params));
 
-	static const std::string blur_name = "GaussianBlur";
+	static const std::string tech_name = "GaussianBlur";
     Effect& effect = m_pContext->EffectInstance();
-    effect.LoadTechnique(blur_name, &RenderStateDesc::PostProcess(), "PostProcessVS", "BlurPS", nullptr);
+    effect.LoadTechnique(tech_name, &RenderStateDesc::PostProcess(), "PostProcessVS", "BlurPS", nullptr);
 
     PostProcessPtr blur_x = MakeSharedPtr<PostProcess>(context, "Blur_X");
-    blur_x->Init(blur_name, NULL_PREDEFINES);
+    blur_x->Init(tech_name, NULL_PREDEFINES);
     blur_x->SetParam("GlobalParams", m_pBlurXCBuffer);
 
     PostProcessPtr blur_y = MakeSharedPtr<PostProcess>(context, "Blur_Y");
-    blur_y->Init(blur_name, NULL_PREDEFINES);
+    blur_y->Init(tech_name, NULL_PREDEFINES);
     blur_y->SetParam("GlobalParams", m_pBlurXCBuffer);
 
     this->AddPostProcess(blur_x);
