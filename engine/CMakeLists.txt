@@ -39,6 +39,8 @@ set(ENGINE_CODE
     #${SEEK_ENGINE_SOURCE_DIR}/effect/deferred_shading_renderer.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/gi.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/gi.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/hdr_postprocess.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/hdr_postprocess.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/draw_call.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/draw_call.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/effect.h
