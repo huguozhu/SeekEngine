@@ -70,7 +70,7 @@ SResult RSM::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     m_pRSMFb->AttachDepthStencilView(rc.CreateDepthStencilView(m_pRSMDepthTex));
 
     // RSM Effect
-    RHITexture::Desc& desc = m_pContext->RHIContextInstance().GetScreenRHIFrameBuffer()->GetRenderTargetDesc(RHIFrameBuffer::Attachment::Color0);
+    desc = m_pContext->RHIContextInstance().GetScreenRHIFrameBuffer()->GetRenderTargetDesc(RHIFrameBuffer::Attachment::Color0);
     uint32_t w = desc.width;
 	uint32_t h = desc.height;
     desc.type = TextureType::Tex2D;

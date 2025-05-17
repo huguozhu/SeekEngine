@@ -28,7 +28,7 @@ SResult LDRPostProcess::Init()
     }
     else if (aa_mode == AntiAliasingMode::TAA)
     {
-        m_pTaaPostProcess = MakeSharedPtr<TaaPostProcess>(m_pContext, tech_name_taa);
+        m_pTaaPostProcess = MakeSharedPtr<TaaPostProcess>(m_pContext);
         ret = m_pTaaPostProcess->Init();
         if (SEEK_CHECKFAILED(ret))
         {
