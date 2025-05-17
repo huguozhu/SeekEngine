@@ -8,6 +8,7 @@
 #include "effect/effect.h"
 #include "effect/scene_renderer.h"
 #include "effect/forward_shading_renderer.h"
+#include "effect/deferred_shading_renderer.h"
 
 #include "utils/log.h"
 #include "utils/timer.h"
@@ -34,6 +35,7 @@ Context::Context()
     m_InitInfo.multi_thread = 0;
     m_InitInfo.rhi_type = RHIType::D3D11;
     m_InitInfo.debug = true;
+    m_InitInfo.renderer_type = RendererType::Forward;
     m_fClearColor = float4(1, 1, 0, 1);
 }
 Context::~Context()
@@ -91,19 +93,20 @@ SResult Context::Init(const RenderInitInfo& init_info)
             //m_pRendererCommandManager->InitRenderer(init_info.native_wnd);
         }
 
-        ret = this->InitRHIContext();
-		{
-			// to delete after testing
-	        RHIContext& rc = this->RHIContextInstance();
-	        rc.Init();
-	        if (init_info.native_wnd)
-	        {
-	            rc.AttachNativeWindow("", init_info.native_wnd);
-	            rc.SetFinalRHIFrameBuffer(rc.GetScreenRHIFrameBuffer());
-	        }
-		}
-        if (SEEK_CHECKFAILED(ret))
-            break;
+        // RHIContext
+        {
+            ret = this->InitRHIContext();
+            if (SEEK_CHECKFAILED(ret))
+                break;
+            if (init_info.native_wnd)
+            {
+                RHIContext& rc = this->RHIContextInstance();
+                rc.AttachNativeWindow("", init_info.native_wnd);
+                rc.SetFinalRHIFrameBuffer(rc.GetScreenRHIFrameBuffer());
+                this->SetViewport(rc.GetScreenRHIFrameBuffer()->GetViewport());
+            }
+        }
+
         if (!m_pResourceManager)
         {
             m_pResourceManager = MakeUniquePtrMacro(ResourceManager, this);
@@ -121,7 +124,16 @@ SResult Context::Init(const RenderInitInfo& init_info)
         
         if (!m_pSceneRenderer)
         {
-            m_pSceneRenderer = MakeUniquePtrMacro(ForwardShadingRenderer, this);
+            RendererType type = this->GetRendererType();
+            if (type == RendererType::Forward)
+                m_pSceneRenderer = MakeUniquePtrMacro(ForwardShadingRenderer, this);
+            else if ( type == RendererType::Deferred)
+                m_pSceneRenderer = MakeUniquePtrMacro(DeferredShadingRenderer, this);
+            else
+            {
+                LOG_ERROR("Invalid Scene Renderer Type: %d", type); 
+                break;
+            }
             ret = m_pSceneRenderer->Init();
             if (SEEK_CHECKFAILED(ret))
                 break;

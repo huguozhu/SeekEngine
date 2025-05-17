@@ -7,7 +7,6 @@
 #include "effect/shadow_layer.h"
 #include "effect/blur.h"
 #include "effect/gi.h"
-#include "effect/technique.h"
 #include "kernel/context.h"
 #include "rhi/base/rhi_context.h"
 #include "rhi/base/rhi_framebuffer.h"

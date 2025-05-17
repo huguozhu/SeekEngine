@@ -16,7 +16,7 @@ int APP_RUN(AppFramework* app)
 }
 
 
-SResult AppFramework::InitContext(int width, int height, void* device, void* native_wnd)
+SResult AppFramework::InitContext(void* device, void* native_wnd)
 {
     RenderInitInfo info;
     info.debug = false;
@@ -91,7 +91,7 @@ SResult AppFramework::Run()
     CoCreateInstance(CLSID_WICImagingFactory1, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&g_pIWICFactory));
 
     HWND wnd = InitWindow(m_szName, DEFAULT_WND_WIDTH, DEFAULT_WND_HEIGHT);
-    this->InitContext(DEFAULT_WND_WIDTH, DEFAULT_WND_HEIGHT, NULL, (void*)wnd);
+    this->InitContext(NULL, (void*)wnd);
 
     if (!m_bInit)
     {
@@ -99,9 +99,9 @@ SResult AppFramework::Run()
         m_bInit = true;
     }
 
-    m_pContext->RHIContextInstance().AttachNativeWindow("", wnd);
-    m_pContext->RHIContextInstance().SetFinalRHIFrameBuffer(m_pContext->RHIContextInstance().GetScreenRHIFrameBuffer());
-    m_pContext->SetViewport(Viewport(0, 0, DEFAULT_WND_WIDTH, DEFAULT_WND_HEIGHT));
+    //m_pContext->RHIContextInstance().AttachNativeWindow("", wnd);
+    //m_pContext->RHIContextInstance().SetFinalRHIFrameBuffer(m_pContext->RHIContextInstance().GetScreenRHIFrameBuffer());
+    //m_pContext->SetViewport(Viewport(0, 0, DEFAULT_WND_WIDTH, DEFAULT_WND_HEIGHT));
 
     bool get_msg = false;
     MSG  msg;

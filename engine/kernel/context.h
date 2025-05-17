@@ -103,6 +103,7 @@ public:
     bool                    IsHDR()                     const { return m_InitInfo.HDR; }
     RHIType                 GetRHIType()                const { return m_InitInfo.rhi_type; }
     LightingMode            GetLightingMode()           const { return m_InitInfo.lighting_mode; }
+	RendererType            GetRendererType()           const { return m_InitInfo.renderer_type; }
     AntiAliasingMode        GetAntiAliasingMode()       const { return m_InitInfo.anti_aliasing_mode; }
 	GlobalIlluminationMode  GetGlobalIlluminationMode() const { return m_InitInfo.gi_mode; }
 
