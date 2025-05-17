@@ -40,7 +40,7 @@ public:
     virtual RHIRenderViewPtr        CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face) { return nullptr; }
     virtual RHIFrameBufferPtr       CreateEmptyRHIFrameBuffer() override { return nullptr; }
     virtual RHIProgramPtr           CreateRHIProgram() override { return nullptr; }
-    virtual RHITimerQueryPtr        CreateRHITimerQuery() override { return nullptr; }
+    virtual RHITimeQueryPtr         CreateRHITimeQuery() override { return nullptr; }
 
     virtual void                    BindRHIProgram(RHIProgram* program) {}
 
@@ -66,8 +66,8 @@ public:
     virtual void                    BeginCapture() {}
     virtual void                    EndCapture() {}
 
-    virtual void                    BeginRHITimerQuery(RHITimerQueryPtr&) override { return; }
-    virtual void                    EndRHITimerQuery(RHITimerQueryPtr&) override { return; }
+    //virtual void                    BeginRHITimerQuery(RHITimerQueryPtr&) override { return; }
+    //virtual void                    EndRHITimerQuery(RHITimerQueryPtr&) override { return; }
 
     virtual void                    BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* cbuffer, const char* name) override { return; }
     virtual void                    BindRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* buffer, const char* name) override { return; }

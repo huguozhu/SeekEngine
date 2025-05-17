@@ -45,7 +45,7 @@ protected:
 
     DXGI_SAMPLE_DESC m_msaa[CAP_MAX_TEXTURE_SAMPLE_COUNT + 1] = { {0, 0} };
 
-    D3D11RHITimerQueryExecutor m_RHITimerQueryExecutor{ m_pContext };
+    //D3D11RHITimeQueryExecutor m_RHITimerQueryExecutor{ m_pContext };
 
     D3D11RHIFrameBuffer* m_pCurrentRHIFrameBuffer = nullptr;
 
@@ -85,7 +85,7 @@ public:
 
     virtual RHIFrameBufferPtr   CreateEmptyRHIFrameBuffer() override;
     virtual RHIProgramPtr       CreateRHIProgram() override;
-    virtual RHITimerQueryPtr    CreateRHITimerQuery() override;
+    virtual RHITimeQueryPtr     CreateRHITimeQuery() override;
 
     virtual SResult             AttachNativeWindow(std::string const& name, void* native_wnd = nullptr) override;
 
@@ -109,8 +109,8 @@ public:
     virtual void BeginCapture() override;
     virtual void EndCapture() override;
 
-    virtual void BeginRHITimerQuery(RHITimerQueryPtr& timerRHIQuery) override;
-    virtual void EndRHITimerQuery(RHITimerQueryPtr& timerRHIQuery) override;
+    //virtual void BeginRHITimeQuery(RHITimeQueryPtr& timerRHIQuery) override;
+    //virtual void EndRHITimeQuery(RHITimeQueryPtr& timerRHIQuery) override;
 
     virtual void BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* cbuffer, const char* name) override;
     virtual void BindRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* buffer, const char* name) override;

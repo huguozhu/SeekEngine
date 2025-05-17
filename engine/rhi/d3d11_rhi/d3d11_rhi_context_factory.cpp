@@ -157,9 +157,9 @@ RHIProgramPtr D3D11RHIContext::CreateRHIProgram()
 { 
     return MakeSharedPtr<D3D11RHIProgram>(m_pContext);
 }
-RHITimerQueryPtr D3D11RHIContext::CreateRHITimerQuery()
+RHITimeQueryPtr D3D11RHIContext::CreateRHITimeQuery()
 {
-    return MakeSharedPtr<D3D11RHITimerQuery>(m_pContext);
+    return MakeSharedPtr<D3D11RHITimeQuery>(m_pContext);
 }
 SEEK_NAMESPACE_END
 

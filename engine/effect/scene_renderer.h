@@ -3,9 +3,18 @@
 #include <functional>
 #include "kernel/kernel.h"
 #include "rhi/base/viewport.h"
+#include "rhi/base/rhi_query.h"
 #include "scene_manager/scene_manager.h"
 
 SEEK_NAMESPACE_BEGIN
+
+#define BEGIN_TIMEQUERY(time_query) \
+    if (m_pContext->EnableProfile()) \
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::BeginTimeQueryJob, this, time_query)));
+
+#define END_TIMEQUERY(time_query) \
+    if (m_pContext->EnableProfile()) \
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::EndTimeQueryJob, this, time_query)));
 
 enum RendererReturnValue : uint32_t
 {
@@ -57,17 +66,17 @@ public:
 
     RendererReturnValue     ToneMappingJob();
     RendererReturnValue     FinishJob();
+    RendererReturnValue     BeginTimeQueryJob(RHITimeQueryPtr tq);
+    RendererReturnValue     EndTimeQueryJob(RHITimeQueryPtr tq);
 
     RendererType            GetRendererType() { return m_eRendererType; }
     RenderStage             GetCurRenderStage() const { return m_eCurRenderStage; }
     void                    SetCurRenderStage(RenderStage stage) { m_eCurRenderStage = stage; }
 
     ShadowLayerPtr          GetShadowLayer() { return m_pShadowLayer; }
+    bool                    IsNowShadowStage();
     SResult                 FillLightInfoByLightIndex(LightInfo& info, CameraComponent*  pCamera, size_t light_index);
     virtual SResult         RenderScene(uint32_t scope = (uint32_t)RenderScope::ALL);
-
-
-
 
     void SetViewport(const Viewport& viewport)
     {

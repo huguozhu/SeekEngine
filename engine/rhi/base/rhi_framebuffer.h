@@ -115,8 +115,12 @@ public:
     void                        SetViewport(Viewport viewport) { m_stViewport = viewport; }
     Viewport const &            GetViewport();
 
-    void                        AttachTargetView(Attachment att, RHIRenderViewPtr const& view);
+    void                        AttachTargetView(Attachment att, RHIRenderViewPtr const& view);    
+    void                        DetachTargetView(Attachment att);
+    void                        DetachAllTargetView();
+
     void                        AttachDepthStencilView(RHIRenderViewPtr const& view);
+    void                        DetachDepthStencilView();
 
     RHIRenderViewPtr            GetRenderTarget(Attachment att) const;
     std::array<RHIRenderViewPtr, MAX_COLOR_ATTACHMENTS> const& GetRenderTargets() const { return m_vRenderTargets; }

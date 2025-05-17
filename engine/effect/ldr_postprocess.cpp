@@ -52,17 +52,20 @@ SResult LDRPostProcess::Init()
     return S_Success;
 }
 
-void LDRPostProcess::SetSrcTexture(RHITexturePtr const& tex2d)
+void LDRPostProcess::SetLDRTexture(RHITexturePtr const& tex2d)
 {
     AntiAliasingMode aa_mode = m_pContext->GetAntiAliasingMode();
     if (aa_mode == AntiAliasingMode::None)
-    {
         m_pCopyPostProcess->SetParam("src_tex", tex2d);
-    }
     else if (aa_mode == AntiAliasingMode::TAA)
-        m_pTaaPostProcess->SetParam("src_tex", tex2d);
+        m_pTaaPostProcess->SetParam("currentTex", tex2d);
     else if (aa_mode == AntiAliasingMode::FXAA)
         m_pFxaaPostProcess->SetParam("currentTex", tex2d);
+}
+void LDRPostProcess::SetTaaSceneVelocityTexture(RHITexturePtr const& tex2d)
+{
+	if (m_pContext->GetAntiAliasingMode() == AntiAliasingMode::TAA)
+		m_pTaaPostProcess->SetParam("velocityTex", tex2d);
 }
 
 SResult LDRPostProcess::Run()

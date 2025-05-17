@@ -31,7 +31,42 @@ void RHIFrameBuffer::AttachDepthStencilView(RHIRenderViewPtr const& view)
     m_pDepthStencilView = view;
     m_bViewDirty = true;
 }
-
+void RHIFrameBuffer::DetachDepthStencilView()
+{
+    if (m_pDepthStencilView)
+    {
+        m_pDepthStencilView.reset();
+        m_bViewDirty = true;
+    }
+}
+void RHIFrameBuffer::DetachTargetView(Attachment att)
+{
+    if (att < m_vRenderTargets.size() && m_vRenderTargets[att])
+    {
+        m_vRenderTargets[att].reset();
+        m_bViewDirty = true;    
+	}
+    else
+    {
+        LOG_ERROR("DetachTargetView() error, invalid attachment %d", att);
+	}
+    if (Attachment::Color0 == att)
+    {
+        this->SetViewport({ 0, 0, 0, 0 });
+    }
+}
+void RHIFrameBuffer::DetachAllTargetView()
+{
+    for (size_t i = 0; i < m_vRenderTargets.size(); i++)
+    {
+        if (m_vRenderTargets[i])
+        {
+            m_vRenderTargets[i].reset();
+            m_bViewDirty = true;
+        }
+    }
+    this->SetViewport({ 0, 0, 0, 0 });
+}
 RHIRenderViewPtr RHIFrameBuffer::GetRenderTarget(Attachment att) const
 {
     uint32_t color_index = att - Attachment::Color0;

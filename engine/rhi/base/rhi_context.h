@@ -72,7 +72,7 @@ public: // virutal factory
     virtual RHIRenderViewPtr        CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face) { return nullptr; }
     virtual RHIFrameBufferPtr       CreateEmptyRHIFrameBuffer() = 0;
     virtual RHIProgramPtr           CreateRHIProgram() = 0;
-    virtual RHITimerQueryPtr        CreateRHITimerQuery() = 0;
+    virtual RHITimeQueryPtr         CreateRHITimeQuery() = 0;
 
     virtual void                    BindRHIProgram(RHIProgram* program) {}
 
@@ -99,8 +99,8 @@ public: // virutal factory
     virtual void                    BeginCapture() {}
     virtual void                    EndCapture() {}
 
-    virtual void                    BeginRHITimerQuery(RHITimerQueryPtr&) = 0;
-    virtual void                    EndRHITimerQuery(RHITimerQueryPtr&) = 0;
+    //virtual void                    BeginRHITimeQuery(RHITimeQueryPtr&) = 0;
+    //virtual void                    EndRHITimeQuery(RHITimeQueryPtr&) = 0;
 
     // Global common reused variable
     RHISamplerPtr                   GetSampler(SamplerDesc const& desc);

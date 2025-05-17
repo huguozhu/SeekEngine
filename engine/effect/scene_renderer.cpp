@@ -49,7 +49,6 @@ RendererReturnValue SceneRenderer::DoRenderJob()
     }
     return rrv;
 }
-
 RendererReturnValue SceneRenderer::ToneMappingJob()
 {
     m_eCurRenderStage = RenderStage::None;
@@ -68,7 +67,27 @@ RendererReturnValue SceneRenderer::FinishJob()
     m_bRenderSizeChanged = false;
     return RRV_Finish;
 }
-
+RendererReturnValue SceneRenderer::BeginTimeQueryJob(RHITimeQueryPtr tq)
+{
+    if (tq)
+        tq->Begin();
+    return RRV_NextJob;
+}
+RendererReturnValue SceneRenderer::EndTimeQueryJob(RHITimeQueryPtr tq)
+{
+    if (tq)
+        tq->End();
+    return RRV_NextJob;
+}
+bool SceneRenderer::IsNowShadowStage()
+{
+    if (m_eCurRenderStage == RenderStage::GenerateShadowMap ||
+        m_eCurRenderStage == RenderStage::GenerateCubeShadowMap ||
+        m_eCurRenderStage == RenderStage::GenerateCascadedShadowMap)
+        return true;
+    else
+        return false;
+}
 SResult SceneRenderer::FillLightInfoByLightIndex(LightInfo& info, CameraComponent* pCamera, size_t light_index)
 {
     SceneManager& sm = m_pContext->SceneManagerInstance();

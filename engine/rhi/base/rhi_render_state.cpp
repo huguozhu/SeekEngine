@@ -183,6 +183,28 @@ const RenderStateDesc& RenderStateDesc::ShadowCopyA()
     for (auto& rb : desc.blend.stTargetBlend) rb.bColorWriteMask = ColorWriteMask::CWM_Alpha;
     return desc;
 }
+const RenderStateDesc& RenderStateDesc::Lighting()
+{
+    static RenderStateDesc desc;
+    desc.depthStencil.bDepthEnable = false;
+    desc.depthStencil.bDepthWriteMask = false;
+
+    desc.rasterizer.bDepthClip = false;
+    desc.rasterizer.eCullMode = CullMode::Front;
+
+    for (auto& rb : desc.blend.stTargetBlend)
+    {
+        rb.bBlendEnable = false;
+        rb.eBlendOpColor = BlendOperation::Add;
+        rb.eSrcBlendColor = BlendFactor::One;
+        rb.eDstBlendColor = BlendFactor::One;
+        rb.eBlendOpAlpha = BlendOperation::Add;
+        rb.eSrcBlendAlpha = BlendFactor::One;
+        rb.eDstBlendAlpha = BlendFactor::One;
+    }
+    return desc;
+}
+
 //////////////////////////////////////////////////////////////////////////
 
 size_t RenderStateDesc::Hash() const

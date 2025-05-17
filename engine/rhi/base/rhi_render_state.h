@@ -174,7 +174,7 @@ struct RenderStateDesc
     static const RenderStateDesc& ShadowCopyG();
     static const RenderStateDesc& ShadowCopyB();
     static const RenderStateDesc& ShadowCopyA();
-
+    static const RenderStateDesc& Lighting();
 
     size_t   Hash() const;
     bool     operator==(RenderStateDesc const& rhs) const;

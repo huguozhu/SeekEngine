@@ -5,13 +5,12 @@
 Texture2D currentTex;
 Texture2D depthTex;
 Texture2D historyTex;
+Texture2D velocityTex;
 
 cbuffer GlobalParams
 {
     TAAGlobalParams global_params;
 }
-
-Texture2D velocityTex;
 
 static const float VarianceClipGamma = 1.0f;
 

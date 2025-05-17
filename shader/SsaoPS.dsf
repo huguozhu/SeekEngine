@@ -7,8 +7,6 @@ static const int kernel_size = 64;
 static const float radius = 0.5;
 static const float bias = 0.025;
 
-
-
 Texture2D gbuffer0;
 Texture2D depth_tex;
 Texture2D ssao_noise;
@@ -23,7 +21,7 @@ cbuffer cb_SsaoPSParam
 {
 	SsaoParam param;
 }
-cbuffer ssao_sample_kernels
+cbuffer cb_SsaoSampleKernels
 {
     float4 ssao_sample_kernels[kernel_size];
 }

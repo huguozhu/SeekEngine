@@ -11,7 +11,9 @@ public:
  
 	SResult Init();
 	
-	void SetSrcTexture(RHITexturePtr const& tex2d);
+	void SetLDRTexture(RHITexturePtr const& tex2d);
+	void SetTaaSceneVelocityTexture(RHITexturePtr const& tex2d);
+
 	virtual SResult		Run() override;
 
 private:
