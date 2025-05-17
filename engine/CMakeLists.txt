@@ -49,6 +49,8 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/effect/hdr_postprocess.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/ibl.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/ibl.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/ldr_postprocess.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/ldr_postprocess.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/parameter.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/parameter.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/postprocess.h
@@ -57,6 +59,8 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/effect/scene_renderer.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/shadow_layer.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/shadow_layer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/taa.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/taa.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/technique.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/technique.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/variable.h

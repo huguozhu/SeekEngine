@@ -106,6 +106,11 @@ public:
     AntiAliasingMode        GetAntiAliasingMode()       const { return m_InitInfo.anti_aliasing_mode; }
 	GlobalIlluminationMode  GetGlobalIlluminationMode() const { return m_InitInfo.gi_mode; }
 
+    uint32_t                GetFrameCount()             const { return m_FrameCount; }
+    double                  GetCurTime()                const { return m_dCurTime; }
+    double                  GetDeltaTime()              const { return m_dDeltaTime; }
+    float2                  GetJitter();
+
     RHIContext&         RHIContextInstance() { return *m_pRHIContext; }
     SceneManager&       SceneManagerInstance() { return *m_pSceneManager;}
     SceneRenderer&      SceneRendererInstance() { return *m_pSceneRenderer; }

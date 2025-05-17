@@ -140,6 +140,23 @@ void RHIFrameBuffer::Reset()
     m_bViewDirty = true;
 }
 
+SResult RHIFrameBuffer::CopyRenderTarget(Attachment attachment, const RHITexturePtr& texture)
+{
+    uint32_t color_index = attachment - Attachment::Color0;
+    if (color_index >= m_vRenderTargets.size())
+        return ERR_INVALID_ARG;
+
+    return m_pContext->RHIContextInstance().CopyTexture(m_vRenderTargets[color_index]->Texture(), texture);
+}
+RHITexture::Desc RHIFrameBuffer::GetRenderTargetDesc(Attachment attachment)
+{
+    uint32_t color_index = attachment - Attachment::Color0;
+    if (color_index >= m_vRenderTargets.size())
+        return RHITexture::Desc{};
+
+    return m_vRenderTargets[color_index]->Texture()->Descriptor();
+}
+
 SEEK_NAMESPACE_END
 
 #undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

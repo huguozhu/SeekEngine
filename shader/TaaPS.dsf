@@ -1,0 +1,171 @@
+//STAGE:ps
+#include "common.dsh"
+#include "shared/Taa.h"
+
+Texture2D currentTex;
+Texture2D depthTex;
+Texture2D historyTex;
+
+cbuffer GlobalParams
+{
+    TAAGlobalParams global_params;
+}
+
+Texture2D velocityTex;
+
+static const float VarianceClipGamma = 1.0f;
+
+struct VSOutput_PosTc
+{
+    float2 texCoord : TEXCOORD;
+    float4 pos : SV_POSITION;
+};
+
+struct PSOutput
+{
+    float4 color        : SV_Target0;
+    //float4 history      : SV_Target1;
+};
+
+float3 RGB2YCoCgR(float3 rgbColor)
+{
+	float3 YCoCgRColor;
+
+	YCoCgRColor.y = rgbColor.r - rgbColor.b;
+	float temp = rgbColor.b + YCoCgRColor.y / 2;
+	YCoCgRColor.z = rgbColor.g - temp;
+	YCoCgRColor.x = temp + YCoCgRColor.z / 2;
+
+	return YCoCgRColor;
+}
+
+float3 YCoCgR2RGB(float3 YCoCgRColor)
+{
+	float3 rgbColor;
+
+	float temp = YCoCgRColor.x - YCoCgRColor.z / 2;
+	rgbColor.g = YCoCgRColor.z + temp;
+	rgbColor.b = temp - YCoCgRColor.y / 2;
+	rgbColor.r = rgbColor.b + YCoCgRColor.y;
+
+	return rgbColor;
+}
+
+#define CLIP_TO_CENTER
+float3 ClipAABB(float3 aabbMin, float3 aabbMax, float3 prevSample, float3 avg)
+{
+#ifdef CLIP_TO_CENTER
+	// note: only clips towards aabb center (but fast!)
+	float3 p_clip = 0.5 * (aabbMax + aabbMin);
+	float3 e_clip = 0.5 * (aabbMax - aabbMin);
+
+	float3 v_clip = prevSample - p_clip;
+	float3 v_unit = v_clip.xyz / e_clip;
+	float3 a_unit = abs(v_unit);
+	float ma_unit = max(a_unit.x, max(a_unit.y, a_unit.z));
+
+	if (ma_unit > 1.0)
+		return p_clip + v_clip / ma_unit;
+	else
+		return prevSample;// point inside aabb
+#else
+	float3 r = prevSample - avg;
+	float3 rmax = aabbMax - avg.xyz;
+	float3 rmin = aabbMin - avg.xyz;
+
+	const float eps = 0.000001f;
+
+	if (r.x > rmax.x + eps)
+		r *= (rmax.x / r.x);
+	if (r.y > rmax.y + eps)
+		r *= (rmax.y / r.y);
+	if (r.z > rmax.z + eps)
+		r *= (rmax.z / r.z);
+
+	if (r.x < rmin.x - eps)
+		r *= (rmin.x / r.x);
+	if (r.y < rmin.y - eps)
+		r *= (rmin.y / r.y);
+	if (r.z < rmin.z - eps)
+		r *= (rmin.z / r.z);
+
+	return avg + r;
+#endif
+}
+
+bool IsFirstFrame(int4 statuses)
+{
+    return statuses.x == 1;
+}
+
+PSOutput main(VSOutput_PosTc input)
+{
+    PSOutput output;
+
+    float2 jitterTexCoord = input.texCoord - global_params.jitter;
+    float2 velocity = velocityTex.Sample(linear_sampler, jitterTexCoord).rg;
+    
+    float3 currentPixel = currentTex.Sample(linear_sampler, input.texCoord).rgb;
+
+	if (IsFirstFrame(global_params.statuses))
+	{
+		output.color.xyz = currentPixel;
+		output.color.w = 1.0;
+		return output;
+	}
+
+    float3 historyPixel = historyTex.Sample(linear_sampler, input.texCoord - velocity).rgb;
+    
+    currentPixel = RGB2YCoCgR(currentPixel);
+    historyPixel = RGB2YCoCgR(historyPixel);
+    
+    uint N = 9;
+    int x, y, i;
+	float TotalWeight = 0.0f;
+	float3 sum = 0.0f;
+	float3 m1 = 0.0f;
+	float3 m2 = 0.0f;
+	//float3 neighborMin = float3(9999999.0f, 9999999.0f, 9999999.0f);
+	//float3 neighborMax = float3(-99999999.0f, -99999999.0f, -99999999.0f);
+	float3 neighborhood[9];
+	//float neighborhoodHdrWeight[9];
+	//float neighborhoodFinalWeight = 0.0f;
+    for (y = -1; y <= 1; ++y)
+	{
+		for (x = -1; x <= 1; ++x)
+		{
+			i = (y + 1) * 3 + x + 1;
+			float2 sampleOffset = float2(x, y) * global_params.invScreenSize;
+			float2 sampleUV = input.texCoord + sampleOffset;
+			sampleUV = saturate(sampleUV);
+
+			float3 NeighborhoodSamp = currentTex.Sample(linear_sampler, sampleUV).rgb;
+			NeighborhoodSamp = max(NeighborhoodSamp, 0.0f);
+			NeighborhoodSamp = RGB2YCoCgR(NeighborhoodSamp);
+
+			neighborhood[i] = NeighborhoodSamp;
+			//neighborhoodHdrWeight[i] = HdrWeight4(NeighborhoodSamp, Exposure);
+			//neighborMin = min(neighborMin, NeighborhoodSamp);
+			//neighborMax = max(neighborMax, NeighborhoodSamp);
+
+            m1 += NeighborhoodSamp;
+			m2 += NeighborhoodSamp * NeighborhoodSamp;
+		}
+	}
+
+    // Variance clip.
+	float3 mu = m1 / N;
+	float3 sigma = sqrt(abs(m2 / N - mu * mu));
+	float3 minc = mu - VarianceClipGamma * sigma;
+	float3 maxc = mu + VarianceClipGamma * sigma;
+
+	//prevColor = ClipAABB(neighborMin, neighborMax, prevColor, (neighborMin + neighborMax) / 2);
+	historyPixel = ClipAABB(minc, maxc, historyPixel, mu);
+
+    float3 color = lerp(historyPixel, currentPixel, 0.05);
+    color = YCoCgR2RGB(color);
+
+    output.color.xyz = color;
+    output.color.w = 1.0;
+    return output;
+}

@@ -237,6 +237,47 @@ SResult Context::EndRender()
     }
     return S_Success;
 }
+float2 Context::GetJitter()
+{
+    static const float Halton_2[8] =
+    {
+        0.0,
+        -1.0 / 2.0,
+        1.0 / 2.0,
+        -3.0 / 4.0,
+        1.0 / 4.0,
+        -1.0 / 4.0,
+        3.0 / 4.0,
+        -7.0 / 8.0
+    };
+
+    // 8x TAA
+    static const float Halton_3[8] =
+    {
+        -1.0 / 3.0,
+        1.0 / 3.0,
+        -7.0 / 9.0,
+        -1.0 / 9.0,
+        5.0 / 9.0,
+        -5.0 / 9.0,
+        1.0 / 9.0,
+        7.0 / 9.0
+    };
+
+    uint32_t subsampIndex = m_FrameCount % 8;
+	RHITexture::Desc& desc = RHIContextInstance().GetScreenRHIFrameBuffer()->GetRenderTargetDesc(RHIFrameBuffer::Attachment::Color0);
+	if (desc.width == 0 || desc.height == 0)
+	{
+		LOG_ERROR("GetJitter() error, invalid screen size");
+		return float2{ 0.0f, 0.0f };
+	}
+    else
+    {
+        float JitterX = Halton_2[subsampIndex] / desc.width;
+        float JitterY = Halton_3[subsampIndex] / desc.height;
+        return float2{ JitterX, JitterY };
+    }
+}
 void Context::MainThreadSemWait()
 {
     if (m_InitInfo.multi_thread)

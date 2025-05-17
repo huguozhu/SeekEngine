@@ -125,6 +125,8 @@ public:
     virtual SResult             OnBind() = 0;
     virtual SResult             OnUnbind() = 0;
     virtual SResult             SwapBuffers() { return S_Success; }
+    virtual SResult             CopyRenderTarget(Attachment attachment, const RHITexturePtr& texture);
+    virtual RHITexture::Desc    GetRenderTargetDesc(Attachment attachment);
     
     SResult Bind();
     void    Unbind();

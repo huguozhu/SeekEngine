@@ -61,6 +61,8 @@ CLASS_DECLARE(PostProcess);
 CLASS_DECLARE(HDRPostProcess);
 CLASS_DECLARE(LDRPostProcess);
 CLASS_DECLARE(ShadowLayer);
+CLASS_DECLARE(TaaPostProcess);
+
 
 // Component
 CLASS_DECLARE(Entity);
