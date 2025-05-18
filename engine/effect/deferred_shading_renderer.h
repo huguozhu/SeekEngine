@@ -17,9 +17,7 @@ public:
             void                AppendGIJobs(uint32_t light_index);
 
     virtual bool                IsNeedShaderInvariant(RenderStage stage) override;
-    Effect*                     GetDeferredEffect(uint32_t morph_count);
     RHIMeshPtr                  GetLightVolumeMesh(LightType type);
-    Technique*                  GetLightingTechByLightType(LightType type);
 
     RendererReturnValue         RenderPrepareJob();
     RendererReturnValue         RenderPreZJob();

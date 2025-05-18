@@ -135,9 +135,7 @@ SResult MeshComponent::OnRenderBegin(Technique* tech, RHIMeshPtr mesh)
     case RenderStage::GenerateCubeShadowMap:
     {
         if (!m_GenCubeShaodowCBuffer)
-        {
             m_GenCubeShaodowCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(sizeof(GenCubeShadowInfo), RESOURCE_FLAG_CPU_WRITE);
-        }
 
         if (!cam)
         {
@@ -151,6 +149,12 @@ SResult MeshComponent::OnRenderBegin(Technique* tech, RHIMeshPtr mesh)
         tech->SetParam("genCubeShadowInfo", m_GenCubeShaodowCBuffer);
         break;
     }
+    case RenderStage::GenerateGBuffer:
+    {
+        this->FillMaterialParam(tech, mesh);
+        break;
+    }
+    case RenderStage::PreZ:    
     case RenderStage::GenerateShadowMap:
     {
         break;

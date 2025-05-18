@@ -31,6 +31,16 @@ SEEK_NAMESPACE_BEGIN
 #include "shader/shared/Ssao.h"
 
 static bool use_tile_culling = 0;
+static const std::string szTechName_PreZ = "PreZ";
+static const std::string szTechName_GenerateShadowMap = "GenerateShadowMap";
+static const std::string szTechName_GenerateCubeShadowMap = "GenerateCubeShadowMap";
+static const std::string szTechName_GenerateGBuffer = "GenerateGBuffer";
+
+static const std::string szTechName_DeferredLighting = "DeferredLighting";
+static const std::string szTechName_SSAO = "SSAO";
+static const std::string szTechName_LightCulling = "LightCullingCS";
+static const std::string szTechName_GenerateReflectiveShadowMap = "GenerateReflectiveShadowMap";
+static const std::string szTechName_GenerateCascadedShadowMap = "GenerateCascadedShadowMap";
 
 LightInfo DeferredShadingRenderer::s_LightInfos[MAX_DEFERRED_LIGHTS_NUM];
 
@@ -63,7 +73,7 @@ SResult DeferredShadingRenderer::Init()
         desc.depth = 1;
         desc.num_mips = 1;
         desc.num_samples = m_pContext->GetNumSamples();
-        desc.format = PixelFormat::D32F;
+        desc.format = PixelFormat::D16;
         desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_COPY_BACK;
         m_pSceneDepthStencil = rc.CreateTexture2D(desc);
 
@@ -120,8 +130,7 @@ SResult DeferredShadingRenderer::Init()
             m_pHDRFb = rc.CreateEmptyRHIFrameBuffer();
         if (!m_pHDRPostProcess)
             m_pHDRPostProcess = MakeSharedPtr<HDRPostProcess>(m_pContext);
-
-        m_pHDRPostProcess->SetParam(0, m_pHDRColor);
+        m_pHDRPostProcess->SetSrcTexture(m_pHDRColor);
 
         m_pSceneColor = m_pHDRColor;
         m_pSceneFb = m_pHDRFb;
@@ -204,21 +213,18 @@ SResult DeferredShadingRenderer::Init()
 
     // Step5: Effect & Technique & EffectParam
     Effect& effect = m_pContext->EffectInstance();
-	effect.LoadTechnique("DeferredLighting", &RenderStateDesc::Lighting(), "DeferredLightingVS", "DeferredLightingPS", nullptr);
+    effect.LoadTechnique(szTechName_PreZ, &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "EmptyPS", nullptr);
+    effect.LoadTechnique(szTechName_GenerateGBuffer, &RenderStateDesc::GBuffer(), "MeshRenderingVS", "GenerateGBufferPS", nullptr);
+    effect.LoadTechnique(szTechName_DeferredLighting, &RenderStateDesc::Lighting(), "DeferredLightingVS", "DeferredLightingPS", nullptr);
+
     
     std::vector<EffectPredefine> has_shadow_predefines = { {"HAS_SHADOW" , "1"}, {"TILE_CULLING", "0"} };
-    m_pLightingTech_HasShadow = effect.GetTechnique("DeferredLighting", has_shadow_predefines);
+    m_pLightingTech_HasShadow = effect.GetTechnique(szTechName_DeferredLighting, has_shadow_predefines);
 
     std::vector<EffectPredefine> no_shadow_predefines = { {"HAS_SHADOW" , "0"}, {"TILE_CULLING", "0"} };
-    m_pLightingTech_NoShadow = effect.GetTechnique("DeferredLighting", no_shadow_predefines);
+    m_pLightingTech_NoShadow = effect.GetTechnique(szTechName_DeferredLighting, no_shadow_predefines);
 
-    /*m_pParamCameraInfo = m_pEffect0->GetParamByName("cameraInfo");
-    m_pParamGBuffer0 = m_pEffect0->GetParamByName("gbuffer0");
-    m_pParamGBuffer1 = m_pEffect0->GetParamByName("gbuffer1");
-    m_pParamDepthTex = m_pEffect0->GetParamByName("depth_tex");
-    m_pParamShadowingTex = m_pEffect0->GetParamByName("shadowing_tex");
-    m_pParamDeferredInfo = m_pEffect0->GetParamByName("deferredLightingInfo");
-    m_pParamLightInfos = m_pEffect0->GetParamByName("light_infos");*/
+    
 
     std::vector<float4> ssao_kernels;
     for (uint32_t i = 0; i < SSAO_KERNEL_COUNT; ++i)
@@ -252,9 +258,8 @@ SResult DeferredShadingRenderer::Init()
     desc.flags = RESOURCE_FLAG_SHADER_RESOURCE;
     m_pSsaoNoise = rc.CreateTexture2D(desc, ssao_noise_bitmap);
 
-    const static std::string ssao_name = "SSAO";
-	effect.LoadTechnique(ssao_name, &RenderStateDesc::PostProcess(), "SsaoVS", "SsaoPS", nullptr);
-    m_pSsaoTech = effect.GetTechnique(ssao_name);
+	effect.LoadTechnique(szTechName_SSAO, &RenderStateDesc::PostProcess(), "SsaoVS", "SsaoPS", nullptr);
+    m_pSsaoTech = effect.GetTechnique(szTechName_SSAO);
     m_pSsaoTech->SetParam("gbuffer0", m_pGBufferColor0);
     m_pSsaoTech->SetParam("depth_tex", m_pSceneDepthStencil);
     m_pSsaoTech->SetParam("ssao_noise", m_pSsaoNoise);
@@ -268,12 +273,6 @@ SResult DeferredShadingRenderer::Init()
 	m_pSsaoParamCBuffer = rc.CreateConstantBuffer(sizeof(SsaoParam), RESOURCE_FLAG_CPU_WRITE);
     m_pSsaoTech->SetParam("cb_SsaoPSParam", m_pSsaoParamCBuffer);
 
-    /*ssao_param.ssao_scale = float2((float)w / 4.0, (float)h / 4.0);
-    m_pSsaoEffect->GetParamByName("ssao_scale")->UpdateConstantBuffer(&ssao_scale, sizeof(ssao_scale));
-    m_pParamSsaoCameraInfo = m_pSsaoEffect->GetParamByName("cameraInfo");
-    m_pParamSsaoViewMatrix = m_pSsaoEffect->GetParamByName("view_matrix");
-    m_pParamSsaoProjMatrix = m_pSsaoEffect->GetParamByName("proj_matrix");
-    m_pParamSsaoInvProjMatrix = m_pSsaoEffect->GetParamByName("inv_proj_matrix");*/
 
     m_pGaussianBlur = MakeSharedPtr<GaussianBlur>(m_pContext);
     m_pGaussianBlur->SetSrcTexture(m_pSsaoColor);
@@ -307,17 +306,11 @@ SResult DeferredShadingRenderer::Init()
         uint32_t tile_height = (h + TILE_SIZE - 1) / TILE_SIZE;
         m_pTileInfoBuffer = rc.CreateRWByteAddressBuffer(sizeof(TileInfo) * tile_width * tile_height, RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_SHADER_WRITE | RESOURCE_FLAG_COPY_BACK, nullptr);
 
-        effect.LoadTechnique("LightCullingCS", nullptr, nullptr, nullptr, "LightCullingCS");
-        m_pTileCullingTech = effect.GetTechnique("LightCullingCS");
+        effect.LoadTechnique(szTechName_LightCulling, nullptr, nullptr, nullptr, "LightCullingCS");
+        m_pTileCullingTech = effect.GetTechnique(szTechName_LightCulling);
 
         std::vector<EffectPredefine> no_shadow_tile_culling_predefines = { {"HAS_SHADOW" , "1"}, {"TILE_CULLING", "1"} };
-        m_pLightingTech_Shadow_TileCulling = effect.GetTechnique("DeferredLighting", no_shadow_tile_culling_predefines);
-
-        //m_pParamViewMatrix = m_pEffect0->GetParamByName("c_view_matrix");
-        //m_pParamProjMatrix = m_pEffect0->GetParamByName("c_proj_matrix");
-        //m_pParamFrameSize  = m_pEffect0->GetParamByName("c_frame_size");
-        //m_pParamTileInfoRW = m_pEffect0->GetParamByName("tile_infos_rw");
-        //m_pParamTileInfo   = m_pEffect0->GetParamByName("tile_infos");
+        m_pLightingTech_Shadow_TileCulling = effect.GetTechnique(szTechName_DeferredLighting, no_shadow_tile_culling_predefines);
     }
     return ret;
 }
@@ -327,6 +320,18 @@ SResult DeferredShadingRenderer::BuildRenderJobList()
     SceneManager& sm = m_pContext->SceneManagerInstance();
     size_t light_count = sm.NumLightComponent();
     if (light_count == 0)
+        return S_Success;
+
+    m_renderableMeshes = m_pContext->SceneManagerInstance().QueryMesh([](const MeshPair& mesh)->bool {
+        const auto& mesh_ = mesh.first->GetMeshByIndex(mesh.second);
+        if (mesh_->IsVisible())
+            return true;
+        else
+            return false;
+        });
+    if (m_renderableMeshes.empty() &&
+        m_pContext->SceneManagerInstance().GetSkyBoxComponent() == nullptr &&
+        m_pContext->SceneManagerInstance().GetParticleComponents().size() == 0)
         return S_Success;
 
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::RenderPrepareJob, this)));
@@ -460,16 +465,16 @@ SResult DeferredShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tec
 
     switch (m_eCurRenderStage)
     {
-    case RenderStage::GenerateShadowMap:            *tech = effect.GetTechnique("GenerateShadowMap",            predefines);    break;
-    case RenderStage::GenerateCubeShadowMap:        *tech = effect.GetTechnique("GenerateCubeShadowMap",        predefines);    break;    
-    case RenderStage::PreZ:                         *tech = effect.GetTechnique("PreZ",                         predefines);    break;
+    case RenderStage::PreZ:                         *tech = effect.GetTechnique(szTechName_PreZ, predefines);                       break;
+    case RenderStage::GenerateShadowMap:            *tech = effect.GetTechnique(szTechName_GenerateShadowMap,       predefines);    break;
+    case RenderStage::GenerateCubeShadowMap:        *tech = effect.GetTechnique(szTechName_GenerateCubeShadowMap,   predefines);    break;
     case RenderStage::GenerateGBuffer:
     case RenderStage::GenerateReflectiveShadowMap:
     case RenderStage::GenerateCascadedShadowMap:
     {
         uint32_t has_tex_normal = mesh->GetMaterial()->normal_tex ? 1 : 0;
         EffectPredefine hasNormalTexPredefine;
-        hasNormalTexPredefine.name = "HAS_NORMAL_TEX";
+        hasNormalTexPredefine.name = "HAS_MATERIAL_NORMAL";
         hasNormalTexPredefine.value = std::to_string(has_tex_normal);
 
         EffectPredefine enableTAAPredefine;
@@ -480,11 +485,11 @@ SResult DeferredShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tec
         predefines.push_back(enableTAAPredefine);
 
         if (m_eCurRenderStage == RenderStage::GenerateGBuffer)
-            *tech = effect.GetTechnique("GenerateGBuffer", predefines);
+            *tech = effect.GetTechnique(szTechName_GenerateGBuffer, predefines);
         else if (m_eCurRenderStage == RenderStage::GenerateReflectiveShadowMap)
-            *tech = effect.GetTechnique("GenerateReflectiveShadowMap", predefines);
+            *tech = effect.GetTechnique(szTechName_GenerateReflectiveShadowMap, predefines);
         else
-            *tech = effect.GetTechnique("GenerateCascadedShadowMap", predefines);
+            *tech = effect.GetTechnique(szTechName_GenerateCascadedShadowMap, predefines);
         break;
     }
     case RenderStage::None:
@@ -546,31 +551,7 @@ bool DeferredShadingRenderer::IsNeedShaderInvariant(RenderStage stage)
         break;
     }
 }
-Effect* DeferredShadingRenderer::GetDeferredEffect(uint32_t morph_count)
-{
-    Effect* pEffect = nullptr;
-    //if (m_Effects.find(morph_count) != m_Effects.end())
-    //    pEffect = m_Effects[morph_count].get();
-    //else
-    //{
-    //    static std::string morhp_size_macro_name = "MORPH_SIZE";
-    //    std::string morph_size_value = std::to_string(morph_count);
-    //    std::vector<std::pair<std::string, std::string>> v;
-    //    v.push_back(std::make_pair(morhp_size_macro_name, morph_size_value));
 
-    //    // FIXME: BAD! we load same effect files many times
-    //    EffectPtr effect_new = MakeSharedPtr<Effect>(m_pContext);
-    //    SResult res = effect_new->Load("deferred_shading.effect", &v);
-    //    if (res != S_Success)
-    //    {
-    //        LOG_ERROR("DeferredShadingRenderer::LightingJob() Load failed.");
-    //        return nullptr;
-    //    }
-    //    m_Effects[morph_count] = effect_new;
-    //    pEffect = effect_new.get();
-    //}
-    return pEffect;
-}
 RHIMeshPtr DeferredShadingRenderer::GetLightVolumeMesh(LightType type)
 {
     RHIMeshPtr pMesh = nullptr;
@@ -586,18 +567,16 @@ RHIMeshPtr DeferredShadingRenderer::GetLightVolumeMesh(LightType type)
     }
     return pMesh;
 }
-Technique* DeferredShadingRenderer::GetLightingTechByLightType(LightType type)
-{
-    Effect* pEffect = this->GetDeferredEffect(0);
-    return nullptr;
-}
 RendererReturnValue DeferredShadingRenderer::RenderPrepareJob()
 {
     m_eCurRenderStage = RenderStage::None;
-    //m_pPreZFb->Clear();
-    //m_pGBufferFb->Clear();
-    //m_pLightingFb->Clear();
-    //m_pSsaoFb->Clear();
+	
+    //m_pGBufferFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, { float4(0.0) });
+    //m_pGBufferFb->SetDepthLoadOption({ 1.0f });
+    m_pLightingFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, { float4(0.0) });
+    m_pLightingFb->SetDepthLoadOption({ 1.0f });
+    m_pSsaoFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, { float4(0.0) });
+    m_pSsaoFb->SetDepthLoadOption({ 1.0f });
     if (m_pGI)
         m_pGI->OnBegin();
     return RRV_NextJob;
@@ -605,8 +584,9 @@ RendererReturnValue DeferredShadingRenderer::RenderPrepareJob()
 RendererReturnValue DeferredShadingRenderer::RenderPreZJob()
 {
     m_eCurRenderStage = RenderStage::PreZ;
-
-    SResult res = m_pContext->RHIContextInstance().BindRHIFrameBuffer(m_pPreZFb);
+    m_pPreZFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, { float4(0.0) });
+    m_pPreZFb->SetDepthLoadOption({ 1.0f });
+    SResult res = m_pContext->RHIContextInstance().BeginRenderPass({ "RenderPreZJob", m_pPreZFb.get() });
     if (res != S_Success)
     {
         LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::RenderPreZJob() BindFrameBuffer failed.");
@@ -618,9 +598,9 @@ RendererReturnValue DeferredShadingRenderer::RenderPreZJob()
         LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::RenderPreZJob() RenderScene failed.");
     }
     m_eCurRenderStage = RenderStage::None;
-
-#if 0
-    static int draw = 1;
+    m_pContext->RHIContextInstance().EndRenderPass();
+#if 1
+    static int draw = 0;
     if (draw)
     {
         m_pSceneDepthStencil->DumpToFile("d:\\depth_map.g16l");
@@ -632,7 +612,11 @@ RendererReturnValue DeferredShadingRenderer::RenderPreZJob()
 RendererReturnValue DeferredShadingRenderer::GenerateGBufferJob()
 {
     m_eCurRenderStage = RenderStage::GenerateGBuffer;
-    SResult res = m_pContext->RHIContextInstance().BindRHIFrameBuffer(m_pGBufferFb);
+    m_pGBufferFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, { float4(0.0) });
+    m_pGBufferFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color1, { float4(0.0) });
+    m_pGBufferFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color2, { float4(0.0) });
+    m_pGBufferFb->SetDepthLoadOption(RHIFrameBuffer::LoadAction::Load);
+    SResult res = m_pContext->RHIContextInstance().BeginRenderPass({ "GenerateGBufferJob", m_pGBufferFb.get() });
     if (res != S_Success)
     {
         LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::GenerateGBufferJob() BindFrameBuffer failed.");
@@ -652,6 +636,7 @@ RendererReturnValue DeferredShadingRenderer::GenerateGBufferJob()
         m_pGBufferColor0->DumpToFile("d:\\GBuffer_RT0.rgba");
         m_pGBufferColor1->DumpToFile("d:\\GBuffer_RT1.rgba");
         m_pGBufferColor2->DumpToFile("d:\\GBuffer_RT2.rgba");
+        m_pSceneDepthStencil->DumpToFile("d:\\GBuffer_DS.g16l");
         draw--;
     }
 #endif
@@ -661,7 +646,7 @@ RendererReturnValue DeferredShadingRenderer::SSAOJob()
 {
     SceneManager& sm = m_pContext->SceneManagerInstance();
     RHIContext& rc = m_pContext->RHIContextInstance();    
-    SResult res = m_pContext->RHIContextInstance().BindRHIFrameBuffer(m_pSsaoFb);
+    SResult res = m_pContext->RHIContextInstance().BeginRenderPass({ "SSAOJob", m_pSsaoFb.get() });
     if (res != S_Success)
     {
         LOG_ERROR("DeferredShadingRenderer::SSAOJob() BindFrameBuffer failed.");
@@ -702,6 +687,7 @@ RendererReturnValue DeferredShadingRenderer::SSAOJob()
         }
 #endif
     }
+    m_pContext->RHIContextInstance().EndRenderPass();
     return RRV_NextJob;
 }
 RendererReturnValue DeferredShadingRenderer::LightingTileCullingJob()
@@ -805,7 +791,6 @@ RendererReturnValue DeferredShadingRenderer::LightingJob()
     RHIContext& rc = m_pContext->RHIContextInstance();
         
     // Step1: Set Params
-    Effect* pEffect = this->GetDeferredEffect(0);
     CameraComponent* cam = sm.GetActiveCamera();
     CameraInfo cameraInfo;
     if (cam)

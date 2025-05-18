@@ -20,9 +20,10 @@ SResult LDRPostProcess::Init()
 {
     SResult ret = S_Success;
     AntiAliasingMode aa_mode = m_pContext->GetAntiAliasingMode();
-
+    Effect& effect = m_pContext->EffectInstance();
     if (aa_mode == AntiAliasingMode::None)
     {
+        effect.LoadTechnique(tech_name_none, &RenderStateDesc::PostProcess(), "PostProcessVS", "CopyPS", nullptr);
         m_pCopyPostProcess = MakeSharedPtr<PostProcess>(m_pContext, tech_name_none);
         m_pCopyPostProcess->Init(tech_name_none, NULL_PREDEFINES);
     }

@@ -1,4 +1,4 @@
-//PREDEFINE:HAS_NORMAL_TEX=0,1
+//PREDEFINE:HAS_MATERIAL_NORMAL=0,1
 //PREDEFINE:ENABLE_TAA=0,1
 //STAGE:ps
 #include "common.dsh"
@@ -30,13 +30,23 @@ struct GBuffer
 #endif
 };
 
+float3x3 CalcTBN(float3 normal, float4 tangent)
+{
+    float3 T = normalize(tangent.xyz);
+    float3 N = normalize(normal);
+    T = normalize(T - dot(T, N) * N);
+    float3 B = cross(N, T) * tangent.w;
+		
+    return float3x3(T, B, N);
+}
+
 void main(
 	in float2 texCoord		: TEXCOORD,
 	in float3 normal		: NORMAL,
-#if HAS_NORMAL_TEX
+#if HAS_MATERIAL_NORMAL
     in float4 tangent		: TANGENT,
 #endif
-    in float3 posWorld		: POSITION,
+    in float3 posWorld		: POSITION0,
 #if ENABLE_TAA	
     in float4 prePos       	: POSITION1,
     in float4 unjitterPos  	: POSITION2,
@@ -66,19 +76,16 @@ void main(
         gbuffer.albedo *= albedo.xyz;
     }
 	
-#if HAS_NORMAL_TEX == 1
+#if HAS_MATERIAL_NORMAL == 1
 	[branch]
     if (materialInfo.hasBasicTex.y)
     {
 		float3 pixelNormal = normalTex.Sample(linear_sampler, texCoord).rgb;
         pixelNormal = pixelNormal * 2.0 - 1.0;
+		//pixelNormal = (pixelNormal * 2.0 - 1.0) * float3(materialInfo.normalScale, materialInfo.normalScale, 1.0);
 		
-        float3 T = normalize(tangent.xyz);
-		float3 N = normalize(normal);
-		T = normalize(T - dot(T, N) * N);
-		float3 B = cross(N, T) * tangent.w;
 		
-        float3x3 TBN = float3x3(T, B, N);
+        float3x3 TBN = CalcTBN(normal, tangent);
         normal = mul(pixelNormal, TBN);
 		
 		gbuffer.normal = normal;

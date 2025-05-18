@@ -155,6 +155,14 @@ const RenderStateDesc& RenderStateDesc::WaterMark()
     }
     return desc;
 }
+const RenderStateDesc& RenderStateDesc::GBuffer()
+{
+    static RenderStateDesc desc;
+    desc.depthStencil.bDepthEnable = true;
+    desc.depthStencil.eDepthFunc = CompareFunction::Equal;
+    desc.depthStencil.bDepthWriteMask = false;
+    return desc;
+}
 const RenderStateDesc& RenderStateDesc::ShadowCopyR()
 {
     static RenderStateDesc desc;

@@ -25,17 +25,17 @@ SResult D3D11RHIFrameBuffer::OnBind()
     SResult res = S_Success;
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
-
+    UINT target_count = 0;
     if (m_bViewDirty)
     {
         m_vD3dRednerTargets.resize(m_vRenderTargets.size(), nullptr);
         m_pD3dDepthStencilView = nullptr;
-
+        
         for (uint32_t i = 0; i < MAX_COLOR_ATTACHMENTS; i++)
         {
             if (!m_vRenderTargets[i])
                 continue;
-
+            target_count++;
             if (m_sampleNum == 1)
             {
                 D3D11RenderTargetView& target = static_cast<D3D11RenderTargetView&>(*m_vRenderTargets[i]);
@@ -76,7 +76,7 @@ SResult D3D11RHIFrameBuffer::OnBind()
         m_bViewDirty = false;
     }
 
-    pDeviceContext->OMSetRenderTargets((UINT)1, m_vD3dRednerTargets.data(), m_pD3dDepthStencilView);
+    pDeviceContext->OMSetRenderTargets(target_count, m_vD3dRednerTargets.data(), m_pD3dDepthStencilView);
     return res;
 }
 

@@ -170,6 +170,8 @@ struct RenderStateDesc
     static const RenderStateDesc& Skybox();
     static const RenderStateDesc& Particle();
     static const RenderStateDesc& WaterMark();
+
+	static const RenderStateDesc& GBuffer();
     static const RenderStateDesc& ShadowCopyR();
     static const RenderStateDesc& ShadowCopyG();
     static const RenderStateDesc& ShadowCopyB();

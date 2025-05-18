@@ -81,7 +81,7 @@ SResult Lighting::OnCreate()
     spot_pos = float3(p, p, -p);
     look_at = float3(0, 0, 0);
     pLight = MakeSharedPtr<SpotLightComponent>(m_pContext.get());
-    pLight->SetColor(Color::Blue);
+    pLight->SetColor(Color::White);
     pLight->SetDirection(look_at - spot_pos);
     pLight->SetInOutCutoff(float2(cutoff_in, cutoff_out));
     pLight->SetIntensity(5.24);
@@ -102,14 +102,14 @@ SResult Lighting::OnCreate()
 	pLight->SetWorldTranslation(point_pos);
     m_pLightEntity[4] = MakeSharedPtr<Entity>(m_pContext.get(), "Point Light");
     m_pLightEntity[4]->AddSceneComponent(pLight);
-    m_pLightEntity[4]->AddToTopScene();
+    //m_pLightEntity[4]->AddToTopScene();
 
-    //BitmapBufferPtr bit = ImageDecodeFromFile(FullPath("asset/textures/boy.jpg"), ImageType::JPEG);
-    //RHITexturePtr tex_boy = rc.CreateTexture2D(bit);
+    BitmapBufferPtr bit = ImageDecodeFromFile(FullPath("asset/textures/animal_0.jpg"), ImageType::JPEG);
+    RHITexturePtr tex_animal = rc.CreateTexture2D(bit);
 
     PlaneMeshComponentPtr pPlane = MakeSharedPtr<PlaneMeshComponent>(m_pContext.get(), 7.6f, 7.6f);
-    //MaterialPtr material = pPlane->GetMeshByIndex(0)->GetMaterial();
-    //material->albedo_tex = tex_boy;
+    MaterialPtr material = pPlane->GetMeshByIndex(0)->GetMaterial();
+    material->albedo_tex = tex_animal;
     m_pPlaneEntity = MakeSharedPtr<Entity>(m_pContext.get());
     m_pPlaneEntity->SetWorldTranslation(float3(0, -0.5, 0));
     m_pPlaneEntity->AddSceneComponent(pPlane);
@@ -119,8 +119,8 @@ SResult Lighting::OnCreate()
     SphereMeshComponentPtr pSphere = MakeSharedPtr<SphereMeshComponent>(m_pContext.get());
     pSphere->SetWorldTranslation(float3(-2, 0.5, 0));
     pSphere->SetWorldScale(float3(1.0f));
-    //material = pSphere->GetMeshByIndex(0)->GetMaterial();
-    //material->albedo_tex = tex_boy;
+    material = pSphere->GetMeshByIndex(0)->GetMaterial();
+    material->albedo_tex = tex_animal;
     m_pSphereEntity = MakeSharedPtr<Entity>(m_pContext.get());
     m_pSphereEntity->AddSceneComponent(pSphere);    
     m_pSphereEntity->AddToTopScene();
@@ -128,8 +128,8 @@ SResult Lighting::OnCreate()
 
     ConeMeshComponentPtr pCone = MakeSharedPtr<ConeMeshComponent>(m_pContext.get());
 	pCone->SetWorldTranslation(float3(2, 1.0, 0));
-    //material = pCone->GetMeshByIndex(0)->GetMaterial();
-    //material->albedo_tex = tex_boy;
+    material = pCone->GetMeshByIndex(0)->GetMaterial();
+    material->albedo_tex = tex_animal;
     m_pConeEntity = MakeSharedPtr<Entity>(m_pContext.get());
     m_pConeEntity->AddSceneComponent(pCone);
     m_pConeEntity->AddToTopScene();
