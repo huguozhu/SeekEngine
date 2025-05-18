@@ -30,6 +30,8 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/BlurPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/CopyPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/CubeMapVS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/DeferredLightingVS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/DeferredLightingPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/EmptyPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/EquirectangularToCubeMapPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/ForwardRenderingCommonPS.dsf
@@ -37,7 +39,8 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/GenBRDF2DLutPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/GenerateCascadedShadowMapPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/GenerateCubeShadowMapPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/GenerateReflectiveShadowMapPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/GenerateGBufferPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/GenerateReflectiveShadowMapPS.dsf    
     ${SEEK_SHADER_SOURCE_DIR}/GiRsmPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/GiRsmVS.dsf    
     ${SEEK_SHADER_SOURCE_DIR}/IrradianceConvolutionPS.dsf
@@ -46,12 +49,15 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/PrefilterEnvPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/PreZMeshRenderingVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/ShadowCopyPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/ShadowingDirectionalPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/ShadowingPointPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/ShadowingSpotPS.dsf
 
     ${SEEK_SHADER_SOURCE_DIR}/ToneMappingPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/SkyBoxVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/SkyBoxPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/SsaoVS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/SsaoVS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/SsaoPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/TaaPS.dsf
 
 

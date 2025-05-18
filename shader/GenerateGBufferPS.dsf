@@ -1,0 +1,100 @@
+//PREDEFINE:HAS_NORMAL_TEX=0,1
+//PREDEFINE:ENABLE_TAA=0,1
+//STAGE:ps
+#include "common.dsh"
+
+cbuffer materialInfo
+{
+    MaterialInfo materialInfo;
+}
+
+Texture2D normalTex;
+Texture2D metallicRoughnessTex;
+Texture2D albedoTex;
+
+struct GBuffer
+{
+	// RT0: R8G8B8A8_UNORM
+	float3 	normal;
+	float 	roughness;
+		
+	// RT1 R8G8B8A8_UNORM
+	float3 	albedo;
+	float 	metallic;
+	
+#if ENABLE_TAA
+	// RT2 R8G8B8A8_UNORM
+	float2 velocity;
+	float occlusion;
+	float UNUSED1;
+#endif
+};
+
+void main(
+	in float2 texCoord		: TEXCOORD,
+	in float3 normal		: NORMAL,
+#if HAS_NORMAL_TEX
+    in float4 tangent		: TANGENT,
+#endif
+    in float3 posWorld		: POSITION,
+#if ENABLE_TAA	
+    in float4 prePos       	: POSITION1,
+    in float4 unjitterPos  	: POSITION2,
+#endif
+	out float4 rt0			: SV_Target0,
+	out float4 rt1			: SV_Target1,
+	out float4 rt2			: SV_Target2)	
+{
+	GBuffer gbuffer;
+	gbuffer.normal = normalize(normal);
+
+    gbuffer.metallic = materialInfo.metallicFactor;
+    gbuffer.roughness = materialInfo.roughnessFactor;
+	[branch]
+    if (materialInfo.hasPbrTex.x)
+    {
+        float2 metallic_roughness = metallicRoughnessTex.Sample(linear_sampler, texCoord).xy;
+        gbuffer.metallic *= metallic_roughness.x;
+        gbuffer.roughness *= metallic_roughness.y;
+    }
+	
+	gbuffer.albedo = materialInfo.albedoFactor.xyz;
+	[branch]
+    if (materialInfo.hasBasicTex.x)
+    {
+        float4 albedo = albedoTex.Sample(linear_sampler, texCoord);
+        gbuffer.albedo *= albedo.xyz;
+    }
+	
+#if HAS_NORMAL_TEX == 1
+	[branch]
+    if (materialInfo.hasBasicTex.y)
+    {
+		float3 pixelNormal = normalTex.Sample(linear_sampler, texCoord).rgb;
+        pixelNormal = pixelNormal * 2.0 - 1.0;
+		
+        float3 T = normalize(tangent.xyz);
+		float3 N = normalize(normal);
+		T = normalize(T - dot(T, N) * N);
+		float3 B = cross(N, T) * tangent.w;
+		
+        float3x3 TBN = float3x3(T, B, N);
+        normal = mul(pixelNormal, TBN);
+		
+		gbuffer.normal = normal;
+    }
+#endif
+
+#if ENABLE_TAA
+    float4 pre_pos = prePos / prePos.w;
+    float4 unjitter_pos = unjitterPos / unjitterPos.w;
+    pre_pos.xy = pre_pos.xy / float2(2.0f, -2.0f) + float2(0.5f, 0.5f);
+    unjitter_pos.xy = unjitter_pos.xy / float2(2.0f, -2.0f) + float2(0.5f, 0.5f);
+    float2 velocity = float2(unjitter_pos.x - pre_pos.x, unjitter_pos.y - pre_pos.y);
+#endif
+	rt0 = float4(BestFitNormal_Encode(normalize(gbuffer.normal)), gbuffer.roughness);
+	rt1 = float4(gbuffer.albedo, gbuffer.metallic);
+#if ENABLE_TAA	
+	rt2 = float4(velocity, 0.0, posWorld.x);
+#endif
+}
