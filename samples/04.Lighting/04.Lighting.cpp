@@ -104,12 +104,12 @@ SResult Lighting::OnCreate()
     m_pLightEntity[4]->AddSceneComponent(pLight);
     //m_pLightEntity[4]->AddToTopScene();
 
-    BitmapBufferPtr bit = ImageDecodeFromFile(FullPath("asset/textures/animal_0.jpg"), ImageType::JPEG);
-    RHITexturePtr tex_animal = rc.CreateTexture2D(bit);
+    BitmapBufferPtr bit = ImageDecodeFromFile(FullPath("asset/textures/tex_0.jpg"), ImageType::JPEG);
+    RHITexturePtr tex_0 = rc.CreateTexture2D(bit);
 
     PlaneMeshComponentPtr pPlane = MakeSharedPtr<PlaneMeshComponent>(m_pContext.get(), 7.6f, 7.6f);
     MaterialPtr material = pPlane->GetMeshByIndex(0)->GetMaterial();
-    material->albedo_tex = tex_animal;
+    material->albedo_tex = tex_0;
     m_pPlaneEntity = MakeSharedPtr<Entity>(m_pContext.get());
     m_pPlaneEntity->SetWorldTranslation(float3(0, -0.5, 0));
     m_pPlaneEntity->AddSceneComponent(pPlane);
@@ -120,7 +120,7 @@ SResult Lighting::OnCreate()
     pSphere->SetWorldTranslation(float3(-2, 0.5, 0));
     pSphere->SetWorldScale(float3(1.0f));
     material = pSphere->GetMeshByIndex(0)->GetMaterial();
-    material->albedo_tex = tex_animal;
+    material->albedo_tex = tex_0;
     m_pSphereEntity = MakeSharedPtr<Entity>(m_pContext.get());
     m_pSphereEntity->AddSceneComponent(pSphere);    
     m_pSphereEntity->AddToTopScene();
@@ -129,18 +129,18 @@ SResult Lighting::OnCreate()
     ConeMeshComponentPtr pCone = MakeSharedPtr<ConeMeshComponent>(m_pContext.get());
 	pCone->SetWorldTranslation(float3(2, 1.0, 0));
     material = pCone->GetMeshByIndex(0)->GetMaterial();
-    material->albedo_tex = tex_animal;
+    material->albedo_tex = tex_0;
     m_pConeEntity = MakeSharedPtr<Entity>(m_pContext.get());
     m_pConeEntity->AddSceneComponent(pCone);
     m_pConeEntity->AddToTopScene();
     
 
-#ifdef SEEK_PLATFORM_WINDOWS2r
+#ifdef SEEK_PLATFORM_WINDOWS
     // Step4 add SkyBox Entity
     RHITexture::Desc desc;
     desc.type = TextureType::Cube;
-    desc.width = 2048;
-    desc.height = 2048;
+    desc.width = 1024;
+    desc.height = 1024;
     desc.depth = 1;
     desc.num_mips = 1;
     desc.num_samples = 1;
@@ -148,21 +148,21 @@ SResult Lighting::OnCreate()
     desc.flags = RESOURCE_FLAG_SHADER_RESOURCE;
     std::vector<BitmapBufferPtr> datas(6, nullptr);
     std::string cube_files[6] = {
-        FullPath("asset/textures/skybox/positive_x.jpg"),
-        FullPath("asset/textures/skybox/negative_x.jpg"),
-        FullPath("asset/textures/skybox/positive_y.jpg"),
-        FullPath("asset/textures/skybox/negative_y.jpg"),
-        FullPath("asset/textures/skybox/positive_z.jpg"),
-        FullPath("asset/textures/skybox/negative_z.jpg"),
+        FullPath("asset/textures/skybox/positive_x.png"),
+        FullPath("asset/textures/skybox/negative_x.png"),
+        FullPath("asset/textures/skybox/positive_y.png"),
+        FullPath("asset/textures/skybox/negative_y.png"),
+        FullPath("asset/textures/skybox/positive_z.png"),
+        FullPath("asset/textures/skybox/negative_z.png"),
     };
     for (uint32_t i = 0; i < 6; i++)
     {
-        BitmapBufferPtr bit = ImageDecodeFromFile(cube_files[i], ImageType::JPEG);
+        BitmapBufferPtr bit = ImageDecodeFromFile(cube_files[i], ImageType::PNG);
         datas[i] = bit;
     }
-    TexturePtr tex_cube = rc.CreateTextureCube(desc, &datas);
-    m_pSkyBoxEntity = MakeSharedPtr<Entity>(m_pContext);
-    SkyBoxComponentPtr pSkybox = MakeSharedPtr<SkyBoxComponent>(m_pContext);
+    RHITexturePtr tex_cube = rc.CreateTextureCube(desc, &datas);
+    m_pSkyBoxEntity = MakeSharedPtr<Entity>(m_pContext.get());
+    SkyBoxComponentPtr pSkybox = MakeSharedPtr<SkyBoxComponent>(m_pContext.get());
     pSkybox->SetSkyBoxTex(tex_cube);
     m_pSkyBoxEntity->AddSceneComponent(pSkybox);
     m_pSkyBoxEntity->AddToTopScene();

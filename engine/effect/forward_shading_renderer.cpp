@@ -208,39 +208,31 @@ RendererReturnValue ForwardShadingRenderer::RenderSceneJob()
 {
     SResult res;
     m_eCurRenderStage = RenderStage::RenderScene;
-
     m_pContext->RHIContextInstance().BeginRenderPass({"RenderScene" , m_pRenderSceneFB.get()});
     this->RenderScene();
     m_pContext->RHIContextInstance().EndRenderPass();
-
     m_eCurRenderStage = RenderStage::None;
+    m_pRenderSceneFB->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, RHIFrameBuffer::LoadAction::Load);
+    m_pRenderSceneFB->SetDepthLoadOption(RHIFrameBuffer::LoadAction::Load);
     return RRV_NextJob;
 }
 RendererReturnValue ForwardShadingRenderer::RenderSkyBoxJob()
 {
     m_eCurRenderStage = RenderStage::None;
-
-    RHIContext::RenderPassInfo info;
-    info.name = "RenderSkybox";
-    info.fb = m_pRenderSceneFB.get();
-    m_pContext->RHIContextInstance().BeginRenderPass(info);
-
+    m_pContext->RHIContextInstance().BeginRenderPass({ "RenderSkybox", m_pRenderSceneFB.get()});
     SkyBoxComponent* skybox = m_pContext->SceneManagerInstance().GetSkyBoxComponent();
     if (skybox)
         skybox->Render();
-
     m_pContext->RHIContextInstance().EndRenderPass();
+	m_pRenderSceneFB->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, RHIFrameBuffer::LoadAction::Load);
+    m_pRenderSceneFB->SetDepthLoadOption(RHIFrameBuffer::LoadAction::Load);
 
     return RRV_NextJob;
 }
 RendererReturnValue ForwardShadingRenderer::WatermarkJob()
 {
     m_eCurRenderStage = RenderStage::None;
-    RHIContext::RenderPassInfo info;
-    info.name = "Watermark";
-    info.fb = m_pRenderSceneFB.get();
-    m_pContext->RHIContextInstance().BeginRenderPass(info);
-
+    m_pContext->RHIContextInstance().BeginRenderPass({ "Watermark", m_pRenderSceneFB.get() });
     std::vector<WaterMarkComponent*>& watermarks = m_pContext->SceneManagerInstance().GetWaterMarkComponents();
     for (uint32_t i = 0; i < watermarks.size(); ++i)
     {
@@ -256,22 +248,17 @@ RendererReturnValue ForwardShadingRenderer::WatermarkJob()
 RendererReturnValue ForwardShadingRenderer::RenderParticlesJob()
 {
     m_eCurRenderStage = RenderStage::None;
-
-    RHIContext::RenderPassInfo info;
-    info.name = "RenderParticles";
-    info.fb = m_pRenderSceneFB.get();
-    m_pContext->RHIContextInstance().BeginRenderPass(info);
-
+    m_pContext->RHIContextInstance().BeginRenderPass({ "RenderParticles", m_pRenderSceneFB.get() });
     std::vector<ParticleComponent*>& particles = m_pContext->SceneManagerInstance().GetParticleComponents();
     for (uint32_t i = 0; i < particles.size(); ++i)
     {
         ParticleComponent* particle = particles[i];
         if (particle)
-        {
             particle->Render();
-        }
     }
     m_pContext->RHIContextInstance().EndRenderPass();
+    m_pRenderSceneFB->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, RHIFrameBuffer::LoadAction::Load);
+    m_pRenderSceneFB->SetDepthLoadOption(RHIFrameBuffer::LoadAction::Load);
     return RRV_NextJob;
 }
 SResult ForwardShadingRenderer::PrepareFrameBuffer()
