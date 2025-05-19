@@ -215,17 +215,14 @@ SResult DeferredShadingRenderer::Init()
     Effect& effect = m_pContext->EffectInstance();
     effect.LoadTechnique(szTechName_PreZ, &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "EmptyPS", nullptr);
     effect.LoadTechnique(szTechName_GenerateGBuffer, &RenderStateDesc::GBuffer(), "MeshRenderingVS", "GenerateGBufferPS", nullptr);
-    effect.LoadTechnique(szTechName_DeferredLighting, &RenderStateDesc::Lighting(), "DeferredLightingVS", "DeferredLightingPS", nullptr);
-
-    
+    effect.LoadTechnique(szTechName_DeferredLighting, &RenderStateDesc::Lighting(), "DeferredLightingVS", "DeferredLightingPS", nullptr);    
     std::vector<EffectPredefine> has_shadow_predefines = { {"HAS_SHADOW" , "1"}, {"TILE_CULLING", "0"} };
     m_pLightingTech_HasShadow = effect.GetTechnique(szTechName_DeferredLighting, has_shadow_predefines);
-
     std::vector<EffectPredefine> no_shadow_predefines = { {"HAS_SHADOW" , "0"}, {"TILE_CULLING", "0"} };
     m_pLightingTech_NoShadow = effect.GetTechnique(szTechName_DeferredLighting, no_shadow_predefines);
 
     
-
+	/************* SSAO *****************************/
     std::vector<float4> ssao_kernels;
     for (uint32_t i = 0; i < SSAO_KERNEL_COUNT; ++i)
     {
@@ -264,16 +261,16 @@ SResult DeferredShadingRenderer::Init()
     m_pSsaoTech->SetParam("depth_tex", m_pSceneDepthStencil);
     m_pSsaoTech->SetParam("ssao_noise", m_pSsaoNoise);
 
-    /**(m_pSsaoEffect->GetParamByName("gbuffer0")) = m_pGBufferColor0;
-    *(m_pSsaoEffect->GetParamByName("depth_tex")) = m_pSceneDepthStencil;
-    *(m_pSsaoEffect->GetParamByName("ssao_noise")) = m_pSsaoNoise;*/
     m_pSsaoSampleKernelCBuffer = rc.CreateConstantBuffer(sizeof(ssao_kernels[0]) * ssao_kernels.size(), RESOURCE_FLAG_CPU_WRITE);
     m_pSsaoTech->SetParam("cb_SsaoSampleKernels", m_pSsaoSampleKernelCBuffer);
 
 	m_pSsaoParamCBuffer = rc.CreateConstantBuffer(sizeof(SsaoParam), RESOURCE_FLAG_CPU_WRITE);
+    m_pSsaoTech->SetParam("cb_SsaoVSParam", m_pSsaoParamCBuffer);
     m_pSsaoTech->SetParam("cb_SsaoPSParam", m_pSsaoParamCBuffer);
+	m_pSsaoCameraInfoCBuffer = rc.CreateConstantBuffer(sizeof(CameraInfo), RESOURCE_FLAG_CPU_WRITE);
+    m_pSsaoTech->SetParam("cb_CameraInfo", m_pSsaoCameraInfoCBuffer);
 
-
+    /************* Blur *****************************/
     m_pGaussianBlur = MakeSharedPtr<GaussianBlur>(m_pContext);
     m_pGaussianBlur->SetSrcTexture(m_pSsaoColor);
     m_pGaussianBlur->SetDstTexture(m_pSsaoColor);
@@ -570,9 +567,6 @@ RHIMeshPtr DeferredShadingRenderer::GetLightVolumeMesh(LightType type)
 RendererReturnValue DeferredShadingRenderer::RenderPrepareJob()
 {
     m_eCurRenderStage = RenderStage::None;
-	
-    //m_pGBufferFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, { float4(0.0) });
-    //m_pGBufferFb->SetDepthLoadOption({ 1.0f });
     m_pLightingFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, { float4(0.0) });
     m_pLightingFb->SetDepthLoadOption({ 1.0f });
     m_pSsaoFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, { float4(0.0) });
@@ -653,40 +647,42 @@ RendererReturnValue DeferredShadingRenderer::SSAOJob()
         return RRV_NextJob;
     }
     CameraComponent* cam = sm.GetActiveCamera();
-    CameraInfo cameraInfo;
+    CameraInfo cameraInfo = {  };
     if (cam)
     {
         cameraInfo.posWorld = cam->GetWorldTransform().GetTranslation();
         cameraInfo.farPlane = cam->GetFarPlane();
     }
+    m_pSsaoCameraInfoCBuffer->Update(&cameraInfo, sizeof(cameraInfo));
 
-    if (m_pQuadMesh || m_pSsaoEffect)
+    Matrix4 view_matrix = cam->GetViewMatrix().Transpose();
+    Matrix4 proj_matrix = cam->GetProjMatrix().Transpose();
+    Matrix4 inv_proj_matrix = cam->GetInvProjMatrix().Transpose();
+    SsaoParam param = {  };
+    param.view_matrix = view_matrix;
+	param.proj_matrix = proj_matrix;
+    param.inv_proj_matrix = inv_proj_matrix;
+	RHITexture::Desc desc = m_pSsaoFb->GetRenderTargetDesc(RHIFrameBuffer::Attachment::Color0);
+    param.ssao_scale = float2((float)desc.width / 4.0, (float)desc.height / 4.0);
+	m_pSsaoParamCBuffer->Update(&param, sizeof(param));
+	
+
+    m_pQuadMesh->SetRenderState(m_pSsaoTech->GetRenderState());
+    res = rc.Render(m_pSsaoTech->GetProgram(), m_pQuadMesh);
+    if (res != S_Success)
     {
-        Matrix4 view_matrix = cam->GetViewMatrix().Transpose();
-        Matrix4 proj_matrix = cam->GetProjMatrix().Transpose();
-        Matrix4 inv_proj_matrix = cam->GetInvProjMatrix().Transpose();
-       /* m_pParamSsaoCameraInfo->UpdateConstantBuffer(&cameraInfo, sizeof(cameraInfo));        
-        m_pParamSsaoViewMatrix->UpdateConstantBuffer(&view_matrix, sizeof(view_matrix));        
-        m_pParamSsaoProjMatrix->UpdateConstantBuffer(&proj_matrix, sizeof(proj_matrix));        
-        m_pParamSsaoInvProjMatrix->UpdateConstantBuffer(&inv_proj_matrix, sizeof(inv_proj_matrix));*/
-        
-        m_pQuadMesh->SetRenderState(m_pSsaoTech->GetRenderState());
-        //res = rc.Render(m_pSsaoTech->GetProgram().get(), m_pQuadMesh);
-        if (res != S_Success)
-        {
-            LOG_ERROR("DeferredShadingRenderer::LightingJob() Render() failed.");
-            return RRV_NextJob;
-        }
-        m_pGaussianBlur->Run();
-#if 0
-        static int draw = 1;
-        if (draw)
-        {
-            m_pSsaoColor->DumpToFile("d:\\ssao.gray");
-            draw--;
-        }
-#endif
+        LOG_ERROR("DeferredShadingRenderer::SSAOJob() Render() failed.");
+        return RRV_NextJob;
     }
+
+#if 1
+    static int draw = 1;
+    if (draw)
+    {
+        m_pSsaoColor->DumpToFile("d:\\ssao.gray");
+        draw--;
+    }
+#endif
     m_pContext->RHIContextInstance().EndRenderPass();
     return RRV_NextJob;
 }

@@ -73,16 +73,13 @@ protected:
     RHITexturePtr                   m_pGBufferColor2 = nullptr;
 
     RHITexturePtr                   m_pPreZColor = nullptr;
-    RHITexturePtr                   m_pSsaoColor = nullptr;
+    
     
     RHIFrameBufferPtr               m_pGBufferFb = nullptr;
     RHIFrameBufferPtr               m_pPreZFb = nullptr;
     RHIFrameBufferPtr               m_pLightingFb = nullptr;
-    RHIFrameBufferPtr               m_pSsaoFb = nullptr;
 
-    RHIRenderBufferPtr              m_pSsaoSampleKernelCBuffer = nullptr;
-	RHIRenderBufferPtr              m_pSsaoParamCBuffer = nullptr;
-    RHIRenderBufferPtr              m_pSsaoCameraInfoCBuffer = nullptr;
+    
 
     std::map<uint32_t, EffectPtr>   m_Effects; // key=morph_count
     Technique*                      m_pLightingTech_HasShadow =  nullptr;
@@ -93,16 +90,18 @@ protected:
     RHIFrameBufferPtr               m_pShadowingFb = nullptr;
 
     // SSAO
+    RHITexturePtr                   m_pSsaoColor = nullptr;
+    RHIFrameBufferPtr               m_pSsaoFb = nullptr;
+    RHIRenderBufferPtr              m_pSsaoSampleKernelCBuffer = nullptr;
+    RHIRenderBufferPtr              m_pSsaoParamCBuffer = nullptr;
+    RHIRenderBufferPtr              m_pSsaoCameraInfoCBuffer = nullptr;        
     RHITexturePtr                   m_pSsaoNoise = nullptr;
-    EffectPtr                       m_pSsaoEffect = nullptr;
     Technique*                      m_pSsaoTech = nullptr;
-    GaussianBlurPtr                 m_pGaussianBlur = nullptr;
-    //EffectParam*                    m_pParamSsaoCameraInfo = nullptr;
-    //EffectParam*                    m_pParamSsaoViewMatrix = nullptr;
-    //EffectParam*                    m_pParamSsaoProjMatrix = nullptr;
-    //EffectParam*                    m_pParamSsaoInvProjMatrix = nullptr;
 
-    
+
+    GaussianBlurPtr                 m_pGaussianBlur = nullptr;
+
+    // GI
     GlobalIlluminationPtr           m_pGI = nullptr;
 
     // Query
