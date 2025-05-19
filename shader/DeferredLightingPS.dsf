@@ -9,22 +9,19 @@
 #endif
 
 
-cbuffer cameraInfo
+cbuffer cb_CameraInfo
 {
 	CameraInfo cameraInfo;
 }
-cbuffer deferredLightingInfo
+cbuffer cb_DeferredLightingPSInfo
 {
 	DeferredLightingInfo deferredLightingInfo;
 }
 
 #if TILE_CULLING == 1
-cbuffer c_frame_size
-{
-	float2 c_frame_size;
-}
 StructuredBuffer<TileInfo> tile_infos;
 #endif
+
 StructuredBuffer<LightInfo> light_infos;
 
 Texture2D gbuffer0;
@@ -54,8 +51,10 @@ float4 main(
 	float3 Lo = 0;
 	
 #if TILE_CULLING == 1
-	uint dispatch_width = (c_frame_size.x + TILE_SIZE - 1) / TILE_SIZE;
-	uint tile_index = (uint)(iTc.y * c_frame_size.y / TILE_SIZE) * dispatch_width + (uint)(iTc.x * c_frame_size.x / TILE_SIZE);
+	float width, height;
+	gbuffer0.GetDimensions(width, height);
+	uint dispatch_width = (width + TILE_SIZE - 1) / TILE_SIZE;
+	uint tile_index = (uint)(iTc.y * height / TILE_SIZE) * dispatch_width + (uint)(iTc.x * width / TILE_SIZE);
 	[loop]
 	for (uint i=0; i < tile_infos[tile_index].light_num; i++)
 	{

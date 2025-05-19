@@ -137,7 +137,7 @@ struct LightInfo
 };
 
 // deferred shading
-#define MAX_DEFERRED_LIGHTS_NUM         2048
+#define MAX_DEFERRED_LIGHTS_NUM         1024
 #define MAX_DEFERRED_LIGHTS_INDICES     ((MAX_DEFERRED_LIGHTS_NUM >> 3) - 1)
 
 #define TILE_SIZE                       16
@@ -161,6 +161,15 @@ struct DeferredLightingInfo
         light_num = 0;
     }
 #endif
+};
+
+struct LightCullingInfo
+{
+    float4x4 view_matrix;
+    float4x4 proj_matrix;
+    float2 frame_size;
+    int light_index_start;
+    int light_num;
 };
 
 struct TileInfo

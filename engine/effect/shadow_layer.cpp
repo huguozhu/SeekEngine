@@ -173,7 +173,7 @@ RendererReturnValue ShadowLayer::GenerateShadowMapJob(uint32_t light_index)
         sr.SetCurRenderStage(RenderStage::None);
 
     #if 0
-        static int draw = 2;
+        static int draw = 1;
         if (draw)
         {
             m_pSmDepthTex->DumpToFile("d:\\sm_depth.g16l");

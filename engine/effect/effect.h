@@ -24,7 +24,7 @@ public:
     Technique* GetTechnique(const std::string& name);
 
     SResult LoadTechnique(const std::string& name, const RenderStateDesc* pDefaultRenderStateDesc,
-        const char* vertexShaderName, const char* pixelShaderName, const char* computeShaderName);
+        const char* vertexShaderName, const char* pixelShaderName, const char* computeShaderName = nullptr);
 
 private:
     void LoadDefaultVirtualTechniques();

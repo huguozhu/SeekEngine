@@ -33,96 +33,72 @@ protected:
     friend class Context;
     DeferredShadingRenderer(Context* context);
 
-    RHIMeshPtr                      m_pQuadMesh = nullptr;
-
-    // 3D Scene FrameBuffer
-    RHITexturePtr                   m_pSceneColor = nullptr;
-    RHITexturePtr                   m_pSceneVelocity = nullptr; // For TAA
-    RHITexturePtr                   m_pSceneDepthStencil = nullptr;
-    RHIFrameBufferPtr               m_pSceneFb = nullptr;
-
-    RHITexturePtr                   m_pLDRColor = nullptr;
-    RHIFrameBufferPtr               m_pLDRFb = nullptr;
-
-    RHITexturePtr                   m_pHDRColor = nullptr;
-    RHIFrameBufferPtr               m_pHDRFb = nullptr;
-
-    // HDR
-    HDRPostProcessPtr               m_pHDRPostProcess = nullptr;
-    LDRPostProcessPtr               m_pLDRPostProcess = nullptr;
+    // RHIMesh & RHIRenderBuffers
+    RHIMeshPtr              m_pQuadMesh = nullptr;
+    RHIRenderBufferPtr      m_pCameraInfoCBuffer = nullptr;
+    RHIRenderBufferPtr      m_pSsaoSampleKernelCBuffer = nullptr;
+    RHIRenderBufferPtr      m_pSsaoParamCBuffer = nullptr;
+    RHIRenderBufferPtr      m_pLightInfoBuffer = nullptr;
+    RHIRenderBufferPtr      m_pTileInfoBuffer = nullptr;
+	RHIRenderBufferPtr      m_pLightCullingInfoCBuffer = nullptr;
+	RHIRenderBufferPtr      m_pDeferredLightingInfoCBuffer = nullptr;
 
 
-    EffectParam*                    m_pParamCameraInfo = nullptr;
-    EffectParam*                    m_pParamGBuffer0 = nullptr;
-    EffectParam*                    m_pParamGBuffer1 = nullptr;
-    EffectParam*                    m_pParamDepthTex = nullptr;
-    EffectParam*                    m_pParamShadowingTex = nullptr;
-    EffectParam*                    m_pParamDeferredInfo = nullptr;
-    EffectParam*                    m_pParamLightInfos = nullptr;
+    // Textures
+    RHITexturePtr           m_pSceneDepthStencil = nullptr;
+    RHITexturePtr           m_pSceneVelocity = nullptr; // For TAA
+    RHITexturePtr           m_pSceneColor = nullptr;
+    RHITexturePtr           m_pLDRColor = nullptr;
+    RHITexturePtr           m_pHDRColor = nullptr;
 
-    // For Tile Culling Lighting
-    EffectParam*                    m_pParamViewMatrix = nullptr;
-    EffectParam*                    m_pParamProjMatrix = nullptr;
-    EffectParam*                    m_pParamFrameSize = nullptr;
-    EffectParam*                    m_pParamTileInfoRW = nullptr;
-    EffectParam*                    m_pParamTileInfo = nullptr;
+    RHITexturePtr           m_pPreZColor = nullptr;
+    RHITexturePtr           m_pGBufferColor0 = nullptr;
+    RHITexturePtr           m_pGBufferColor1 = nullptr;
+    RHITexturePtr           m_pGBufferColor2 = nullptr;
 
-    // FrameBuffer / Texture
-    RHITexturePtr                   m_pGBufferColor0 = nullptr;
-    RHITexturePtr                   m_pGBufferColor1 = nullptr;
-    RHITexturePtr                   m_pGBufferColor2 = nullptr;
-
-    RHITexturePtr                   m_pPreZColor = nullptr;
-    
-    
-    RHIFrameBufferPtr               m_pGBufferFb = nullptr;
-    RHIFrameBufferPtr               m_pPreZFb = nullptr;
-    RHIFrameBufferPtr               m_pLightingFb = nullptr;
+    RHITexturePtr           m_pShadowTex = nullptr;
+    RHITexturePtr           m_pSsaoColor = nullptr;
+    RHITexturePtr           m_pSsaoNoise = nullptr;
 
     
+	// RHIFrameBuffers
+    RHIFrameBufferPtr       m_pPreZFb = nullptr;
+    RHIFrameBufferPtr       m_pGBufferFb = nullptr;
+    RHIFrameBufferPtr       m_pLightingFb = nullptr;
+    RHIFrameBufferPtr       m_pLDRFb = nullptr;
+    RHIFrameBufferPtr       m_pHDRFb = nullptr;
+    RHIFrameBufferPtr       m_pSceneFb = nullptr;
+    RHIFrameBufferPtr       m_pShadowingFb = nullptr;
+    RHIFrameBufferPtr       m_pSsaoFb = nullptr;
 
-    std::map<uint32_t, EffectPtr>   m_Effects; // key=morph_count
-    Technique*                      m_pLightingTech_HasShadow =  nullptr;
-    Technique*                      m_pLightingTech_NoShadow = nullptr;
+    // Techniques
+    Technique*              m_pLightingTech_HasShadow = nullptr;
+    Technique*              m_pLightingTech_NoShadow = nullptr;
+    Technique*              m_pSsaoTech = nullptr;
+    Technique*              m_pTileCullingTech = nullptr;
+    Technique*              m_pLightingTech_HasShadow_TileCulling = nullptr;
 
-    // Shadowing
-    RHITexturePtr                   m_pShadowTex = nullptr;
-    RHIFrameBufferPtr               m_pShadowingFb = nullptr;
+    // PostProcess
+    HDRPostProcessPtr       m_pHDRPostProcess = nullptr;
+    LDRPostProcessPtr       m_pLDRPostProcess = nullptr;
 
-    // SSAO
-    RHITexturePtr                   m_pSsaoColor = nullptr;
-    RHIFrameBufferPtr               m_pSsaoFb = nullptr;
-    RHIRenderBufferPtr              m_pSsaoSampleKernelCBuffer = nullptr;
-    RHIRenderBufferPtr              m_pSsaoParamCBuffer = nullptr;
-    RHIRenderBufferPtr              m_pSsaoCameraInfoCBuffer = nullptr;        
-    RHITexturePtr                   m_pSsaoNoise = nullptr;
-    Technique*                      m_pSsaoTech = nullptr;
-
-
-    GaussianBlurPtr                 m_pGaussianBlur = nullptr;
-
-    // GI
-    GlobalIlluminationPtr           m_pGI = nullptr;
+    GaussianBlurPtr         m_pGaussianBlur = nullptr;
+    GlobalIlluminationPtr   m_pGI = nullptr;
 
     // Query
-    RHITimeQueryPtr                m_pTimeQueryGenShadowMap = nullptr;
-    RHITimeQueryPtr                m_pTimeQueryGenGBuffer = nullptr;
-    RHITimeQueryPtr                m_pTimeQuerySSAO = nullptr;
-    RHITimeQueryPtr                m_pTimeQueryLihgtCulling = nullptr;
-    RHITimeQueryPtr                m_pTimeQueryLighting = nullptr;
-    RHITimeQueryPtr                m_pTimeQueryGI = nullptr;
-    RHITimeQueryPtr                m_pTimeQuerySkybox = nullptr;
-    RHITimeQueryPtr                m_pTimeQueryHDR = nullptr;
-    RHITimeQueryPtr                m_pTimeQueryLDR = nullptr;
+    RHITimeQueryPtr         m_pTimeQueryGenShadowMap = nullptr;
+    RHITimeQueryPtr         m_pTimeQueryGenGBuffer = nullptr;
+    RHITimeQueryPtr         m_pTimeQuerySSAO = nullptr;
+    RHITimeQueryPtr         m_pTimeQueryLihgtCulling = nullptr;
+    RHITimeQueryPtr         m_pTimeQueryLighting = nullptr;
+    RHITimeQueryPtr         m_pTimeQueryGI = nullptr;
+    RHITimeQueryPtr         m_pTimeQuerySkybox = nullptr;
+    RHITimeQueryPtr         m_pTimeQueryHDR = nullptr;
+    RHITimeQueryPtr         m_pTimeQueryLDR = nullptr;
 
-    // Tile Culling
-    RHIRenderBufferPtr              m_pLightInfoBuffer = nullptr;
-    RHIRenderBufferPtr              m_pTileInfoBuffer = nullptr;
-    Technique*                      m_pTileCullingTech = nullptr;
-    Technique*                      m_pLightingTech_Shadow_TileCulling = nullptr;
-
-
-    static LightInfo                s_LightInfos[MAX_DEFERRED_LIGHTS_NUM];
+    static LightInfo        s_LightInfos[MAX_DEFERRED_LIGHTS_NUM];
+    uint32_t                m_iRenderWidth = 0;
+	uint32_t                m_iRenderHeight = 0;
 };
 
 

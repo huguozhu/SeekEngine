@@ -1,7 +1,7 @@
 //STAGE:vs
 #include "Lighting.dsh"
 
-cbuffer deferredLightingInfo
+cbuffer cb_DeferredLightingVSInfo
 {
 	DeferredLightingInfo deferredLightingInfo;
 }
