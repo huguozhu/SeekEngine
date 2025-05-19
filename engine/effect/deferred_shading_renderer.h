@@ -25,6 +25,7 @@ public:
     RendererReturnValue         SSAOJob();
     RendererReturnValue         LightingTileCullingJob();
     RendererReturnValue         LightingJob();
+    RendererReturnValue         RenderSkyBoxJob();
     RendererReturnValue         PrintTimeQueryJob();
 
     GlobalIlluminationPtr const&    GetGI() { return m_pGI; }
@@ -38,7 +39,7 @@ protected:
     RHIRenderBufferPtr      m_pCameraInfoCBuffer = nullptr;
     RHIRenderBufferPtr      m_pSsaoSampleKernelCBuffer = nullptr;
     RHIRenderBufferPtr      m_pSsaoParamCBuffer = nullptr;
-    RHIRenderBufferPtr      m_pLightInfoBuffer = nullptr;
+    RHIRenderBufferPtr      m_pLightInfoCBuffer = nullptr;
     RHIRenderBufferPtr      m_pTileInfoBuffer = nullptr;
 	RHIRenderBufferPtr      m_pLightCullingInfoCBuffer = nullptr;
 	RHIRenderBufferPtr      m_pDeferredLightingInfoCBuffer = nullptr;
@@ -50,6 +51,7 @@ protected:
     RHITexturePtr           m_pSceneColor = nullptr;
     RHITexturePtr           m_pLDRColor = nullptr;
     RHITexturePtr           m_pHDRColor = nullptr;
+    RHITexturePtr           m_pLightingDepthStencil = nullptr;
 
     RHITexturePtr           m_pPreZColor = nullptr;
     RHITexturePtr           m_pGBufferColor0 = nullptr;

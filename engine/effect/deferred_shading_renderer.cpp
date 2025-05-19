@@ -80,7 +80,7 @@ SResult DeferredShadingRenderer::Init()
     }
     m_pSsaoSampleKernelCBuffer  = rc.CreateConstantBuffer(sizeof(ssao_kernels[0]) * ssao_kernels.size(), RESOURCE_FLAG_CPU_WRITE);
     m_pSsaoParamCBuffer         = rc.CreateConstantBuffer(sizeof(SsaoParam), RESOURCE_FLAG_CPU_WRITE);
-    m_pLightInfoBuffer          = rc.CreateByteAddressBuffer(sizeof(LightInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_CPU_WRITE, nullptr);
+    m_pLightInfoCBuffer         = rc.CreateByteAddressBuffer(sizeof(LightInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_CPU_WRITE, nullptr);
     m_pLightCullingInfoCBuffer  = rc.CreateByteAddressBuffer(sizeof(LightCullingInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_CPU_WRITE, nullptr);
     m_pDeferredLightingInfoCBuffer = rc.CreateConstantBuffer(sizeof(DeferredLightingInfo), RESOURCE_FLAG_CPU_WRITE);
 
@@ -169,12 +169,12 @@ SResult DeferredShadingRenderer::Init()
 
     desc.width = w;
     desc.height = h;
-    desc.format = PixelFormat::D32F;
+    desc.format = PixelFormat::D16;
     desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_COPY_BACK;
-    RHITexturePtr lighting_ds_tex = rc.CreateTexture2D(desc);
+    m_pLightingDepthStencil = rc.CreateTexture2D(desc);
     m_pLightingFb = rc.CreateEmptyRHIFrameBuffer();
     m_pLightingFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pHDRColor));
-    m_pLightingFb->AttachDepthStencilView(rc.CreateDepthStencilView(lighting_ds_tex));
+    m_pLightingFb->AttachDepthStencilView(rc.CreateDepthStencilView(m_pLightingDepthStencil));
 
     m_pLDRFb = rc.CreateEmptyRHIFrameBuffer();
     m_pHDRFb = rc.CreateEmptyRHIFrameBuffer();    
@@ -193,9 +193,6 @@ SResult DeferredShadingRenderer::Init()
     effect.LoadTechnique(szTechName_GenerateGBuffer,    &RenderStateDesc::GBuffer(),    "MeshRenderingVS",      "GenerateGBufferPS");
     effect.LoadTechnique(szTechName_DeferredLighting,   &RenderStateDesc::Lighting(),   "DeferredLightingVS",   "DeferredLightingPS");
     effect.LoadTechnique(szTechName_SSAO,               &RenderStateDesc::PostProcess(),"SsaoVS",               "SsaoPS");
-
-    m_pLightingTech_HasShadow   = effect.GetTechnique(szTechName_DeferredLighting, { {"HAS_SHADOW" , "1"}, {"TILE_CULLING", "0"} });
-    m_pLightingTech_NoShadow    = effect.GetTechnique(szTechName_DeferredLighting, { {"HAS_SHADOW" , "0"}, {"TILE_CULLING", "0"} });
     
     if (use_tile_culling)
     {
@@ -204,7 +201,7 @@ SResult DeferredShadingRenderer::Init()
         m_pTileCullingTech->SetParam("cb_CameraInfo", m_pCameraInfoCBuffer);
         m_pTileCullingTech->SetParam("cb_LightCullingCSParam", m_pLightCullingInfoCBuffer);
 		m_pTileCullingTech->SetParam("depth", m_pSceneDepthStencil);
-        m_pTileCullingTech->SetParam("light_infos", m_pLightInfoBuffer);
+        m_pTileCullingTech->SetParam("light_infos", m_pLightInfoCBuffer);
         m_pTileCullingTech->SetParam("tile_infos_rw", m_pTileInfoBuffer);
 
         m_pLightingTech_HasShadow_TileCulling = effect.GetTechnique(szTechName_DeferredLighting, { {"HAS_SHADOW" , "1"}, {"TILE_CULLING", "1"} });
@@ -212,12 +209,33 @@ SResult DeferredShadingRenderer::Init()
         m_pLightingTech_HasShadow_TileCulling->SetParam("cb_DeferredLightingPSInfo", m_pDeferredLightingInfoCBuffer);
         m_pLightingTech_HasShadow_TileCulling->SetParam("cb_CameraInfo", m_pCameraInfoCBuffer);
         m_pLightingTech_HasShadow_TileCulling->SetParam("tile_infos", m_pTileInfoBuffer);
-        m_pLightingTech_HasShadow_TileCulling->SetParam("light_infos", m_pLightInfoBuffer);
+        m_pLightingTech_HasShadow_TileCulling->SetParam("light_infos", m_pLightInfoCBuffer);
 
         m_pLightingTech_HasShadow_TileCulling->SetParam("gbuffer0", m_pGBufferColor0);
         m_pLightingTech_HasShadow_TileCulling->SetParam("gbuffer1", m_pGBufferColor1);
         m_pLightingTech_HasShadow_TileCulling->SetParam("depth_tex", m_pSceneDepthStencil);
         m_pLightingTech_HasShadow_TileCulling->SetParam("shadowing_tex", m_pShadowTex);
+    }
+    else
+    {
+        m_pLightingTech_HasShadow = effect.GetTechnique(szTechName_DeferredLighting, { {"HAS_SHADOW" , "1"}, {"TILE_CULLING", "0"} });
+        m_pLightingTech_HasShadow->SetParam("cb_DeferredLightingVSInfo", m_pDeferredLightingInfoCBuffer);
+        m_pLightingTech_HasShadow->SetParam("cb_DeferredLightingPSInfo", m_pDeferredLightingInfoCBuffer);
+        m_pLightingTech_HasShadow->SetParam("cb_CameraInfo", m_pCameraInfoCBuffer);
+        m_pLightingTech_HasShadow->SetParam("light_infos", m_pLightInfoCBuffer);
+        m_pLightingTech_HasShadow->SetParam("gbuffer0", m_pGBufferColor0);
+        m_pLightingTech_HasShadow->SetParam("gbuffer1", m_pGBufferColor1);
+        m_pLightingTech_HasShadow->SetParam("depth_tex", m_pSceneDepthStencil);
+        m_pLightingTech_HasShadow->SetParam("shadowing_tex", m_pShadowTex);
+
+        m_pLightingTech_NoShadow = effect.GetTechnique(szTechName_DeferredLighting, { {"HAS_SHADOW" , "0"}, {"TILE_CULLING", "0"} });
+        m_pLightingTech_NoShadow->SetParam("cb_DeferredLightingVSInfo", m_pDeferredLightingInfoCBuffer);
+        m_pLightingTech_NoShadow->SetParam("cb_DeferredLightingPSInfo", m_pDeferredLightingInfoCBuffer);
+        m_pLightingTech_NoShadow->SetParam("cb_CameraInfo", m_pCameraInfoCBuffer);
+        m_pLightingTech_NoShadow->SetParam("light_infos", m_pLightInfoCBuffer);
+        m_pLightingTech_NoShadow->SetParam("gbuffer0", m_pGBufferColor0);
+        m_pLightingTech_NoShadow->SetParam("gbuffer1", m_pGBufferColor1);
+        m_pLightingTech_NoShadow->SetParam("depth_tex", m_pSceneDepthStencil);
     }
     
 	
@@ -350,14 +368,14 @@ SResult DeferredShadingRenderer::BuildRenderJobList()
     END_TIMEQUERY(m_pTimeQueryGI);
     
     
-    //BEGIN_TIMEQUERY(m_pTimeQuerySkybox);
-    //if (sm.GetSkyBoxComponent())
-    //    m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::RenderSkyBoxJob, this)));
-    //END_TIMEQUERY(m_pTimeQuerySkybox);
-    //
-    //BEGIN_TIMEQUERY(m_pTimeQueryHDR);
-    //m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::HDRJob, this)));
-    //END_TIMEQUERY(m_pTimeQueryHDR);
+    BEGIN_TIMEQUERY(m_pTimeQuerySkybox);
+    if (sm.GetSkyBoxComponent())
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::RenderSkyBoxJob, this)));
+    END_TIMEQUERY(m_pTimeQuerySkybox);
+    
+    BEGIN_TIMEQUERY(m_pTimeQueryHDR);
+    //m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::HDRJob, this)));
+    END_TIMEQUERY(m_pTimeQueryHDR);
 
     //BEGIN_TIMEQUERY(m_pTimeQueryLDR);
     //m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::LDRJob, this)));
@@ -684,7 +702,7 @@ RendererReturnValue DeferredShadingRenderer::LightingTileCullingJob()
         LightComponent* pLight = sm.GetLightComponentByIndex(i);
         this->FillLightInfoByLightIndex(s_LightInfos[i], cam, i);
     }
-    m_pLightInfoBuffer->Update(&s_LightInfos[0], sizeof(LightInfo) * MAX_DEFERRED_LIGHTS_NUM);
+    m_pLightInfoCBuffer->Update(&s_LightInfos[0], sizeof(LightInfo) * MAX_DEFERRED_LIGHTS_NUM);
 
     
     /**************    Step1: Light culling    ****************************/
@@ -731,7 +749,7 @@ RendererReturnValue DeferredShadingRenderer::LightingTileCullingJob()
         LOG_ERROR("DeferredShadingRenderer::LightingTileCullingJob() Render() failed.");
         return RRV_NextJob;
     }
-
+    m_pContext->RHIContextInstance().EndRenderPass();
     return RRV_NextJob;
 }
 RendererReturnValue DeferredShadingRenderer::LightingJob()
@@ -750,17 +768,6 @@ RendererReturnValue DeferredShadingRenderer::LightingJob()
     }
     m_pCameraInfoCBuffer->Update(&cameraInfo, sizeof(cameraInfo));
 
-    //*m_pParamGBuffer0 = m_pGBufferColor0;
-    //*m_pParamGBuffer1 = m_pGBufferColor1;
-    //*m_pParamDepthTex = m_pSceneDepthStencil;
-    //*m_pParamShadowingTex = ((DeferredShadowLayer*)m_pContext->SceneRendererInstance().GetShadowLayer().get())->GetShadowingTex();
-    //*m_pParamLightInfos = m_pLightInfoBuffer;
-        
-    DeferredLightingInfo deferred_info;    
-    RHIRenderBufferData light_light_data(uint32_t(MAX_DEFERRED_LIGHTS_NUM * sizeof(LightInfo)), &s_LightInfos[0]);
-    deferred_info.lightVolumeMV = cam ? cam->GetInvProjMatrix().Transpose() : Matrix4::Identity();
-    deferred_info.lightVolumeInvView = cam ? cam->GetInvViewMatrix().Transpose() : Matrix4::Identity();
-    //m_pParamDeferredInfo->UpdateConstantBuffer(&deferred_info, sizeof(deferred_info));
 
     // Step2: Calc Has-Shadow & No-Shadow lights
     size_t light_num = sm.NumLightComponent();
@@ -783,7 +790,11 @@ RendererReturnValue DeferredShadingRenderer::LightingJob()
     uint32_t light_num_no_shadow = (uint32_t)light_no_shadow_list.size();
         
     // Step3: Render shadow light
-    SResult res = m_pContext->RHIContextInstance().BindRHIFrameBuffer(m_pLightingFb);
+    DeferredLightingInfo deferred_info;
+    deferred_info.lightVolumeMV = cam ? cam->GetInvProjMatrix().Transpose() : Matrix4::Identity();
+    deferred_info.lightVolumeInvView = cam ? cam->GetInvViewMatrix().Transpose() : Matrix4::Identity();
+    
+    SResult res = m_pContext->RHIContextInstance().BeginRenderPass({ "Lighting", m_pLightingFb.get()});
     if (light_num_has_shadow > 0)
     {
         for (uint32_t i = 0; i < light_num_has_shadow; i++)
@@ -791,10 +802,12 @@ RendererReturnValue DeferredShadingRenderer::LightingJob()
             LightComponent* pLight = light_has_shadow_list[i];
             this->FillLightInfoByLightIndex(s_LightInfos[i], cam, cached_light_index[pLight]);
         }
+        m_pLightInfoCBuffer->Update(&s_LightInfos[0], light_num_has_shadow * sizeof(LightInfo));
+
         deferred_info.light_index_start = 0;
         deferred_info.light_num = (int)light_num_has_shadow;
-        //m_pParamDeferredInfo->UpdateConstantBuffer(&deferred_info, sizeof(deferred_info));
-        m_pLightInfoBuffer->Update(&light_light_data);
+        m_pDeferredLightingInfoCBuffer->Update(&deferred_info, sizeof(deferred_info));
+        
 
         m_pQuadMesh->SetRenderState(m_pLightingTech_HasShadow->GetRenderState());
         res = rc.Render(m_pLightingTech_HasShadow->GetProgram(), m_pQuadMesh);
@@ -814,10 +827,11 @@ RendererReturnValue DeferredShadingRenderer::LightingJob()
             LightComponent* pLight = light_no_shadow_list[i];
             this->FillLightInfoByLightIndex(s_LightInfos[i + light_num_has_shadow], cam, cached_light_index[pLight]);
         }
+        m_pLightInfoCBuffer->Update(&s_LightInfos[0], MAX_DEFERRED_LIGHTS_NUM * sizeof(LightInfo));
+
         deferred_info.light_index_start = light_num_has_shadow;
         deferred_info.light_num = (int)light_num_no_shadow;
-        //m_pParamDeferredInfo->UpdateConstantBuffer(&deferred_info, sizeof(deferred_info));
-        m_pLightInfoBuffer->Update(&light_light_data);
+        m_pDeferredLightingInfoCBuffer->Update(&deferred_info, sizeof(deferred_info));
 
         m_pQuadMesh->SetRenderState(m_pLightingTech_NoShadow->GetRenderState());
         res = rc.Render(m_pLightingTech_NoShadow->GetProgram(), m_pQuadMesh);
@@ -828,7 +842,31 @@ RendererReturnValue DeferredShadingRenderer::LightingJob()
             return RRV_NextJob;
         }
     }
+    m_pContext->RHIContextInstance().EndRenderPass();
+
+#if 1
+    static int draw = 1;
+    if (draw)
+    {
+        m_pLightingDepthStencil->DumpToFile("d:\\light_depth.g16l");
+        draw--;
+    }
+#endif
+
     return RRV_NextJob;    
+}
+RendererReturnValue DeferredShadingRenderer::RenderSkyBoxJob()
+{
+    m_eCurRenderStage = RenderStage::None;
+    m_pLightingFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, RHIFrameBuffer::LoadAction::Load);
+    m_pLightingFb->SetDepthLoadOption(RHIFrameBuffer::LoadAction::Load);
+    m_pContext->RHIContextInstance().BeginRenderPass({ "RenderSkybox", m_pLightingFb.get() });
+    SkyBoxComponent* skybox = m_pContext->SceneManagerInstance().GetSkyBoxComponent();
+    if (skybox)
+        skybox->Render();
+    m_pContext->RHIContextInstance().EndRenderPass();
+
+    return RRV_NextJob;
 }
 RendererReturnValue DeferredShadingRenderer::PrintTimeQueryJob()
 {

@@ -27,7 +27,9 @@ StructuredBuffer<LightInfo> light_infos;
 Texture2D gbuffer0;
 Texture2D gbuffer1;
 Texture2D depth_tex;
+#if HAS_SHADOW == 1
 Texture2D shadowing_tex;
+#endif
 
 float4 main(
 	in 	float4 iPosView	: POSITION,
