@@ -208,7 +208,7 @@ const RenderStateDesc& RenderStateDesc::Lighting()
         rb.eDstBlendColor = BlendFactor::One;
         rb.eBlendOpAlpha = BlendOperation::Add;
         rb.eSrcBlendAlpha = BlendFactor::One;
-        rb.eDstBlendAlpha = BlendFactor::One;
+        rb.eDstBlendAlpha = BlendFactor::Zero;
     }
     return desc;
 }

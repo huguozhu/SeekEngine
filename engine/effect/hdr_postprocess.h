@@ -14,6 +14,10 @@ public:
     HDRPostProcess(Context* context);
 
     void SetSrcTexture(RHITexturePtr const& tex2d);
+	virtual SResult SetOutput(uint32_t index, RHITexturePtr const& tex, CubeFaceType type = CubeFaceType::Positive_X) override
+	{
+		return m_pToneMapping->SetOutput(index, tex, type);
+	}
     virtual SResult Run() override;
 
 private:

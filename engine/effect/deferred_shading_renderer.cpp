@@ -250,13 +250,15 @@ SResult DeferredShadingRenderer::Init()
 
 
     // Step5: PostProcess
+    m_pHDRPostProcess = MakeSharedPtr<HDRPostProcess>(m_pContext);
+    m_pHDRPostProcess->SetSrcTexture(m_pHDRColor);
+    m_pHDRPostProcess->SetOutput(0, m_pLDRColor);
+
     m_pLDRPostProcess = MakeSharedPtr<LDRPostProcess>(m_pContext);
     m_pLDRPostProcess->SetLDRTexture(m_pLDRColor);
     if (m_pContext->GetAntiAliasingMode() == AntiAliasingMode::TAA)
-        m_pLDRPostProcess->SetTaaSceneVelocityTexture(m_pSceneVelocity);
+        m_pLDRPostProcess->SetTaaSceneVelocityTexture(m_pSceneVelocity);    
     
-    m_pHDRPostProcess = MakeSharedPtr<HDRPostProcess>(m_pContext);
-    m_pHDRPostProcess->SetSrcTexture(m_pHDRColor);
 
     // Shadow
     if (m_pContext->EnableShadow())
@@ -374,12 +376,12 @@ SResult DeferredShadingRenderer::BuildRenderJobList()
     END_TIMEQUERY(m_pTimeQuerySkybox);
     
     BEGIN_TIMEQUERY(m_pTimeQueryHDR);
-    //m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::HDRJob, this)));
+    m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::HDRJob, this)));
     END_TIMEQUERY(m_pTimeQueryHDR);
 
-    //BEGIN_TIMEQUERY(m_pTimeQueryLDR);
-    //m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::LDRJob, this)));
-    //END_TIMEQUERY(m_pTimeQueryLDR);
+    BEGIN_TIMEQUERY(m_pTimeQueryLDR);
+    m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::LDRJob, this)));
+    END_TIMEQUERY(m_pTimeQueryLDR);
 
     //m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::CalculateRenderRectJob, this)));
 
@@ -834,7 +836,7 @@ RendererReturnValue DeferredShadingRenderer::LightingJob()
         m_pDeferredLightingInfoCBuffer->Update(&deferred_info, sizeof(deferred_info));
 
         m_pQuadMesh->SetRenderState(m_pLightingTech_NoShadow->GetRenderState());
-        res = rc.Render(m_pLightingTech_NoShadow->GetProgram(), m_pQuadMesh);
+        m_pLightingTech_NoShadow->Render(m_pQuadMesh);
         m_pQuadMesh->SetRenderState(nullptr);
         if (res != S_Success)
         {
@@ -848,7 +850,7 @@ RendererReturnValue DeferredShadingRenderer::LightingJob()
     static int draw = 1;
     if (draw)
     {
-        m_pLightingDepthStencil->DumpToFile("d:\\light_depth.g16l");
+        m_pHDRColor->DumpToFile("d:\\HDR.rgba");
         draw--;
     }
 #endif
@@ -866,6 +868,59 @@ RendererReturnValue DeferredShadingRenderer::RenderSkyBoxJob()
         skybox->Render();
     m_pContext->RHIContextInstance().EndRenderPass();
 
+    return RRV_NextJob;
+}
+RendererReturnValue DeferredShadingRenderer::HDRJob()
+{
+    m_eCurRenderStage = RenderStage::None;
+    // HDR
+    
+    m_pLDRFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, float4(1.0, 0.0, 0.0, 1.0));
+    SResult res = m_pContext->RHIContextInstance().BeginRenderPass({ "HDRJob", m_pLDRFb.get() });
+    if (res != S_Success)
+        LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::HDRJob() BeginRenderPass failed.");
+
+    res = m_pHDRPostProcess->Run();
+    if (res != S_Success)
+        LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::HDRJob() m_pHDRPostProcess->Run() failed.");
+    m_pContext->RHIContextInstance().EndRenderPass();
+#if 1
+    static int draw = 1;
+    if (draw)
+    {
+        m_pLDRColor->DumpToFile("d:\\LDR.rgba");
+        draw--;
+    }
+#endif
+
+    return RRV_NextJob;
+}
+RendererReturnValue DeferredShadingRenderer::LDRJob()
+{
+    m_eCurRenderStage = RenderStage::None;
+    // LDR
+    RHIFrameBufferPtr fb = m_pContext->RHIContextInstance().GetFinalRHIFrameBuffer();
+
+    m_pLDRFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, RHIFrameBuffer::LoadAction::Load);
+    m_pLDRFb->SetDepthLoadOption(RHIFrameBuffer::LoadAction::Load);
+    SResult res = m_pContext->RHIContextInstance().BeginRenderPass({ "LDRJob", fb.get() });
+    if (res != S_Success)
+        LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::LDRJob() BeginRenderPass failed.");
+
+    res = m_pLDRPostProcess->Run();
+    if (res != S_Success)
+        LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::LDRJob() m_pLDRPostProcess->Run() failed.");
+    m_pContext->RHIContextInstance().EndRenderPass();
+
+#if  1
+    static int draw = 1;
+    if (draw)
+    {
+        draw--;
+        m_pLDRColor->DumpToFile("d:\\ldr_color.rgba");
+        draw = draw;
+    }
+#endif
     return RRV_NextJob;
 }
 RendererReturnValue DeferredShadingRenderer::PrintTimeQueryJob()

@@ -26,6 +26,8 @@ public:
     RendererReturnValue         LightingTileCullingJob();
     RendererReturnValue         LightingJob();
     RendererReturnValue         RenderSkyBoxJob();
+    RendererReturnValue         HDRJob();
+    RendererReturnValue         LDRJob();
     RendererReturnValue         PrintTimeQueryJob();
 
     GlobalIlluminationPtr const&    GetGI() { return m_pGI; }
