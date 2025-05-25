@@ -63,6 +63,28 @@ void LDRPostProcess::SetLDRTexture(RHITexturePtr const& tex2d)
     else if (aa_mode == AntiAliasingMode::FXAA)
         m_pFxaaPostProcess->SetParam("currentTex", tex2d);
 }
+SResult LDRPostProcess::SetOutput(uint32_t index, RHITexturePtr const& tex, CubeFaceType type)
+{
+    AntiAliasingMode aa_mode = m_pContext->GetAntiAliasingMode();
+    if (aa_mode == AntiAliasingMode::None)
+        return m_pCopyPostProcess->SetOutput(index, tex, type);
+    else if (aa_mode == AntiAliasingMode::TAA)
+        return m_pTaaPostProcess->SetOutput(index, tex, type);
+    else if (aa_mode == AntiAliasingMode::FXAA)
+        return m_pFxaaPostProcess->SetOutput(index, tex, type);
+    return S_Success;
+}
+SResult LDRPostProcess::SetOutput(uint32_t index, RHIRenderViewPtr const& target)
+{
+    AntiAliasingMode aa_mode = m_pContext->GetAntiAliasingMode();
+    if (aa_mode == AntiAliasingMode::None)
+        return m_pCopyPostProcess->SetOutput(index, target);
+    else if (aa_mode == AntiAliasingMode::TAA)
+        return m_pTaaPostProcess->SetOutput(index, target);
+    else if (aa_mode == AntiAliasingMode::FXAA)
+        return m_pFxaaPostProcess->SetOutput(index, target);
+    return S_Success;
+}
 void LDRPostProcess::SetTaaSceneVelocityTexture(RHITexturePtr const& tex2d)
 {
 	if (m_pContext->GetAntiAliasingMode() == AntiAliasingMode::TAA)

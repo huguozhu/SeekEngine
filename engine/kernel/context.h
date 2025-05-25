@@ -44,8 +44,9 @@ enum class GlobalIlluminationMode
 {
     None,
     RSM,
-    //LPV,
-    //VXGI,
+    //LPV,      // Light Propagation Volumes Global Illumination(Used in Cry Engine3)
+    //VXGI,     // Voxel-based Global Illumination
+    //SSGI,     // Screen Space Global Illumination
 };
 struct RenderInitInfo
 {

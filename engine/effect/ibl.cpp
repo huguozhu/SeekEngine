@@ -167,7 +167,6 @@ PrefilterEnvPostProcess::PrefilterEnvPostProcess(Context* context)
     {
         PostProcessPtr pp = MakeSharedPtr<PostProcess>(context, names[face], PostProcessRenderType::Render_Cube);
         pp->Init(tech_name, NULL_PREDEFINES);
-        //pp->SetParam("mvp", mvp[face].Transpose());
         float4x4 m = mvp[face].Transpose();
         m_pMVPCBuffer->Update(&m, sizeof(float4x4));
         pp->SetParam("mvp", m_pMVPCBuffer);
@@ -214,7 +213,6 @@ SResult PrefilterEnvPostProcess::Run()
         for (uint32_t mip = 0; mip < MAX_MIP_LEVELS; ++mip)
         {
             float roughness = (float)mip / (float)(MAX_MIP_LEVELS - 1);
-            //m_vPPChain[face]->SetParam("roughness", roughness);
 			m_pRoughnessCBuffer[mip]->Update(&roughness, sizeof(float));
 			m_vPPChain[face]->SetParam("roughness", m_pRoughnessCBuffer[mip]);
 

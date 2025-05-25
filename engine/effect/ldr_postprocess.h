@@ -12,6 +12,8 @@ public:
 	SResult Init();
 	
 	void SetLDRTexture(RHITexturePtr const& tex2d);
+	virtual SResult SetOutput(uint32_t index, RHITexturePtr const& tex, CubeFaceType type = CubeFaceType::Positive_X) override;
+	virtual SResult SetOutput(uint32_t index, RHIRenderViewPtr const& target);
 	void SetTaaSceneVelocityTexture(RHITexturePtr const& tex2d);
 
 	virtual SResult		Run() override;

@@ -85,8 +85,8 @@ SResult Lighting::OnCreate()
     pLight->SetDirection(look_at - spot_pos);
     pLight->SetInOutCutoff(float2(cutoff_in, cutoff_out));
     pLight->SetIntensity(5.24);
-    pLight->CastShadow(1);
-    pLight->SoftShadow(1);
+    //pLight->CastShadow(1);
+    //pLight->SoftShadow(1);
     pLight->SetWorldTranslation(spot_pos);
     m_pLightEntity[3] = MakeSharedPtr<Entity>(m_pContext.get(), "Spot Light");
     m_pLightEntity[3]->AddSceneComponent(pLight);
@@ -165,7 +165,7 @@ SResult Lighting::OnCreate()
     SkyBoxComponentPtr pSkybox = MakeSharedPtr<SkyBoxComponent>(m_pContext.get());
     pSkybox->SetSkyBoxTex(tex_cube);
     m_pSkyBoxEntity->AddSceneComponent(pSkybox);
-    m_pSkyBoxEntity->AddToTopScene();
+    //m_pSkyBoxEntity->AddToTopScene();
 
 #if (0)
     std::string equirectangular_file = FullPath("asset/textures/Hamarikyu_Bridge.jpg");

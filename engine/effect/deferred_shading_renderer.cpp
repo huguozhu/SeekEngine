@@ -256,6 +256,7 @@ SResult DeferredShadingRenderer::Init()
 
     m_pLDRPostProcess = MakeSharedPtr<LDRPostProcess>(m_pContext);
     m_pLDRPostProcess->SetLDRTexture(m_pLDRColor);
+    m_pLDRPostProcess->SetOutput(0, rc.GetFinalRHIFrameBuffer()->GetRenderTarget(RHIFrameBuffer::Color0));
     if (m_pContext->GetAntiAliasingMode() == AntiAliasingMode::TAA)
         m_pLDRPostProcess->SetTaaSceneVelocityTexture(m_pSceneVelocity);    
     
@@ -900,9 +901,8 @@ RendererReturnValue DeferredShadingRenderer::LDRJob()
     m_eCurRenderStage = RenderStage::None;
     // LDR
     RHIFrameBufferPtr fb = m_pContext->RHIContextInstance().GetFinalRHIFrameBuffer();
-
-    m_pLDRFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, RHIFrameBuffer::LoadAction::Load);
-    m_pLDRFb->SetDepthLoadOption(RHIFrameBuffer::LoadAction::Load);
+    fb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, RHIFrameBuffer::LoadAction::Load);
+	fb->SetDepthLoadOption(RHIFrameBuffer::LoadAction::Load);
     SResult res = m_pContext->RHIContextInstance().BeginRenderPass({ "LDRJob", fb.get() });
     if (res != S_Success)
         LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::LDRJob() BeginRenderPass failed.");

@@ -36,7 +36,7 @@ Context::Context()
     m_InitInfo.rhi_type = RHIType::D3D11;
     m_InitInfo.debug = true;
     m_InitInfo.HDR = true;
-    //m_InitInfo.renderer_type = RendererType::Deferred;
+    m_InitInfo.renderer_type = RendererType::Deferred;
     m_fClearColor = float4(1, 1, 0, 1);
 }
 Context::~Context()

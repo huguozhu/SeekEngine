@@ -1,7 +1,6 @@
 //STAGE:ps
 #include "Common.dsh"
 
-TextureCube texture_cube;
 TextureCube tex_env;
 
 float4 main(
