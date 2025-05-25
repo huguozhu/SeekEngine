@@ -24,14 +24,17 @@ elseif(TARGET_PLATFORM_IOS)
     list(APPEND IMGUI_FILES ${SEEK_THIRDPARTY_DIR}/imgui/include/backends/imgui_impl_metal.mm)
 endif()
 
-add_library(IMGUI INTERFACE)
-target_sources(IMGUI INTERFACE ${IMGUI_FILES})
-target_include_directories(IMGUI INTERFACE
+add_library(IMGUI STATIC ${IMGUI_FILES})
+target_include_directories(IMGUI PUBLIC
     ${SEEK_THIRDPARTY_DIR}/imgui/include
     ${SEEK_THIRDPARTY_DIR}/imgui/include/backends
     ${SEEK_THIRDPARTY_DIR}/glfw/include
 )
 
+set_target_properties(IMGUI PROPERTIES
+    FOLDER "third_party/imgui"
+    XCODE_ATTRIBUTE_MACOSX_DEPLOYMENT_TARGET "10.13"
+)
 ################################################ GLFW ################################################
 if(SEEK_WINDOWS_OPENGLES)
     set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)

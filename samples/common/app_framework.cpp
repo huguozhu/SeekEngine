@@ -6,15 +6,12 @@
 
 #define SEEK_MACRO_FILE_UID 46     // this code is auto generated, don't touch it!!!
 
-#define DEFAULT_WND_WIDTH 1280
-#define DEFAULT_WND_HEIGHT 720
 
 int APP_RUN(AppFramework* app)
 {
     SResult ret = app->Run();
     return ret;
 }
-
 
 SResult AppFramework::InitContext(void* device, void* native_wnd)
 {
@@ -28,6 +25,8 @@ SResult AppFramework::InitContext(void* device, void* native_wnd)
 
     m_pContext = MakeSharedPtr<Context>();
     SEEK_RETIF_FAIL(m_pContext->Init(info));
+
+    IMGUI_Init();
     return S_Success;
 }
 

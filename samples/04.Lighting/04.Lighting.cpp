@@ -38,6 +38,7 @@ SResult Lighting::OnCreate()
     m_pCameraEntity->AddSceneComponent(pCam);
     m_pCameraEntity->AddToTopScene();
 
+    m_CameraController.SetCamera(pCam.get());
 
     // Step3: add Light Entity
     // NOTE: if the lighting result is wrong, check if hdr is enabled(now, it's disabled for phong)
@@ -196,6 +197,7 @@ SResult Lighting::OnCreate()
 
 SResult Lighting::OnUpdate()
 {
+    m_CameraController.Update(m_pContext->GetDeltaTime());
     return m_pContext->Update();
 }
 

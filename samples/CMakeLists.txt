@@ -4,6 +4,11 @@ set(SAMPLE_COMMON_PROJECT_NAME SampleCommon)
 set(SAMPLE_COMMON_SRCS
     ${SEEK_SAMPLES_DIR}/common/app_framework.h
     ${SEEK_SAMPLES_DIR}/common/app_framework.cpp
+
+    ${SEEK_SAMPLES_DIR}/common/app_imgui.h
+    ${SEEK_SAMPLES_DIR}/common/app_imgui.cpp
+    ${SEEK_SAMPLES_DIR}/common/first_person_camera_controller.h
+    ${SEEK_SAMPLES_DIR}/common/first_person_camera_controller.cpp
 )
 
 set(SAMPLE_DEPENDENT_LIBS)
@@ -16,11 +21,21 @@ set_target_properties(${SAMPLE_COMMON_PROJECT_NAME} PROPERTIES FOLDER "samples")
 # link
 target_link_libraries(${SAMPLE_COMMON_PROJECT_NAME} PUBLIC ${SAMPLE_DEPENDENT_LIBS} ${SEEK_STATICLIB_NAME})
 #target_link_libraries(${SAMPLE_COMMON_PROJECT_NAME} PRIVATE IMGUI)
+target_link_libraries(${SAMPLE_COMMON_PROJECT_NAME}
+    PUBLIC
+        IMGUI
+        rapidjson
+        eigen
+        #ovrAvatar2
+        #openpnp_capture
+        ${SAMPLE_DEPENDENT_LIBS}
+)
 
 # include
 target_include_directories(${SAMPLE_COMMON_PROJECT_NAME} PUBLIC
     ${SEEK_THIRDPARTY_DIR}/imgui/include
     ${SEEK_ENGINE_SOURCE_DIR}
+    ${SEEK_SAMPLES_DIR}
 )
 
 

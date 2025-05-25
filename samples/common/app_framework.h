@@ -1,7 +1,16 @@
 #pragma once
 #include "seek_engine.h"
+#include "app_imgui.h"
 
 USING_NAMESPACE_SEEK
+
+#define DEFAULT_WND_WIDTH 1280
+#define DEFAULT_WND_HEIGHT 720
+
+#define MSAA_NONE 1
+#define MSAA_2X 2
+#define MSAA_4X 4
+#define MSAA_8X 8
 
 class AppFramework
 {

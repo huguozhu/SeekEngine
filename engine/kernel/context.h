@@ -113,6 +113,14 @@ public:
     double                  GetDeltaTime()              const { return m_dDeltaTime; }
     float2                  GetJitter();
 
+    // For edit/debug mode
+    void                SetLightingMode(LightingMode lightMode) { m_InitInfo.lighting_mode = lightMode; }
+    void                SetAntiAliasingMode(AntiAliasingMode mode) { m_InitInfo.anti_aliasing_mode = mode; }
+    void                SetHDR(bool b) { m_InitInfo.HDR = b; }
+    void                SetShadow(bool b) { m_InitInfo.enable_shadow = b; }
+    void                SetEnableTransparent(bool b) { m_InitInfo.enable_transparent = b; }
+    void                SetEnableAmbientOcclusion(bool b) { m_InitInfo.enable_ambient_occlusion = b; }
+
     RHIContext&         RHIContextInstance() { return *m_pRHIContext; }
     SceneManager&       SceneManagerInstance() { return *m_pSceneManager;}
     SceneRenderer&      SceneRendererInstance() { return *m_pSceneRenderer; }

@@ -1,6 +1,7 @@
 #pragma once
 #include "app_framework.h"
 #include "seek_engine.h"
+#include "common/first_person_camera_controller.h"
 
 USING_NAMESPACE_SEEK
 
@@ -27,4 +28,5 @@ private:
     EntityPtr m_pSphereEntity = nullptr;
     EntityPtr m_pConeEntity = nullptr;
 
+    FirstPersonCameraController m_CameraController;
 };
