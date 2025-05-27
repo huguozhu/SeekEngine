@@ -10,6 +10,11 @@ cbuffer morph_weights
     float4 morph_weights[MAX_MORPH_SIZE];
 }
 
+cbuffer prev_morph_weights
+{
+    float4 prev_morph_weights[MAX_MORPH_SIZE];
+}
+
 cbuffer MORPH_SIZE
 {
     uint MORPH_SIZE;
@@ -38,5 +43,30 @@ void CalcMorphTargetNormal(uint vertex_id, inout float4 normal)
     {
         normal += morph_input[startIdx + i] * morph_weights[i].x;
     }
+#endif
+}
+
+void CalcPrevMorphTarget(uint vertex_id, inout float4 pos, inout float4 normal)
+{
+#if MORPH_TYPE != MORPH_COMPONENT_NONE
+
+    int startIdx = (int)vertex_id * MORPH_SIZE;
+    int i;
+
+#if MORPH_TYPE & MORPH_COMPONENT_POS
+    for (i = 0; i < MORPH_SIZE; i++)
+    {
+        pos += morph_input[startIdx + i] * prev_morph_weights[i].x;
+    }
+#endif
+
+#if MORPH_TYPE & MORPH_COMPONENT_NORMAL
+    startIdx = vertex_id * MORPH_SIZE * 2;
+    for (i = 0; i < MORPH_SIZE; i++)
+    {
+        normal += morph_input[startIdx + i] * prev_morph_weights[i].x;
+    }
+#endif
+
 #endif
 }

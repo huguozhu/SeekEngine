@@ -247,7 +247,11 @@ bool RHIMesh::HasMorphTarget()
         return false;
     return true;
 }
-
+void RHIMesh::SaveToPrevMorphTargetWeights()
+{
+    m_stMorphInfo.prev_morph_target_weights.resize(m_stMorphInfo.morph_target_weights.size());
+    m_stMorphInfo.prev_morph_target_weights = m_stMorphInfo.morph_target_weights;
+}
 uint32_t CalcNumMips(uint32_t width, uint32_t height)
 {
     uint32_t w = width;
@@ -435,7 +439,7 @@ const RHIRenderBufferPtr& RHIMesh::GetMorphWeightsCBuffer()
     MorphInfo& mi = GetMorphInfo();
     if (!m_morphWeightsCBuffer)
     {
-        m_morphWeightsCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(200 * sizeof(float4), RESOURCE_FLAG_CPU_WRITE);
+        m_morphWeightsCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(MAX_MORPH_SIZE * sizeof(float4), RESOURCE_FLAG_CPU_WRITE);
     }
 
     std::vector<float4> float4_weights;
@@ -445,7 +449,21 @@ const RHIRenderBufferPtr& RHIMesh::GetMorphWeightsCBuffer()
     m_morphWeightsCBuffer->Update(float4_weights.data(), (uint32_t)float4_weights.size() * sizeof(float4));
     return m_morphWeightsCBuffer;
 }
+const RHIRenderBufferPtr& RHIMesh::GetPreMorphWeightsCBuffer()
+{
+    MorphInfo& mi = GetMorphInfo();
+    if (!m_prevMorphWeightsCBuffer)
+    {
+        m_prevMorphWeightsCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(MAX_MORPH_SIZE * sizeof(float4), RESOURCE_FLAG_CPU_WRITE);
+    }
 
+    std::vector<float4> float4_prev_weights;
+    float4_prev_weights.resize(mi.prev_morph_target_weights.size());
+    for (size_t i = 0; i < float4_prev_weights.size(); i++)
+        float4_prev_weights[i] = float4(mi.morph_target_weights[i], 0.0, 0.0, 0.0);
+    m_prevMorphWeightsCBuffer->Update(float4_prev_weights.data(), (uint32_t)float4_prev_weights.size() * sizeof(float4));
+    return m_prevMorphWeightsCBuffer;
+}
 const RHIRenderBufferPtr& RHIMesh::GetMorphSizeCBuffer()
 {
     if (!m_morphSizeCBuffer)

@@ -65,6 +65,7 @@ public:
     bool                                HasMorphTarget();
     const RHIRenderBufferPtr&           GetMorphWeightsCBuffer();
     const RHIRenderBufferPtr&           GetMorphSizeCBuffer();
+    const RHIRenderBufferPtr&           GetPreMorphWeightsCBuffer();
     RHIRenderBufferPtr&                 GetMaterialInfoCBuffer();
 
     // Skin
@@ -80,6 +81,8 @@ public:
     // Is Draw
     void                                SetVisible(bool isVisible) { m_bIsVisible = isVisible; }
     bool                                IsVisible() const { return m_bIsVisible; }
+
+    void                                SaveToPrevMorphTargetWeights();
 
     void                                SetMorphTargetResource(MorphTargetResource& res) { m_morphTargetRes = res; }
     MorphTargetResource&                GetMorphTargetResource();
@@ -119,6 +122,7 @@ protected:
     MorphInfo                   m_stMorphInfo;
 
     RHIRenderBufferPtr          m_morphWeightsCBuffer;
+    RHIRenderBufferPtr          m_prevMorphWeightsCBuffer;
     RHIRenderBufferPtr          m_morphSizeCBuffer;
     RHIRenderBufferPtr          m_MaterialInfoCBuffer;
 

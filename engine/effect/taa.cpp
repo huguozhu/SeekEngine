@@ -21,6 +21,8 @@ SResult TaaPostProcess::Init()
 	static const std::string tech_name = "TAA";
     m_pContext->EffectInstance().LoadTechnique(tech_name, &RenderStateDesc::PostProcess(), "PostProcessVS", "TaaPS", nullptr);
     SEEK_RETIF_FAIL(PostProcess::Init(tech_name, NULL_PREDEFINES));
+
+    m_globalParamRB = m_pContext->RHIContextInstance().CreateConstantBuffer(sizeof(TAAGlobalParams), RESOURCE_FLAG_CPU_WRITE);
     return S_Success;
 }
 
@@ -59,14 +61,11 @@ SResult TaaPostProcess::Run()
     return ret;
 }
 
-void TaaPostProcess::SetTaaParams(TAAGlobalParams& taaparams)
-{
-    if (!m_globalParamRB)
-        m_globalParamRB = m_pContext->RHIContextInstance().CreateConstantBuffer(sizeof(TAAGlobalParams), RESOURCE_FLAG_CPU_WRITE);
-
-    SResult ret = m_globalParamRB->Update(&taaparams, sizeof(taaparams));
-    SetParam(_taa_param_names[3], m_globalParamRB);
-}
+//void TaaPostProcess::SetTaaParams(TAAGlobalParams& taaparams)
+//{
+//    SResult ret = m_globalParamRB->Update(&taaparams, sizeof(taaparams));
+//    SetParam(_taa_param_names[3], m_globalParamRB);
+//}
 
 SEEK_NAMESPACE_END
 

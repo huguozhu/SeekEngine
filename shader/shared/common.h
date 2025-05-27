@@ -34,6 +34,8 @@ struct ModelInfo
     float4x4 modelMatrix;
     float4x4 modelViewMatrix;
     float4x4 normalMatrix;
+	float4x4 unjitterMVP;
+    float4x4 preMVP;
 
 #ifdef SEEK_CPP
     ModelInfo()
@@ -42,6 +44,8 @@ struct ModelInfo
         modelMatrix     = float4x4::Identity();
         modelViewMatrix = float4x4::Identity();
         normalMatrix    = float4x4::Identity();
+		unjitterMVP     = float4x4::Identity();
+        preMVP          = float4x4::Identity();
     }
 #endif
 };
