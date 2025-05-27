@@ -62,6 +62,9 @@ public:
     void                LocalRotate(Quaternion const& rot);
     void                LocalScale(float3 const& scale);
 
+    Matrix4& GetPrevWorldMatrix() { return m_prevWorld; }
+    void SaveToPrevWorldMatrix() { m_prevWorld = GetWorldMatrix(); }
+
 protected:
     virtual void        SetWorldDirty(); // set own and children's transform is dirty
     void                RefreshWorldBasedLocal(); // only refresh own world transform (not contain children), based parent's worldTransform and own local transform
@@ -74,6 +77,7 @@ protected:
     mutable Transform                   m_cLocal; // Transform based parent coordinate system
     mutable Transform                   m_cWorld; // Transform based world  coordinate system
     bool                                m_bWorldDirty = true; // Own world transform and children's world transform are all dirty.
+    Matrix4 m_prevWorld = Matrix4::Identity();
 };
 
 SEEK_NAMESPACE_END

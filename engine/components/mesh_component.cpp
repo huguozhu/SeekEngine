@@ -163,6 +163,8 @@ SResult MeshComponent::OnRenderBegin(Technique* tech, RHIMeshPtr mesh)
         LOG_ERROR("MeshComponent::OnRenderBegin invalid RenderStage");
     }
 
+    SaveToPrevWorldMatrix();
+    mesh->SaveToPrevMorphTargetWeights();
     return ret;
 }
 SResult MeshComponent::OnRenderEnd()
