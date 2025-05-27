@@ -1,7 +1,7 @@
 //PREDEFINE:HAS_MATERIAL_NORMAL=0,1
 //PREDEFINE:ENABLE_TAA=0,1
 //STAGE:ps
-#include "common.dsh"
+#include "Common.dsh"
 
 cbuffer materialInfo
 {

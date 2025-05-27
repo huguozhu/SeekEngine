@@ -1,5 +1,5 @@
 //STAGE:vs
-#include "common.dsh"
+#include "Common.dsh"
 #include "shared/GI.h"
 
 cbuffer cb_GiRsmVSParam

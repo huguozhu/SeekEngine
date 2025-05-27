@@ -1,5 +1,5 @@
 //STAGE:ps
-#include "common.dsh"
+#include "Common.dsh"
 
 Texture2D shadow_map_tex;
 

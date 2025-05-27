@@ -670,6 +670,8 @@ int main(int argc, char** argv)
         Compiler::Options compileOptions{};
         compileOptions.packMatricesInRowMajor = false;
         compileOptions.optimizationLevel = 3;
+        if (inputFileName == "FxaaPS.dsf")
+            compileOptions.optimizationLevel = 0;
         compileOptions.disableOptimizations = false;
         compileOptions.enableDebugInfo = false;
         compileOptions.inheritCombinedSamplerBindings = true;

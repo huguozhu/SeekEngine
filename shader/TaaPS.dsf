@@ -1,5 +1,5 @@
 //STAGE:ps
-#include "common.dsh"
+#include "Common.dsh"
 #include "shared/Taa.h"
 
 Texture2D currentTex;

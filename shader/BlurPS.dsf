@@ -1,5 +1,5 @@
 //STAGE:ps
-#include "common.dsh"
+#include "Common.dsh"
 #include "shared/Blur.h"
 
 Texture2D src_tex;
