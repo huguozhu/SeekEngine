@@ -54,27 +54,7 @@ SResult MeshLoader::OnUpdate()
 {    
     return m_pContext->Update();
 }
-EntityPtr MeshLoader::CreateEntityFromFile(std::string filePath)
-{
-    m_pGLTFLoader = MakeSharedPtr<glTF2_Loader>(m_pContext.get());
-    SceneComponentPtr sceneComponent = nullptr;
-    std::vector<AnimationComponentPtr> animComponents;
-    SResult ret = m_pGLTFLoader->LoadSceneFromFile(filePath, sceneComponent, animComponents);
-    if (SEEK_CHECKFAILED(ret) && !sceneComponent) return nullptr;
 
-    EntityPtr mesh_entity = MakeSharedPtr<Entity>(m_pContext.get());
-    mesh_entity->SetName("Mesh_Entity");
-    mesh_entity->AddSceneComponent(sceneComponent);
-    for (size_t i = 0; i < animComponents.size(); i++)
-    {
-        if (animComponents[i])
-        {
-            mesh_entity->AddComponent(animComponents[i]);
-            animComponents[i]->Play();
-        }
-    }
-    return mesh_entity;
-}
 int main()
 {
     MeshLoader app;

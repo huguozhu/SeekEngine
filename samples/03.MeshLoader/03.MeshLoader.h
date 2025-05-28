@@ -13,11 +13,7 @@ public:
     virtual SResult         OnCreate() override;
     virtual SResult         OnUpdate() override;
 
-    EntityPtr CreateEntityFromFile(std::string filePath);
-
 private:
-    LoaderPtr           m_pGLTFLoader = nullptr;
-
     EntityPtr           m_pCameraEntity = nullptr;
 
     EntityPtr           m_pMeshEntity = nullptr;

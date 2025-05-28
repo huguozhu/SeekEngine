@@ -26,7 +26,7 @@ SResult AppFramework::InitContext(void* device, void* native_wnd)
     m_pContext = MakeSharedPtr<Context>();
     SEEK_RETIF_FAIL(m_pContext->Init(info));
 
-    IMGUI_Init();
+    
     return S_Success;
 }
 
@@ -91,6 +91,7 @@ SResult AppFramework::Run()
 
     HWND wnd = InitWindow(m_szName, DEFAULT_WND_WIDTH, DEFAULT_WND_HEIGHT);
     this->InitContext(NULL, (void*)wnd);
+    IMGUI_Init();
 
     if (!m_bInit)
     {
@@ -150,5 +151,25 @@ std::string AppFramework::FullPath(std::string relativePath)
     return relativePath;
 #endif
 }
+EntityPtr AppFramework::CreateEntityFromFile(std::string filePath)
+{
+    m_pGLTFLoader = MakeSharedPtr<glTF2_Loader>(m_pContext.get());
+    SceneComponentPtr sceneComponent = nullptr;
+    std::vector<AnimationComponentPtr> animComponents;
+    SResult ret = m_pGLTFLoader->LoadSceneFromFile(filePath, sceneComponent, animComponents);
+    if (SEEK_CHECKFAILED(ret) && !sceneComponent) return nullptr;
 
+    EntityPtr mesh_entity = MakeSharedPtr<Entity>(m_pContext.get());
+    mesh_entity->SetName("Mesh_Entity");
+    mesh_entity->AddSceneComponent(sceneComponent);
+    for (size_t i = 0; i < animComponents.size(); i++)
+    {
+        if (animComponents[i])
+        {
+            mesh_entity->AddComponent(animComponents[i]);
+            animComponents[i]->Play();
+        }
+    }
+    return mesh_entity;
+}
 #undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

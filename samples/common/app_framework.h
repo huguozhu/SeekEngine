@@ -32,10 +32,13 @@ public:
     static std::string      FullPath(std::string relativePath);
     static std::string      Basename(std::string filepath) { return filepath.substr(filepath.rfind("/") + 1); }
 
+    EntityPtr CreateEntityFromFile(std::string filePath);
+
 protected:
     std::string     m_szName;
     ContextPtr      m_pContext = nullptr;
     bool            m_bInit = false;
+    LoaderPtr       m_pGLTFLoader = nullptr;
 
 };
 
