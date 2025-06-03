@@ -15,12 +15,11 @@ public:
 
 	SResult Init();
 	virtual SResult Run() override;
-	//void SetTaaParams(TAAGlobalParams& taaparams);
 
 private:
 	RHITexturePtr m_pHistoryTex = nullptr;
 
-	RHIRenderBufferPtr m_globalParamRB = nullptr;
+	RHIRenderBufferPtr m_globalParamCBuffer = nullptr;
 	bool m_isFirstFrame = true;
 };
 
