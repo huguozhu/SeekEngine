@@ -19,6 +19,7 @@
 #include "components/skeletal_mesh_component.h"
 #include "components/skybox_component.h"
 #include "components/camera_component.h"
+#include "components/particle_component.h"
 #include "scene_manager/scene_manager.h"
 
 
@@ -179,6 +180,8 @@ SResult DeferredShadingRenderer::Init()
     m_pLDRFb = rc.CreateEmptyRHIFrameBuffer();
     m_pHDRFb = rc.CreateEmptyRHIFrameBuffer();    
     m_pSceneFb = m_pHDRFb;
+
+    m_pLDRFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pLDRColor));
 
     m_pShadowingFb = rc.CreateEmptyRHIFrameBuffer();
     m_pShadowingFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pShadowTex));
@@ -375,6 +378,9 @@ SResult DeferredShadingRenderer::BuildRenderJobList()
     if (sm.GetSkyBoxComponent())
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::RenderSkyBoxJob, this)));
     END_TIMEQUERY(m_pTimeQuerySkybox);
+
+    if (m_pContext->SceneManagerInstance().GetParticleComponents().size() > 0)
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::RenderParticlesJob, this)));
     
     BEGIN_TIMEQUERY(m_pTimeQueryHDR);
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::HDRJob, this)));
@@ -659,7 +665,7 @@ RendererReturnValue DeferredShadingRenderer::SSAOJob()
 	
 
     m_pQuadMesh->SetRenderState(m_pSsaoTech->GetRenderState());
-    res = rc.Render(m_pSsaoTech->GetProgram(), m_pQuadMesh);
+    res = m_pSsaoTech->Render(m_pQuadMesh);
     if (res != S_Success)
     {
         LOG_ERROR("DeferredShadingRenderer::SSAOJob() Render() failed.");
@@ -746,7 +752,7 @@ RendererReturnValue DeferredShadingRenderer::LightingTileCullingJob()
     }
 
     m_pQuadMesh->SetRenderState(m_pLightingTech_HasShadow_TileCulling->GetRenderState());
-    res = rc.Render(m_pLightingTech_HasShadow_TileCulling->GetProgram(), m_pQuadMesh);
+    res = m_pLightingTech_HasShadow_TileCulling->Render(m_pQuadMesh);
     if (res != S_Success)
     {
         LOG_ERROR("DeferredShadingRenderer::LightingTileCullingJob() Render() failed.");
@@ -813,7 +819,7 @@ RendererReturnValue DeferredShadingRenderer::LightingJob()
         
 
         m_pQuadMesh->SetRenderState(m_pLightingTech_HasShadow->GetRenderState());
-        res = rc.Render(m_pLightingTech_HasShadow->GetProgram(), m_pQuadMesh);
+        res = m_pLightingTech_HasShadow->Render(m_pQuadMesh);
         m_pQuadMesh->SetRenderState(nullptr);
         if (res != S_Success)
         {
@@ -894,6 +900,24 @@ RendererReturnValue DeferredShadingRenderer::HDRJob()
     }
 #endif
 
+    return RRV_NextJob;
+}
+RendererReturnValue DeferredShadingRenderer::RenderParticlesJob()
+{
+    m_eCurRenderStage = RenderStage::None;
+
+    m_pLightingFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, RHIFrameBuffer::LoadAction::Load);
+    m_pLightingFb->SetDepthLoadOption(RHIFrameBuffer::LoadAction::Load);
+    m_pContext->RHIContextInstance().BeginRenderPass({ "RenderParticles", m_pLightingFb.get() });
+
+    std::vector<ParticleComponent*>& particles = m_pContext->SceneManagerInstance().GetParticleComponents();
+    for (uint32_t i = 0; i < particles.size(); ++i)
+    {
+        ParticleComponent* particle = particles[i];
+        if (particle)
+            particle->Render();
+    }
+    m_pContext->RHIContextInstance().EndRenderPass();
     return RRV_NextJob;
 }
 RendererReturnValue DeferredShadingRenderer::LDRJob()

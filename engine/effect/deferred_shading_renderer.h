@@ -26,6 +26,7 @@ public:
     RendererReturnValue         LightingTileCullingJob();
     RendererReturnValue         LightingJob();
     RendererReturnValue         RenderSkyBoxJob();
+    RendererReturnValue         RenderParticlesJob();
     RendererReturnValue         HDRJob();
     RendererReturnValue         LDRJob();
     RendererReturnValue         PrintTimeQueryJob();
