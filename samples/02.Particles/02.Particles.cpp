@@ -248,6 +248,8 @@ SResult Particles::OnCreate()
     m_pCameraEntity->AddSceneComponent(pCam);
     m_pCameraEntity->AddToTopScene();
 
+    m_CameraController.SetCamera(pCam.get());
+
     CreateParticleEntities();
     CreateWaterMarkEntity();
     return S_Success;
@@ -255,6 +257,7 @@ SResult Particles::OnCreate()
 
 SResult Particles::OnUpdate()
 {
+    m_CameraController.Update(m_pContext->GetDeltaTime());
     return m_pContext->Update();
 }
 

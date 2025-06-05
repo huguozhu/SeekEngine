@@ -200,7 +200,23 @@ SResult Lighting::OnUpdate()
     m_CameraController.Update(m_pContext->GetDeltaTime());
     return m_pContext->Update();
 }
+SResult Lighting::InitContext(void* device, void* native_wnd)
+{
+    RenderInitInfo info;
+    info.debug = false;
+    info.device = device;
+    info.native_wnd = native_wnd;
+    info.lighting_mode = LightingMode::Phong;
+    info.renderer_type = RendererType::Deferred;
+    info.preferred_adapter = 0;
+    info.HDR = true;
 
+    m_pContext = MakeSharedPtr<Context>();
+    SEEK_RETIF_FAIL(m_pContext->Init(info));
+
+
+    return S_Success;
+}
 int main()
 {
     Lighting theApp;

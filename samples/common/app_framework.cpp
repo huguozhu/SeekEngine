@@ -4,6 +4,13 @@
 #include <Shlwapi.h>
 #include <wincodec.h>
 
+#include <d3d11.h>
+#include "rhi/d3d11_rhi/d3d11_predeclare.h"
+#include "rhi/d3d11_rhi/d3d11_rhi_context.h"
+#include "rhi/d3d11_rhi/d3d11_framebuffer.h"
+#include "imgui_impl_win32.h"
+#include "imgui_impl_dx11.h"
+
 #define SEEK_MACRO_FILE_UID 46     // this code is auto generated, don't touch it!!!
 
 
@@ -29,7 +36,24 @@ SResult AppFramework::InitContext(void* device, void* native_wnd)
     
     return S_Success;
 }
+void AppFramework::IMGUI_Begin()
+{
+    ImGui_ImplDX11_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
+}
 
+void AppFramework::IMGUI_Rendering()
+{
+
+    D3D11RHIContext* rc_d3d = static_cast<D3D11RHIContext*>(&m_pContext->RHIContextInstance());
+    D3D11RHIFrameBuffer* fb = static_cast<D3D11RHIFrameBuffer*>(rc_d3d->GetFinalRHIFrameBuffer().get());
+    ID3D11RenderTargetView* view = fb->GetRenderTargetView();
+
+    ImGui::Render();
+    rc_d3d->GetD3D11DeviceContext()->OMSetRenderTargets(1, &view, NULL);
+    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+}
 SResult AppFramework::RenderFrame()
 {
     return S_Success;
@@ -99,9 +123,9 @@ SResult AppFramework::Run()
         m_bInit = true;
     }
 
-    //m_pContext->RHIContextInstance().AttachNativeWindow("", wnd);
-    //m_pContext->RHIContextInstance().SetFinalRHIFrameBuffer(m_pContext->RHIContextInstance().GetScreenRHIFrameBuffer());
-    //m_pContext->SetViewport(Viewport(0, 0, DEFAULT_WND_WIDTH, DEFAULT_WND_HEIGHT));
+    D3D11RHIContext* rc_d3d = static_cast<D3D11RHIContext*>(&m_pContext->RHIContextInstance());
+    ImGui_ImplWin32_Init(wnd);
+    ImGui_ImplDX11_Init(rc_d3d->GetD3D11Device(), rc_d3d->GetD3D11DeviceContext());
 
     bool get_msg = false;
     MSG  msg;

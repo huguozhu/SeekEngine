@@ -4,6 +4,7 @@
 #include <cmath>
 #include <fstream>
 #include <sstream>
+#include "common/first_person_camera_controller.h"
 
 USING_NAMESPACE_SEEK
 
@@ -32,4 +33,6 @@ private:
     std::vector<EntityPtr>              m_ParticleList;
     std::vector<ParticleComponentPtr>   m_pParticleComponentList;
     std::vector<BitmapBufferPtr>        m_vBitmaps;
+
+    FirstPersonCameraController m_CameraController;
 };

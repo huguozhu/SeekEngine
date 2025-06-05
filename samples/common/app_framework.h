@@ -29,6 +29,9 @@ public:
 
     virtual SResult         InitContext(void* device = nullptr, void* native_wnd = nullptr);
 
+    virtual void            IMGUI_Begin();
+    virtual void            IMGUI_Rendering();
+
     static std::string      FullPath(std::string relativePath);
     static std::string      Basename(std::string filepath) { return filepath.substr(filepath.rfind("/") + 1); }
 
