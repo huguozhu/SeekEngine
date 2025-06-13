@@ -70,6 +70,6 @@ float4 main(
 		total_flux += vpl_flux * albedo;
 	}
 	float3 v = indirect_illumination * albedo * 0.000001;
-	return float4(indirect_illumination * albedo * 20.0, 1.0);
-	//return float4((v + total_flux) / VPL_NUM, 1.0);
+	//return float4(indirect_illumination * albedo * 20.0, 1.0);
+	return float4((v + total_flux) / VPL_NUM, 1.0);
 }	
