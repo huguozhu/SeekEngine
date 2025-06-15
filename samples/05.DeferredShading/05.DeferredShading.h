@@ -13,8 +13,6 @@ public:
     virtual SResult OnCreate() override;
     virtual SResult OnUpdate() override;
     virtual SResult InitContext(void* device = nullptr, void* native_wnd = nullptr);
-    
-    float3 CalcBestCamPosFromMeshAABBox(AABBox mesh_aabbox);
 
 private:
 

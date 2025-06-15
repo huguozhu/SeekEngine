@@ -15,9 +15,7 @@ USING_NAMESPACE_SEEK
 class AppFramework
 {
 public:
-    AppFramework(std::string const& name)
-        :m_szName(name)
-    {}
+    AppFramework(std::string const& name);
     virtual ~AppFramework()
     {}
     SResult Run();

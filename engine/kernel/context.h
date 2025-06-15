@@ -34,11 +34,12 @@ enum class AntiAliasingMode
     TAA,
     FXAA,
 };
-enum class FPSLimit
+enum class FPSLimitType
 {
     NoLImit,
     FPS_30,
     FPS_60,
+    FPS_120,
 };
 enum class GlobalIlluminationMode
 {
@@ -68,7 +69,7 @@ struct RenderInitInfo
     void*                   device = nullptr;
 
     AntiAliasingMode        anti_aliasing_mode = AntiAliasingMode::None;
-    FPSLimit                fps_limit_type = FPSLimit::FPS_60;
+    FPSLimitType            fps_limit_type = FPSLimitType::FPS_60;
     GlobalIlluminationMode  gi_mode = GlobalIlluminationMode::None;
 };
 
@@ -120,6 +121,7 @@ public:
     void                SetShadow(bool b) { m_InitInfo.enable_shadow = b; }
     void                SetEnableTransparent(bool b) { m_InitInfo.enable_transparent = b; }
     void                SetEnableAmbientOcclusion(bool b) { m_InitInfo.enable_ambient_occlusion = b; }
+    void                SetFpsLimitType(FPSLimitType b);
 
     RHIContext&         RHIContextInstance() { return *m_pRHIContext; }
     SceneManager&       SceneManagerInstance() { return *m_pSceneManager;}
@@ -168,6 +170,8 @@ private:
     RHITexturePtr               m_pIBLDiffuseTex = nullptr;
     RHITexturePtr               m_pIBLSpecularTex = nullptr;
     RHITexturePtr               m_pIBLBrdfTex = nullptr;
+
+    float                       m_fMinFrameTime = 0.0;
 
 };
 

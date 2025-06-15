@@ -5,19 +5,8 @@
 
 #define SEEK_MACRO_FILE_UID 91     // this code is auto generated, don't touch it!!!
 
-
 #define DEFAULT_RENDER_WIDTH  1280
 #define DEFAULT_RENDER_HEIGHT 720
-
-
-
-float3 DeferredShading::CalcBestCamPosFromMeshAABBox(AABBox mesh_aabbox)
-{
-    float3 max = mesh_aabbox.Max();
-    float3 min = mesh_aabbox.Min();
-    float length = Math::Length(max - min);
-    return float3(0, 0, -length * 1.5);
-}
 
 
 SResult DeferredShading::OnCreate()

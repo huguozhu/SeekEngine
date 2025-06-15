@@ -91,7 +91,6 @@ SResult Context::Init(const RenderInitInfo& init_info)
         if (!m_pRendererCommandManager)
         {
             m_pRendererCommandManager = MakeUniquePtrMacro(RendererCommandManager, this);
-            //m_pRendererCommandManager->InitRenderer(init_info.native_wnd);
         }
 
         // RHIContext
@@ -102,7 +101,7 @@ SResult Context::Init(const RenderInitInfo& init_info)
             if (init_info.native_wnd)
             {
                 RHIContext& rc = this->RHIContextInstance();
-                rc.AttachNativeWindow("", init_info.native_wnd);
+                SEEK_RETIF_FAIL(rc.AttachNativeWindow("", init_info.native_wnd));
                 rc.SetFinalRHIFrameBuffer(rc.GetScreenRHIFrameBuffer());
                 this->SetViewport(rc.GetScreenRHIFrameBuffer()->GetViewport());
             }
@@ -139,7 +138,7 @@ SResult Context::Init(const RenderInitInfo& init_info)
             if (SEEK_CHECKFAILED(ret))
                 break;
         }
-        
+        this->SetFpsLimitType(init_info.fps_limit_type);
         return S_Success;
     } while (0);
 
@@ -174,9 +173,7 @@ SResult Context::Update()
     float cur_time = m_pTimer->CurrentTimeSinceEpoch_S();
     float time_interval = cur_time - last_time;
     float  limit_time = 0.0;
-    if (m_InitInfo.fps_limit_type == FPSLimit::FPS_30) limit_time = 0.033f;
-    else if (m_InitInfo.fps_limit_type == FPSLimit::FPS_60) limit_time = 0.0167f;
-    if (time_interval < limit_time)
+    if (time_interval < m_fMinFrameTime)
         return S_Success;
 
     m_dCurTime = cur_time;
@@ -289,6 +286,18 @@ float2 Context::GetJitter()
         float JitterX = Halton_2[subsampIndex] / desc.width;
         float JitterY = Halton_3[subsampIndex] / desc.height;
         return float2{ JitterX, JitterY };
+    }
+}
+void Context::SetFpsLimitType(FPSLimitType b)
+{
+    m_InitInfo.fps_limit_type = b;
+    switch (b)
+    {
+    case FPSLimitType::FPS_30:  m_fMinFrameTime = 0.0333f; break;
+    case FPSLimitType::FPS_60:  m_fMinFrameTime = 0.0167f; break;
+    case FPSLimitType::FPS_120: m_fMinFrameTime = 0.0083f; break;
+    case FPSLimitType::NoLImit:
+    default: m_fMinFrameTime = 0.0f;
     }
 }
 void Context::MainThreadSemWait()

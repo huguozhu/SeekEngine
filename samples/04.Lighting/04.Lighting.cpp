@@ -10,16 +10,6 @@
 #define DEFAULT_RENDER_HEIGHT 720
 
 
-
-float3 Lighting::CalcBestCamPosFromMeshAABBox(AABBox mesh_aabbox)
-{
-    float3 max = mesh_aabbox.Max();
-    float3 min = mesh_aabbox.Min();
-    float length = Math::Length(max - min);
-    return float3(0, 0, -length * 1.5);
-}
-
-
 SResult Lighting::OnCreate()
 {
     RHIContext& rc = m_pContext->RHIContextInstance();
@@ -37,8 +27,6 @@ SResult Lighting::OnCreate()
     pCam->SetLookAt(cam_pos, cam_look_at, cam_up_vec);
     m_pCameraEntity->AddSceneComponent(pCam);
     m_pCameraEntity->AddToTopScene();
-
-    m_CameraController.SetCamera(pCam.get());
 
     // Step3: add Light Entity
     // NOTE: if the lighting result is wrong, check if hdr is enabled(now, it's disabled for phong)
@@ -197,7 +185,6 @@ SResult Lighting::OnCreate()
 
 SResult Lighting::OnUpdate()
 {
-    m_CameraController.Update(m_pContext->GetDeltaTime());
     return m_pContext->Update();
 }
 SResult Lighting::InitContext(void* device, void* native_wnd)
@@ -207,13 +194,11 @@ SResult Lighting::InitContext(void* device, void* native_wnd)
     info.device = device;
     info.native_wnd = native_wnd;
     info.lighting_mode = LightingMode::Phong;
-    info.renderer_type = RendererType::Deferred;
     info.preferred_adapter = 0;
     info.HDR = true;
 
     m_pContext = MakeSharedPtr<Context>();
     SEEK_RETIF_FAIL(m_pContext->Init(info));
-
 
     return S_Success;
 }

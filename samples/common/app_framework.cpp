@@ -45,7 +45,6 @@ void AppFramework::IMGUI_Begin()
 
 void AppFramework::IMGUI_Rendering()
 {
-
     D3D11RHIContext* rc_d3d = static_cast<D3D11RHIContext*>(&m_pContext->RHIContextInstance());
     D3D11RHIFrameBuffer* fb = static_cast<D3D11RHIFrameBuffer*>(rc_d3d->GetFinalRHIFrameBuffer().get());
     ID3D11RenderTargetView* view = fb->GetRenderTargetView();
@@ -58,10 +57,14 @@ SResult AppFramework::RenderFrame()
 {
     return S_Success;
 }
+extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+
 
 IWICImagingFactory* g_pIWICFactory;
 static LRESULT CALLBACK WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+    if (ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam))
+        return true;
     switch (uMsg)
     {
     case WM_ACTIVATE:
@@ -107,7 +110,11 @@ HWND InitWindow(std::string const& name, uint32_t width, uint32_t height)
     UpdateWindow(wnd);
     return wnd;
 }
-
+AppFramework::AppFramework(std::string const& name)
+    :m_szName(name)
+{
+    IMGUI_Init();
+}
 SResult AppFramework::Run()
 {
     CoInitializeEx(NULL, COINIT_MULTITHREADED);
@@ -115,7 +122,6 @@ SResult AppFramework::Run()
 
     HWND wnd = InitWindow(m_szName, DEFAULT_WND_WIDTH, DEFAULT_WND_HEIGHT);
     this->InitContext(NULL, (void*)wnd);
-    IMGUI_Init();
 
     if (!m_bInit)
     {
