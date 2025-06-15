@@ -19,6 +19,7 @@ public:
 protected:
     Context*                m_pContext      = nullptr;
     GlobalIlluminationMode  m_eMode         = GlobalIlluminationMode::None;
+    RHITexturePtr           m_pGITexture    = nullptr;
 };
 
 

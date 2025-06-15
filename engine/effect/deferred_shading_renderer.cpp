@@ -483,7 +483,7 @@ SResult DeferredShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tec
             *tech = effect.GetTechnique(szTechName_GenerateGBuffer, predefines);
         else if (m_eCurRenderStage == RenderStage::GenerateReflectiveShadowMap)
             *tech = effect.GetTechnique(szTechName_GenerateReflectiveShadowMap, predefines);
-        else
+        else if (m_eCurRenderStage == RenderStage::GenerateCascadedShadowMap)
             *tech = effect.GetTechnique(szTechName_GenerateCascadedShadowMap, predefines);
         break;
     }

@@ -106,6 +106,12 @@ float LinearizeDepth2(float z, float n, float f)
 #endif
 }
 
+float LinearDetpthToNonLinear(float depth, float cam_near, float cam_far)
+{
+	float q = cam_far / (cam_far - cam_near);
+	return (depth * q - cam_near * q) / depth;
+}
+
 static const float3x3 XYZ_2_LinearRGB_MAT =
 {
 	 3.2409699419, -1.5373831776, -0.4986107603,
