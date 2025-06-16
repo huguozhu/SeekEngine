@@ -12,12 +12,13 @@ public:
     FirstPersonCameraController& operator=(const FirstPersonCameraController&) = delete;
 
     void SetCamera(CameraComponent* pCamera) { m_pCamera = pCamera; }
+    void SetMoveSpeed(float v) { m_fMoveSpeed = v; }
     virtual ~FirstPersonCameraController() {}
     virtual void Update(float delta_time);
 
 private:
     CameraComponent* m_pCamera = nullptr;
-    float m_fMoveSpeed = 5.0;
+    float m_fMoveSpeed = 1.0;
     float m_fMouseSensitivityX = 0.002f;
     float m_fMouseSensitivityY = 0.002f;
 

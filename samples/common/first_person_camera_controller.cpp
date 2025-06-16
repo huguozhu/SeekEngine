@@ -45,11 +45,9 @@ void FirstPersonCameraController::Update(float delta_time)
         }
     }
 
-    float3 euler_rot = m_pCamera->GetWorldEulerRotation();
-    euler_rot[0] += pitch;
-    euler_rot[1] += yaw;
-    m_pCamera->SetWorldEulerRotation(euler_rot);
-    m_pCamera->WorldTranslate(Math::Normalize(m_MoveDir) * m_fMoveVelocity * delta_time);
+    Quaternion quat = Math::FromYawPitchRoll(-yaw, -pitch, 0.0f);
+    m_pCamera->WorldRotate(quat);
+    m_pCamera->GetOwner()->GetRootComponent()->WorldTranslate(Math::Normalize(m_MoveDir) * m_fMoveVelocity * delta_time);
 }
 
 SEEK_NAMESPACE_END

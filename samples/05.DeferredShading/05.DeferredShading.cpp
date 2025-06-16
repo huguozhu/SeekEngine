@@ -13,18 +13,17 @@ SResult DeferredShading::OnCreate()
 {
     RHIContext& rc = m_pContext->RHIContextInstance();
     Viewport const& vp = rc.GetScreenRHIFrameBuffer()->GetViewport();
-    int width = vp.width;
-    int height = vp.height;
-    float fov = 45.0 * Math::DEG2RAD;
-    float aspect = (float)width / (float)height;
+    float w = vp.width;
+    float h = vp.height;
     m_pCameraEntity = MakeSharedPtr<Entity>(m_pContext.get());
     CameraComponentPtr pCam = MakeSharedPtr<CameraComponent>(m_pContext.get());
-    pCam->ProjPerspectiveParams(fov, aspect, 0.1f, 200.0f);
+    pCam->ProjPerspectiveParams(60.0 * Math::DEG2RAD, w / h, 0.01f, 200.0f);
     pCam->SetLookAt(float3(0, 2, 0), float3(1, 2, -1), float3(0, 1, 0));
     m_pCameraEntity->AddSceneComponent(pCam);
     m_pCameraEntity->AddToTopScene();
 
     m_CameraController.SetCamera(pCam.get());
+    m_CameraController.SetMoveSpeed(0.1);
 
     // Step3: add Light Entity
     // NOTE: if the lighting result is wrong, check if hdr is enabled(now, it's disabled for phong)
@@ -93,7 +92,7 @@ SResult DeferredShading::OnCreate()
 
     // Load gltf2 Mesh
     static std::vector<std::string> model_files = {
-        FullPath("asset/Sponza/Sponza.gltf"),
+        FullPath("asset/gltf/Sponza/Sponza.gltf"),
     };
     static int model_selected = 0;
 
@@ -126,16 +125,16 @@ SResult DeferredShading::OnCreate()
     desc.flags = RESOURCE_FLAG_SHADER_RESOURCE;
     std::vector<BitmapBufferPtr> datas(6, nullptr);
     std::string cube_files[6] = {
-        FullPath("asset/textures/skybox/positive_x.png"),
-        FullPath("asset/textures/skybox/negative_x.png"),
-        FullPath("asset/textures/skybox/positive_y.png"),
-        FullPath("asset/textures/skybox/negative_y.png"),
-        FullPath("asset/textures/skybox/positive_z.png"),
-        FullPath("asset/textures/skybox/negative_z.png"),
+        FullPath("asset/textures/skybox/positive_x.jpg"),
+        FullPath("asset/textures/skybox/negative_x.jpg"),
+        FullPath("asset/textures/skybox/positive_y.jpg"),
+        FullPath("asset/textures/skybox/negative_y.jpg"),
+        FullPath("asset/textures/skybox/positive_z.jpg"),
+        FullPath("asset/textures/skybox/negative_z.jpg"),
     };
     for (uint32_t i = 0; i < 6; i++)
     {
-        BitmapBufferPtr bit = ImageDecodeFromFile(cube_files[i], ImageType::PNG);
+        BitmapBufferPtr bit = ImageDecodeFromFile(cube_files[i], ImageType::JPEG);
         datas[i] = bit;
     }
     RHITexturePtr tex_cube = rc.CreateTextureCube(desc, &datas);
@@ -175,7 +174,13 @@ SResult DeferredShading::OnCreate()
 SResult DeferredShading::OnUpdate()
 {
     m_CameraController.Update(m_pContext->GetDeltaTime());
-    return m_pContext->Update();
+    SEEK_RETIF_FAIL(m_pContext->Tick());
+    SEEK_RETIF_FAIL(m_pContext->BeginRender());
+    SEEK_RETIF_FAIL(m_pContext->RenderFrame());
+    IMGUI_Begin();
+    IMGUI_Rendering();
+    SEEK_RETIF_FAIL(m_pContext->EndRender());
+    return S_Success;
 }
 SResult DeferredShading::InitContext(void* device, void* native_wnd)
 {
