@@ -25,6 +25,8 @@ void IMGUI_ShowControl(Context* ctx, void* app_framework = nullptr);
 void IMGUI_ShowSceneManager(Context* ctx);
 void IMGUI_ShowAnimationControl(int32_t* animationMsg);
 
+MeshComponentPtr CreateCoordinateAxis(Context* ctx, float thickness = 0.02);
+
 SEEK_NAMESPACE_END
 
 #endif

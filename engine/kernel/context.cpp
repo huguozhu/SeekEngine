@@ -151,7 +151,21 @@ void Context::SetViewport(Viewport vp)
         m_bViewportChanged = true;
     }
 }
+SResult Context::Tick()
+{
+    double last_time = m_dCurTime;
+    float cur_time = m_pTimer->CurrentTimeSinceEpoch_S();
+    float time_interval = cur_time - last_time;
+    float  limit_time = 0.0;
+    if (time_interval < m_fMinFrameTime)
+        return S_Success;
 
+    m_dCurTime = cur_time;
+    m_dDeltaTime = m_dCurTime - last_time;
+
+    SEEK_RETIF_FAIL(SceneManagerInstance().Tick((float)m_dDeltaTime));
+    return S_Success;
+}
 SResult Context::Update()
 {
     double last_time = m_dCurTime;
@@ -164,9 +178,8 @@ SResult Context::Update()
     m_dCurTime = cur_time;
     m_dDeltaTime = m_dCurTime - last_time;
 
-
+    SEEK_RETIF_FAIL(SceneManagerInstance().Tick((float)m_dDeltaTime));
     SEEK_RETIF_FAIL(this->BeginRender());
-	SEEK_RETIF_FAIL(SceneManagerInstance().Tick((float)m_dDeltaTime));
     SEEK_RETIF_FAIL(this->RenderFrame());
     SEEK_RETIF_FAIL(this->EndRender());
     return S_Success;

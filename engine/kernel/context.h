@@ -82,7 +82,7 @@ public:
     void                    SetViewport(Viewport vp);
     Viewport                GetViewport() const { return m_sViewport; }
     
-
+    SResult                 Tick();
     SResult                 Update();
     SResult                 BeginRender();
     SResult                 RenderFrame();   // Called by Rendering Thread 

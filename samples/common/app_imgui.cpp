@@ -304,8 +304,8 @@ void IMGUI_ShowControl(Context* ctx, void* app_framework)
             {
                 if (show_axis)
                 {
-                    //if (!ptr)
-                    //    ptr = widget::CreateCoordinateAxis(ctx);
+                    if (!ptr)
+                        ptr = CreateCoordinateAxis(ctx);
                     ctx->SceneManagerInstance().GetRootComponent()->AddChild(ptr);
                 }
                 else
@@ -368,61 +368,6 @@ void IMGUI_ShowControl(Context* ctx, void* app_framework)
                 lights.push_back(light_entity);
             }
         }
-    }
-
-    if (ImGui::CollapsingHeader("Control Testing" UID, ImGuiTreeNodeFlags_DefaultOpen))
-    {
-        // Off-screen test resolution
-        /*if (!ctx->RHIContextInstance().GetScreenFrameBuffer())
-        {
-            AppFramework* app = (AppFramework*)app_framework;
-            static int resolution = 0;
-            if (ImGui::RadioButton("360p", &resolution, 1))
-            {
-                if (app) app->OnResize(640, 360);
-                else ctx->Resize(640, 360);
-            }
-            ImGui::SameLine();
-            if (ImGui::RadioButton("720p", &resolution, 2))
-            {
-                if (app) app->OnResize(1280, 720);
-                else ctx->Resize(1280, 720);
-            }
-            ImGui::SameLine();
-            if (ImGui::RadioButton("1080p", &resolution, 3))
-            {
-                if (app) app->OnResize(1920, 1080);
-                else ctx->Resize(1920, 1080);
-            }
-            ImGui::SameLine();
-            if (ImGui::RadioButton("2k", &resolution, 4))
-            {
-                if (app) app->OnResize(2560, 1440);
-                else ctx->Resize(2560, 1440);
-            }
-            ImGui::SameLine();
-            if (ImGui::RadioButton("4k", &resolution, 5))
-            {
-                if (app) app->OnResize(3840, 2160);
-                else ctx->Resize(3840, 2160);
-            }*/
-//            ImGui::SameLine();
-//            if (ImGui::RadioButton("8k", &resolution, 6))
-//            {
-//                if (app) app->OnResize(7680, 4320);
-//                else ctx->Resize(7680, 4320);
-//            }
-//        }
-#ifdef DVF_TEST
-        // copyback test
-        {
-            ImGui::Checkbox("test_callback_mode" UID, &ctx->Test_RenderInitInfo()->test_copyback_mode);
-            if (ctx->Test_RenderInitInfo()->test_copyback_mode)
-            {
-                ImGui::Checkbox("test_copyback_disable_cp" UID, &ctx->Test_RenderInitInfo()->test_copyback_disable_cp);
-            }
-        }
-#endif
     }
 }
 
@@ -640,6 +585,76 @@ void IMGUI_ShowSceneManager(Context* ctx)
             SceneRecursion(ctx, sm.GetRootComponent()->ChildByIndex(i), uid);
         }
     }
+}
+
+MeshComponentPtr CreateCoordinateAxis(Context* ctx, float thickness)
+{
+    std::array<std::array<float, 8 * 6>, 3> vertex_xyz;
+
+    for (int axis = 0; axis < 3; axis++)
+    {
+        for (int line = 0; line < 6; line++)
+        {
+            vertex_xyz[axis][line * 8 + 3] = 0; // u
+            vertex_xyz[axis][line * 8 + 4] = 0; // v
+            vertex_xyz[axis][line * 8 + 5] = 0; // v
+            vertex_xyz[axis][line * 8 + 6] = 0; // v
+            vertex_xyz[axis][line * 8 + 7] = 0; // v
+
+            if (line < 3)
+            {
+                vertex_xyz[axis][line * 8 + axis] = 0;
+                vertex_xyz[axis][line * 8 + 5 + axis] = -1;
+            }
+            else
+            {
+                vertex_xyz[axis][line * 8 + axis] = 9999;
+                vertex_xyz[axis][line * 8 + 5 + axis] = 1;
+            }
+
+            if (line % 3 == 0)
+                vertex_xyz[axis][line * 8 + ((axis + 1) % 3)] = thickness;
+            else
+                vertex_xyz[axis][line * 8 + ((axis + 1) % 3)] = -thickness;
+
+            if (line % 3 == 0)
+                vertex_xyz[axis][line * 8 + ((axis + 2) % 3)] = 0;
+            else if (line % 3 == 1)
+                vertex_xyz[axis][line * 8 + ((axis + 2) % 3)] = -thickness;
+            else
+                vertex_xyz[axis][line * 8 + ((axis + 2) % 3)] = thickness;
+        }
+    }
+
+    std::vector<uint16_t> indics = {
+        0, 1, 2, 3, 4, 5,
+        0, 1, 3, 3, 1, 4,
+        1, 2, 4, 2, 4, 5,
+        0, 2, 3, 2, 3, 5,
+    };
+    RHIRenderBufferData indics_data((uint32_t)indics.size() * sizeof(uint16_t), indics.data());
+    RHIRenderBufferPtr indics_buffer = ctx->RHIContextInstance().CreateIndexBuffer(indics_data.m_iDataSize, 0, &indics_data);
+
+    MeshComponentPtr componet = MakeSharedPtr<MeshComponent>(ctx);
+    for (int i = 0; i < 3; i++)
+    {
+        RHIRenderBufferData vertex_data((uint32_t)vertex_xyz[i].size() * sizeof(float), vertex_xyz[i].data());
+        RHIRenderBufferPtr vertex_buffer = ctx->RHIContextInstance().CreateVertexBuffer(vertex_data.m_iDataSize, 0, &vertex_data);
+
+        RHIMeshPtr mesh = ctx->RHIContextInstance().CreateMesh();
+        mesh->SetIndexBuffer(indics_buffer, IndexBufferType::UInt16);
+        mesh->AddVertexStream(vertex_buffer, 0, sizeof(float) * 8, VertexFormat::Float3, VertexElementUsage::Position, 0);
+        mesh->AddVertexStream(vertex_buffer, sizeof(float) * 3, sizeof(float) * 8, VertexFormat::Float2, VertexElementUsage::TexCoord, 0);
+        mesh->AddVertexStream(vertex_buffer, sizeof(float) * 5, sizeof(float) * 8, VertexFormat::Float3, VertexElementUsage::Normal, 0);
+        mesh->SetTopologyType(MeshTopologyType::Triangles);
+
+        MaterialPtr material = MakeSharedPtr<Material>();
+        material->albedo_factor = float4(i == 0, i == 1, i == 2, 0);
+        mesh->SetMaterial(material);
+
+        componet->AddMesh(mesh);
+    }
+    return componet;
 }
 
 #endif
