@@ -16,7 +16,6 @@
 #include "components/watermark_component.h"
 
 // effect
-#include "effect/command_buffer.h"
 
 // importer
 #include "importer/loader.h"

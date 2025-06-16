@@ -1,7 +1,6 @@
 #include "components/shape_mesh_component.h"
 #include "components/camera_component.h"
 #include "kernel/context.h"
-#include "effect/command_buffer.h"
 #include "rhi/base/rhi_mesh.h"
 #include "rhi/base/rhi_context.h"
 #include "rhi/base/rhi_definition.h"
@@ -298,37 +297,37 @@ void CreateTerrain(MeshData& mesh_data, float width, float height, uint32_t slic
 
 RHIMeshPtr CreateMeshFromMeshData(Context* context, MeshData& mesh_data)
 {
-    RendererCommandManager& rcm = context->RendererCommandManagerInstance();
-    RHIMeshPtr pMesh = rcm.CreateMesh();
+    RHIMeshPtr pMesh = context->RHIContextInstance().CreateMesh();
+    RHIContext& rc = context->RHIContextInstance();
 
-    RHIRenderBufferPtr buf_pos =  rcm.CreateVertexrBuffer((const void*)&mesh_data.positions[0], sizeof(float3) * mesh_data.positions.size(), RESOURCE_FLAG_NONE);
+    RHIRenderBufferPtr buf_pos = rc.CreateVertexBuffer(sizeof(float3) * mesh_data.positions.size(), RESOURCE_FLAG_NONE, new RHIRenderBufferData(sizeof(float3) * mesh_data.positions.size(), (const void*)&mesh_data.positions[0]) );
     VertexStream vs_pos = { buf_pos, 0, sizeof(float3), {{0, 0, 1, VertexFormat::Float3, VertexElementUsage::Position, false, 0}}, false};
     pMesh->AddVertexStream(vs_pos);
 
     if (mesh_data.texcoords.size() > 0)
     {
-        RHIRenderBufferPtr buf_tc = rcm.CreateVertexrBuffer((const void*)&mesh_data.texcoords[0], sizeof(float2) * mesh_data.texcoords.size(), RESOURCE_FLAG_NONE);
+        RHIRenderBufferPtr buf_tc = rc.CreateVertexBuffer(sizeof(float2) * mesh_data.texcoords.size(), RESOURCE_FLAG_NONE, new RHIRenderBufferData(sizeof(float2) * mesh_data.texcoords.size(), (const void*)&mesh_data.texcoords[0]));
         VertexStream vs_tc = { buf_tc, 0, sizeof(float2), {{0, 0, 1, VertexFormat::Float2, VertexElementUsage::TexCoord, false, 0}}, false };
         pMesh->AddVertexStream(vs_tc);
     }
 
     if (mesh_data.normals.size() > 0)
     {
-        RHIRenderBufferPtr buf_normal = rcm.CreateVertexrBuffer((const void*)&mesh_data.normals[0], sizeof(float3) * mesh_data.normals.size(), RESOURCE_FLAG_NONE);
+        RHIRenderBufferPtr buf_normal = rc.CreateVertexBuffer(sizeof(float3) * mesh_data.normals.size(), RESOURCE_FLAG_NONE, new RHIRenderBufferData(sizeof(float3) * mesh_data.normals.size(), (const void*)&mesh_data.normals[0]));
         VertexStream vs_normal = { buf_normal, 0, sizeof(float3), {{0, 0, 1, VertexFormat::Float3, VertexElementUsage::Normal, false, 0}}, false };
         pMesh->AddVertexStream(vs_normal);
     }
 
     if (mesh_data.tangent.size() > 0)
     {
-        RHIRenderBufferPtr buf_tangent = rcm.CreateVertexrBuffer((const void*)&mesh_data.tangent[0], sizeof(float4) * mesh_data.tangent.size(), RESOURCE_FLAG_NONE);
+        RHIRenderBufferPtr buf_tangent = rc.CreateVertexBuffer(sizeof(float4) * mesh_data.tangent.size(), RESOURCE_FLAG_NONE, new RHIRenderBufferData(sizeof(float4) * mesh_data.tangent.size(), (const void*)&mesh_data.tangent[0]) );
         VertexStream vs_tangent = { buf_tangent, 0, sizeof(float4), {{0, 0, 1, VertexFormat::Float4, VertexElementUsage::Tangent, false, 0}}, false };
         pMesh->AddVertexStream(vs_tangent);
     }
 
     if (mesh_data.indices.size() > 0)
     {
-        RHIRenderBufferPtr buf_index = rcm.CreateIndexBuffer((const void*)&mesh_data.indices[0], sizeof(uint16_t) * mesh_data.indices.size(), RESOURCE_FLAG_NONE);
+        RHIRenderBufferPtr buf_index = rc.CreateIndexBuffer(sizeof(uint16_t) * mesh_data.indices.size(), RESOURCE_FLAG_NONE, new RHIRenderBufferData(sizeof(uint16_t) * mesh_data.indices.size(), (const void*)&mesh_data.indices[0]) );
         pMesh->SetIndexBuffer(buf_index, IndexBufferType::UInt16);
     }
 

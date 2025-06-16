@@ -32,7 +32,6 @@ extern void OutputD3DCommonDebugInfo();
 
 Context::Context()
 {
-    m_InitInfo.multi_thread = 0;
     m_InitInfo.rhi_type = RHIType::D3D11;
     m_InitInfo.debug = true;
     m_InitInfo.HDR = true;
@@ -81,18 +80,6 @@ SResult Context::Init(const RenderInitInfo& init_info)
     SResult ret = S_Success;
     do
     {
-        if (!m_pThreadManager && m_InitInfo.multi_thread)
-        {
-            m_pThreadManager = MakeUniquePtrMacro(ThreadManager, this);
-            ret = m_pThreadManager->Init();
-            if (SEEK_CHECKFAILED(ret))
-                break;
-        }
-        if (!m_pRendererCommandManager)
-        {
-            m_pRendererCommandManager = MakeUniquePtrMacro(RendererCommandManager, this);
-        }
-
         // RHIContext
         {
             ret = this->InitRHIContext();
@@ -119,7 +106,7 @@ SResult Context::Init(const RenderInitInfo& init_info)
         if (!m_pEffect)
         {
             m_pEffect = MakeUniquePtr<Effect>(this);
-            m_pRendererCommandManager->InitEffect(m_pEffect.get());
+            m_pEffect->Initialize();
         }
         
         if (!m_pSceneRenderer)
@@ -147,12 +134,10 @@ SResult Context::Init(const RenderInitInfo& init_info)
 }
 void Context::Uninit()
 {
-    m_pThreadManager.reset();
     m_pRHIContext.reset();
     m_pSceneManager.reset();
     m_pSceneRenderer.reset();
     m_pResourceManager.reset();
-    m_pRendererCommandManager.reset();
     m_pEffect.reset();
 }
 void Context::SetViewport(Viewport vp)
@@ -182,8 +167,7 @@ SResult Context::Update()
 
     SEEK_RETIF_FAIL(this->BeginRender());
 	SEEK_RETIF_FAIL(SceneManagerInstance().Tick((float)m_dDeltaTime));
-    if (m_InitInfo.multi_thread == false)
-        SEEK_RETIF_FAIL(this->RenderFrame());
+    SEEK_RETIF_FAIL(this->RenderFrame());
     SEEK_RETIF_FAIL(this->EndRender());
     return S_Success;
 }
@@ -194,13 +178,6 @@ SResult Context::BeginRender()
     {
         m_pSceneRenderer->SetViewport(m_sViewport);
         m_bViewportChanged = false;
-    }
-
-    if (m_InitInfo.multi_thread)
-    {
-        this->RendererCommandManagerInstance().FinishSubmitCommandBuffer();
-        this->RendererCommandManagerInstance().SwapCommandBuffer();
-        this->RenderThreadSemPost();
     }
     if (0)
     {
@@ -235,15 +212,10 @@ SResult Context::RenderFrame()
 }
 SResult Context::EndRender()
 {
-    if (m_InitInfo.multi_thread)
-        this->MainThreadSemWait();
-    else
+    RHIFrameBufferPtr final_fb = this->RHIContextInstance().GetFinalRHIFrameBuffer();
+    if (final_fb)
     {
-        RHIFrameBufferPtr final_fb = this->RHIContextInstance().GetFinalRHIFrameBuffer();
-        if (final_fb)
-        {
-            SEEK_RETIF_FAIL(final_fb->SwapBuffers());
-        }
+        SEEK_RETIF_FAIL(final_fb->SwapBuffers());
     }
     return S_Success;
 }
@@ -298,34 +270,6 @@ void Context::SetFpsLimitType(FPSLimitType b)
     case FPSLimitType::FPS_120: m_fMinFrameTime = 0.0083f; break;
     case FPSLimitType::NoLImit:
     default: m_fMinFrameTime = 0.0f;
-    }
-}
-void Context::MainThreadSemWait()
-{
-    if (m_InitInfo.multi_thread)
-    {
-        m_MainThreadSemaphore.Wait();
-    }
-}
-void Context::MainThreadSemPost()
-{
-    if (m_InitInfo.multi_thread)
-    {
-        m_MainThreadSemaphore.Post();
-    }
-}
-void Context::RenderThreadSemWait()
-{
-    if (m_InitInfo.multi_thread)
-    {
-        m_pThreadManager->GetRenderThread()->GetSemaphore().Wait();
-    }
-}
-void Context::RenderThreadSemPost()
-{
-    if (m_InitInfo.multi_thread)
-    {
-        m_pThreadManager->GetRenderThread()->GetSemaphore().Post();
     }
 }
 SEEK_NAMESPACE_END

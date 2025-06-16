@@ -33,12 +33,8 @@ set(ENGINE_CODE
     # effect
     ${SEEK_ENGINE_SOURCE_DIR}/effect/blur.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/blur.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/effect/command_buffer.h
-    ${SEEK_ENGINE_SOURCE_DIR}/effect/command_buffer.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/deferred_shading_renderer.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/deferred_shading_renderer.cpp   
-    ${SEEK_ENGINE_SOURCE_DIR}/effect/draw_call.h
-    ${SEEK_ENGINE_SOURCE_DIR}/effect/draw_call.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/effect.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/effect.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/forward_shading_renderer.h
@@ -225,8 +221,6 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/thread/semaphore.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/thread/thread.h
     ${SEEK_ENGINE_SOURCE_DIR}/thread/thread.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/thread/thread_manager.h
-    ${SEEK_ENGINE_SOURCE_DIR}/thread/thread_manager.cpp
 
     # wrapper
 )

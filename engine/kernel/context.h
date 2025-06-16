@@ -4,7 +4,6 @@
 #include "rhi/base/rhi_context.h"
 #include "scene_manager/scene_manager.h"
 #include "rhi/base/viewport.h"
-#include "effect/command_buffer.h"
 #include "resource/resource_mgr.h"
 
 
@@ -52,7 +51,6 @@ enum class GlobalIlluminationMode
 struct RenderInitInfo
 {
     bool                    debug = false;
-    bool                    multi_thread = true;
     bool                    enable_profile = false;
     bool                    enable_watermark = true;
     bool                    enable_transparent = false;
@@ -93,7 +91,6 @@ public:
     void                    SetClearColor(float4 color) { m_fClearColor = color; }
     float4                  GetClearColor() const { return m_fClearColor; }
 
-    bool                    IsMultiThreaded()           const { return m_InitInfo.multi_thread; }
     bool                    EnableProfile()             const { return m_InitInfo.enable_profile; }
     bool                    EnableWaterWark()           const { return m_InitInfo.enable_watermark; }
     bool                    IsDebug()                   const { return m_InitInfo.debug; }
@@ -127,13 +124,7 @@ public:
     SceneManager&       SceneManagerInstance() { return *m_pSceneManager;}
     SceneRenderer&      SceneRendererInstance() { return *m_pSceneRenderer; }
     ResourceManager&    ResourceManagerInstance() { return *m_pResourceManager; }
-    RendererCommandManager& RendererCommandManagerInstance() { return *m_pRendererCommandManager; }
     Effect&             EffectInstance() { return *(m_pEffect.get()); }
-
-    void                MainThreadSemWait();
-    void                MainThreadSemPost();
-    void                RenderThreadSemWait();
-    void                RenderThreadSemPost();
     
     const RHITexturePtr& GetIBLDiffuseTexture() { return m_pIBLDiffuseTex; }
     const RHITexturePtr& GetIBLSpecularTexture() { return m_pIBLSpecularTex; }
@@ -147,12 +138,10 @@ private:
     RenderInitInfo              m_InitInfo{};
     Semaphore                   m_MainThreadSemaphore;
 
-    ThreadManagerPtrUnique      m_pThreadManager;
     RHIContextPtrUnique         m_pRHIContext;
     SceneManagerPtrUnique       m_pSceneManager;
     SceneRendererPtrUnique      m_pSceneRenderer;
     ResourceManagerPtrUnique    m_pResourceManager;
-    RendererCommandManagerPtrUnique     m_pRendererCommandManager;
     EffectPtrUnique             m_pEffect;
 
     uint32_t                    m_FrameCount = 0;

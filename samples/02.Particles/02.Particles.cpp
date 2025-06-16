@@ -40,7 +40,7 @@ void Particles::CreateWaterMarkEntity()
                 }
             }
         }
-        watermark_tex = m_pContext->RendererCommandManagerInstance().CreateTexture2D(desc, bitmap.get());
+        watermark_tex = m_pContext->RHIContextInstance().CreateTexture2D(desc, bitmap);
     }
     if (watermark_tex)
     {
@@ -225,7 +225,7 @@ void Particles::CreateParticleEntities()
             desc.type = TextureType::Tex2D;
             desc.format = tex_bitmap->Format();
             desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_CPU_WRITE;
-            params[i].particle_tex = m_pContext->RendererCommandManagerInstance().CreateTexture2D(desc, tex_bitmap.get());            
+            params[i].particle_tex = m_pContext->RHIContextInstance().CreateTexture2D(desc, tex_bitmap);            
         }
 
 

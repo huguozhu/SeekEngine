@@ -51,7 +51,6 @@ CLASS_DECLARE(Context);
 CLASS_DECLARE(SceneManager);
 
 // Effect
-CLASS_DECLARE(RendererCommandManager);
 CLASS_DECLARE(Effect);
 CLASS_DECLARE(Technique);
 CLASS_DECLARE(VirtualTechnique)
@@ -117,7 +116,6 @@ CLASS_DECLARE(RHITimeQuery);
 
 // Thread
 CLASS_DECLARE(Thread);
-CLASS_DECLARE(ThreadManager);
 
 // utils
 CLASS_DECLARE(Buffer);
