@@ -137,16 +137,16 @@ SResult Lighting::OnCreate()
     desc.flags = RESOURCE_FLAG_SHADER_RESOURCE;
     std::vector<BitmapBufferPtr> datas(6, nullptr);
     std::string cube_files[6] = {
-        FullPath("asset/textures/skybox/positive_x.png"),
-        FullPath("asset/textures/skybox/negative_x.png"),
-        FullPath("asset/textures/skybox/positive_y.png"),
-        FullPath("asset/textures/skybox/negative_y.png"),
-        FullPath("asset/textures/skybox/positive_z.png"),
-        FullPath("asset/textures/skybox/negative_z.png"),
+        FullPath("asset/textures/skybox/positive_x.jpg"),
+        FullPath("asset/textures/skybox/negative_x.jpg"),
+        FullPath("asset/textures/skybox/positive_y.jpg"),
+        FullPath("asset/textures/skybox/negative_y.jpg"),
+        FullPath("asset/textures/skybox/positive_z.jpg"),
+        FullPath("asset/textures/skybox/negative_z.jpg"),
     };
     for (uint32_t i = 0; i < 6; i++)
     {
-        BitmapBufferPtr bit = ImageDecodeFromFile(cube_files[i], ImageType::PNG);
+        BitmapBufferPtr bit = ImageDecodeFromFile(cube_files[i], ImageType::JPEG);
         datas[i] = bit;
     }
     RHITexturePtr tex_cube = rc.CreateTextureCube(desc, &datas);

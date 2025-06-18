@@ -164,7 +164,13 @@ void PostProcess::SetCsDispatchSize(uint32_t x, uint32_t y, uint32_t z)
     m_iCsDispatchY = y;
     m_iCsDispatchZ = z;
 }
-
+void PostProcess::SetPostProcessRenderStateDesc(RenderStateDesc desc)
+{
+    if (m_pTechnique)
+    {
+        m_pTechnique->SetRenderStateDesc(desc);
+    }
+}
 void PostProcess::UpdateGlobalParams(const void* data, uint32_t size, bool bForceRecreate)
 {
     if (!m_bInitSucceed)

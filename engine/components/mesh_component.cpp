@@ -149,11 +149,31 @@ SResult MeshComponent::OnRenderBegin(Technique* tech, RHIMeshPtr mesh)
         tech->SetParam("genCubeShadowInfo", m_GenCubeShaodowCBuffer);
         break;
     }
+    case RenderStage::GenerateReflectiveShadowMap:
+    {
+        this->FillMaterialParam(tech, mesh);
+
+        if (!m_GenRsmLightInfoCBuffer)
+        {
+            m_GenRsmLightInfoCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(sizeof(LightInfo), RESOURCE_FLAG_CPU_WRITE);
+        }
+        LightInfo lightInfo;
+        uint32_t light_index = sm.GetActiveLightIndex();
+        if (!cam  || light_index == -1)
+        {
+            LOG_ERROR("MeshComponent::OnRenderBegin GenerateCubeShadowMap cam is null");
+            return ERR_INVALID_ARG;
+        }
+        sr.FillLightInfoByLightIndex(lightInfo, cam, light_index);
+        m_GenRsmLightInfoCBuffer->Update(&lightInfo, sizeof(LightInfo));
+        tech->SetParam("lightInfo", m_GenRsmLightInfoCBuffer);
+        break;
+    }
     case RenderStage::GenerateGBuffer:
     {
         this->FillMaterialParam(tech, mesh);
         break;
-    }
+    }    
     case RenderStage::PreZ:    
     case RenderStage::GenerateShadowMap:
     {

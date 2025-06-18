@@ -15,6 +15,8 @@ public:
     SResult OnUnbind() override;
     SResult Resolve();
 
+    virtual void Clear(uint32_t flags = CBM_ALL, float4 const& clr = float4(0.0, 0.0, 0.0, 0.0), float depth = 1.0, int32_t stencil = 0) override;
+
     ID3D11RenderTargetView* GetRenderTargetView() const { return m_vD3dRednerTargets[0]; }
 
 protected:

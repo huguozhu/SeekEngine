@@ -64,6 +64,7 @@ protected:
 
     RHIRenderBufferPtr          m_ModelInfoCBuffer;
     RHIRenderBufferPtr          m_GenCubeShaodowCBuffer;
+    RHIRenderBufferPtr          m_GenRsmLightInfoCBuffer;
 };
 
 SEEK_NAMESPACE_END

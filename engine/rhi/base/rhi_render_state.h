@@ -167,6 +167,7 @@ struct RenderStateDesc
     static const RenderStateDesc& Default3D();
     static const RenderStateDesc& Default2D();
     static const RenderStateDesc& PostProcess();
+    static const RenderStateDesc& PostProcessAccumulate();
     static const RenderStateDesc& Skybox();
     static const RenderStateDesc& Particle();
     static const RenderStateDesc& WaterMark();

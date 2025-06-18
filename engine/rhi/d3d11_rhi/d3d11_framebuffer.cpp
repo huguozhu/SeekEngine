@@ -119,7 +119,36 @@ SResult D3D11RHIFrameBuffer::Resolve()
     m_resolveFlag = RESOLVE_NONE;
     return S_Success;
 }
+void D3D11RHIFrameBuffer::Clear(uint32_t flags, float4 const& clr, float depth, int32_t stencil)
+{
+    if (flags & CBM_Color)
+    {
+        for (uint32_t i = 0; i < m_vRenderTargets.size(); i++)
+        {
+            if (m_vRenderTargets[i])
+            {
+                D3D11RenderTargetView& view = static_cast<D3D11RenderTargetView&>(*m_vRenderTargets[i]);
+                view.ClearColor(clr);
+            }
+        }
+    }
 
+    if (m_pDepthStencilView)
+    {
+        D3D11DepthStencilView& view = static_cast<D3D11DepthStencilView&>(*m_pDepthStencilView);
+        if ((flags & CBM_Depth) && (flags & CBM_Stencil))
+        {
+            view.ClearDepthStencil(depth, stencil);
+        }
+        else
+        {
+            if (flags & CBM_Depth)
+                view.ClearDepth(depth);
+            if (flags & CBM_Stencil)
+                view.ClearStencil(stencil);
+        }
+    }
+}
 SEEK_NAMESPACE_END
 
 #undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

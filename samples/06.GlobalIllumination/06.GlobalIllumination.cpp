@@ -22,31 +22,35 @@ SResult GlobalIlluminationSample::OnCreate()
     float w = vp.width;
     float h = vp.height;
 
-
     m_pCameraEntity = MakeSharedPtr<Entity>(m_pContext.get());
     CameraComponentPtr pCam = MakeSharedPtr<CameraComponent>(m_pContext.get());
     pCam->ProjPerspectiveParams(60.0 * Math::DEG2RAD, w/h, 0.01f, 200.0f);
-    pCam->SetLookAt(float3(0, 1, 0), float3(1, 1, -1), float3(0, 1, 0));
+    pCam->SetLookAt(float3(-4, 1, 0), float3(0, 1, 0), float3(0, 1, 0));
     m_pCameraEntity->AddSceneComponent(pCam);
     m_pCameraEntity->AddToTopScene();
     m_CameraController.SetCamera(pCam.get());
 
     // Step3: add Light Entity
-    float p = 3.0;
-    float3 directional_pos = float3(-p, p, p);
-    LightComponentPtr pLight = MakeSharedPtr<DirectionalLightComponent>(m_pContext.get());
+    float3 spot_pos = float3(0, 3, 0);
+    float3 look_at = float3(0, 0, 0);
+    float cutoff_in = Math::DEG2RAD * 25;
+    float cutoff_out = Math::DEG2RAD * 30;
+    LightComponentPtr pLight = MakeSharedPtr<SpotLightComponent>(m_pContext.get());
     pLight->SetColor(Color::White);
-    pLight->SetDirection(float3(p, -p, -p));
-    pLight->SetIntensity(1.5);
+    pLight->SetDirection(look_at - spot_pos);
+    pLight->SetWorldTranslation(spot_pos);
+    pLight->SetInOutCutoff(float2(cutoff_in, cutoff_out));
+    pLight->SetIntensity(5.24);
     pLight->CastShadow(1);
-	pLight->SetWorldTranslation(directional_pos); 
-    m_pLightEntity = MakeSharedPtr<Entity>(m_pContext.get(), "Directional Light");
+    pLight->IndirectLighting(1);
+    m_pLightEntity = MakeSharedPtr<Entity>(m_pContext.get(), "Spot Light");
     m_pLightEntity->AddSceneComponent(pLight);
     m_pLightEntity->AddToTopScene();
 
     // Load gltf2 Mesh
     static std::vector<MeshInfo> mesh_infos = {
         { FullPath("asset/gltf/Sponza/Sponza.gltf")},
+        { FullPath("asset/gltf/BoomBox/BoomBox.gltf"), Math::Scale(30, 30, 30) * Math::RotationY(90 * Math::DEG2RAD) * Math::Translate(0, 0.5, 0) },
     };
     for (uint32_t i = 0; i< mesh_infos.size(); i++)
     {
@@ -83,9 +87,9 @@ SResult GlobalIlluminationSample::InitContext(void* device, void* native_wnd)
     info.debug = false;
     info.device = device;
     info.native_wnd = native_wnd;
-    info.lighting_mode = LightingMode::Phong;
     info.renderer_type = RendererType::Deferred;
     info.anti_aliasing_mode = AntiAliasingMode::TAA;
+    info.gi_mode = GlobalIlluminationMode::RSM;
     info.preferred_adapter = 0;
     info.HDR = true;
 

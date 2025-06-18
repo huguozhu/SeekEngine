@@ -189,6 +189,12 @@ SResult DeferredShadingRenderer::Init()
     m_pSsaoFb = rc.CreateEmptyRHIFrameBuffer();
     m_pSsaoFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pSsaoColor));
 
+    GlobalIlluminationMode mode = m_pContext->GetGlobalIlluminationMode();
+    if (mode == GlobalIlluminationMode::RSM)
+    {
+        m_pGI = MakeSharedPtrMacro(RSM, m_pContext);
+        ((RSM*)m_pGI.get())->Init(m_pGBufferColor0, m_pGBufferColor1, m_pSceneDepthStencil);
+    }
 
     // Step4: Techniques
     Effect& effect = m_pContext->EffectInstance();
@@ -230,6 +236,7 @@ SResult DeferredShadingRenderer::Init()
         m_pLightingTech_HasShadow->SetParam("gbuffer1", m_pGBufferColor1);
         m_pLightingTech_HasShadow->SetParam("depth_tex", m_pSceneDepthStencil);
         m_pLightingTech_HasShadow->SetParam("shadowing_tex", m_pShadowTex);
+        m_pLightingTech_HasShadow->SetParam("indirect_lighting_tex", m_pGI->GetIndirectIlluminationTex());
 
         m_pLightingTech_NoShadow = effect.GetTechnique(szTechName_DeferredLighting, { {"HAS_SHADOW" , "0"}, {"TILE_CULLING", "0"} });
         m_pLightingTech_NoShadow->SetParam("cb_DeferredLightingVSInfo", m_pDeferredLightingInfoCBuffer);
@@ -239,6 +246,7 @@ SResult DeferredShadingRenderer::Init()
         m_pLightingTech_NoShadow->SetParam("gbuffer0", m_pGBufferColor0);
         m_pLightingTech_NoShadow->SetParam("gbuffer1", m_pGBufferColor1);
         m_pLightingTech_NoShadow->SetParam("depth_tex", m_pSceneDepthStencil);
+        m_pLightingTech_NoShadow->SetParam("indirect_lighting_tex", m_pGI->GetIndirectIlluminationTex());
     }
     
 	
@@ -283,13 +291,6 @@ SResult DeferredShadingRenderer::Init()
     m_pGaussianBlur = MakeSharedPtr<GaussianBlur>(m_pContext);
     m_pGaussianBlur->SetSrcTexture(m_pSsaoColor);
     m_pGaussianBlur->SetDstTexture(m_pSsaoColor);
-
-    GlobalIlluminationMode mode = m_pContext->GetGlobalIlluminationMode();
-    if (mode == GlobalIlluminationMode::RSM)
-    {
-        m_pGI = MakeSharedPtrMacro(RSM, m_pContext);
-        ((RSM*)m_pGI.get())->Init(m_pGBufferColor0, m_pGBufferColor1, m_pSceneDepthStencil);
-    }
 
     if (m_pContext->EnableProfile())
     {
@@ -344,6 +345,15 @@ SResult DeferredShadingRenderer::BuildRenderJobList()
         }
     }
     END_TIMEQUERY(m_pTimeQueryGenShadowMap);
+
+    BEGIN_TIMEQUERY(m_pTimeQueryGI);
+    if (m_pContext->GetGlobalIlluminationMode() != GlobalIlluminationMode::None)
+    {
+        m_pGI->OnBegin();
+        for (uint32_t i = 0; i < light_count; i++)
+            this->AppendGIJobs(i);
+    }
+    END_TIMEQUERY(m_pTimeQueryGI);
     
     BEGIN_TIMEQUERY(m_pTimeQueryGenGBuffer);
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::GenerateGBufferJob, this)));
@@ -365,14 +375,6 @@ SResult DeferredShadingRenderer::BuildRenderJobList()
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::LightingJob, this)));
         END_TIMEQUERY(m_pTimeQueryLighting);
     }
-    
-
-    BEGIN_TIMEQUERY(m_pTimeQueryGI);
-    if (m_pContext->GetGlobalIlluminationMode() != GlobalIlluminationMode::None)
-        for (uint32_t i = 0; i < light_count; i++)
-            this->AppendGIJobs(i);
-    END_TIMEQUERY(m_pTimeQueryGI);
-    
     
     BEGIN_TIMEQUERY(m_pTimeQuerySkybox);
     if (sm.GetSkyBoxComponent())
@@ -463,8 +465,7 @@ SResult DeferredShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tec
     case RenderStage::PreZ:                         *tech = effect.GetTechnique(szTechName_PreZ, predefines);                       break;
     case RenderStage::GenerateShadowMap:            *tech = effect.GetTechnique(szTechName_GenerateShadowMap,       predefines);    break;
     case RenderStage::GenerateCubeShadowMap:        *tech = effect.GetTechnique(szTechName_GenerateCubeShadowMap,   predefines);    break;
-    case RenderStage::GenerateGBuffer:
-    case RenderStage::GenerateReflectiveShadowMap:
+    case RenderStage::GenerateGBuffer:    
     case RenderStage::GenerateCascadedShadowMap:
     {
         uint32_t has_tex_normal = mesh->GetMaterial()->normal_tex ? 1 : 0;
@@ -480,11 +481,19 @@ SResult DeferredShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tec
         predefines.push_back(enableTAAPredefine);
 
         if (m_eCurRenderStage == RenderStage::GenerateGBuffer)
-            *tech = effect.GetTechnique(szTechName_GenerateGBuffer, predefines);
-        else if (m_eCurRenderStage == RenderStage::GenerateReflectiveShadowMap)
-            *tech = effect.GetTechnique(szTechName_GenerateReflectiveShadowMap, predefines);
+            *tech = effect.GetTechnique(szTechName_GenerateGBuffer, predefines);        
         else if (m_eCurRenderStage == RenderStage::GenerateCascadedShadowMap)
             *tech = effect.GetTechnique(szTechName_GenerateCascadedShadowMap, predefines);
+        break;
+    }
+    case RenderStage::GenerateReflectiveShadowMap:
+    {
+        uint32_t has_tex_normal = mesh->GetMaterial()->normal_tex ? 1 : 0;
+        EffectPredefine hasNormalTexPredefine;
+        hasNormalTexPredefine.name = "HAS_MATERIAL_NORMAL";
+        hasNormalTexPredefine.value = std::to_string(has_tex_normal);
+        predefines.push_back(hasNormalTexPredefine);
+        *tech = effect.GetTechnique(szTechName_GenerateReflectiveShadowMap, predefines);
         break;
     }
     case RenderStage::None:

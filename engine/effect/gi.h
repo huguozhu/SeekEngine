@@ -16,10 +16,12 @@ public:
     virtual SResult         Init();
     virtual SResult         OnBegin() { return S_Success; }
 
+    RHITexturePtr           GetIndirectIlluminationTex() { return m_pIndirectIlluminationTex; }
+
 protected:
     Context*                m_pContext      = nullptr;
     GlobalIlluminationMode  m_eMode         = GlobalIlluminationMode::None;
-    RHITexturePtr           m_pGITexture    = nullptr;
+    RHITexturePtr           m_pIndirectIlluminationTex = nullptr;
 };
 
 
@@ -39,16 +41,13 @@ public:
     void                    SetSampleRadius(float v) { m_fSampleRadius = v; }
     float                   GetSampleRadius() { return m_fSampleRadius; }
 
-    void                    FillVPLSampleCooordsAndWeights();
-    
 protected:
     // RSM & GI
-    RHITexturePtr           m_pRSMTexs[3] = { nullptr };    // 0:Normal     1:Position    2:Flux
-    RHITexturePtr           m_pRSMDepthTex = nullptr;
-    RHIFrameBufferPtr       m_pRSMFb = nullptr;
+    RHITexturePtr           m_pRsmTexs[3] = { nullptr };    // 0:Normal     1:Position    2:Flux
+    RHITexturePtr           m_pRsmDepthTex = nullptr;
+    RHIFrameBufferPtr       m_pGenRsmFb = nullptr;
 
-    RHITexturePtr           m_pIndirecIlluminationTex = nullptr;
-    RHIFrameBufferPtr       m_pIndirecIlluminationFb = nullptr;
+    RHIFrameBufferPtr       m_pIndirectIlluminationFb = nullptr;
 
     PostProcessPtr          m_pGiRsmPp = nullptr;
 	RHIRenderBufferPtr      m_pRsmParamCBuffer = nullptr;

@@ -80,6 +80,7 @@ SResult Context::Init(const RenderInitInfo& init_info)
     SResult ret = S_Success;
     do
     {
+        m_InitInfo = init_info;
         // RHIContext
         {
             ret = this->InitRHIContext();

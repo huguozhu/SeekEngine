@@ -53,21 +53,23 @@ SResult RSM::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     desc.width = desc.height = ShadowLayer::SM_SIZE;
     desc.depth = 1;
     desc.num_mips = RSM_MIPMAP_LEVELS;
-    desc.num_samples = 1;
-    desc.format = PixelFormat::R8G8B8A8_UNORM;
+    desc.num_samples = 1;    
     desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;
-    m_pRSMTexs[0] = rc.CreateTexture2D(desc);
-    m_pRSMTexs[1] = rc.CreateTexture2D(desc);
-    m_pRSMTexs[2] = rc.CreateTexture2D(desc);
-    desc.format = PixelFormat::D32F;
-    desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET;
-    m_pRSMDepthTex = rc.CreateTexture2D(desc);
+    desc.format = PixelFormat::R8G8B8A8_UNORM;
+    m_pRsmTexs[0] = rc.CreateTexture2D(desc);       // normal
+    desc.format = PixelFormat::R16G16B16A16_FLOAT;  
+    m_pRsmTexs[1] = rc.CreateTexture2D(desc);       // position
+    desc.format = PixelFormat::R8G8B8A8_UNORM;
+    m_pRsmTexs[2] = rc.CreateTexture2D(desc);       // Flux
+    desc.format = PixelFormat::D16;
+    desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;;
+    m_pRsmDepthTex = rc.CreateTexture2D(desc);
     
-    m_pRSMFb = rc.CreateEmptyRHIFrameBuffer();
-    m_pRSMFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pRSMTexs[0]));
-    m_pRSMFb->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.CreateRenderTargetView(m_pRSMTexs[1]));
-    m_pRSMFb->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.CreateRenderTargetView(m_pRSMTexs[2]));
-    m_pRSMFb->AttachDepthStencilView(rc.CreateDepthStencilView(m_pRSMDepthTex));
+    m_pGenRsmFb = rc.CreateEmptyRHIFrameBuffer();
+    m_pGenRsmFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pRsmTexs[0]));
+    m_pGenRsmFb->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.CreateRenderTargetView(m_pRsmTexs[1]));
+    m_pGenRsmFb->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.CreateRenderTargetView(m_pRsmTexs[2]));
+    m_pGenRsmFb->AttachDepthStencilView(rc.CreateDepthStencilView(m_pRsmDepthTex));
 
     // RSM Effect
     desc = m_pContext->RHIContextInstance().GetScreenRHIFrameBuffer()->GetRenderTargetDesc(RHIFrameBuffer::Attachment::Color0);
@@ -79,12 +81,12 @@ SResult RSM::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     desc.depth = 1;
     desc.num_mips = 1;
     desc.num_samples = 1;
-    desc.format = PixelFormat::R8G8B8A8_UNORM;
+    desc.format = PixelFormat::R16G16B16A16_FLOAT;
     desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;
-    m_pIndirecIlluminationTex = rc.CreateTexture2D(desc);
+    m_pIndirectIlluminationTex = rc.CreateTexture2D(desc);
 
-    m_pIndirecIlluminationFb = rc.CreateEmptyRHIFrameBuffer();
-    m_pIndirecIlluminationFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pIndirecIlluminationTex));
+    m_pIndirectIlluminationFb = rc.CreateEmptyRHIFrameBuffer();
+    m_pIndirectIlluminationFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pIndirectIlluminationTex));
 
     Effect& effect = m_pContext->EffectInstance();
 
@@ -99,9 +101,9 @@ SResult RSM::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     m_pGiRsmPp->SetParam("gbuffer1", gbuffer1);
     m_pGiRsmPp->SetParam("gbuffer_depth", gbuffer_depth);
 
-    m_pGiRsmPp->SetParam("rsm_color0", m_pRSMTexs[0]);
-    m_pGiRsmPp->SetParam("rsm_color1", m_pRSMTexs[1]);
-    m_pGiRsmPp->SetParam("rsm_color2", m_pRSMTexs[2]);
+    m_pGiRsmPp->SetParam("rsm_color0", m_pRsmTexs[0]);
+    m_pGiRsmPp->SetParam("rsm_color1", m_pRsmTexs[1]);
+    m_pGiRsmPp->SetParam("rsm_color2", m_pRsmTexs[2]);
 
     m_pRsmCameraInfoCBuffer = rc.CreateConstantBuffer(sizeof(CameraInfo), RESOURCE_FLAG_CPU_WRITE);
     m_pGiRsmPp->SetParam("cb_CameraInfo", m_pRsmCameraInfoCBuffer);
@@ -123,13 +125,14 @@ SResult RSM::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     }
 	m_pVplCoordAndWeightsCBuffer->Update(vplCoordAndWeights.data(), sizeof(float4) * VPL_NUM);
     m_pGiRsmPp->SetParam("cb_VplCoordAndWeights", m_pVplCoordAndWeightsCBuffer);
+
+    m_pGiRsmPp->SetOutput(0, m_pIndirectIlluminationTex);
+    m_pGiRsmPp->SetPostProcessRenderStateDesc(RenderStateDesc::PostProcessAccumulate());
     return S_Success;
 }
 SResult RSM::OnBegin()
 {
-    //if (m_pIndirecIlluminationFb)
-    //    m_pIndirecIlluminationFb->Clear(RHIFrameBuffer::CBM_Color, float4(0, 0, 0, 1));
-	//m_pIndirecIlluminationFb->SetColorLoadOption(RHIFrameBuffer::Color0, float4(0, 0, 0, 1));
+    m_pIndirectIlluminationFb->Clear(RHIFrameBuffer::CBM_Color, float4(0.0, 0.0, 0.0, 1.0));
     return S_Success;
 }
 RendererReturnValue RSM::GenerateReflectiveShadowMapJob(uint32_t light_index)
@@ -143,9 +146,9 @@ RendererReturnValue RSM::GenerateReflectiveShadowMapJob(uint32_t light_index)
     if (light_type == LightType::Spot || light_type == LightType::Directional)
     {
         sr.SetCurRenderStage(RenderStage::GenerateReflectiveShadowMap);
-		m_pRSMFb->SetColorLoadOption(RHIFrameBuffer::Color0, float4(0, 0, 0, 0));
-		m_pRSMFb->SetDepthLoadOption(1.0f);
-        SResult res = m_pContext->RHIContextInstance().BeginRenderPass({ "GenerateReflectiveShadowMap", m_pRSMFb.get() });
+		m_pGenRsmFb->SetColorLoadOption(RHIFrameBuffer::Color0, float4(0, 0, 0, 1));
+		m_pGenRsmFb->SetDepthLoadOption(1.0f);
+        SResult res = m_pContext->RHIContextInstance().BeginRenderPass({ "GenerateReflectiveShadowMap", m_pGenRsmFb.get() });
         sm.SetActiveCamera(pLight->GetShadowMapCamera());
         sm.SetActiveLightIndex(light_index);
         res = sr.RenderScene((uint32_t)RenderScope::Opacity);
@@ -159,12 +162,13 @@ RendererReturnValue RSM::GenerateReflectiveShadowMapJob(uint32_t light_index)
         sr.SetCurRenderStage(RenderStage::None);
     }
 #if 0
-    static int draw = 1;
+    static int draw = 0;
     if (draw)
     {
-        m_pRSMTexs[0]->DumpToFile("d:\\rsm0.rgba");
-        m_pRSMTexs[1]->DumpToFile("d:\\rsm1.rgba");
-        m_pRSMTexs[2]->DumpToFile("d:\\rsm2.rgba");
+        m_pRsmTexs[0]->DumpToFile("d:\\rsm0.rgba");
+        //m_pRsmTexs[1]->DumpToFile("d:\\rsm1.rgba");
+        m_pRsmTexs[2]->DumpToFile("d:\\rsm2.rgba");
+        m_pRsmDepthTex->DumpToFile("d:\\rsm_depth.g16l");
         draw--;
     }
 #endif
@@ -187,9 +191,7 @@ RendererReturnValue RSM::PostProcessReflectiveShadowMapJob(uint32_t light_index)
     LightType light_type = pLight->GetLightType();
     if (light_type == LightType::Spot || light_type == LightType::Directional)
     {
-        //rc.BindFrameBuffer(m_pIndirecIlluminationFb);
-		m_pIndirecIlluminationFb->SetColorLoadOption(RHIFrameBuffer::Color0, float4(0, 0, 0, 0));
-		m_pIndirecIlluminationFb->SetDepthLoadOption(1.0f);
+		m_pIndirectIlluminationFb->SetColorLoadOption(RHIFrameBuffer::Color0, RHIFrameBuffer::LoadAction::Load);
 
         Matrix4 const& inv_proj = pCam->GetInvProjMatrix();
         Matrix4 const& inv_view = pCam->GetInvViewMatrix();
@@ -218,7 +220,7 @@ RendererReturnValue RSM::PostProcessReflectiveShadowMapJob(uint32_t light_index)
     if (draw)
     {
         static std::string path = "d:\\indirect_illumination.rgba";
-        m_pIndirecIlluminationTex->DumpToFile(path);
+        m_pIndirectIlluminationTex->DumpToFile(path);
         draw--;
     }
 #endif

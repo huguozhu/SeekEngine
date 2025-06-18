@@ -109,6 +109,20 @@ const RenderStateDesc& RenderStateDesc::PostProcess()
     desc.depthStencil.bDepthEnable = false;
     return desc;
 }
+const RenderStateDesc& RenderStateDesc::PostProcessAccumulate()
+{
+    static RenderStateDesc desc;
+    desc.depthStencil.bDepthEnable = false;
+
+    for (uint32_t i = 0; i < 8; ++i)
+    {
+        desc.blend.stTargetBlend[i].bBlendEnable = true;
+        desc.blend.stTargetBlend[i].eBlendOpColor = BlendOperation::Add;
+        desc.blend.stTargetBlend[i].eSrcBlendColor = BlendFactor::One;
+        desc.blend.stTargetBlend[i].eDstBlendColor = BlendFactor::One;
+    }
+    return desc;
+}
 const RenderStateDesc& RenderStateDesc::Skybox()
 {
     static RenderStateDesc desc;

@@ -49,6 +49,8 @@ public:
     RHIFrameBufferPtr&  GetFrameBuffer() { return m_pFrameBuffer; }
     void                SetClear(bool clear) { m_bClear = clear; }
 
+    void                SetPostProcessRenderStateDesc(RenderStateDesc desc);
+
     // so ugly!!! maybe a constant buffer pool for the modern Graphics API(metal/d3d12/vulkan)?
     void                UpdateGlobalParams(const void* data, uint32_t size, bool bForceRecreate = false);
 

@@ -27,6 +27,8 @@ StructuredBuffer<LightInfo> light_infos;
 Texture2D gbuffer0;
 Texture2D gbuffer1;
 Texture2D depth_tex;
+Texture2D indirect_lighting_tex;
+
 #if HAS_SHADOW == 1
 Texture2D shadowing_tex;
 #endif
@@ -99,7 +101,8 @@ float4 main(
 		[branch]
 		if (NoL > 0.0)
 		{	
-			Lo += CalcLightingBRDF(albedo, metallic, roughness, lightInfo.color, lightInfo.intensity, lightAttenuation, N, L, V, shadow);
+			float4 indirect_lighting = indirect_lighting_tex.SampleLevel(point_sampler, iTc, 0);
+			Lo += indirect_lighting + CalcLightingBRDF(albedo, metallic, roughness, lightInfo.color, lightInfo.intensity, lightAttenuation, N, L, V, shadow);
 		}
 	}
 	return float4(Lo, 1.0);

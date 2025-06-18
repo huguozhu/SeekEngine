@@ -125,6 +125,15 @@ public:
     RHIRenderViewPtr            GetRenderTarget(Attachment att) const;
     std::array<RHIRenderViewPtr, MAX_COLOR_ATTACHMENTS> const& GetRenderTargets() const { return m_vRenderTargets; }
     RHIRenderViewPtr const&     GetDepthStencilView() const { return m_pDepthStencilView; }
+
+    enum ClearBufferMask : uint32_t
+    {
+        CBM_Color = 0x01,
+        CBM_Depth = 0x02,
+        CBM_Stencil = 0x04,
+        CBM_ALL = CBM_Color | CBM_Depth | CBM_Stencil,
+    };
+    virtual void Clear(uint32_t flags = CBM_ALL, float4 const& clr = float4(0.0, 0.0, 0.0, 0.0), float depth = 1.0, int32_t stencil = 0) {}
     
     virtual SResult             OnBind() = 0;
     virtual SResult             OnUnbind() = 0;
