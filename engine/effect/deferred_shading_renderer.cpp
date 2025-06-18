@@ -236,7 +236,7 @@ SResult DeferredShadingRenderer::Init()
         m_pLightingTech_HasShadow->SetParam("gbuffer1", m_pGBufferColor1);
         m_pLightingTech_HasShadow->SetParam("depth_tex", m_pSceneDepthStencil);
         m_pLightingTech_HasShadow->SetParam("shadowing_tex", m_pShadowTex);
-        m_pLightingTech_HasShadow->SetParam("indirect_lighting_tex", m_pGI->GetIndirectIlluminationTex());
+        
 
         m_pLightingTech_NoShadow = effect.GetTechnique(szTechName_DeferredLighting, { {"HAS_SHADOW" , "0"}, {"TILE_CULLING", "0"} });
         m_pLightingTech_NoShadow->SetParam("cb_DeferredLightingVSInfo", m_pDeferredLightingInfoCBuffer);
@@ -246,7 +246,12 @@ SResult DeferredShadingRenderer::Init()
         m_pLightingTech_NoShadow->SetParam("gbuffer0", m_pGBufferColor0);
         m_pLightingTech_NoShadow->SetParam("gbuffer1", m_pGBufferColor1);
         m_pLightingTech_NoShadow->SetParam("depth_tex", m_pSceneDepthStencil);
-        m_pLightingTech_NoShadow->SetParam("indirect_lighting_tex", m_pGI->GetIndirectIlluminationTex());
+
+        if (m_pContext->GetGlobalIlluminationMode() != GlobalIlluminationMode::None)
+        {
+            m_pLightingTech_HasShadow->SetParam("indirect_lighting_tex", m_pGI->GetIndirectIlluminationTex());
+            m_pLightingTech_NoShadow->SetParam("indirect_lighting_tex", m_pGI->GetIndirectIlluminationTex());
+        }
     }
     
 	
