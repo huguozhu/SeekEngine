@@ -12,11 +12,14 @@ public:
 	TaaPostProcess(Context* context)
 		: PostProcess(context, "TAA")
 	{ }
-
+	
 	SResult Init();
 	virtual SResult Run() override;
 
+	float2 GetJitter();
+
 private:
+	float2 m_fJitterSize;
 	RHITexturePtr m_pHistoryTex = nullptr;
 
 	RHIRenderBufferPtr m_globalParamCBuffer = nullptr;

@@ -111,7 +111,6 @@ public:
     uint32_t                GetFrameCount()             const { return m_FrameCount; }
     double                  GetCurTime()                const { return m_dCurTime; }
     double                  GetDeltaTime()              const { return m_dDeltaTime; }
-    float2                  GetJitter();
 
     // For edit/debug mode
     void                SetLightingMode(LightingMode lightMode) { m_InitInfo.lighting_mode = lightMode; }

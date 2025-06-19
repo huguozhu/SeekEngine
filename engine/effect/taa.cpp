@@ -23,6 +23,9 @@ SResult TaaPostProcess::Init()
     SEEK_RETIF_FAIL(PostProcess::Init(tech_name, NULL_PREDEFINES));
 
     m_globalParamCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(sizeof(TAAGlobalParams), RESOURCE_FLAG_CPU_WRITE);
+
+    RHITexture::Desc& desc = m_pContext->RHIContextInstance().GetScreenRHIFrameBuffer()->GetRenderTargetDesc(RHIFrameBuffer::Attachment::Color0);
+    m_fJitterSize = float2((float)desc.width, (float)desc.height);
     return S_Success;
 }
 
@@ -43,7 +46,7 @@ SResult TaaPostProcess::Run()
     RHITexture::Desc& desc = rc.GetScreenRHIFrameBuffer()->GetRenderTargetDesc(RHIFrameBuffer::Attachment::Color0);
     TAAGlobalParams global_params;
     global_params.statuses.x() = m_isFirstFrame ? 1 : 0;
-    global_params.jitter = m_pContext->GetJitter();
+    global_params.jitter = this->GetJitter();
     global_params.invScreenSize = float2{ 1.0f / desc.width, 1.0f / desc.height };
     m_globalParamCBuffer->Update(&global_params, sizeof(global_params));
 
@@ -60,7 +63,38 @@ SResult TaaPostProcess::Run()
     m_isFirstFrame = false;
     return ret;
 }
+float2 TaaPostProcess::GetJitter()
+{
+    static const float Halton_2[8] =
+    {
+        0.0,
+        -1.0 / 2.0,
+        1.0 / 2.0,
+        -3.0 / 4.0,
+        1.0 / 4.0,
+        -1.0 / 4.0,
+        3.0 / 4.0,
+        -7.0 / 8.0
+    };
 
+    // 8x TAA
+    static const float Halton_3[8] =
+    {
+        -1.0 / 3.0,
+        1.0 / 3.0,
+        -7.0 / 9.0,
+        -1.0 / 9.0,
+        5.0 / 9.0,
+        -5.0 / 9.0,
+        1.0 / 9.0,
+        7.0 / 9.0
+    };
+
+    uint32_t subsampIndex = m_pContext->GetFrameCount() % 8;
+    float JitterX = Halton_2[subsampIndex] / m_fJitterSize[0];
+    float JitterY = Halton_3[subsampIndex] / m_fJitterSize[1];
+    return float2{ JitterX, JitterY };
+}
 SEEK_NAMESPACE_END
 
 
