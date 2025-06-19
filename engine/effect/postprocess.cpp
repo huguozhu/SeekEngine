@@ -97,7 +97,6 @@ SResult PostProcess::Run()
 
 SResult PostProcess::RunGraphicsPipeline()
 {
-    m_pTechnique->SetParam("GlobalParams", m_GlobalParamsCBuffer);
     m_pPostProcessMesh->SetRenderState(m_pTechnique->GetRenderState());
     return m_pTechnique->Render(m_pPostProcessMesh);
 }
@@ -170,22 +169,6 @@ void PostProcess::SetPostProcessRenderStateDesc(RenderStateDesc desc)
     {
         m_pTechnique->SetRenderStateDesc(desc);
     }
-}
-void PostProcess::UpdateGlobalParams(const void* data, uint32_t size, bool bForceRecreate)
-{
-    if (!m_bInitSucceed)
-        return;
-    
-    if (bForceRecreate)
-        m_GlobalParamsCBuffer.reset();
-    
-    if (!m_GlobalParamsCBuffer)
-    {
-        m_GlobalParamsCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(size, RESOURCE_FLAG_CPU_WRITE);
-    }
-
-    if (m_GlobalParamsCBuffer)
-        m_GlobalParamsCBuffer->Update(data, size);
 }
 /******************************************************************************
  * PostProcessChain

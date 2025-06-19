@@ -3,7 +3,6 @@
 #include "shared/Taa.h"
 
 Texture2D currentTex;
-Texture2D depthTex;
 Texture2D historyTex;
 Texture2D velocityTex;
 

@@ -19,7 +19,7 @@ public:
 	float2 GetJitter();
 
 private:
-	float2 m_fJitterSize;
+	float2 m_fScreenSize;
 	RHITexturePtr m_pHistoryTex = nullptr;
 
 	RHIRenderBufferPtr m_globalParamCBuffer = nullptr;

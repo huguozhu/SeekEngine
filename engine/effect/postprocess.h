@@ -51,9 +51,6 @@ public:
 
     void                SetPostProcessRenderStateDesc(RenderStateDesc desc);
 
-    // so ugly!!! maybe a constant buffer pool for the modern Graphics API(metal/d3d12/vulkan)?
-    void                UpdateGlobalParams(const void* data, uint32_t size, bool bForceRecreate = false);
-
 protected:
     Context*            m_pContext = nullptr;
     std::string         m_szName;
@@ -74,8 +71,6 @@ protected:
     uint32_t            m_iCsDispatchX;
     uint32_t            m_iCsDispatchY;
     uint32_t            m_iCsDispatchZ;
-
-    RHIRenderBufferPtr  m_GlobalParamsCBuffer;
 };
 
 /******************************************************************************
