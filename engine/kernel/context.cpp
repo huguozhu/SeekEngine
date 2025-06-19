@@ -30,39 +30,32 @@ extern "C"
 extern void OutputD3DCommonDebugInfo();
 #endif
 
-Context::Context()
+Context::Context(const RenderInitInfo& init_info)
+    :m_InitInfo(init_info)
 {
-    m_InitInfo.rhi_type = RHIType::D3D11;
-    m_InitInfo.enable_debug = true;
-    m_InitInfo.HDR = true;
-    m_InitInfo.renderer_type = RendererType::Deferred;
-    m_fClearColor = float4(1, 1, 0, 1);
 }
 Context::~Context()
 {
 #if defined(SEEK_PLATFORM_WINDOWS)
-    OutputD3DCommonDebugInfo();
+    if (EnableDebug())
+        OutputD3DCommonDebugInfo();
 #endif
 }
 
-SResult Context::Init(const RenderInitInfo& init_info)
+SResult Context::Init(void* device, void* native_wnd)
 {    
     SResult ret = S_Success;
     do
     {
-        m_InitInfo.renderer_type = init_info.renderer_type;
-        m_InitInfo.gi_mode = init_info.gi_mode;
-        m_InitInfo.anti_aliasing_mode = init_info.anti_aliasing_mode;
-
         // RHIContext
         {
             ret = this->InitRHIContext();
             if (SEEK_CHECKFAILED(ret))
                 break;
-            if (init_info.native_wnd)
+            if (native_wnd)
             {
                 RHIContext& rc = this->RHIContextInstance();
-                SEEK_RETIF_FAIL(rc.AttachNativeWindow("", init_info.native_wnd));
+                SEEK_RETIF_FAIL(rc.AttachNativeWindow("NativeWindow", native_wnd));
                 rc.SetFinalRHIFrameBuffer(rc.GetScreenRHIFrameBuffer());
                 this->SetViewport(rc.GetScreenRHIFrameBuffer()->GetViewport());
             }
@@ -99,7 +92,7 @@ SResult Context::Init(const RenderInitInfo& init_info)
             if (SEEK_CHECKFAILED(ret))
                 break;
         }
-        this->SetFpsLimitType(init_info.fps_limit_type);
+        this->SetFpsLimitType(m_InitInfo.fps_limit_type);
         return S_Success;
     } while (0);
 

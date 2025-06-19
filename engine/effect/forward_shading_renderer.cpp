@@ -55,6 +55,8 @@ SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tech
     jointBindSizePredefine.name = "JOINT_BIND_SIZE";
     jointBindSizePredefine.value = std::to_string((int)mesh->GetSkinningJointBindSize());
 
+    predefines.push_back({ "ENABLE_TAA" , m_pContext->GetAntiAliasingMode() == AntiAliasingMode::TAA ? "1" : "0" });
+
     VirtualTechnique* virtualTech = nullptr;
 
     switch (m_eCurRenderStage)
@@ -105,14 +107,14 @@ SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tech
                 predefines.push_back({ "HAS_MATERIAL_NORMAL_MASK", "1" });
             else
                 predefines.push_back({ "HAS_MATERIAL_NORMAL_MASK", "0" });
-            if (mesh->GetMaterial()->occlusion_tex)
+            /*if (mesh->GetMaterial()->occlusion_tex)
                 predefines.push_back({ "HAS_MATERIAL_OCCLUSION", "1" });
             else
                 predefines.push_back({ "HAS_MATERIAL_OCCLUSION", "0" });
             if (m_pContext->HasPrecomputedIBL())
                 predefines.push_back({ "HAS_IBL", "1" });
             else
-                predefines.push_back({ "HAS_IBL", "0" });
+                predefines.push_back({ "HAS_IBL", "0" });*/
 
             virtualTech = effect.GetVirtualTechnique("ForwardRenderingCommon");
             break;

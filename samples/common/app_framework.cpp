@@ -23,16 +23,13 @@ int APP_RUN(AppFramework* app)
 SResult AppFramework::InitContext(void* device, void* native_wnd)
 {
     RenderInitInfo info;
-    info.enable_debug = false;
-    info.device = device;
-    info.native_wnd = native_wnd;    
+    info.enable_debug = true; 
     info.lighting_mode = LightingMode::Phong;
     info.preferred_adapter = 0;
     info.HDR = false;
 
-    m_pContext = MakeSharedPtr<Context>();
-    SEEK_RETIF_FAIL(m_pContext->Init(info));
-
+    m_pContext = MakeSharedPtr<Context>(info);
+    SEEK_RETIF_FAIL(m_pContext->Init(device, native_wnd));
     
     return S_Success;
 }

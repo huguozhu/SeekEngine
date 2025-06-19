@@ -4,10 +4,10 @@ SEEK_NAMESPACE_BEGIN
 
 void fake()
 {
-
-    Context* pContext = new Context();
     RenderInitInfo info{};
-    pContext->Init(info);
+    Context* pContext = new Context(info);
+    
+    pContext->Init(nullptr, nullptr);
     delete pContext;
 }
 

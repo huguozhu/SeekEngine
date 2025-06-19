@@ -71,17 +71,16 @@ struct RenderInitInfo
     AntiAliasingMode        anti_aliasing_mode = AntiAliasingMode::None;
     FPSLimitType            fps_limit_type = FPSLimitType::FPS_60;
     GlobalIlluminationMode  gi_mode = GlobalIlluminationMode::None;
-    void*                   native_wnd = nullptr;
-    void*                   device = nullptr;
+
 };
 
 class Context
 {
 public:
-    Context();
+    Context(const RenderInitInfo& init_info);
     ~Context();
 
-    SResult                 Init(const RenderInitInfo& init_info);
+    SResult                 Init(void* device, void* native_wnd);
     void                    Uninit();
     void                    SetViewport(Viewport vp);
     Viewport                GetViewport() const { return m_sViewport; }

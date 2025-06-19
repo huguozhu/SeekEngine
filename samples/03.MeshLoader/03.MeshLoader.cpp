@@ -25,10 +25,12 @@ SResult MeshLoader::OnCreate()
     pCam->SetLookAt(float3(0, 2, 0), float3(1, 2, -1), float3(0, 1, 0));
     m_pCameraEntity->AddSceneComponent(pCam);
     m_pCameraEntity->AddToTopScene();
+    m_CameraController.SetCamera(pCam.get());
+    m_CameraController.SetMoveSpeed(0.2);
 
     // Load gltf2 Mesh
     static std::vector<std::string> model_files = {
-        FullPath("asset/Sponza/Sponza.gltf"),
+        FullPath("asset/gltf/Sponza/Sponza.gltf"),
     };
     static int model_selected = 0;
 
@@ -52,7 +54,14 @@ SResult MeshLoader::OnCreate()
 }
 SResult MeshLoader::OnUpdate()
 {    
-    return m_pContext->Update();
+    m_CameraController.Update(m_pContext->GetDeltaTime());
+    SEEK_RETIF_FAIL(m_pContext->Tick());
+    SEEK_RETIF_FAIL(m_pContext->BeginRender());
+    SEEK_RETIF_FAIL(m_pContext->RenderFrame());
+    IMGUI_Begin();
+    IMGUI_Rendering();
+    SEEK_RETIF_FAIL(m_pContext->EndRender());
+    return S_Success;
 }
 
 int main()
