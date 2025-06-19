@@ -40,7 +40,7 @@ static const std::string szTechName_GenerateGBuffer = "GenerateGBuffer";
 static const std::string szTechName_DeferredLighting = "DeferredLighting";
 static const std::string szTechName_SSAO = "SSAO";
 static const std::string szTechName_LightCulling = "LightCullingCS";
-static const std::string szTechName_GenerateReflectiveShadowMap = "GenerateReflectiveShadowMap";
+static const std::string szTechName_GenerateRsm = "GenerateRsm";
 static const std::string szTechName_GenerateCascadedShadowMap = "GenerateCascadedShadowMap";
 
 LightInfo DeferredShadingRenderer::s_LightInfos[MAX_DEFERRED_LIGHTS_NUM];
@@ -202,6 +202,8 @@ SResult DeferredShadingRenderer::Init()
     effect.LoadTechnique(szTechName_GenerateGBuffer,    &RenderStateDesc::GBuffer(),    "MeshRenderingVS",      "GenerateGBufferPS");
     effect.LoadTechnique(szTechName_DeferredLighting,   &RenderStateDesc::Lighting(),   "DeferredLightingVS",   "DeferredLightingPS");
     effect.LoadTechnique(szTechName_SSAO,               &RenderStateDesc::PostProcess(),"SsaoVS",               "SsaoPS");
+    effect.LoadTechnique(szTechName_GenerateRsm,        &RenderStateDesc::Default3D(),  "MeshRenderingVS",      "GenerateRsmPS");
+
     
     if (use_tile_culling)
     {
@@ -453,17 +455,8 @@ SResult DeferredShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tec
 
     // Predefines
     std::vector<EffectPredefine> predefines;
-
-    EffectPredefine jointBindSizePredefine;
-    jointBindSizePredefine.name = "JOINT_BIND_SIZE";
-    jointBindSizePredefine.value = std::to_string((int)mesh->GetSkinningJointBindSize());
-
-    EffectPredefine morphTypePredefine;
-    morphTypePredefine.name = "MORPH_TYPE";
-    morphTypePredefine.value = std::to_string((int)morph_target_type);
-    
-    predefines.push_back(jointBindSizePredefine);
-    predefines.push_back(morphTypePredefine);
+    predefines.push_back({ "JOINT_BIND_SIZE",  std::to_string((int)mesh->GetSkinningJointBindSize()) });
+    predefines.push_back({ "MORPH_TYPE",  std::to_string((int)morph_target_type) });
 
     switch (m_eCurRenderStage)
     {
@@ -474,16 +467,8 @@ SResult DeferredShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tec
     case RenderStage::GenerateCascadedShadowMap:
     {
         uint32_t has_tex_normal = mesh->GetMaterial()->normal_tex ? 1 : 0;
-        EffectPredefine hasNormalTexPredefine;
-        hasNormalTexPredefine.name = "HAS_MATERIAL_NORMAL";
-        hasNormalTexPredefine.value = std::to_string(has_tex_normal);
-
-        EffectPredefine enableTAAPredefine;
-        enableTAAPredefine.name = "ENABLE_TAA";
-        enableTAAPredefine.value = m_pContext->GetAntiAliasingMode() == AntiAliasingMode::TAA ? "1" : "0";
-
-        predefines.push_back(hasNormalTexPredefine);
-        predefines.push_back(enableTAAPredefine);
+        predefines.push_back({ "HAS_MATERIAL_NORMAL" , std::to_string(has_tex_normal) });
+        predefines.push_back({ "ENABLE_TAA" , m_pContext->GetAntiAliasingMode() == AntiAliasingMode::TAA ? "1" : "0" });
 
         if (m_eCurRenderStage == RenderStage::GenerateGBuffer)
             *tech = effect.GetTechnique(szTechName_GenerateGBuffer, predefines);        
@@ -494,11 +479,9 @@ SResult DeferredShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tec
     case RenderStage::GenerateReflectiveShadowMap:
     {
         uint32_t has_tex_normal = mesh->GetMaterial()->normal_tex ? 1 : 0;
-        EffectPredefine hasNormalTexPredefine;
-        hasNormalTexPredefine.name = "HAS_MATERIAL_NORMAL";
-        hasNormalTexPredefine.value = std::to_string(has_tex_normal);
-        predefines.push_back(hasNormalTexPredefine);
-        *tech = effect.GetTechnique(szTechName_GenerateReflectiveShadowMap, predefines);
+        predefines.push_back({ "HAS_MATERIAL_NORMAL", std::to_string(has_tex_normal) });
+        predefines.push_back({ "ENABLE_TAA", "0" });
+        *tech = effect.GetTechnique(szTechName_GenerateRsm, predefines);
         break;
     }
     case RenderStage::None:

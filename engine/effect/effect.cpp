@@ -17,42 +17,14 @@ SResult Effect::Initialize()
 
 void Effect::LoadDefaultVirtualTechniques()
 {
-    auto VirtualTechniqueLoader = [&](const char* name, const RenderStateDesc* pDefaultRenderStateDesc, 
-        const char* vertexShaderName, const char* pixelShaderName, const char* computeShaderName)
-    {
-        VirtualTechniquePtrUnique virtualTech = MakeUniquePtr<VirtualTechnique>(m_pContext);
-        virtualTech->SetName(name);
-        if (pDefaultRenderStateDesc)
-            virtualTech->SetDefaultRenderState(*pDefaultRenderStateDesc);
-        if (vertexShaderName)
-            virtualTech->SetShaderName(ShaderType::Vertex, vertexShaderName);
-        if (pixelShaderName)
-            virtualTech->SetShaderName(ShaderType::Pixel, pixelShaderName);
-        if (computeShaderName)
-            virtualTech->SetShaderName(ShaderType::Compute, computeShaderName);
-        SResult ret = virtualTech->Build();
-        if (SEEK_CHECKFAILED(ret))
-        {
-            LOG_ERROR("load default VirtualTechnique %s fail", name);
-            return;
-        }
-        
-        m_VirtualTechniques[name] = std::move(virtualTech);
-    };
-
-    // FIXME: don't hard code. Load depend on the embedded resources.
-    VirtualTechniqueLoader("ForwardRenderingCommon", &RenderStateDesc::Default3D(), "MeshRenderingVS", "ForwardRenderingCommonPS", nullptr);
-    VirtualTechniqueLoader("ToneMapping", &RenderStateDesc::PostProcess(), "PostProcessVS", "ToneMappingPS", nullptr);
+    LoadTechnique("ForwardRenderingCommon", &RenderStateDesc::Default3D(), "MeshRenderingVS", "ForwardRenderingCommonPS", nullptr);
+    LoadTechnique("ToneMapping", &RenderStateDesc::PostProcess(), "PostProcessVS", "ToneMappingPS", nullptr);
 
     if (m_pContext->EnableShadow())
     {
-        VirtualTechniqueLoader("GenerateShadowMap", &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "EmptyPS", nullptr);
-        VirtualTechniqueLoader("GenerateCubeShadowMap", &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "GenerateCubeShadowMapPS", nullptr);
-        VirtualTechniqueLoader("GenerateCascadedShadowMap", &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "GenerateCascadedShadowMapPS", nullptr);
-    }
-    if (m_pContext->GetGlobalIlluminationMode() != GlobalIlluminationMode::None)
-    {
-        VirtualTechniqueLoader("GenerateReflectiveShadowMap", &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "GenerateReflectiveShadowMapPS", nullptr);
+        LoadTechnique("GenerateShadowMap", &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "EmptyPS", nullptr);
+        LoadTechnique("GenerateCubeShadowMap", &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "GenerateCubeShadowMapPS", nullptr);
+        LoadTechnique("GenerateCascadedShadowMap", &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "GenerateCascadedShadowMapPS", nullptr);
     }
 }
 
