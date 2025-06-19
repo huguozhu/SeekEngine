@@ -33,7 +33,7 @@ extern void OutputD3DCommonDebugInfo();
 Context::Context()
 {
     m_InitInfo.rhi_type = RHIType::D3D11;
-    m_InitInfo.debug = true;
+    m_InitInfo.enable_debug = true;
     m_InitInfo.HDR = true;
     m_InitInfo.renderer_type = RendererType::Deferred;
     m_fClearColor = float4(1, 1, 0, 1);
@@ -164,13 +164,6 @@ SResult Context::BeginRender()
     {
         m_pSceneRenderer->SetViewport(m_sViewport);
         m_bViewportChanged = false;
-    }
-    if (0)
-    {
-        static uint32_t MainThread_Index = 0;
-        double var = Timer::CurrentTimeSinceEpoch_S();
-        LOG_INFO("MainThread Index:  %6d:  time = %20f", MainThread_Index++, var);
-        ::_sleep(10);
     }
     return S_Success;
 }

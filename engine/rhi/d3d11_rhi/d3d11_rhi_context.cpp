@@ -51,7 +51,7 @@ D3D11RHIContext::~D3D11RHIContext()
 
 SResult D3D11RHIContext::Init()
 {
-    SEEK_RETIF_FAIL(DxgiHelper::Init(m_pContext->GetPreferredAdapter(), m_pContext->IsDebug()));
+    SEEK_RETIF_FAIL(DxgiHelper::Init(m_pContext->GetPreferredAdapter(), m_pContext->EnableDebug()));
     do {        
 
         if (!s_d3d11.Load())
@@ -71,7 +71,7 @@ SResult D3D11RHIContext::Init()
         }
 
         UINT flags = 0;
-        if (m_pContext->IsDebug())
+        if (m_pContext->EnableDebug())
         {
             flags |= D3D11_CREATE_DEVICE_DEBUG;
         }
@@ -117,7 +117,7 @@ SResult D3D11RHIContext::Init()
                 flags &= ~D3D11_CREATE_DEVICE_DEBUG;
                 continue;
             }
-            if (m_pContext->IsDebug())
+            if (m_pContext->EnableDebug())
             {
                 flags |= D3D11_CREATE_DEVICE_DEBUG;
             }
@@ -142,7 +142,7 @@ SResult D3D11RHIContext::Init()
         //    m_vAdapterList[m_iCurAdapterNo]->ResetAdapter(adapter1.Get());
         //}
 
-        if (m_pContext->IsDebug())
+        if (m_pContext->EnableDebug())
         {
             ComPtr<ID3D11Debug> d3dDebug = nullptr;
             if (SUCCEEDED(m_pDevice.As(&d3dDebug)))

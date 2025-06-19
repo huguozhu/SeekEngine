@@ -137,12 +137,4 @@ inline std::unique_ptr<T> MakeUniquePtr(Args&& ... args)
 #define MakeSharedPtrMacro(CLASS, ...) std::make_shared<CLASS>(__VA_ARGS__)
 #define MakeUniquePtrMacro(CLASS, ...) std::unique_ptr<CLASS>(new CLASS(__VA_ARGS__), std::default_delete<CLASS>())
 
-enum class RendererType
-{
-    Unknown,
-    Forward,
-    Deferred,
-};
-
-
 SEEK_NAMESPACE_END

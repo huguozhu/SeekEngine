@@ -36,7 +36,7 @@ D3D12RHIContext::D3D12RHIContext(Context* context)
 
 SResult D3D12RHIContext::Init()
 {
-    SEEK_RETIF_FAIL(DxgiHelper::Init(m_pContext->GetPreferredAdapter(), m_pContext->IsDebug()));
+    SEEK_RETIF_FAIL(DxgiHelper::Init(m_pContext->GetPreferredAdapter(), m_pContext->EnableDebug()));
     do {
         HRESULT hr = S_OK;
         if (!s_d3d12.Load())
@@ -55,7 +55,7 @@ SResult D3D12RHIContext::Init()
             }
         }
 
-        if (m_pContext->IsDebug())
+        if (m_pContext->EnableDebug())
         {
             if (!FUNC_D3D12GetDebugInterface)
             {

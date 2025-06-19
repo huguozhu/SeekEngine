@@ -84,7 +84,6 @@ SResult GlobalIlluminationSample::OnUpdate()
 SResult GlobalIlluminationSample::InitContext(void* device, void* native_wnd)
 {
     RenderInitInfo info;
-    info.debug = false;
     info.device = device;
     info.native_wnd = native_wnd;
     info.renderer_type = RendererType::Deferred;

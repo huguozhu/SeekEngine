@@ -9,6 +9,12 @@
 
 SEEK_NAMESPACE_BEGIN
 
+enum class RendererType : uint32_t
+{
+    Unknown,
+    Forward,
+    Deferred,
+};
 
 enum class RHIType : uint32_t
 {
@@ -20,7 +26,7 @@ enum class RHIType : uint32_t
     GLES,       // not supported yet
 };
 
-enum class LightingMode
+enum class LightingMode : uint32_t
 {
     Phong,
     PBR,
@@ -50,23 +56,23 @@ enum class GlobalIlluminationMode : uint32_t
 };
 struct RenderInitInfo
 {
-    bool                    debug = false;
-    bool                    enable_profile = false;
-    bool                    enable_transparent = false;
-    bool                    enable_ambient_occlusion = false;
-    bool                    enable_capture = false;
-    bool                    HDR = false;
+    uint32_t                enable_debug = false;
+    uint32_t                enable_profile = false;
+    uint32_t                enable_transparent = false;
+    uint32_t                enable_ambient_occlusion = false;
+    uint32_t                enable_capture = false;
+    uint32_t                HDR = false;
     RHIType                 rhi_type = RHIType::D3D11;
     uint32_t                num_samples = 1;
     int32_t                 preferred_adapter = 0;
     LightingMode            lighting_mode = LightingMode::Phong;
     RendererType            renderer_type = RendererType::Forward;
-    void*                   native_wnd = nullptr;
-    void*                   device = nullptr;
 
     AntiAliasingMode        anti_aliasing_mode = AntiAliasingMode::None;
     FPSLimitType            fps_limit_type = FPSLimitType::FPS_60;
     GlobalIlluminationMode  gi_mode = GlobalIlluminationMode::None;
+    void*                   native_wnd = nullptr;
+    void*                   device = nullptr;
 };
 
 class Context
@@ -90,7 +96,7 @@ public:
     float4                  GetClearColor() const { return m_fClearColor; }
 
     bool                    EnableProfile()             const { return m_InitInfo.enable_profile; }
-    bool                    IsDebug()                   const { return m_InitInfo.debug; }
+    bool                    EnableDebug()               const { return m_InitInfo.enable_debug; }
     bool                    EnableTransparent()         const { return m_InitInfo.enable_transparent; }
     bool                    EnableAmbientOcclusion()    const { return m_InitInfo.enable_ambient_occlusion;}  
     int32_t                 GetPreferredAdapter()       const { return m_InitInfo.preferred_adapter; }
@@ -131,7 +137,6 @@ private:
 
 private:
     RenderInitInfo              m_InitInfo{};
-    Semaphore                   m_MainThreadSemaphore;
 
     RHIContextPtrUnique         m_pRHIContext;
     SceneManagerPtrUnique       m_pSceneManager;

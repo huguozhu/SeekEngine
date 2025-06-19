@@ -71,7 +71,7 @@ SResult D3D11Shader::OnCompile()
     ID3DBlob* pError = nullptr;
     ID3DBlobPtr pCode = nullptr;
     DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
-    if (m_pContext->IsDebug())
+    if (m_pContext->EnableDebug())
         dwShaderFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
 
     LPCVOID code_data = nullptr;

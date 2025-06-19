@@ -185,7 +185,7 @@ SResult DeferredShading::OnUpdate()
 SResult DeferredShading::InitContext(void* device, void* native_wnd)
 {
     RenderInitInfo info;
-    info.debug = false;
+    info.enable_debug = false;
     info.device = device;
     info.native_wnd = native_wnd;
     info.lighting_mode = LightingMode::Phong;

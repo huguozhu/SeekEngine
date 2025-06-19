@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include "kernel/context.h"
 #include "kernel/kernel.h"
 #include "rhi/base/viewport.h"
 #include "rhi/base/rhi_query.h"
