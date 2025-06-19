@@ -20,12 +20,10 @@ void Effect::LoadDefaultVirtualTechniques()
     LoadTechnique("ForwardRenderingCommon", &RenderStateDesc::Default3D(), "MeshRenderingVS", "ForwardRenderingCommonPS", nullptr);
     LoadTechnique("ToneMapping", &RenderStateDesc::PostProcess(), "PostProcessVS", "ToneMappingPS", nullptr);
 
-    if (m_pContext->EnableShadow())
-    {
-        LoadTechnique("GenerateShadowMap", &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "EmptyPS", nullptr);
-        LoadTechnique("GenerateCubeShadowMap", &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "GenerateCubeShadowMapPS", nullptr);
-        LoadTechnique("GenerateCascadedShadowMap", &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "GenerateCascadedShadowMapPS", nullptr);
-    }
+    LoadTechnique("GenerateShadowMap", &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "EmptyPS", nullptr);
+    LoadTechnique("GenerateCubeShadowMap", &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "GenerateCubeShadowMapPS", nullptr);
+    LoadTechnique("GenerateCascadedShadowMap", &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "GenerateCascadedShadowMapPS", nullptr);
+
 }
 
 RHIShader* Effect::CreateShader(ShaderType stage, const ShaderResourcePtr& shaderRes)

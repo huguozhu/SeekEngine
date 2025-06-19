@@ -244,13 +244,6 @@ void IMGUI_ShowControl(Context* ctx, void* app_framework)
             if (ImGui::Checkbox("HDR", &b))
                 ctx->SetHDR(b);
         }
-        // Shadow
-        {
-            bool b = ctx->EnableShadow();
-            ImGui::SameLine();
-            if (ImGui::Checkbox("Shadow", &b))
-                ctx->SetShadow(b);
-        }
         // AO
         {
             bool b = ctx->EnableAmbientOcclusion();

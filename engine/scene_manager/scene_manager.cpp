@@ -408,7 +408,7 @@ RHIRenderBufferPtr& SceneManager::GetLightInfoCBuffer()
         info.falloffRadius = light->GetFalloffRadius();
         info.posWorld = light->GetLightPos();
         info.intensity = light->GetIntensity() * exposure;
-        info.castShadow = (int)m_pContext->EnableShadow() ? (int)light->CastShadow() : 0;
+        info.castShadow = (int)light->CastShadow();
         info.useSoftShadow = (int)light->SoftShadow();
         info.shadowBias = light->GetShadowBias();
         if (light->GetShadowMapCamera())

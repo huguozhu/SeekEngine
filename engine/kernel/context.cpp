@@ -44,43 +44,15 @@ Context::~Context()
     OutputD3DCommonDebugInfo();
 #endif
 }
-SResult Context::InitRHIContext()
-{
-    if (m_InitInfo.rhi_type == RHIType::D3D11)
-        MakeD3D11RHIContext(this, m_pRHIContext);
-    else if (m_InitInfo.rhi_type == RHIType::D3D12)
-        MakeD3D12RHIContext(this, m_pRHIContext);
-    else  if (m_InitInfo.rhi_type == RHIType::Vulkan)
-        MakeVulkanRHIContext(this, m_pRHIContext);
-    SResult ret = m_pRHIContext->Init();
-    if (SEEK_CHECKFAILED(ret))
-    {
-        LOG_ERROR("m_pRHIContext->Init() error, ret:0X%X", ret);
-        m_pRHIContext.reset();
-        return ret;
-    }
 
-    CapabilitySet const& cap = m_pRHIContext->GetCapabilitySet();
-    /// Set sampleCount
-    uint32_t num_samples = Math::Min<uint32_t>(m_InitInfo.num_samples, CAP_MAX_TEXTURE_SAMPLE_COUNT);
-    if (!cap.TextureSampleCountSupport[num_samples])
-    {
-        for (; num_samples > 0; num_samples--)
-        {
-            if (cap.TextureSampleCountSupport[num_samples]) break;
-        }
-        if (num_samples < 1) num_samples = 1;
-        LOG_INFO("Not support TextureSampleCount %d, set to %d", m_InitInfo.num_samples, num_samples);
-        m_InitInfo.num_samples = num_samples;
-    }
-    return S_Success;
-}
 SResult Context::Init(const RenderInitInfo& init_info)
 {    
     SResult ret = S_Success;
     do
     {
-        m_InitInfo = init_info;
+        m_InitInfo.renderer_type = init_info.renderer_type;
+        m_InitInfo.gi_mode = init_info.gi_mode;
+
         // RHIContext
         {
             ret = this->InitRHIContext();
@@ -285,5 +257,37 @@ void Context::SetFpsLimitType(FPSLimitType b)
     case FPSLimitType::NoLImit:
     default: m_fMinFrameTime = 0.0f;
     }
+}
+
+SResult Context::InitRHIContext()
+{
+    if (m_InitInfo.rhi_type == RHIType::D3D11)
+        MakeD3D11RHIContext(this, m_pRHIContext);
+    else if (m_InitInfo.rhi_type == RHIType::D3D12)
+        MakeD3D12RHIContext(this, m_pRHIContext);
+    else  if (m_InitInfo.rhi_type == RHIType::Vulkan)
+        MakeVulkanRHIContext(this, m_pRHIContext);
+    SResult ret = m_pRHIContext->Init();
+    if (SEEK_CHECKFAILED(ret))
+    {
+        LOG_ERROR("m_pRHIContext->Init() error, ret:0X%X", ret);
+        m_pRHIContext.reset();
+        return ret;
+    }
+
+    CapabilitySet const& cap = m_pRHIContext->GetCapabilitySet();
+    /// Set sampleCount
+    uint32_t num_samples = Math::Min<uint32_t>(m_InitInfo.num_samples, CAP_MAX_TEXTURE_SAMPLE_COUNT);
+    if (!cap.TextureSampleCountSupport[num_samples])
+    {
+        for (; num_samples > 0; num_samples--)
+        {
+            if (cap.TextureSampleCountSupport[num_samples]) break;
+        }
+        if (num_samples < 1) num_samples = 1;
+        LOG_INFO("Not support TextureSampleCount %d, set to %d", m_InitInfo.num_samples, num_samples);
+        m_InitInfo.num_samples = num_samples;
+    }
+    return S_Success;
 }
 SEEK_NAMESPACE_END

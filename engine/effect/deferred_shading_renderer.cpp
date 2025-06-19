@@ -280,17 +280,14 @@ SResult DeferredShadingRenderer::Init()
     
 
     // Shadow
-    if (m_pContext->EnableShadow())
+    if (!m_pShadowLayer)
     {
-        if (!m_pShadowLayer)
+        m_pShadowLayer = MakeSharedPtr<DeferredShadowLayer>(m_pContext);
+        SResult ret = m_pShadowLayer->InitResource();
+        if (SEEK_CHECKFAILED(ret))
         {
-            m_pShadowLayer = MakeSharedPtr<DeferredShadowLayer>(m_pContext);
-            SResult ret = m_pShadowLayer->InitResource();
-            if (SEEK_CHECKFAILED(ret))
-            {
-                LOG_ERROR_PRIERR(ret, "DeferredShadingRenderer::Init Shadow InitResource fail.");
-                return ret;
-            }
+            LOG_ERROR_PRIERR(ret, "DeferredShadingRenderer::Init Shadow InitResource fail.");
+            return ret;
         }
     }
 
@@ -339,16 +336,13 @@ SResult DeferredShadingRenderer::BuildRenderJobList()
 
     // Shadow Map job
     BEGIN_TIMEQUERY(m_pTimeQueryGenShadowMap);
-    if (m_pContext->EnableShadow())
+    m_pShadowLayer->AnalyzeLightShadow();
+    for (uint32_t i = 0; i < light_count; i++)
     {
-        m_pShadowLayer->AnalyzeLightShadow();
-        for (uint32_t i = 0; i < light_count; i++)
+        LightComponent* pLight = sm.GetLightComponentByIndex((uint32_t)i);
+        if (pLight->IsEnable() && pLight->CastShadow())
         {
-            LightComponent* pLight = sm.GetLightComponentByIndex((uint32_t)i);
-            if (pLight->IsEnable() && pLight->CastShadow())
-            {
-                this->AppendShadowMapJobs(i);
-            }
+            this->AppendShadowMapJobs(i);
         }
     }
     END_TIMEQUERY(m_pTimeQueryGenShadowMap);

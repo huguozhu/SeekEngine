@@ -134,18 +134,15 @@ SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tech
     return *tech ? S_Success : ERR_INVALID_SHADER;
 }
 SResult ForwardShadingRenderer::Init()
-{    
-    if (m_pContext->EnableShadow())
+{
+    if (!m_pShadowLayer)
     {
-        if (!m_pShadowLayer)
+        m_pShadowLayer = MakeSharedPtr<ForwardShadowLayer>(m_pContext);
+        SResult ret = m_pShadowLayer->InitResource();
+        if (SEEK_CHECKFAILED(ret))
         {
-            m_pShadowLayer = MakeSharedPtr<ForwardShadowLayer>(m_pContext);
-            SResult ret = m_pShadowLayer->InitResource();
-            if (SEEK_CHECKFAILED(ret))
-            {
-                LOG_ERROR_PRIERR(ret, "ForwardShadingRenderer::Init Shadow InitResource fail.");
-                return ret;
-            }
+            LOG_ERROR_PRIERR(ret, "ForwardShadingRenderer::Init Shadow InitResource fail.");
+            return ret;
         }
     }
     return SceneRenderer::Init();
@@ -174,7 +171,7 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
     // Shadow Map jobs
     SceneManager& sm = m_pContext->SceneManagerInstance();
     size_t light_count = sm.NumLightComponent();
-	if (light_count > 0 && m_pContext->EnableShadow())
+	if (light_count > 0)
 	{
         m_pShadowLayer->AnalyzeLightShadow();
         for (size_t i = 0; i < light_count; i++)

@@ -10,7 +10,7 @@
 SEEK_NAMESPACE_BEGIN
 
 
-enum class RHIType
+enum class RHIType : uint32_t
 {
     Unknown,
     D3D11,
@@ -27,20 +27,20 @@ enum class LightingMode
 };
 static const float PBR_INTENSITY_COEFF = 120000.0f;
 
-enum class AntiAliasingMode
+enum class AntiAliasingMode : uint32_t
 {
     None,
     TAA,
     FXAA,
 };
-enum class FPSLimitType
+enum class FPSLimitType : uint32_t
 {
     NoLImit,
     FPS_30,
     FPS_60,
     FPS_120,
 };
-enum class GlobalIlluminationMode
+enum class GlobalIlluminationMode : uint32_t
 {
     None,
     RSM,
@@ -52,13 +52,11 @@ struct RenderInitInfo
 {
     bool                    debug = false;
     bool                    enable_profile = false;
-    bool                    enable_watermark = true;
     bool                    enable_transparent = false;
     bool                    enable_ambient_occlusion = false;
     bool                    enable_capture = false;
-    bool                    enable_shadow = true;
-    RHIType                 rhi_type = RHIType::D3D11;
     bool                    HDR = false;
+    RHIType                 rhi_type = RHIType::D3D11;
     uint32_t                num_samples = 1;
     int32_t                 preferred_adapter = 0;
     LightingMode            lighting_mode = LightingMode::Phong;
@@ -92,11 +90,9 @@ public:
     float4                  GetClearColor() const { return m_fClearColor; }
 
     bool                    EnableProfile()             const { return m_InitInfo.enable_profile; }
-    bool                    EnableWaterWark()           const { return m_InitInfo.enable_watermark; }
     bool                    IsDebug()                   const { return m_InitInfo.debug; }
     bool                    EnableTransparent()         const { return m_InitInfo.enable_transparent; }
-    bool                    EnableAmbientOcclusion()    const { return m_InitInfo.enable_ambient_occlusion;}    
-	bool                    EnableShadow()              const { return m_InitInfo.enable_shadow; }
+    bool                    EnableAmbientOcclusion()    const { return m_InitInfo.enable_ambient_occlusion;}  
     int32_t                 GetPreferredAdapter()       const { return m_InitInfo.preferred_adapter; }
     uint32_t                GetNumSamples()             const { return m_InitInfo.num_samples; }
     bool                    IsHDR()                     const { return m_InitInfo.HDR; }
@@ -115,7 +111,6 @@ public:
     void                SetLightingMode(LightingMode lightMode) { m_InitInfo.lighting_mode = lightMode; }
     void                SetAntiAliasingMode(AntiAliasingMode mode) { m_InitInfo.anti_aliasing_mode = mode; }
     void                SetHDR(bool b) { m_InitInfo.HDR = b; }
-    void                SetShadow(bool b) { m_InitInfo.enable_shadow = b; }
     void                SetEnableTransparent(bool b) { m_InitInfo.enable_transparent = b; }
     void                SetEnableAmbientOcclusion(bool b) { m_InitInfo.enable_ambient_occlusion = b; }
     void                SetFpsLimitType(FPSLimitType b);
