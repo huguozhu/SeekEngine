@@ -45,7 +45,7 @@ void FirstPersonCameraController::Update(float delta_time)
         }
     }
 
-    Quaternion quat = Math::FromYawPitchRoll(-yaw, -pitch, 0.0f);
+    Quaternion quat = Math::FromPitchYawRoll(-pitch, -yaw, 0.0f);
     m_pCamera->WorldRotate(quat);
     m_pCamera->GetOwner()->GetRootComponent()->WorldTranslate(Math::Normalize(m_MoveDir) * m_fMoveVelocity * delta_time);
 }

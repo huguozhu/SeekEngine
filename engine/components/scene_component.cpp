@@ -143,7 +143,7 @@ float3 SceneComponent::GetWorldEulerRotation()
 void SceneComponent::SetWorldEulerRotation(float3 euler_rot)
 {
     SetWorldDirty();
-    Quaternion q = Math::FromYawPitchRoll(euler_rot[1], euler_rot[0], euler_rot[2]);
+    Quaternion q = Math::FromPitchYawRoll(euler_rot[0], euler_rot[1], euler_rot[2]);
     RefreshWorldBasedLocal();
     m_cWorld.SetRotation(q);
     RefreshLocalBasedWorld();

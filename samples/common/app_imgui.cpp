@@ -203,7 +203,7 @@ void IMGUI_ShowTransform(Context* ctx, bool supportMouse)
                 if (sc)
                 {
                     float3 scale = float3(transform_model_scale);
-                    Quaternion quat = Math::FromYawPitchRoll(transform_model_yaw, transform_model_pitch, transform_model_roll);
+                    Quaternion quat = Math::FromPitchYawRoll(transform_model_pitch, transform_model_yaw, transform_model_roll);
                     sc->SetLocalScale(scale);
                     sc->SetLocalRotation(quat);
                     sc->SetLocalTranslation(transform_model_translation);

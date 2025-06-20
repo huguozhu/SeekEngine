@@ -371,45 +371,6 @@ Matrix4 Rotation(float const& x, float const& y, float const& z)
     Matrix4 rot_z = RotationZ(z);
     return rot_z * rot_x * rot_y;
 }
-void ToYawPitchRoll(float& yaw, float& pitch, float& roll, Quaternion const& quat)
-{
-    float x = quat.x();
-    float y = quat.y();
-    float z = quat.z();
-    float w = quat.w();
-
-    float sqx = x * x;
-    float sqy = y * y;
-    float sqz = z * z;
-    float sqw = w * w;
-
-    float unit = sqx + sqy + sqz + sqw;
-    float test = w*x + y*z;
-
-    if (test > 0.499f * unit)
-    {
-        // singularity at north pole
-        yaw = 2 * atan2(quat.z(), quat.w());
-        pitch = PI / 2;
-        roll = 0;
-    }
-    else
-    {
-        if (test < -0.499f * unit)
-        {
-            // singularity at south pole
-            yaw = -2 * atan2(quat.z(), quat.w());
-            pitch = -PI / 2;
-            roll = 0;
-        }
-        else
-        {
-            yaw  = atan2(2 * (w*y - x*z), -sqx - sqy + sqz + sqw);
-            pitch = asin(2 * test / unit);
-            roll = atan2(2 * (w*z - x*y), -sqx + sqy - sqz + sqw);
-        }
-    }
-}
 void ToPitchYawRoll(float& pitch, float& yaw, float& roll, Quaternion const& quat)
 {
     float x = quat.x();
@@ -448,24 +409,6 @@ void ToPitchYawRoll(float& pitch, float& yaw, float& roll, Quaternion const& qua
             roll = atan2(2 * (w * z + y * x), -sqy + sqx - sqz + sqw);
         }
     }
-}
-Quaternion FromYawPitchRoll(float yaw, float pitch, float roll)
-{
-    float angX(pitch / 2), angY(yaw / 2), angZ(roll / 2);
-    float sx, sy, sz;
-    float cx, cy, cz;
-    sx = sin(angX);
-    cx = cos(angX);
-    sy = sin(angY);
-    cy = cos(angY);
-    sz = sin(angZ);
-    cz = cos(angZ);
-
-    return Quaternion(
-        cy * sx * cz - sy * cx * sz,
-        cy * sx * sz + sy * cx * cz,
-        sy * sx * cz + cy * cx * sz,
-        cy * cx * cz - sy * sx * sz);
 }
 Quaternion FromPitchYawRoll(float pitch, float yaw, float roll)
 {
