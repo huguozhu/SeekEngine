@@ -8,11 +8,21 @@ void FirstPersonCameraController::Update(float delta_time)
         return;
 
     ImGuiIO& io = ImGui::GetIO();
-    float yaw = 0.0f, pitch = 0.0f;
+    
     if (ImGui::IsMouseDragging(ImGuiMouseButton_Right))
     {
-        yaw += io.MouseDelta.x * m_fMouseSensitivityX;
-        pitch += io.MouseDelta.y * m_fMouseSensitivityY;
+        static const float MAX_RAG = 88.0f * Math::DEG2RAD;
+        float yaw = io.MouseDelta.x * m_fMouseSensitivityX;
+        float pitch = io.MouseDelta.y * m_fMouseSensitivityY;
+        float3 euler_rot = m_pCamera->GetWorldEulerRotation();
+        euler_rot[0] += pitch;
+        euler_rot[1] += yaw;
+        euler_rot[2] = 0.0f;
+        if (euler_rot[0] > MAX_RAG)
+            euler_rot[0] = MAX_RAG;
+        if (euler_rot[0] < -MAX_RAG)
+            euler_rot[0] = -MAX_RAG;
+        m_pCamera->SetWorldEulerRotation(euler_rot);
     }
 
     int forward = (
@@ -43,11 +53,8 @@ void FirstPersonCameraController::Update(float delta_time)
         {
             m_fMoveVelocity = 0.0f;
         }
-    }
-
-    Quaternion quat = Math::FromPitchYawRoll(-pitch, -yaw, 0.0f);
-    m_pCamera->WorldRotate(quat);
-    m_pCamera->GetOwner()->GetRootComponent()->WorldTranslate(Math::Normalize(m_MoveDir) * m_fMoveVelocity * delta_time);
+    }    
+    m_pCamera->WorldTranslate(Math::Normalize(m_MoveDir) * m_fMoveVelocity * delta_time);
 }
 
 SEEK_NAMESPACE_END
