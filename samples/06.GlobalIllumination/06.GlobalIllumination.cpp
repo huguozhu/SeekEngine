@@ -66,6 +66,7 @@ SResult GlobalIlluminationSample::OnCreate()
         m_pGltfMeshEntity[i]->AddToTopScene();
         m_pContext->SceneManagerInstance().PrintTree();
     }
+    this->AddSkyboxEntity();
 
     return S_Success;
 }
@@ -95,6 +96,39 @@ SResult GlobalIlluminationSample::InitContext(void* device, void* native_wnd)
     SEEK_RETIF_FAIL(m_pContext->Init(device, native_wnd));
 
     return S_Success;
+}
+void GlobalIlluminationSample::AddSkyboxEntity()
+{
+    // Step4 add SkyBox Entity
+    RHITexture::Desc desc;
+    desc.type = TextureType::Cube;
+    desc.width = 1024;
+    desc.height = 1024;
+    desc.depth = 1;
+    desc.num_mips = 1;
+    desc.num_samples = 1;
+    desc.format = PixelFormat::R8G8B8A8_UNORM;
+    desc.flags = RESOURCE_FLAG_SHADER_RESOURCE;
+    std::vector<BitmapBufferPtr> datas(6, nullptr);
+    std::string cube_files[6] = {
+        FullPath("asset/textures/skybox/positive_x.jpg"),
+        FullPath("asset/textures/skybox/negative_x.jpg"),
+        FullPath("asset/textures/skybox/positive_y.jpg"),
+        FullPath("asset/textures/skybox/negative_y.jpg"),
+        FullPath("asset/textures/skybox/positive_z.jpg"),
+        FullPath("asset/textures/skybox/negative_z.jpg"),
+    };
+    for (uint32_t i = 0; i < 6; i++)
+    {
+        BitmapBufferPtr bit = ImageDecodeFromFile(cube_files[i], ImageType::JPEG);
+        datas[i] = bit;
+    }
+    RHITexturePtr tex_cube = m_pContext->RHIContextInstance().CreateTextureCube(desc, &datas);
+    m_pSkyBoxEntity = MakeSharedPtr<Entity>(m_pContext.get());
+    SkyBoxComponentPtr pSkybox = MakeSharedPtr<SkyBoxComponent>(m_pContext.get());
+    pSkybox->SetSkyBoxTex(tex_cube);
+    m_pSkyBoxEntity->AddSceneComponent(pSkybox);
+    m_pSkyBoxEntity->AddToTopScene();
 }
 int main()
 {

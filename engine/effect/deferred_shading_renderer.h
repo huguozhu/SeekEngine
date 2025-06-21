@@ -50,11 +50,11 @@ protected:
 
     // Textures
     RHITexturePtr           m_pSceneDepthStencil = nullptr;
+    RHITexturePtr           m_pSceneDepthCopy = nullptr;
     RHITexturePtr           m_pSceneVelocity = nullptr; // For TAA
     RHITexturePtr           m_pSceneColor = nullptr;
     RHITexturePtr           m_pLDRColor = nullptr;
     RHITexturePtr           m_pHDRColor = nullptr;
-    RHITexturePtr           m_pLightingDepthStencil = nullptr;
 
     RHITexturePtr           m_pPreZColor = nullptr;
     RHITexturePtr           m_pGBufferColor0 = nullptr;

@@ -103,6 +103,7 @@ SResult DeferredShadingRenderer::Init()
     desc.format = PixelFormat::D16;
     desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_COPY_BACK;
     m_pSceneDepthStencil = rc.CreateTexture2D(desc);
+    m_pSceneDepthCopy = rc.CreateTexture2D(desc);
 
     if (m_pContext->GetAntiAliasingMode() == AntiAliasingMode::TAA)
     {
@@ -168,14 +169,9 @@ SResult DeferredShadingRenderer::Init()
     m_pGBufferFb->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.CreateRenderTargetView(m_pGBufferColor2));
     m_pGBufferFb->AttachDepthStencilView(ds_view);
 
-    desc.width = w;
-    desc.height = h;
-    desc.format = PixelFormat::D16;
-    desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_COPY_BACK;
-    m_pLightingDepthStencil = rc.CreateTexture2D(desc);
     m_pLightingFb = rc.CreateEmptyRHIFrameBuffer();
     m_pLightingFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pHDRColor));
-    m_pLightingFb->AttachDepthStencilView(rc.CreateDepthStencilView(m_pLightingDepthStencil));
+    m_pLightingFb->AttachDepthStencilView(ds_view);
 
     m_pLDRFb = rc.CreateEmptyRHIFrameBuffer();
     m_pHDRFb = rc.CreateEmptyRHIFrameBuffer();    
@@ -193,7 +189,7 @@ SResult DeferredShadingRenderer::Init()
     if (mode == GlobalIlluminationMode::RSM)
     {
         m_pGI = MakeSharedPtrMacro(RSM, m_pContext);
-        ((RSM*)m_pGI.get())->Init(m_pGBufferColor0, m_pGBufferColor1, m_pSceneDepthStencil);
+        ((RSM*)m_pGI.get())->Init(m_pGBufferColor0, m_pGBufferColor1, m_pSceneDepthCopy);
     }
 
     // Step4: Techniques
@@ -211,7 +207,7 @@ SResult DeferredShadingRenderer::Init()
         m_pTileCullingTech = effect.GetTechnique(szTechName_LightCulling);
         m_pTileCullingTech->SetParam("cb_CameraInfo", m_pCameraInfoCBuffer);
         m_pTileCullingTech->SetParam("cb_LightCullingCSParam", m_pLightCullingInfoCBuffer);
-		m_pTileCullingTech->SetParam("depth", m_pSceneDepthStencil);
+		m_pTileCullingTech->SetParam("depth", m_pSceneDepthCopy);
         m_pTileCullingTech->SetParam("light_infos", m_pLightInfoCBuffer);
         m_pTileCullingTech->SetParam("tile_infos_rw", m_pTileInfoBuffer);
 
@@ -224,7 +220,7 @@ SResult DeferredShadingRenderer::Init()
 
         m_pLightingTech_HasShadow_TileCulling->SetParam("gbuffer0", m_pGBufferColor0);
         m_pLightingTech_HasShadow_TileCulling->SetParam("gbuffer1", m_pGBufferColor1);
-        m_pLightingTech_HasShadow_TileCulling->SetParam("depth_tex", m_pSceneDepthStencil);
+        m_pLightingTech_HasShadow_TileCulling->SetParam("depth_tex", m_pSceneDepthCopy);
         m_pLightingTech_HasShadow_TileCulling->SetParam("shadowing_tex", m_pShadowTex);
     }
     else
@@ -236,7 +232,7 @@ SResult DeferredShadingRenderer::Init()
         m_pLightingTech_HasShadow->SetParam("light_infos", m_pLightInfoCBuffer);
         m_pLightingTech_HasShadow->SetParam("gbuffer0", m_pGBufferColor0);
         m_pLightingTech_HasShadow->SetParam("gbuffer1", m_pGBufferColor1);
-        m_pLightingTech_HasShadow->SetParam("depth_tex", m_pSceneDepthStencil);
+        m_pLightingTech_HasShadow->SetParam("depth_tex", m_pSceneDepthCopy);
         m_pLightingTech_HasShadow->SetParam("shadowing_tex", m_pShadowTex);
         
 
@@ -247,7 +243,7 @@ SResult DeferredShadingRenderer::Init()
         m_pLightingTech_NoShadow->SetParam("light_infos", m_pLightInfoCBuffer);
         m_pLightingTech_NoShadow->SetParam("gbuffer0", m_pGBufferColor0);
         m_pLightingTech_NoShadow->SetParam("gbuffer1", m_pGBufferColor1);
-        m_pLightingTech_NoShadow->SetParam("depth_tex", m_pSceneDepthStencil);
+        m_pLightingTech_NoShadow->SetParam("depth_tex", m_pSceneDepthCopy);
 
         if (m_pContext->GetGlobalIlluminationMode() != GlobalIlluminationMode::None)
         {
@@ -259,7 +255,7 @@ SResult DeferredShadingRenderer::Init()
 	
     m_pSsaoTech = effect.GetTechnique(szTechName_SSAO);
     m_pSsaoTech->SetParam("gbuffer0",               m_pGBufferColor0);
-    m_pSsaoTech->SetParam("depth_tex",              m_pSceneDepthStencil);
+    m_pSsaoTech->SetParam("depth_tex",              m_pSceneDepthCopy);
     m_pSsaoTech->SetParam("ssao_noise",             m_pSsaoNoise);
     m_pSsaoTech->SetParam("cb_CameraInfo",          m_pCameraInfoCBuffer);    
     m_pSsaoTech->SetParam("cb_SsaoSampleKernels",   m_pSsaoSampleKernelCBuffer);    
@@ -556,8 +552,10 @@ RHIMeshPtr DeferredShadingRenderer::GetLightVolumeMesh(LightType type)
 RendererReturnValue DeferredShadingRenderer::RenderPrepareJob()
 {
     m_eCurRenderStage = RenderStage::None;
-    m_pLightingFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, { float4(0.0) });
-    m_pLightingFb->SetDepthLoadOption({ 1.0f });
+    m_pLightingFb->Clear();
+    m_pLightingFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, RHIFrameBuffer::LoadAction::Load);
+    m_pLightingFb->SetDepthLoadOption(RHIFrameBuffer::LoadAction::Load);
+
     m_pSsaoFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, { float4(0.0) });
     m_pSsaoFb->SetDepthLoadOption({ 1.0f });
     if (m_pGI)
@@ -612,7 +610,13 @@ RendererReturnValue DeferredShadingRenderer::GenerateGBufferJob()
     }
     m_eCurRenderStage = RenderStage::None;
 
-#if 1
+    res = m_pContext->RHIContextInstance().CopyTexture(m_pSceneDepthStencil, m_pSceneDepthCopy);
+    if (res != S_Success)
+    {
+        LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::GenerateGBufferJob() CopyTexture failed.");
+    }
+
+#if 0
     static int draw = 1;
     if (draw)
     {
@@ -620,6 +624,7 @@ RendererReturnValue DeferredShadingRenderer::GenerateGBufferJob()
         m_pGBufferColor1->DumpToFile("d:\\GBuffer_RT1.rgba");
         m_pGBufferColor2->DumpToFile("d:\\GBuffer_RT2.rgba");
         m_pSceneDepthStencil->DumpToFile("d:\\GBuffer_DS.g16l");
+        m_pSceneDepthCopy->DumpToFile("d:\\GBuffer_Depth_Copy.g16l");
         draw--;
     }
 #endif

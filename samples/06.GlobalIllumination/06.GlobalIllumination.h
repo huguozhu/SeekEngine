@@ -14,12 +14,15 @@ public:
     virtual SResult OnUpdate() override;
     virtual SResult InitContext(void* device = nullptr, void* native_wnd = nullptr);
 
+    void AddSkyboxEntity();
+
 private:
 
     EntityPtr m_pMeshEntity[2] = { nullptr };
     EntityPtr m_pGltfMeshEntity[10] = { nullptr };
     EntityPtr m_pCameraEntity = nullptr;
     EntityPtr m_pLightEntity =  nullptr;
+    EntityPtr m_pSkyBoxEntity = nullptr;
 
     FirstPersonCameraController m_CameraController;
 };
