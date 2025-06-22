@@ -50,7 +50,7 @@ enum class GlobalIlluminationMode : uint32_t
 {
     None,
     RSM,
-    //LPV,      // Light Propagation Volumes Global Illumination(Used in Cry Engine3)
+    LPV,      // Light Propagation Volumes Global Illumination(Used in Cry Engine3)
     //VXGI,     // Voxel-based Global Illumination
     //SSGI,     // Screen Space Global Illumination
 };

@@ -2,7 +2,6 @@
 #include "kernel/context.h"
 #include "components/light_component.h"
 #include "components/camera_component.h"
-#include "effect/shadow_layer.h"
 #include "effect/effect.h"
 #include "effect/postprocess.h"
 #include "effect/parameter.h"
@@ -19,6 +18,8 @@ SEEK_NAMESPACE_BEGIN
 #include "shader/shared/common.h"
 
 static const uint32_t RSM_MIPMAP_LEVELS = 5;
+static const uint32_t RSM_SIZE = 512;
+static const uint32_t LPV_SIZE = 32;
 
 /******************************************************************************
  * GlobalIllumination
@@ -29,52 +30,10 @@ GlobalIllumination::GlobalIllumination(Context* context)
 }
 SResult GlobalIllumination::Init()
 {
-    return S_Success;
-}
-/******************************************************************************
- * RSM : Reflective Shadow Map
- ******************************************************************************/
-RSM::RSM(Context* context)
-    :GlobalIllumination(context)
-{
-    m_eMode = GlobalIlluminationMode::RSM;
-}
-
-SResult RSM::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, RHITexturePtr const& gbuffer_depth)
-{
     RHIContext& rc = m_pContext->RHIContextInstance();
-    m_eMode = GlobalIlluminationMode::RSM;
-
-    SEEK_RETIF_FAIL(GlobalIllumination::Init());
-
-    // RSM
-    RHITexture::Desc desc;
-    desc.type = TextureType::Tex2D;
-    desc.width = desc.height = ShadowLayer::SM_SIZE;
-    desc.depth = 1;
-    desc.num_mips = RSM_MIPMAP_LEVELS;
-    desc.num_samples = 1;    
-    desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;
-    desc.format = PixelFormat::R8G8B8A8_UNORM;
-    m_pRsmTexs[0] = rc.CreateTexture2D(desc);       // normal
-    desc.format = PixelFormat::R16G16B16A16_FLOAT;  
-    m_pRsmTexs[1] = rc.CreateTexture2D(desc);       // position
-    desc.format = PixelFormat::R16G16B16A16_FLOAT;
-    m_pRsmTexs[2] = rc.CreateTexture2D(desc);       // Flux
-    desc.format = PixelFormat::D16;
-    desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;;
-    m_pRsmDepthTex = rc.CreateTexture2D(desc);
-    
-    m_pGenRsmFb = rc.CreateEmptyRHIFrameBuffer();
-    m_pGenRsmFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pRsmTexs[0]));
-    m_pGenRsmFb->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.CreateRenderTargetView(m_pRsmTexs[1]));
-    m_pGenRsmFb->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.CreateRenderTargetView(m_pRsmTexs[2]));
-    m_pGenRsmFb->AttachDepthStencilView(rc.CreateDepthStencilView(m_pRsmDepthTex));
-
-    // RSM Effect
-    desc = m_pContext->RHIContextInstance().GetScreenRHIFrameBuffer()->GetRenderTargetDesc(RHIFrameBuffer::Attachment::Color0);
+    RHITexture::Desc desc = m_pContext->RHIContextInstance().GetScreenRHIFrameBuffer()->GetRenderTargetDesc(RHIFrameBuffer::Attachment::Color0);
     uint32_t w = desc.width;
-	uint32_t h = desc.height;
+    uint32_t h = desc.height;
     desc.type = TextureType::Tex2D;
     desc.width = w;
     desc.height = h;
@@ -87,12 +46,58 @@ SResult RSM::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
 
     m_pIndirectIlluminationFb = rc.CreateEmptyRHIFrameBuffer();
     m_pIndirectIlluminationFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pIndirectIlluminationTex));
+    return S_Success;
+}
+/******************************************************************************
+ * RSM : Reflective Shadow Map
+ ******************************************************************************/
+RSM::RSM(Context* context)
+    :GlobalIllumination(context)
+{
+    m_eMode = GlobalIlluminationMode::RSM;
+}
+SResult RSM::OnBegin()
+{
+    m_pIndirectIlluminationFb->Clear(RHIFrameBuffer::CBM_Color, float4(0.0, 0.0, 0.0, 1.0));
+    return S_Success;
+}
+SResult RSM::InitGenRsm()
+{
+    RHIContext& rc = m_pContext->RHIContextInstance();
+    RHITexture::Desc desc;
+    desc.type = TextureType::Tex2D;
+    desc.width = desc.height = RSM_SIZE;
+    desc.depth = 1;
+    desc.num_mips = RSM_MIPMAP_LEVELS;
+    desc.num_samples = 1;
+    desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;
+    desc.format = PixelFormat::R8G8B8A8_UNORM;
+    m_pRsmTexs[0] = rc.CreateTexture2D(desc);       // normal
+    desc.format = PixelFormat::R16G16B16A16_FLOAT;
+    m_pRsmTexs[1] = rc.CreateTexture2D(desc);       // position
+    desc.format = PixelFormat::R16G16B16A16_FLOAT;
+    m_pRsmTexs[2] = rc.CreateTexture2D(desc);       // Flux
+    desc.format = PixelFormat::D16;
+    desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;;
+    m_pRsmDepthTex = rc.CreateTexture2D(desc);
 
+    m_pGenRsmFb = rc.CreateEmptyRHIFrameBuffer();
+    m_pGenRsmFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pRsmTexs[0]));
+    m_pGenRsmFb->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.CreateRenderTargetView(m_pRsmTexs[1]));
+    m_pGenRsmFb->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.CreateRenderTargetView(m_pRsmTexs[2]));
+    m_pGenRsmFb->AttachDepthStencilView(rc.CreateDepthStencilView(m_pRsmDepthTex));
+
+    return S_Success;
+}
+SResult RSM::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, RHITexturePtr const& gbuffer_depth)
+{
+    RHIContext& rc = m_pContext->RHIContextInstance();
+    SEEK_RETIF_FAIL(GlobalIllumination::Init());
+    SEEK_RETIF_FAIL(this->InitGenRsm());
+        
     Effect& effect = m_pContext->EffectInstance();
-
     static const std::string tech_name = "GiRsm";
     effect.LoadTechnique(tech_name, &RenderStateDesc::Default2D(), "GiRsmVS", "GiRsmPS", nullptr);
-
     m_pGiRsmPp = MakeSharedPtr<PostProcess>(m_pContext, tech_name);
     m_pGiRsmPp->Init(tech_name, NULL_PREDEFINES);
     m_pGiRsmPp->SetClear(false);
@@ -128,11 +133,6 @@ SResult RSM::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
 
     m_pGiRsmPp->SetOutput(0, m_pIndirectIlluminationTex);
     m_pGiRsmPp->SetPostProcessRenderStateDesc(RenderStateDesc::PostProcessAccumulate());
-    return S_Success;
-}
-SResult RSM::OnBegin()
-{
-    m_pIndirectIlluminationFb->Clear(RHIFrameBuffer::CBM_Color, float4(0.0, 0.0, 0.0, 1.0));
     return S_Success;
 }
 RendererReturnValue RSM::GenerateReflectiveShadowMapJob(uint32_t light_index)
@@ -200,7 +200,7 @@ RendererReturnValue RSM::PostProcessReflectiveShadowMapJob(uint32_t light_index)
         param.inv_proj_matrix = inv_proj.Transpose();
 		param.inv_view_matrix = inv_view.Transpose();
 		param.light_view_proj_matrix = light_vp.Transpose();
-		param.radius_rsmsize = float2(m_fSampleRadius, ShadowLayer::SM_SIZE);
+		param.radius_rsmsize = float2(m_fSampleRadius, RSM_SIZE);
 		m_pRsmParamCBuffer->Update(&param, sizeof(param));
 
         CameraInfo cameraInfo;
@@ -233,9 +233,38 @@ LPV::LPV(Context* context)
     :RSM(context)
 {
     RHIContext& rc = context->RHIContextInstance();
-    //m_eMode = GlobalIlluminationMode::LPV;
+    m_eMode = GlobalIlluminationMode::LPV;
 }
+SResult LPV::OnBegin()
+{
+    RSM::OnBegin();
+    m_pFbSH->Clear();
+    return S_Success;
+}
+SResult LPV::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, RHITexturePtr const& gbuffer_depth)
+{
+    RHIContext& rc = m_pContext->RHIContextInstance();
+    SEEK_RETIF_FAIL(GlobalIllumination::Init());
+    SEEK_RETIF_FAIL(this->InitGenRsm());
 
+    RHITexture::Desc desc;
+    desc.type = TextureType::Tex2D;
+    desc.width = desc.height = LPV_SIZE;
+    desc.depth = 1;
+    desc.num_mips = 1;
+    desc.num_samples = 1;
+    desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;
+    desc.format = PixelFormat::R8G8B8A8_UNORM;
+    m_pTexRedSh = rc.CreateTexture2D(desc);
+    m_pTexGreenSh = rc.CreateTexture2D(desc);
+    m_pTexBlueSh = rc.CreateTexture2D(desc);
+
+    m_pFbSH = rc.CreateEmptyRHIFrameBuffer();
+    m_pFbSH->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pTexRedSh));
+    m_pFbSH->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.CreateRenderTargetView(m_pTexGreenSh));
+    m_pFbSH->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.CreateRenderTargetView(m_pTexBlueSh));
+    return S_Success;
+}
 
 /******************************************************************************
  * VXGI : Voxel Cone Tracing

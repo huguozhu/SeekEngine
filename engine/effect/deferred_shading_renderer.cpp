@@ -191,6 +191,11 @@ SResult DeferredShadingRenderer::Init()
         m_pGI = MakeSharedPtrMacro(RSM, m_pContext);
         ((RSM*)m_pGI.get())->Init(m_pGBufferColor0, m_pGBufferColor1, m_pSceneDepthCopy);
     }
+    else if (mode == GlobalIlluminationMode::LPV)
+    {
+        m_pGI = MakeSharedPtrMacro(LPV, m_pContext);
+        ((LPV*)m_pGI.get())->Init(m_pGBufferColor0, m_pGBufferColor1, m_pSceneDepthCopy);
+    }
 
     // Step4: Techniques
     Effect& effect = m_pContext->EffectInstance();
@@ -388,8 +393,6 @@ SResult DeferredShadingRenderer::BuildRenderJobList()
     BEGIN_TIMEQUERY(m_pTimeQueryLDR);
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::LDRJob, this)));
     END_TIMEQUERY(m_pTimeQueryLDR);
-
-    //m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::CalculateRenderRectJob, this)));
 
     if (m_pContext->EnableProfile())
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::PrintTimeQueryJob, this))); ;
