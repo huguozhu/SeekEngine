@@ -59,7 +59,7 @@ SResult RSM::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     m_pRsmTexs[0] = rc.CreateTexture2D(desc);       // normal
     desc.format = PixelFormat::R16G16B16A16_FLOAT;  
     m_pRsmTexs[1] = rc.CreateTexture2D(desc);       // position
-    desc.format = PixelFormat::R8G8B8A8_UNORM;
+    desc.format = PixelFormat::R16G16B16A16_FLOAT;
     m_pRsmTexs[2] = rc.CreateTexture2D(desc);       // Flux
     desc.format = PixelFormat::D16;
     desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;;

@@ -51,6 +51,6 @@ void main(
 	float3 albedo = materialInfo.albedoFactor.xyz;
     if (materialInfo.hasBasicTex.x)
 		albedo *= albedoTex.Sample(linear_sampler, texCoord).rgb;
-	float3 vpl_flux = albedo * lightInfo.color;
+	float3 vpl_flux = albedo * lightInfo.color * lightInfo.intensity;
 	rsm2 = float4(vpl_flux, 1.0);
 }

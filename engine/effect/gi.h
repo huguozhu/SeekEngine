@@ -54,7 +54,7 @@ protected:
     RHIRenderBufferPtr      m_pRsmCameraInfoCBuffer = nullptr;
     RHIRenderBufferPtr      m_pVplCoordAndWeightsCBuffer = nullptr;
 
-    float                   m_fSampleRadius = 25;
+    float                   m_fSampleRadius = 200;
 
 private:
     

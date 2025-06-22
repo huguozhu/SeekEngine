@@ -16,7 +16,7 @@ cbuffer cb_GiRsmPSParam
 }
 cbuffer cb_VplCoordAndWeights
 {
-	float4 vpl_coord_weights[32];
+	float4 vpl_coord_weights[VPL_NUM];
 }
 cbuffer cb_CameraInfo
 {
@@ -26,8 +26,8 @@ cbuffer cb_CameraInfo
 
 float3 CalcVPLIrradiance(float3 vpl_flux, float3 vpl_pos, float3 vpl_normal, float3 frag_pos, float3 frag_normal, float weight)
 {
-	float3 vpl2frag = normalize(frag_pos - vpl_pos);
-	return vpl_flux * max(dot(vpl_normal, vpl2frag), 0) * max(dot(frag_normal, -vpl2frag), 0) * weight;
+	float3 vpl2frag = (frag_pos - vpl_pos);
+	return vpl_flux * max(dot(vpl_normal, vpl2frag), 0) * max(dot(frag_normal, -vpl2frag), 0) * weight / (dot(vpl2frag, vpl2frag) *dot(vpl2frag, vpl2frag));
 }
 
 // ls : light space
@@ -45,6 +45,8 @@ float4 main(
 	float3 pos_view = iPosView.xyz * (depth_view / cameraInfo.farPlane);
 	float4 pos_world = mul(float4(pos_view, 1.0), param.inv_view_matrix);
 	pos_world /= pos_world.w;
+	
+	
 	float4 pos_proj_ls = mul(pos_world, param.light_view_proj_matrix);
 	pos_proj_ls /= pos_proj_ls.w;
 	float2 tex_coord_rsm = TexCoordFromPosNDC(pos_proj_ls.xyz);
@@ -54,7 +56,6 @@ float4 main(
 			
 	float rsm_texel_size = 1.0 / param.radius_rsmsize.y;
 	float3 indirect_illumination = 0;
-	float3 total_flux = 0;
 	for (int i=0; i<VPL_NUM; i++)
 	{
 		float3 vpl_coord_weight = vpl_coord_weights[i].xyz;
@@ -67,8 +68,6 @@ float4 main(
 		float3 vpl_flux = rsm_color2.Sample(shadow_map_sampler, vpl_sample_pos).xyz;
 		
 		indirect_illumination += CalcVPLIrradiance(vpl_flux, vpl_pos_world, vpl_normal_world, pos_world.xyz, frag_normal, vpl_coord_weight.z);
-		total_flux += vpl_flux * albedo;
 	}
-	float3 v = indirect_illumination * albedo * 0.000001;
-	return float4((v + total_flux) / VPL_NUM, 1.0);
+	return float4(indirect_illumination * albedo/ VPL_NUM, 1.0);
 }	

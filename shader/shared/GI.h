@@ -1,7 +1,7 @@
 #pragma once
 
 // Global Illimination
-#define VPL_NUM 32
+#define VPL_NUM 64
 struct GiRsmParam
 {
     float4x4  inv_proj_matrix;              // for VS

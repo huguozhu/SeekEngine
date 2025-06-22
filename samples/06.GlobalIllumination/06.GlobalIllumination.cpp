@@ -25,13 +25,13 @@ SResult GlobalIlluminationSample::OnCreate()
     m_pCameraEntity = MakeSharedPtr<Entity>(m_pContext.get());
     CameraComponentPtr pCam = MakeSharedPtr<CameraComponent>(m_pContext.get());
     pCam->ProjPerspectiveParams(60.0 * Math::DEG2RAD, w/h, 0.01f, 200.0f);
-    pCam->SetLookAt(float3(-4, 1, 0), float3(0, 1, 0), float3(0, 1, 0));
+    pCam->SetLookAt(float3(-5, 1, 0), float3(0, 1, 0), float3(0, 1, 0));
     m_pCameraEntity->AddSceneComponent(pCam);
     m_pCameraEntity->AddToTopScene();
     m_CameraController.SetCamera(pCam.get());
 
     // Step3: add Light Entity
-    float3 spot_pos = float3(0, 3, 0);
+    float3 spot_pos = float3(0, 4, 0);
     float3 look_at = float3(0, 0, 0);
     float cutoff_in = Math::DEG2RAD * 25;
     float cutoff_out = Math::DEG2RAD * 30;
@@ -40,7 +40,7 @@ SResult GlobalIlluminationSample::OnCreate()
     pLight->SetDirection(look_at - spot_pos);
     pLight->SetWorldTranslation(spot_pos);
     pLight->SetInOutCutoff(float2(cutoff_in, cutoff_out));
-    pLight->SetIntensity(5.24);
+    pLight->SetIntensity(40.24);
     pLight->CastShadow(1);
     pLight->IndirectLighting(1);
     m_pLightEntity = MakeSharedPtr<Entity>(m_pContext.get(), "Spot Light");
