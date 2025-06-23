@@ -88,14 +88,22 @@ private:
 
 
 /******************************************************************************
- * VXGI : Voxel Cone Tracing
+ * VXGI : Voxel Cone Tracing 
  ******************************************************************************/
 class VXGI : public GlobalIllumination
 {
 public:
     VXGI(Context* context);
 
+    virtual SResult OnBegin() override;
+    virtual SResult Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, RHITexturePtr const& gbuffer_depth);
+
+
 private:
+    RHITexturePtr   m_pTexVoxel3D = nullptr;
+    RHITexturePtr   m_pTexVoxel3D_Copy = nullptr;
+
+
 
 };
 

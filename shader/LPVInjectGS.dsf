@@ -1,0 +1,32 @@
+//STAGE:gs
+#include "shared/GI.h"
+
+struct GSInput
+{
+	float4 cellPos 	: SV_POSITION;
+	float3 normal 	: NORMAL;
+	float3 flux 	: POSITION;
+};
+
+struct PSInput
+{
+    float4 screenPos 	: SV_POSITION;
+    float3 normal 		: NORMAL;
+    float3 flux 		: POSITION;
+    uint layerID 		: SV_RenderTargetArrayIndex;
+};
+
+[maxvertexcount(1)]
+void main(point GSInput input[1], inout PointStream<PSInput> OutputStream)
+{
+	PSInput output = (PSInput)0;
+	output.layerID = floor(input[0].cellPos.z);
+
+	output.screenPos = float4((input[0].cellPos.xy + 0.5f) * LPV_DIM_INVERSE * 2.0f - 1.0f, 0.0f, 1.0f);
+	output.screenPos.y = -output.screenPos.y;
+
+	output.normal = input[0].normal;
+	output.flux = input[0].flux;
+
+	OutputStream.Append(output);
+}

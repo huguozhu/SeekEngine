@@ -172,18 +172,18 @@ static inline ShaderStage ParseShaderStage(const std::string& stageName)
     {
         return ShaderStage::PixelShader;
     }
-    //else if (stageName == "gs")
-    //{
-    //    return ShaderStage::GeometryShader;
-    //}
-    //else if (stageName == "hs")
-    //{
-    //    return ShaderStage::HullShader;
-    //}
-    //else if (stageName == "ds")
-    //{
-    //    return ShaderStage::DomainShader;
-    //}
+    else if (stageName == "gs")
+    {
+        return ShaderStage::GeometryShader;
+    }
+    else if (stageName == "hs")
+    {
+        return ShaderStage::HullShader;
+    }
+    else if (stageName == "ds")
+    {
+        return ShaderStage::DomainShader;
+    }
     else if (stageName == "cs")
     {
         return ShaderStage::ComputeShader;
@@ -228,24 +228,6 @@ static inline ShadingLanguage ParseShadingLanguage(const std::string& targetName
     {
         return ShadingLanguage::NumShadingLanguages;
     }
-}
-
-static ShaderStage ParseShaderStageFromFileExtension(const std::string& ext)
-{
-    if (ext == "vs")
-        return ShaderStage::VertexShader;
-    else if (ext == "ps")
-        return ShaderStage::PixelShader;
-    else if (ext == "cs")
-        return ShaderStage::ComputeShader;
-    else if (ext == "gs")
-        return ShaderStage::GeometryShader;
-    else if (ext == "hs")
-        return ShaderStage::HullShader;
-    else if (ext == "ds")
-        return ShaderStage::DomainShader;
-    else
-        return ShaderStage::NumShaderStages;
 }
 
 static std::map<ShadingLanguage, std::string> shaderLanguageMap{

@@ -879,8 +879,9 @@ void D3D11Texture3D::FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC& des
     }
 
     desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE3D;
-    desc.Texture2DMSArray.FirstArraySlice = 0;
-    desc.Texture2DMSArray.ArraySize = m_desc.depth;
+    desc.Texture3D.MipSlice = 0;
+    desc.Texture3D.FirstWSlice = 0;
+    desc.Texture3D.WSize = 1;
  
 }
 void D3D11Texture3D::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
@@ -893,8 +894,8 @@ void D3D11Texture3D::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC&
     default:                    desc.Format = m_eDxgiFormat;                        break;
     }
     desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE3D;
-    desc.Texture2D.MostDetailedMip = 0;
-    desc.Texture2D.MipLevels = m_desc.num_mips;
+    desc.Texture3D.MostDetailedMip = 0;
+    desc.Texture3D.MipLevels = m_desc.num_mips;
 }
 SEEK_NAMESPACE_END
 

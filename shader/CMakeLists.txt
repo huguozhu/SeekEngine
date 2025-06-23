@@ -45,6 +45,9 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/GiRsmVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/LightCullingCS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/IrradianceConvolutionPS.dsf
+    #${SEEK_SHADER_SOURCE_DIR}/LPVInjectGS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/LPVInjectPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/LPVInjectVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/MeshRenderingVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/PostProcessVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/PrefilterEnvPS.dsf

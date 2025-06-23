@@ -20,6 +20,7 @@ SEEK_NAMESPACE_BEGIN
 static const uint32_t RSM_MIPMAP_LEVELS = 5;
 static const uint32_t RSM_SIZE = 512;
 static const uint32_t LPV_SIZE = 32;
+static const uint32_t VOLUME_SIZE = 256;
 
 /******************************************************************************
  * GlobalIllumination
@@ -232,8 +233,7 @@ RendererReturnValue RSM::PostProcessReflectiveShadowMapJob(uint32_t light_index)
 LPV::LPV(Context* context)
     :RSM(context)
 {
-    RHIContext& rc = context->RHIContextInstance();
-    m_eMode = GlobalIlluminationMode::LPV;
+    //m_eMode = GlobalIlluminationMode::LPV;
 }
 SResult LPV::OnBegin()
 {
@@ -248,16 +248,16 @@ SResult LPV::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     SEEK_RETIF_FAIL(this->InitGenRsm());
 
     RHITexture::Desc desc;
-    desc.type = TextureType::Tex2D;
+    desc.type = TextureType::Tex3D;
     desc.width = desc.height = LPV_SIZE;
-    desc.depth = 1;
+    desc.depth = LPV_SIZE;
     desc.num_mips = 1;
     desc.num_samples = 1;
     desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;
     desc.format = PixelFormat::R8G8B8A8_UNORM;
-    m_pTexRedSh = rc.CreateTexture2D(desc);
-    m_pTexGreenSh = rc.CreateTexture2D(desc);
-    m_pTexBlueSh = rc.CreateTexture2D(desc);
+    m_pTexRedSh = rc.CreateTexture3D(desc);
+    m_pTexGreenSh = rc.CreateTexture3D(desc);
+    m_pTexBlueSh = rc.CreateTexture3D(desc);
 
     m_pFbSH = rc.CreateEmptyRHIFrameBuffer();
     m_pFbSH->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pTexRedSh));
@@ -265,15 +265,43 @@ SResult LPV::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     m_pFbSH->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.CreateRenderTargetView(m_pTexBlueSh));
     return S_Success;
 }
-
+SResult LPV::LPVInject()
+{
+    return S_Success;
+}
+SResult LPV::LPVPropagation()
+{
+    return S_Success;
+}
 /******************************************************************************
- * VXGI : Voxel Cone Tracing
+ * VXGI : Voxel Cone Tracing 
  ******************************************************************************/
 VXGI::VXGI(Context* context)
     :GlobalIllumination(context)
 {
+    m_eMode = GlobalIlluminationMode::VXGI;
+}
+
+SResult VXGI::OnBegin()
+{
+    SEEK_RETIF_FAIL(GlobalIllumination::OnBegin());
+    return S_Success;
+}
+SResult VXGI::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, RHITexturePtr const& gbuffer_depth)
+{
     RHIContext& rc = m_pContext->RHIContextInstance();
-    //m_eMode = GlobalIlluminationMode::VXGI;
+    RHITexture::Desc desc;
+    desc.type = TextureType::Tex3D;
+    desc.width = desc.height = desc.depth = VOLUME_SIZE;
+    desc.num_mips = 1;
+    desc.num_samples = 1;
+    desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET;
+    desc.format = PixelFormat::R8G8B8A8_UNORM;
+    m_pTexVoxel3D = rc.CreateTexture3D(desc);
+    m_pTexVoxel3D = rc.CreateTexture3D(desc);
+
+
+    return S_Success;
 }
 
 
