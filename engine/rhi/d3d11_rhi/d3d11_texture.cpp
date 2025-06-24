@@ -881,7 +881,7 @@ void D3D11Texture3D::FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC& des
     desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE3D;
     desc.Texture3D.MipSlice = 0;
     desc.Texture3D.FirstWSlice = 0;
-    desc.Texture3D.WSize = 1;
+    desc.Texture3D.WSize = m_desc.depth;
  
 }
 void D3D11Texture3D::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
