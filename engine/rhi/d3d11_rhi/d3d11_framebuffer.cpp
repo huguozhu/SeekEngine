@@ -25,7 +25,6 @@ SResult D3D11RHIFrameBuffer::OnBind()
     SResult res = S_Success;
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
-    UINT target_count = 0;
     if (m_bViewDirty)
     {
         m_vD3dRednerTargets.resize(m_vRenderTargets.size(), nullptr);
@@ -35,7 +34,6 @@ SResult D3D11RHIFrameBuffer::OnBind()
         {
             if (!m_vRenderTargets[i])
                 continue;
-            target_count++;
             if (m_sampleNum == 1)
             {
                 D3D11RenderTargetView& target = static_cast<D3D11RenderTargetView&>(*m_vRenderTargets[i]);
@@ -76,7 +74,7 @@ SResult D3D11RHIFrameBuffer::OnBind()
         m_bViewDirty = false;
     }
 
-    pDeviceContext->OMSetRenderTargets(target_count, m_vD3dRednerTargets.data(), m_pD3dDepthStencilView);
+    pDeviceContext->OMSetRenderTargets(m_vD3dRednerTargets.size(), m_vD3dRednerTargets.data(), m_pD3dDepthStencilView);
     return res;
 }
 
@@ -146,6 +144,18 @@ void D3D11RHIFrameBuffer::Clear(uint32_t flags, float4 const& clr, float depth, 
                 view.ClearDepth(depth);
             if (flags & CBM_Stencil)
                 view.ClearStencil(stencil);
+        }
+    }
+}
+void D3D11RHIFrameBuffer::ClearRenderTarget(Attachment att, float4 const& clr)
+{
+    if (att < Attachment::Color7)
+    {
+        uint32_t i = (uint32_t)Attachment::Color7 - (uint32_t)att;
+        if (m_vRenderTargets[i])
+        {
+            D3D11RenderTargetView& view = static_cast<D3D11RenderTargetView&>(*m_vRenderTargets[i]);
+            view.ClearColor(clr);
         }
     }
 }

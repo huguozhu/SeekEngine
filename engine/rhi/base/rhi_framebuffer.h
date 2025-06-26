@@ -134,6 +134,7 @@ public:
         CBM_ALL = CBM_Color | CBM_Depth | CBM_Stencil,
     };
     virtual void Clear(uint32_t flags = CBM_ALL, float4 const& clr = float4(0.0, 0.0, 0.0, 0.0), float depth = 1.0, int32_t stencil = 0) {}
+    virtual void ClearRenderTarget(Attachment att, float4 const& clr = float4(0.0, 0.0, 0.0, 0.0)) {}
     
     virtual SResult             OnBind() = 0;
     virtual SResult             OnUnbind() = 0;

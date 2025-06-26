@@ -100,6 +100,7 @@ public:
     virtual SResult             Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z) override;
     virtual SResult             DispatchIndirect(RHIProgram* program, RHIRenderBufferPtr indirectBuf) override;
     virtual SResult             DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIRenderBufferPtr indirectBuf, MeshTopologyType type) override;
+    virtual SResult             DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, MeshTopologyType type, uint32_t vertexCountPerInstance, uint32_t instanceCount, uint32_t startVertexLocation, uint32_t startInstanceLocation) override;
     virtual void                EndComputePass() override;
 
     virtual SResult SyncTexture(RHITexturePtr tex) override { return S_Success; }

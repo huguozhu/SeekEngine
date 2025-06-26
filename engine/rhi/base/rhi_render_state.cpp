@@ -226,7 +226,14 @@ const RenderStateDesc& RenderStateDesc::Lighting()
     }
     return desc;
 }
-
+const RenderStateDesc& RenderStateDesc::DepthDisable()
+{
+    static RenderStateDesc desc;
+    desc.depthStencil.bDepthEnable = false;
+    desc.depthStencil.eDepthFunc = CompareFunction::Always;
+    desc.depthStencil.bDepthWriteMask = false;
+    return desc;
+}
 //////////////////////////////////////////////////////////////////////////
 
 size_t RenderStateDesc::Hash() const

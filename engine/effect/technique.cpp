@@ -300,20 +300,6 @@ SResult Technique::Build()
     return S_Success;
 }
 
-//std::shared_ptr<TechniqueInstance> Technique::CreateInstance()
-//{
-//    std::shared_ptr<TechniqueInstance> techInst = MakeSharedPtr<TechniqueInstance>(m_pContext, this);
-//
-//    SResult ret = techInst->Build();
-//    if (SEEK_CHECKFAILED(ret))
-//    {
-//        LOG_ERROR("Build TechniqueInstance fail, ret:%x", ret);
-//        return nullptr;
-//    }
-//
-//    return techInst;
-//}
-
 SResult Technique::Render(RHIMeshPtr const& mesh)
 {
     RHIContext& rc = m_pContext->RHIContextInstance();
@@ -431,7 +417,15 @@ void Technique::DrawIndirect(RHIRenderBufferPtr indirectBuf, MeshTopologyType ty
     rc.DrawIndirect(m_pProgram.get(), rs, indirectBuf, type);
     Uncommit();
 }
+void Technique::DrawInstanced(MeshTopologyType type, uint32_t vertexCountPerInstance, uint32_t instanceCount, uint32_t startVertexLocation, uint32_t startInstanceLocation)
+{
+    RHIContext& rc = m_pContext->RHIContextInstance();
+    RHIRenderStatePtr rs = this->GetRenderState();
 
+    Commit();
+    rc.DrawInstanced(m_pProgram.get(), rs, type, vertexCountPerInstance, instanceCount, startVertexLocation, startInstanceLocation);
+    Uncommit();
+}
 SResult Technique::Commit()
 {
     RHIContext& rc = m_pContext->RHIContextInstance();

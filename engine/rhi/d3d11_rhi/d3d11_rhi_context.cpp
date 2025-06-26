@@ -473,9 +473,6 @@ SResult D3D11RHIContext::Render(RHIProgram* program, RHIMeshPtr const& mesh)
 
     SEEK_RETIF_FAIL(d3d_mesh.Deactive());
     ((D3D11RHIProgram*)program)->Deactive();
-
-    //std::vector<ID3D11ShaderResourceView*> null_srvs(16);
-    //m_pDeviceContext->PSSetShaderResources(0, 16, null_srvs.data());
     return ret;
 }
 
@@ -522,6 +519,16 @@ SResult D3D11RHIContext::DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs,
     D3D11RHIRenderBuffer* pD3DBuf = (D3D11RHIRenderBuffer*)indirectBuf.get();
     m_pDeviceContext->IASetPrimitiveTopology(D3D11Translate::TranslatePrimitiveTopology(type));
     m_pDeviceContext->DrawInstancedIndirect(pD3DBuf->GetD3DBuffer(), 0);
+    ((D3D11RHIProgram*)program)->Deactive();
+    return res;
+}
+SResult D3D11RHIContext::DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, MeshTopologyType type, uint32_t vertexCountPerInstance, uint32_t instanceCount, uint32_t startVertexLocation, uint32_t startInstanceLocation)
+{
+    SResult res = S_Success;
+    SEEK_RETIF_FAIL(((D3D11RenderState*)(rs.get()))->Active());
+    SEEK_RETIF_FAIL(((D3D11RHIProgram*)(program))->Active());
+    m_pDeviceContext->IASetPrimitiveTopology(D3D11Translate::TranslatePrimitiveTopology(type));
+    m_pDeviceContext->DrawInstanced(vertexCountPerInstance, instanceCount, startVertexLocation, startInstanceLocation);
     ((D3D11RHIProgram*)program)->Deactive();
     return res;
 }
