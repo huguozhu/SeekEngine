@@ -42,12 +42,14 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/GenerateGBufferPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/GenerateRsmPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/GiRsmPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/GiRsmVS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/GiLpvPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/GiVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/LightCullingCS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/IrradianceConvolutionPS.dsf
-    #${SEEK_SHADER_SOURCE_DIR}/LPVInjectGS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/LPVInjectPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/LPVInjectVS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/LPVPropagationPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/LPVPropagationVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/MeshRenderingVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/PostProcessVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/PrefilterEnvPS.dsf

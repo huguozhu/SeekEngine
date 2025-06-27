@@ -618,7 +618,7 @@ RendererReturnValue DeferredShadingRenderer::GenerateGBufferJob()
     {
         LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::GenerateGBufferJob() CopyTexture failed.");
     }
-
+    m_pContext->RHIContextInstance().EndRenderPass();
 #if 0
     static int draw = 1;
     if (draw)

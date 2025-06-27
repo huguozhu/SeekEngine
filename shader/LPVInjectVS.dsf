@@ -13,9 +13,9 @@ struct RSMTexel
 	float3 rsm_flux;
 };
 
-struct GSInput
+struct PSInput
 {
-	float4 cellPos 	: SV_POSITION;
+	float4 screenPos: SV_POSITION;
 	float3 normal 	: NORMAL;
 	float3 flux 	: POSITION;
 };
@@ -31,9 +31,9 @@ RSMTexel GetRSMTexel(uint2 coords)
     return texel;
 }
 
-GSInput main(uint vertex_id : SV_VertexID)
+PSInput main(uint vertex_id : SV_VertexID)
 {
-	GSInput output = (GSInput)0;
+	PSInput output = (PSInput)0;
 
 	uint2 RSMsize;
 	rsm_color0.GetDimensions(RSMsize.x, RSMsize.y);
@@ -41,8 +41,16 @@ GSInput main(uint vertex_id : SV_VertexID)
 
 	RSMTexel texel = GetRSMTexel(rsmCoords);
 
-	float3 pos = texel.rsm_position;
-	output.cellPos = float4(int3(pos * LPV_SCALE + float3(LPV_DIM_HALF, LPV_DIM_HALF, LPV_DIM_HALF) + 0.5f * texel.rsm_normal), 1.0f);
+	/* 
+	+(0.5f * texel.rsm_normal)：假设了每个格子中的光照的位置都为格子的中心点，为了防止出现自光照与自阴影，
+	在存储前要将虚拟点光源现在所在的位置沿着其法线移动半个格子的距离，再去判断其所在的格子。
+	*/
+	float3 pos_ws = texel.rsm_position;
+	float4 cellPos = float4(int3(pos_ws * LPV_SCALE + float3(LPV_DIM_HALF, LPV_DIM_HALF, LPV_DIM_HALF) + 0.5f * texel.rsm_normal), 1.0f);
+	
+	output.screenPos = float4((cellPos.xy + 0.5f) * LPV_DIM_INVERSE * 2.0f - 1.0f, cellPos.z, 1.0f);
+	output.screenPos.y = -output.screenPos.y;
+	
 	output.normal = texel.rsm_normal;
 	output.flux = texel.rsm_flux;
 	return output;

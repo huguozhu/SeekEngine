@@ -4,11 +4,18 @@
 #define VPL_NUM 64
 struct GiRsmParam
 {
-    float4x4  inv_proj_matrix;              // for VS
-    float4x4  light_view_proj_matrix;       // others for PS
+    float4x4  light_view_proj_matrix;
     float4x4  inv_view_matrix;
     float2 radius_rsmsize;
     float2 t0;
+};
+struct GiLpvParam
+{
+    float4x4  inv_view_matrix;
+	float lpv_attenuation;
+	float lpv_power;
+	float lpv_cutoff;	
+	float t0;
 };
 struct VPL
 {

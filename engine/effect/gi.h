@@ -36,8 +36,8 @@ public:
     virtual SResult         OnBegin() override;
     virtual SResult         Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, RHITexturePtr const& gbuffer_depth);
     
-    RendererReturnValue     GenerateReflectiveShadowMapJob(uint32_t light_index);
-    RendererReturnValue     PostProcessReflectiveShadowMapJob(uint32_t light_index);
+    RendererReturnValue         GenerateReflectiveShadowMapJob(uint32_t light_index);
+    virtual RendererReturnValue PostProcessReflectiveShadowMapJob(uint32_t light_index);
 
     void                    SetSampleRadius(float v) { m_fSampleRadius = v; }
     float                   GetSampleRadius() { return m_fSampleRadius; }
@@ -46,15 +46,15 @@ protected:
     SResult                 InitGenRsm();
 
 protected:
-    // for RSM & LPV
+    // for RSM & LPV & VXGI
     RHITexturePtr           m_pRsmTexs[3] = { nullptr };    // 0:Normal     1:Position    2:Flux
     RHITexturePtr           m_pRsmDepthTex = nullptr;
     RHIFrameBufferPtr       m_pGenRsmFb = nullptr;
    
-
 private:
     PostProcessPtr          m_pGiRsmPp = nullptr;
 	RHIRenderBufferPtr      m_pRsmParamCBuffer = nullptr;
+    RHIRenderBufferPtr      m_pRsmInvProjCBuffer = nullptr;
     RHIRenderBufferPtr      m_pRsmCameraInfoCBuffer = nullptr;
     RHIRenderBufferPtr      m_pVplCoordAndWeightsCBuffer = nullptr;
     float                   m_fSampleRadius = 200;
@@ -71,19 +71,47 @@ class LPV : public RSM
 public:
     LPV(Context* context);
 
-    virtual SResult         OnBegin() override;
-    virtual SResult         Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, RHITexturePtr const& gbuffer_depth);
-
-    SResult LPVInject();
-    SResult LPVPropagation();
-    
-    RHITexturePtr           m_pTexRedSh;
-    RHITexturePtr           m_pTexGreenSh;
-    RHITexturePtr           m_pTexBlueSh;
-    RHIFrameBufferPtr       m_pFbSH;
+    virtual SResult             OnBegin() override;
+    virtual SResult             Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, RHITexturePtr const& gbuffer_depth);
+    virtual RendererReturnValue PostProcessReflectiveShadowMapJob(uint32_t light_index) override;
 
 private:
+    SResult LPVInject();
+    SResult LPVPropagation();
+    SResult LPVCalcIndirect(uint32_t light_index);
+    
+    RHITexturePtr           m_pTexRedSh     = nullptr;
+    RHITexturePtr           m_pTexGreenSh   = nullptr;
+    RHITexturePtr           m_pTexBlueSh    = nullptr;
+    RHIFrameBufferPtr       m_pFbInject     = nullptr;
 
+    RHITexturePtr           m_pTexAccuRedSh = nullptr;
+    RHITexturePtr           m_pTexAccuGreenSh = nullptr;
+    RHITexturePtr           m_pTexAccuBlueSh = nullptr;
+    RHIFrameBufferPtr       m_pFbPropagation = nullptr;
+
+    RHITexturePtr           m_pTexRedSh_Bak = nullptr;
+    RHITexturePtr           m_pTexGreenSh_Bak = nullptr;
+    RHITexturePtr           m_pTexBlueSh_Bak = nullptr;
+    RHIFrameBufferPtr       m_pFbPropagation_Bak = nullptr;
+
+    RenderStateDesc         m_PropagationRsDesc;
+
+    RHIRenderBufferPtr      m_pInjectVerticsCBuffer = nullptr;    
+
+    PostProcessPtr          m_pGiLpvPp = nullptr;
+    RHIRenderBufferPtr      m_pLpvInvProjCBuffer = nullptr;
+    RHIRenderBufferPtr      m_pLpvParamCBuffer = nullptr;
+    RHIRenderBufferPtr      m_pLpvCameraInfoCBuffer = nullptr;
+
+    uint32_t                m_iPropagationSteps = 25;
+    float                   m_fLpvAttenuation = 1.0;
+    float                   m_fLpvPower = 1.0;
+    float                   m_fLpvCutoff = 0.2;
+
+    static const std::string TechName_LPVInject;
+    static const std::string TechName_LPVPropagation;
+    static const std::string TechName_LPVPropagation_Bak;
 };
 
 

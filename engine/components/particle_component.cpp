@@ -351,7 +351,10 @@ SResult ParticleComponent::TickBegin(float delta_time)
         m_fLastEmitTime += emit_count * min_emit_time;
     }
     m_pParticleTickBeginParam->Update(&emit_count, sizeof(emit_count));    
+    RHIContext& rc = m_pContext->RHIContextInstance();
+    rc.BeginComputePass({ "ParticleTickBegin" });
     m_pTechParticleTickBegin->Dispatch(1, 1, 1);
+    rc.EndComputePass();
     return S_Success;
 }
 SResult ParticleComponent::EmitParticles()
@@ -360,7 +363,11 @@ SResult ParticleComponent::EmitParticles()
     this->FillGpuEmitParam(&param);
     m_pParticleEmitParam->Update(&param, sizeof(GpuEmitParam));   
     m_pTechParticleEmit->SetParam("alive_pre_simulate_indices", m_pParticleAliveIndices[m_iPreSimIndex]);
-    m_pTechParticleEmit->DispatchIndirect(m_pParticleDispatchEmitIndirectArgs);    
+
+    RHIContext& rc = m_pContext->RHIContextInstance();
+    rc.BeginComputePass({"ParticleEmit"});
+    m_pTechParticleEmit->DispatchIndirect(m_pParticleDispatchEmitIndirectArgs);
+    rc.EndComputePass();
     return S_Success;
 }
 SResult ParticleComponent::SimulateParticles(float delta_time)
@@ -370,7 +377,11 @@ SResult ParticleComponent::SimulateParticles(float delta_time)
     m_pParticleSimulateParam->Update(&param, sizeof(GpuSimulateParam));    
     m_pTechParticleSimulate->SetParam("alive_pre_simulate_indices", m_pParticleAliveIndices[m_iPreSimIndex]);
     m_pTechParticleSimulate->SetParam("alive_post_simulate_indices", m_pParticleAliveIndices[m_iPostSimIndex]);    
+
+    RHIContext& rc = m_pContext->RHIContextInstance();
+    rc.BeginComputePass({"ParticleSimulate"});
     m_pTechParticleSimulate->DispatchIndirect(m_pParticleDispatchSimulateIndirectArgs);
+    rc.EndComputePass();
     return S_Success;
 }
 SResult ParticleComponent::CullingParticles()
@@ -383,7 +394,11 @@ SResult ParticleComponent::CullingParticles()
     GpuCullingParam param{ view, proj };
     m_pParticleCullingParam->Update(&param, sizeof(GpuCullingParam));
     m_pTechParticleCulling->SetParam("alive_post_simulate_indices", m_pParticleAliveIndices[m_iPostSimIndex]);
+
+    RHIContext& rc = m_pContext->RHIContextInstance();
+    rc.BeginComputePass({"ParticleCulling"});
     m_pTechParticleCulling->DispatchIndirect(m_pParticleDispatchSimulateIndirectArgs);
+    rc.EndComputePass();
     return S_Success;
 }
 SResult ParticleComponent::SortParticles()
@@ -393,7 +408,10 @@ SResult ParticleComponent::SortParticles()
     m_pParticleCounters->CopyBack(buf1);
 
     // PreSort
+    RHIContext& rc = m_pContext->RHIContextInstance();
+    rc.BeginComputePass({ "ParticlePreSort" });
     m_pTechParticlePreSort->Dispatch((counters.render_count + BITONIC_BLOCK_SIZE - 1) / BITONIC_BLOCK_SIZE, 1, 1);
+    rc.EndComputePass();
 
     // sort level <= BITONIC_BLOCK_SIZE
     uint size = to2power(counters.render_count);
@@ -403,7 +421,9 @@ SResult ParticleComponent::SortParticles()
         m_pParticleSortParam->Update(&param, sizeof(GpuSortParam));        
 
         uint32_t dispatch_x = (counters.render_count + BITONIC_BLOCK_SIZE - 1) / BITONIC_BLOCK_SIZE;
+        rc.BeginComputePass({ "ParticleBitonicSort" });
         m_pTechParticleBitonicSort->Dispatch(dispatch_x, 1, 1);
+        rc.EndComputePass();
     }
 
     uint32_t matrix_width = 2;
@@ -430,19 +450,26 @@ SResult ParticleComponent::SortParticles()
         
         // Step2: sort temp datas
         m_pTechParticleBitonicSort->SetParam("sort_indices", m_pParticleSortTempIndices);
+        rc.BeginComputePass({ "ParticleBitonicSort" });
         m_pTechParticleBitonicSort->Dispatch(size / BITONIC_BLOCK_SIZE, 1, 1);
+        rc.EndComputePass();
 
         // Step3: transpose datas to SortIndices
         param = { matrix_width, level, matrix_width, matrix_height };
         m_pParticleSortParam->Update(&param, sizeof(GpuSortParam));
         m_pTechParticleSortMatrixTranspose->SetParam("sort_data_input", m_pParticleSortTempIndices);
         m_pTechParticleSortMatrixTranspose->SetParam("sort_data_output", m_pParticleSortIndices);
+
+        rc.BeginComputePass({ "ParticleSortMatrixTranspose" });
         m_pTechParticleSortMatrixTranspose->Dispatch(matrix_width / TRANSPOSE_BLOCK_SIZE,
             matrix_height / TRANSPOSE_BLOCK_SIZE, 1);
+        rc.EndComputePass();
 
         // Step4: sort 
         m_pTechParticleBitonicSort->SetParam("sort_indices", m_pParticleSortIndices);
+        rc.BeginComputePass({ "ParticleBitonicSort" });
         m_pTechParticleBitonicSort->Dispatch(size / BITONIC_BLOCK_SIZE, 1, 1); 
+        rc.EndComputePass();
     }
     return S_Success;
 }

@@ -1,0 +1,53 @@
+//STAGE:ps
+#include "Lighting.dsh"
+#include "shared/GI.h"
+#include "Common.dsh"
+
+Texture2D gbuffer0;
+Texture2D gbuffer1;
+Texture2D gbuffer_depth;
+
+Texture3D<float4> redSH;
+Texture3D<float4> greenSH;
+Texture3D<float4> blueSH;
+
+cbuffer cb_GiLpvPSParam
+{
+    GiLpvParam param;
+}
+cbuffer cb_CameraInfo
+{
+    CameraInfo cameraInfo;
+}
+
+float4 DirToSH(float3 direction)
+{
+    return float4(SH_C0, -SH_C1 * direction.y, SH_C1 * direction.z, -SH_C1 * direction.x);
+}
+
+// ls : light space
+float4 main(
+	in 	float4 iPosView	: POSITION,
+	in 	float2 iTc		: TEXCOORD) : SV_Target
+{
+	float4 gb0 = gbuffer0.Sample(point_sampler, iTc);
+	float4 gb1 = gbuffer1.Sample(point_sampler, iTc);
+	float3 frag_normal = normalize(BestFitNormal_Decode(gb0.xyz));
+	float3 albedo = gb1.xyz;
+	
+	float depth = gbuffer_depth.Sample(point_sampler, iTc).x;
+	float depth_view = ViewSpaceDepth(depth, cameraInfo.nearPlane, cameraInfo.farPlane);
+	float3 pos_view = iPosView.xyz * (depth_view / cameraInfo.farPlane);
+	float4 pos_world = mul(float4(pos_view, 1.0), param.inv_view_matrix);
+	pos_world /= pos_world.w;
+	
+	float4 SHintensity = DirToSH(frag_normal.rgb);
+	float3 lpvCellCoords = (pos_world.rgb * LPV_SCALE + float3(LPV_DIM_HALF, LPV_DIM_HALF, LPV_DIM_HALF)) * LPV_DIM_INVERSE;
+	float4 lpvIntensity = float4(
+							max(0.0f, dot(SHintensity, redSH.Sample(point_sampler, lpvCellCoords))),
+							max(0.0f, dot(SHintensity, greenSH.Sample(point_sampler, lpvCellCoords))),
+							max(0.0f, dot(SHintensity, blueSH.Sample(point_sampler, lpvCellCoords))),
+							1.0f) / PI;
+	float3 lpv = param.lpv_attenuation * min(lpvIntensity.rgb * param.lpv_power, float3(param.lpv_cutoff, param.lpv_cutoff, param.lpv_cutoff)) * albedo.rgb;
+    return float4 (lpv, 0.0);    
+}	

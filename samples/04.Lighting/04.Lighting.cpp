@@ -93,7 +93,7 @@ SResult Lighting::OnCreate()
     m_pLightEntity[4]->AddSceneComponent(pLight);
     //m_pLightEntity[4]->AddToTopScene();
 
-    BitmapBufferPtr bit = ImageDecodeFromFile(FullPath("asset/textures/tex_0.jpg"), ImageType::JPEG);
+    BitmapBufferPtr bit = ImageDecodeFromFile(FullPath("asset/textures/boy.jpg"), ImageType::JPEG);
     RHITexturePtr tex_0 = rc.CreateTexture2D(bit);
 
     PlaneMeshComponentPtr pPlane = MakeSharedPtr<PlaneMeshComponent>(m_pContext.get(), 7.6f, 7.6f);
@@ -123,8 +123,6 @@ SResult Lighting::OnCreate()
     m_pConeEntity->AddSceneComponent(pCone);
     m_pConeEntity->AddToTopScene();
     
-
-#ifdef SEEK_PLATFORM_WINDOWS
     // Step4 add SkyBox Entity
     RHITexture::Desc desc;
     desc.type = TextureType::Cube;
@@ -154,7 +152,7 @@ SResult Lighting::OnCreate()
     SkyBoxComponentPtr pSkybox = MakeSharedPtr<SkyBoxComponent>(m_pContext.get());
     pSkybox->SetSkyBoxTex(tex_cube);
     m_pSkyBoxEntity->AddSceneComponent(pSkybox);
-    //m_pSkyBoxEntity->AddToTopScene();
+    m_pSkyBoxEntity->AddToTopScene();
 
 #if (0)
     std::string equirectangular_file = FullPath("asset/textures/Hamarikyu_Bridge.jpg");
@@ -179,7 +177,7 @@ SResult Lighting::OnCreate()
     this->TestSplitSumApproximation(tex_cube_env);
 
 #endif
-#endif
+
     return S_Success;
 }
 

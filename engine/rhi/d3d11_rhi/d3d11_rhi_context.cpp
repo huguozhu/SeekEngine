@@ -473,6 +473,9 @@ SResult D3D11RHIContext::Render(RHIProgram* program, RHIMeshPtr const& mesh)
 
     SEEK_RETIF_FAIL(d3d_mesh.Deactive());
     ((D3D11RHIProgram*)program)->Deactive();
+
+    //std::vector<ID3D11ShaderResourceView*> null_srvs(16);
+    //m_pDeviceContext->PSSetShaderResources(0, 16, null_srvs.data());
     return ret;
 }
 

@@ -8,6 +8,7 @@
 #include "rhi/base/rhi_context.h"
 #include "rhi/base/rhi_framebuffer.h"
 #include "rhi/base/rhi_render_buffer.h"
+#include "rhi/base/rhi_render_state.h"
 #include "utils/log.h"
 
 #define SEEK_MACRO_FILE_UID 189     // this code is auto generated, don't touch it!!!
@@ -98,7 +99,7 @@ SResult RSM::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
         
     Effect& effect = m_pContext->EffectInstance();
     static const std::string tech_name = "GiRsm";
-    effect.LoadTechnique(tech_name, &RenderStateDesc::Default2D(), "GiRsmVS", "GiRsmPS", nullptr);
+    effect.LoadTechnique(tech_name, &RenderStateDesc::PostProcess(), "GiVS", "GiRsmPS", nullptr);
     m_pGiRsmPp = MakeSharedPtr<PostProcess>(m_pContext, tech_name);
     m_pGiRsmPp->Init(tech_name, NULL_PREDEFINES);
     m_pGiRsmPp->SetClear(false);
@@ -115,7 +116,8 @@ SResult RSM::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     m_pGiRsmPp->SetParam("cb_CameraInfo", m_pRsmCameraInfoCBuffer);
 
     m_pRsmParamCBuffer = rc.CreateConstantBuffer(sizeof(GiRsmParam), RESOURCE_FLAG_CPU_WRITE);
-    m_pGiRsmPp->SetParam("cb_GiRsmVSParam", m_pRsmParamCBuffer);
+    m_pRsmInvProjCBuffer = rc.CreateConstantBuffer(sizeof(float4x4), RESOURCE_FLAG_CPU_WRITE);
+    m_pGiRsmPp->SetParam("cb_InvProjMatrix", m_pRsmInvProjCBuffer);
     m_pGiRsmPp->SetParam("cb_GiRsmPSParam", m_pRsmParamCBuffer);
 
 	m_pVplCoordAndWeightsCBuffer = rc.CreateConstantBuffer(sizeof(float4) * VPL_NUM, RESOURCE_FLAG_CPU_WRITE);
@@ -198,11 +200,13 @@ RendererReturnValue RSM::PostProcessReflectiveShadowMapJob(uint32_t light_index)
         Matrix4 const& inv_view = pCam->GetInvViewMatrix();
         Matrix4 const& light_vp = pLightCam->GetViewProjMatrix();
         GiRsmParam param;
-        param.inv_proj_matrix = inv_proj.Transpose();
 		param.inv_view_matrix = inv_view.Transpose();
 		param.light_view_proj_matrix = light_vp.Transpose();
 		param.radius_rsmsize = float2(m_fSampleRadius, RSM_SIZE);
 		m_pRsmParamCBuffer->Update(&param, sizeof(param));
+
+        float4x4 inv_proj_matrix = inv_proj.Transpose();
+        m_pRsmInvProjCBuffer->Update(&inv_proj_matrix, sizeof(float4x4));
 
         CameraInfo cameraInfo;
         if (pCam)
@@ -230,15 +234,17 @@ RendererReturnValue RSM::PostProcessReflectiveShadowMapJob(uint32_t light_index)
 /******************************************************************************
  * LPV : Light Propagation Volumes
  ******************************************************************************/
+const std::string LPV::TechName_LPVInject = "LPVInject";
+const std::string LPV::TechName_LPVPropagation = "LPVPropagation";
+const std::string LPV::TechName_LPVPropagation_Bak = "LPVPropagation_BAK";
 LPV::LPV(Context* context)
     :RSM(context)
 {
-    //m_eMode = GlobalIlluminationMode::LPV;
+    m_eMode = GlobalIlluminationMode::LPV;
 }
 SResult LPV::OnBegin()
 {
     RSM::OnBegin();
-    m_pFbSH->Clear();
     return S_Success;
 }
 SResult LPV::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, RHITexturePtr const& gbuffer_depth)
@@ -246,6 +252,19 @@ SResult LPV::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     RHIContext& rc = m_pContext->RHIContextInstance();
     SEEK_RETIF_FAIL(GlobalIllumination::Init());
     SEEK_RETIF_FAIL(this->InitGenRsm());
+
+    Effect& effect = m_pContext->EffectInstance();
+    // for Inject
+    effect.LoadTechnique(TechName_LPVInject, &RenderStateDesc::DepthDisable(), "LPVInjectVS", "LPVInjectPS", nullptr);
+    Technique* pInjectTech = effect.GetTechnique(TechName_LPVInject);
+    if (!pInjectTech)
+    {
+        LOG_ERROR("Load technique %s failed", TechName_LPVInject.c_str());
+        return ERR_INVALID_INIT;
+    }
+    pInjectTech->SetParam("rsm_color0", m_pRsmTexs[0]);
+    pInjectTech->SetParam("rsm_color1", m_pRsmTexs[1]);
+    pInjectTech->SetParam("rsm_color2", m_pRsmTexs[2]);
 
     RHITexture::Desc desc;
     desc.type = TextureType::Tex3D;
@@ -259,20 +278,209 @@ SResult LPV::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     m_pTexGreenSh = rc.CreateTexture3D(desc);
     m_pTexBlueSh = rc.CreateTexture3D(desc);
 
-    m_pFbSH = rc.CreateEmptyRHIFrameBuffer();
-    m_pFbSH->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pTexRedSh));
-    m_pFbSH->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.CreateRenderTargetView(m_pTexGreenSh));
-    m_pFbSH->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.CreateRenderTargetView(m_pTexBlueSh));
+    m_pFbInject = rc.CreateEmptyRHIFrameBuffer();
+    m_pFbInject->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pTexRedSh));
+    m_pFbInject->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.CreateRenderTargetView(m_pTexGreenSh));
+    m_pFbInject->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.CreateRenderTargetView(m_pTexBlueSh));
+    m_pFbInject->SetViewport({ 0, 0, LPV_SIZE, LPV_SIZE });
+
+    // RenderState
+    {
+        m_PropagationRsDesc.depthStencil.bDepthEnable = false;
+        m_PropagationRsDesc.blend.bIndependentBlendEnable = true;
+        for (uint32_t i = 0; i < 6; ++i)
+        {
+            m_PropagationRsDesc.blend.stTargetBlend[i].bBlendEnable = (i < 3) ? false : true;
+            m_PropagationRsDesc.blend.stTargetBlend[i].eSrcBlendColor = BlendFactor::One;
+            m_PropagationRsDesc.blend.stTargetBlend[i].eDstBlendColor = BlendFactor::One;
+            m_PropagationRsDesc.blend.stTargetBlend[i].eBlendOpColor = BlendOperation::Add;
+
+            m_PropagationRsDesc.blend.stTargetBlend[i].eSrcBlendAlpha = BlendFactor::One;
+            m_PropagationRsDesc.blend.stTargetBlend[i].eDstBlendAlpha = BlendFactor::One;
+            m_PropagationRsDesc.blend.stTargetBlend[i].eBlendOpAlpha = BlendOperation::Add;
+            m_PropagationRsDesc.blend.stTargetBlend[i].bColorWriteMask = CWM_RGBA;
+        }
+    }
+
+    // for Propagation_Bak
+    float4 vertices[3] = {
+        float4(-1.0,  1.0, 0.0, 1.0),
+        float4(3.0,  1.0, 0.0, 1.0),
+        float4(-1.0, -3.0, 0.0, 1.0)
+    };
+    m_pInjectVerticsCBuffer = rc.CreateConstantBuffer(sizeof(float4) * 3, RESOURCE_FLAG_CPU_WRITE);
+    m_pInjectVerticsCBuffer->Update(vertices, sizeof(float4) * 3);
+
+    m_pTexRedSh_Bak = rc.CreateTexture3D(desc);
+    m_pTexGreenSh_Bak = rc.CreateTexture3D(desc);
+    m_pTexBlueSh_Bak = rc.CreateTexture3D(desc);
+    m_pTexAccuRedSh = rc.CreateTexture3D(desc);
+    m_pTexAccuGreenSh = rc.CreateTexture3D(desc);
+    m_pTexAccuBlueSh = rc.CreateTexture3D(desc);
+
+    m_pFbPropagation_Bak = rc.CreateEmptyRHIFrameBuffer();
+    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pTexRedSh_Bak));
+    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.CreateRenderTargetView(m_pTexGreenSh_Bak));
+    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.CreateRenderTargetView(m_pTexBlueSh_Bak));
+    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color3, rc.CreateRenderTargetView(m_pTexAccuRedSh));
+    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color4, rc.CreateRenderTargetView(m_pTexAccuGreenSh));
+    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color5, rc.CreateRenderTargetView(m_pTexAccuBlueSh));
+    m_pFbPropagation_Bak->SetViewport({ 0, 0, LPV_SIZE, LPV_SIZE });
+    effect.LoadTechnique(TechName_LPVPropagation_Bak, &m_PropagationRsDesc, "LPVPropagationVS", "LPVPropagationPS", nullptr);
+    Technique* pPropagationTech_Bak = effect.GetTechnique(TechName_LPVPropagation_Bak);
+    if (!pPropagationTech_Bak)
+    {
+        LOG_ERROR("Load technique %s failed", TechName_LPVPropagation_Bak.c_str());
+        return ERR_INVALID_INIT;
+    }
+    pPropagationTech_Bak->SetParam("redSH", m_pTexRedSh);
+    pPropagationTech_Bak->SetParam("greenSH", m_pTexGreenSh);
+    pPropagationTech_Bak->SetParam("blueSH", m_pTexBlueSh);
+    pPropagationTech_Bak->SetParam("cb_InjectVertics", m_pInjectVerticsCBuffer);
+
+    // for Propagation
+    m_pFbPropagation = rc.CreateEmptyRHIFrameBuffer();
+    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pTexRedSh));
+    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.CreateRenderTargetView(m_pTexGreenSh));
+    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.CreateRenderTargetView(m_pTexBlueSh));
+    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color3, rc.CreateRenderTargetView(m_pTexAccuRedSh));
+    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color4, rc.CreateRenderTargetView(m_pTexAccuGreenSh));
+    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color5, rc.CreateRenderTargetView(m_pTexAccuBlueSh));
+    m_pFbPropagation->SetViewport({ 0, 0, LPV_SIZE, LPV_SIZE });
+
+    effect.LoadTechnique(TechName_LPVPropagation, &m_PropagationRsDesc, "LPVPropagationVS", "LPVPropagationPS", nullptr);
+    Technique* pPropagationTech = effect.GetTechnique(TechName_LPVPropagation);
+    if (!pPropagationTech)
+    {
+        LOG_ERROR("Load technique %s failed", TechName_LPVPropagation.c_str());
+        return ERR_INVALID_INIT;
+    }
+    pPropagationTech->SetParam("redSH", m_pTexRedSh_Bak);
+    pPropagationTech->SetParam("greenSH", m_pTexGreenSh_Bak);
+    pPropagationTech->SetParam("blueSH", m_pTexBlueSh_Bak);
+    pPropagationTech->SetParam("cb_InjectVertics", m_pInjectVerticsCBuffer);
+
+    // for Calc LPV's Indirect 
+    static const std::string gilpv_tech_name = "GiLpv";
+    effect.LoadTechnique(gilpv_tech_name, &RenderStateDesc::PostProcess(), "GiVS", "GiLpvPS", nullptr);
+    m_pGiLpvPp = MakeSharedPtr<PostProcess>(m_pContext, gilpv_tech_name);
+    m_pGiLpvPp->Init(gilpv_tech_name, NULL_PREDEFINES);
+    m_pGiLpvPp->SetClear(false);
+
+    m_pLpvInvProjCBuffer = rc.CreateConstantBuffer(sizeof(float4x4), RESOURCE_FLAG_CPU_WRITE);
+    m_pLpvCameraInfoCBuffer = rc.CreateConstantBuffer(sizeof(CameraInfo), RESOURCE_FLAG_CPU_WRITE);
+    m_pLpvParamCBuffer = rc.CreateConstantBuffer(sizeof(GiLpvParam), RESOURCE_FLAG_CPU_WRITE);
+
+    m_pGiLpvPp->SetParam("gbuffer0", gbuffer0);
+    m_pGiLpvPp->SetParam("gbuffer1", gbuffer1);
+    m_pGiLpvPp->SetParam("gbuffer_depth", gbuffer_depth);
+    m_pGiLpvPp->SetParam("cb_InvProjMatrix", m_pLpvInvProjCBuffer);
+    m_pGiLpvPp->SetParam("cb_CameraInfo", m_pLpvCameraInfoCBuffer);
+    m_pGiLpvPp->SetParam("cb_GiLpvPSParam", m_pLpvParamCBuffer);
+    m_pGiLpvPp->SetParam("redSH",   m_pTexRedSh);
+    m_pGiLpvPp->SetParam("greenSH", m_pTexGreenSh);
+    m_pGiLpvPp->SetParam("blueSH",  m_pTexBlueSh);
+    m_pGiLpvPp->SetOutput(0, m_pIndirectIlluminationTex);
+    m_pGiLpvPp->SetPostProcessRenderStateDesc(RenderStateDesc::PostProcessAccumulate());
     return S_Success;
 }
 SResult LPV::LPVInject()
 {
+    m_pFbInject->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, float4(0.0));
+    m_pFbInject->SetColorLoadOption(RHIFrameBuffer::Attachment::Color1, float4(0.0));
+    m_pFbInject->SetColorLoadOption(RHIFrameBuffer::Attachment::Color2, float4(0.0));
+    SResult res = m_pContext->RHIContextInstance().BeginRenderPass({ "LPV::LPVInject", m_pFbInject.get() });
+    if (res != S_Success)
+    {
+        LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::GenerateGBufferJob() BindFrameBuffer failed.");
+    }
+    Effect& effect = m_pContext->EffectInstance();
+    Technique* pTech = effect.GetTechnique(TechName_LPVInject);
+    pTech->DrawInstanced(MeshTopologyType::Points, RSM_SIZE * RSM_SIZE, 1, 0, 0);
+    m_pContext->RHIContextInstance().EndRenderPass();
     return S_Success;
 }
 SResult LPV::LPVPropagation()
 {
+    m_pFbPropagation->ClearRenderTarget(RHIFrameBuffer::Attachment::Color3, float4(0.0));
+    m_pFbPropagation->ClearRenderTarget(RHIFrameBuffer::Attachment::Color4, float4(0.0));
+    m_pFbPropagation->ClearRenderTarget(RHIFrameBuffer::Attachment::Color5, float4(0.0));
+    
+    RHIContext& rc = m_pContext->RHIContextInstance();
+    Effect& effect = m_pContext->EffectInstance();
+    Technique* pTech_Bak = effect.GetTechnique(TechName_LPVPropagation_Bak);
+    Technique* pTech = effect.GetTechnique(TechName_LPVPropagation);
+   
+    for (uint32_t i = 0; i < m_iPropagationSteps; ++i)
+    {
+        rc.BeginRenderPass({ "LPVPropagation_Bak", m_pFbPropagation_Bak.get() });
+        pTech_Bak->DrawInstanced(MeshTopologyType::Triangles, 3, LPV_DIM, 0, 0);
+        rc.EndRenderPass();
+
+        rc.BeginRenderPass({ "LPVPropagation", m_pFbPropagation.get() });
+        pTech->DrawInstanced(MeshTopologyType::Triangles, 3, LPV_DIM, 0, 0);
+        rc.EndRenderPass();
+    }
+   
     return S_Success;
 }
+SResult LPV::LPVCalcIndirect(uint32_t light_index)
+{
+    SceneManager& sc = m_pContext->SceneManagerInstance();
+    RHIContext& rc = m_pContext->RHIContextInstance();
+    SceneRenderer& sr = m_pContext->SceneRendererInstance();
+    CameraComponent* pCam = sc.GetActiveCamera();
+    if (!pCam)
+    {
+        LOG_ERROR("RSM::PostProcessReflectiveShadowMapJob Invalid Camera");
+        return RRV_NextJob;
+    }
+
+    LightComponent* pLight = sc.GetLightComponentByIndex(light_index);
+    CameraComponent* pLightCam = pLight->GetShadowMapCamera();
+    LightType light_type = pLight->GetLightType();
+    if (light_type == LightType::Spot || light_type == LightType::Directional)
+    {
+        m_pIndirectIlluminationFb->SetColorLoadOption(RHIFrameBuffer::Color0, RHIFrameBuffer::LoadAction::Load);
+
+        Matrix4 const& inv_proj = pCam->GetInvProjMatrix();
+        m_pLpvInvProjCBuffer->Update(&inv_proj, sizeof(Matrix4));
+
+        Matrix4 const& inv_view = pCam->GetInvViewMatrix().Transpose();
+        GiLpvParam param = { inv_view, m_fLpvAttenuation, m_fLpvPower, m_fLpvCutoff };
+        m_pLpvParamCBuffer->Update(&param, sizeof(GiLpvParam));
+
+        CameraInfo cameraInfo = {  };
+        if (pCam)
+        {
+            cameraInfo.posWorld = pCam->GetWorldTransform().GetTranslation();
+            cameraInfo.nearPlane = pCam->GetNearPlane();
+            cameraInfo.farPlane = pCam->GetFarPlane();
+        }
+        m_pLpvCameraInfoCBuffer->Update(&cameraInfo, sizeof(CameraInfo));
+
+        m_pGiLpvPp->Run();
+    }
+
+#if 0
+    static int draw = 1;
+    if (draw)
+    {
+        static std::string path = "d:\\indirect_illumination.rgba";
+        m_pIndirectIlluminationTex->DumpToFile(path);
+        draw--;
+    }
+#endif
+    return S_Success;
+}
+RendererReturnValue LPV::PostProcessReflectiveShadowMapJob(uint32_t light_index)
+{
+    this->LPVInject();
+    this->LPVPropagation();
+    this->LPVCalcIndirect(light_index);
+    return RRV_NextJob;
+}
+
 /******************************************************************************
  * VXGI : Voxel Cone Tracing 
  ******************************************************************************/
@@ -298,9 +506,7 @@ SResult VXGI::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1,
     desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET;
     desc.format = PixelFormat::R8G8B8A8_UNORM;
     m_pTexVoxel3D = rc.CreateTexture3D(desc);
-    m_pTexVoxel3D = rc.CreateTexture3D(desc);
-
-
+    m_pTexVoxel3D_Copy = rc.CreateTexture3D(desc);
     return S_Success;
 }
 
