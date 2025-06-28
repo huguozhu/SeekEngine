@@ -818,6 +818,11 @@ SResult D3D11Texture3D::Create(std::vector<BitmapBufferPtr> const& bitmap_datas)
 
     if (bitmap_datas.size() != 0 && bitmap_datas.size() == m_desc.num_mips)
     {
+        if (bitmap_datas.size() != m_desc.num_mips)
+        {
+            LOG_ERROR("D3D11Texture3D::Create() bitmap_datas.size() != num_mips");
+            return ERR_INVALID_ARG;
+        }
         for (uint32_t i = 0; i < bitmap_datas.size(); i++)
         {
             if (bitmap_datas[i])
@@ -841,6 +846,31 @@ SResult D3D11Texture3D::Create(std::vector<BitmapBufferPtr> const& bitmap_datas)
     m_pTexture = std::move(_texture3d);
     return S_Success;
 }   
+SResult D3D11Texture3D::CopyBackTexture3D(BitmapBufferPtr bitmap_data, uint32_t array_index, uint32_t mip_level)
+{
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
+
+    D3D11_MAPPED_SUBRESOURCE mapped_data;
+    pDeviceContext->Map(m_pTexture.Get(), D3D11CalcSubresource(mip_level, array_index, m_desc.num_mips), D3D11_MAP_READ, 0, &mapped_data);
+
+    Rect<uint32_t> copyRegion(0, m_desc.width, 0, m_desc.height);
+    uint32_t copyWidth = copyRegion.right - copyRegion.left;
+    uint32_t copyHeight = copyRegion.bottom - copyRegion.top;
+    if (!bitmap_data->Expand(m_desc.width, m_desc.height, m_desc.format))
+        return ERR_NO_MEM;
+
+    uint8_t* dst = bitmap_data->Data();
+    uint8_t* src = (uint8_t*)mapped_data.pData + copyRegion.top * mapped_data.RowPitch + copyRegion.left * Formatutil::NumComponentBytes(m_desc.format);
+    for (int i = 0; i < copyHeight; i++)
+    {
+        memcpy_s(dst, copyWidth * Formatutil::NumComponentBytes(m_desc.format), src, copyWidth * Formatutil::NumComponentBytes(m_desc.format));
+        dst += bitmap_data->RowPitch();
+        src += mapped_data.RowPitch;
+    }
+    pDeviceContext->Unmap(m_pTexture.Get(), D3D11CalcSubresource(mip_level, array_index, m_desc.num_mips));
+    return S_Success;
+}
 void D3D11Texture3D::FillTexture3DDesc(D3D11_TEXTURE3D_DESC& desc)
 {
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());

@@ -41,25 +41,26 @@ public:
         ResourceFlags flags = RESOURCE_FLAG_NONE;
     };
 
-    Desc const&             Descriptor()    const { return m_desc; };
-    TextureType             Type()          const { return m_desc.type; }
-    uint32_t                SizeX()         const { return m_desc.width; }
-    uint32_t                SizeY()         const { return m_desc.height; }
-    uint32_t                SizeZ()         const { return m_desc.depth; }
-    uint32_t                Width()         const { return m_desc.width; }
-    uint32_t                Height()        const { return m_desc.height; }
-    uint32_t                Depth()         const { return m_desc.depth; }
-    uint32_t                NumMips()       const { return m_desc.num_mips; }
-    uint32_t                NumSamples()    const { return m_desc.num_samples; }
-    PixelFormat             Format()        const { return m_desc.format; }
-    ResourceFlags           Flags()         const { return m_desc.flags; }
+    Desc const&         Descriptor()    const { return m_desc; };
+    TextureType         Type()          const { return m_desc.type; }
+    uint32_t            SizeX()         const { return m_desc.width; }
+    uint32_t            SizeY()         const { return m_desc.height; }
+    uint32_t            SizeZ()         const { return m_desc.depth; }
+    uint32_t            Width()         const { return m_desc.width; }
+    uint32_t            Height()        const { return m_desc.height; }
+    uint32_t            Depth()         const { return m_desc.depth; }
+    uint32_t            NumMips()       const { return m_desc.num_mips; }
+    uint32_t            NumSamples()    const { return m_desc.num_samples; }
+    PixelFormat         Format()        const { return m_desc.format; }
+    ResourceFlags       Flags()         const { return m_desc.flags; }
 
-    virtual SResult       Create(std::vector<BitmapBufferPtr> const& bitmap_datas) = 0;
-    virtual SResult       Update(std::vector<BitmapBufferPtr> const& bitmap_datas) = 0;
-    virtual SResult       CopyBack(BitmapBufferPtr bitmap_data, Rect<uint32_t>* rect, CubeFaceType face = CubeFaceType::Num) = 0;
-    virtual SResult       GenerateMipMap() { return S_Success; }
+    virtual SResult     Create(std::vector<BitmapBufferPtr> const& bitmap_datas) = 0;
+    virtual SResult     Update(std::vector<BitmapBufferPtr> const& bitmap_datas) = 0;
+    virtual SResult     CopyBack(BitmapBufferPtr bitmap_data, Rect<uint32_t>* rect, CubeFaceType face = CubeFaceType::Num) { return S_Success; }
+    virtual SResult     CopyBackTexture3D(BitmapBufferPtr bitmap_data, uint32_t array_index, uint32_t mip_level) { return S_Success; }
+    virtual SResult     GenerateMipMap() { return S_Success; }
 
-    SResult               DumpToFile(std::string path, CubeFaceType face = CubeFaceType::Num)
+    SResult DumpToFile(std::string path, CubeFaceType face = CubeFaceType::Num)
     {
         BitmapBufferPtr bitmap_data = MakeSharedPtr<BitmapBuffer>();
         Rect<uint32_t> rect;
@@ -67,6 +68,14 @@ public:
         rect.right = m_desc.width;
         rect.bottom = m_desc.height;
         SEEK_RETIF_FAIL(this->CopyBack(bitmap_data, &rect, face));
+        bitmap_data->DumpToFile(path);
+        return S_Success;
+    }
+
+    SResult DumpToFile(std::string path, uint32_t array_index, uint32_t mip_level)
+    {
+        BitmapBufferPtr bitmap_data = MakeSharedPtr<BitmapBuffer>();
+        SEEK_RETIF_FAIL(this->CopyBackTexture3D(bitmap_data, array_index, mip_level));
         bitmap_data->DumpToFile(path);
         return S_Success;
     }

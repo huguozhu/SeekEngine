@@ -6,6 +6,11 @@
 
 SEEK_NAMESPACE_BEGIN
 
+constexpr uint32_t D3D11CalcSubresource(uint32_t mip_slice, uint32_t array_slice, uint32_t mip_levels) noexcept
+{
+    return mip_slice + array_slice * mip_levels;
+}
+
 class D3D11Translate
 {
 public:

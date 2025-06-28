@@ -115,7 +115,7 @@ public:
 
     SResult Create(std::vector<BitmapBufferPtr> const& bitmap_datas) override;
     SResult Update(std::vector<BitmapBufferPtr> const& bitmap_datas) override { return S_Success; }
-    SResult CopyBack(BitmapBufferPtr bitmap_data, Rect<uint32_t>* rect, CubeFaceType face = CubeFaceType::Num) { return S_Success; }
+    SResult CopyBackTexture3D(BitmapBufferPtr bitmap_data, uint32_t array_index, uint32_t mip_level);
 
 private:
     virtual void FillTexture3DDesc(D3D11_TEXTURE3D_DESC& desc);

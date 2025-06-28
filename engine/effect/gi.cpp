@@ -164,12 +164,12 @@ RendererReturnValue RSM::GenerateReflectiveShadowMapJob(uint32_t light_index)
         m_pContext->RHIContextInstance().EndRenderPass();
         sr.SetCurRenderStage(RenderStage::None);
     }
-#if 0
-    static int draw = 0;
+#if 1
+    static int draw = 1;
     if (draw)
     {
         m_pRsmTexs[0]->DumpToFile("d:\\rsm0.rgba");
-        //m_pRsmTexs[1]->DumpToFile("d:\\rsm1.rgba");
+        m_pRsmTexs[1]->DumpToFile("d:\\rsm1.rgba");
         m_pRsmTexs[2]->DumpToFile("d:\\rsm2.rgba");
         m_pRsmDepthTex->DumpToFile("d:\\rsm_depth.g16l");
         draw--;
@@ -398,6 +398,16 @@ SResult LPV::LPVInject()
     Technique* pTech = effect.GetTechnique(TechName_LPVInject);
     pTech->DrawInstanced(MeshTopologyType::Points, RSM_SIZE * RSM_SIZE, 1, 0, 0);
     m_pContext->RHIContextInstance().EndRenderPass();
+
+#if 1
+    static int draw = 1;
+    if (draw)
+    {
+        static std::string path = "d:\\sh_red.rgba";
+        m_pTexRedSh->DumpToFile(path, 0, 0);
+        draw--;
+    }
+#endif
     return S_Success;
 }
 SResult LPV::LPVPropagation()
