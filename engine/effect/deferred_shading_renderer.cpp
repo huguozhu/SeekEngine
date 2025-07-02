@@ -159,30 +159,30 @@ SResult DeferredShadingRenderer::Init()
 
 	//  Step3: RHIFrameBuffers
     RHIRenderViewPtr ds_view = rc.CreateDepthStencilView(m_pSceneDepthStencil);
-    m_pPreZFb = rc.CreateEmptyRHIFrameBuffer();
+    m_pPreZFb = rc.CreateRHIFrameBuffer();
     m_pPreZFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pPreZColor));
     m_pPreZFb->AttachDepthStencilView(ds_view);
 
-    m_pGBufferFb = rc.CreateEmptyRHIFrameBuffer();
+    m_pGBufferFb = rc.CreateRHIFrameBuffer();
     m_pGBufferFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pGBufferColor0));
     m_pGBufferFb->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.CreateRenderTargetView(m_pGBufferColor1));
     m_pGBufferFb->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.CreateRenderTargetView(m_pGBufferColor2));
     m_pGBufferFb->AttachDepthStencilView(ds_view);
 
-    m_pLightingFb = rc.CreateEmptyRHIFrameBuffer();
+    m_pLightingFb = rc.CreateRHIFrameBuffer();
     m_pLightingFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pHDRColor));
     m_pLightingFb->AttachDepthStencilView(ds_view);
 
-    m_pLDRFb = rc.CreateEmptyRHIFrameBuffer();
-    m_pHDRFb = rc.CreateEmptyRHIFrameBuffer();    
+    m_pLDRFb = rc.CreateRHIFrameBuffer();
+    m_pHDRFb = rc.CreateRHIFrameBuffer();    
     m_pSceneFb = m_pHDRFb;
 
     m_pLDRFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pLDRColor));
 
-    m_pShadowingFb = rc.CreateEmptyRHIFrameBuffer();
+    m_pShadowingFb = rc.CreateRHIFrameBuffer();
     m_pShadowingFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pShadowTex));
 
-    m_pSsaoFb = rc.CreateEmptyRHIFrameBuffer();
+    m_pSsaoFb = rc.CreateRHIFrameBuffer();
     m_pSsaoFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pSsaoColor));
 
     GlobalIlluminationMode mode = m_pContext->GetGlobalIlluminationMode();

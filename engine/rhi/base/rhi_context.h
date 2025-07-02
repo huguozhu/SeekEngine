@@ -70,7 +70,7 @@ public: // virutal factory
     virtual RHIRenderViewPtr        CreateRenderTargetView(RHITexturePtr const& tex, CubeFaceType face, uint32_t lod = 0) { return nullptr; }
     virtual RHIRenderViewPtr        CreateDepthStencilView(RHITexturePtr const& tex) = 0;
     virtual RHIRenderViewPtr        CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face) { return nullptr; }
-    virtual RHIFrameBufferPtr       CreateEmptyRHIFrameBuffer() = 0;
+    virtual RHIFrameBufferPtr       CreateRHIFrameBuffer() = 0;
     virtual RHIProgramPtr           CreateRHIProgram() = 0;
     virtual RHITimeQueryPtr         CreateRHITimeQuery() = 0;
 

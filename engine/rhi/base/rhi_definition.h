@@ -86,16 +86,6 @@ struct VertexStream
     uint8_t                         is_instance_stream = false;
 };
 
-//#define MAX_VertexStreamLayout 8
-//struct VertexStreamInfo
-//{
-//    uint32_t                        offset = 0;
-//    uint32_t                        stride = 0;
-//    uint32_t                        num_vertex_stream_layout;
-//    VertexStreamLayout              layouts[MAX_VertexStreamLayout];
-//    bool                            is_instance_stream = false;
-//};
-
 enum class TextureFormatSupportType : uint8_t
 {
     Filtering,

@@ -38,7 +38,7 @@ public:
     virtual RHIRenderViewPtr        CreateRenderTargetView(RHITexturePtr const& tex, CubeFaceType face, uint32_t lod = 0) { return nullptr; }
     virtual RHIRenderViewPtr        CreateDepthStencilView(RHITexturePtr const& tex) override { return nullptr; }
     virtual RHIRenderViewPtr        CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face) { return nullptr; }
-    virtual RHIFrameBufferPtr       CreateEmptyRHIFrameBuffer() override { return nullptr; }
+    virtual RHIFrameBufferPtr       CreateRHIFrameBuffer() override { return nullptr; }
     virtual RHIProgramPtr           CreateRHIProgram() override { return nullptr; }
     virtual RHITimeQueryPtr         CreateRHITimeQuery() override { return nullptr; }
 

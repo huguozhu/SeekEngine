@@ -53,7 +53,7 @@ SResult ShadowLayer::InitResource()
     m_pSmTex = rc.CreateTexture2D(desc);
     desc.format = depth_pf;
     m_pSmDepthTex = rc.CreateTexture2D(desc);
-    m_pSmFb = rc.CreateEmptyRHIFrameBuffer();
+    m_pSmFb = rc.CreateRHIFrameBuffer();
     RHIRenderViewPtr sm_color_view = rc.CreateRenderTargetView(m_pSmTex);
     m_pSmFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, sm_color_view);
     m_pSmFb->AttachDepthStencilView(rc.CreateDepthStencilView(m_pSmDepthTex));
@@ -78,7 +78,7 @@ SResult ShadowLayer::InitResource()
         desc.format = PixelFormat::R32F;
         m_vCsmTex[i] = rc.CreateTexture2D(desc);
 
-        m_vCsmFb[i] = rc.CreateEmptyRHIFrameBuffer();
+        m_vCsmFb[i] = rc.CreateRHIFrameBuffer();
         m_vCsmFb[i]->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_vCsmTex[i]));
         m_vCsmFb[i]->AttachDepthStencilView(rc.CreateDepthStencilView(m_vCsmDepthTex[i]));
     }
@@ -94,7 +94,7 @@ SResult ShadowLayer::InitResource()
     {
         RHIRenderViewPtr cube_rtv = rc.CreateRenderTargetView(m_pCubeSmTex, (CubeFaceType)i);
         RHIRenderViewPtr cube_dsv = rc.CreateDepthStencilView(m_pCubeSmDepthTex, (CubeFaceType)i);
-        m_pCubeSmFb[i] = rc.CreateEmptyRHIFrameBuffer();
+        m_pCubeSmFb[i] = rc.CreateRHIFrameBuffer();
         m_pCubeSmFb[i]->AttachTargetView(RHIFrameBuffer::Attachment::Color0, cube_rtv);
         m_pCubeSmFb[i]->AttachDepthStencilView(cube_dsv);
     }        
@@ -368,7 +368,7 @@ SResult DeferredShadowLayer::InitResource()
     desc.format = PixelFormat::R8G8B8A8_UNORM;
     desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_COPY_BACK;
     m_pShadowingTex = rc.CreateTexture2D(desc);
-    m_pShadowingFb = rc.CreateEmptyRHIFrameBuffer();
+    m_pShadowingFb = rc.CreateRHIFrameBuffer();
     m_pShadowingFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pShadowingTex));
 
     m_pShadowingRenderStates[0] = rc.GetRenderState(RenderStateDesc::ShadowCopyR());
