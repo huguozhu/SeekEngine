@@ -103,7 +103,7 @@ SResult D3D11Window::Create(D3DAdapter* adapter, std::string const& name, void* 
         tex_desc.width = m_iWidth;
         tex_desc.height = m_iHeight;
         tex_desc.format = PixelFormat::D24S8;
-        tex_desc.flags = RESOURCE_FLAG_RENDER_TARGET;
+        tex_desc.flags = RESOURCE_FLAG_GPU_WRITE;
         RHITexturePtr pDepthStencilTex = d3d11_rc.CreateTexture2D(tex_desc);
         RHIRenderViewPtr dsv = d3d11_rc.CreateDepthStencilView(pDepthStencilTex);
         this->AttachDepthStencilView(dsv);

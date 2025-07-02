@@ -13,14 +13,6 @@
 #define SEEK_MACRO_FILE_UID 12     // this code is auto generated, don't touch it!!!
 
 
-//D3D11_USAGE	        CPU读	CPU写	GPU读	GPU写
-//D3D11_USAGE_DEFAULT			        √	    √
-//D3D11_USAGE_IMMUTABLE			        √
-//D3D11_USAGE_DYNAMIC		    √	    √
-//D3D11_USAGE_STAGING	√	    √	    √	    √
-//D3D11_USAGE_STAGING: 则完全允许在CPU和GPU之间的数据传输，但它只能作为一个类似中转站的资源，而不能绑定到渲染管线上，即你也不能用该纹理生成mipmaps
-
-
 SEEK_NAMESPACE_BEGIN
 /******************************************************************************
 * D3D11Texture
@@ -140,24 +132,35 @@ SResult D3D11Texture::GenerateMipMap()
     pDeviceContext->GenerateMips(pSrv);
     return S_Success;
 }
+/*
+D3D11_USAGE	            CPU读	CPU写	GPU读	GPU写
+D3D11_USAGE_DEFAULT 			        √	    √
+D3D11_USAGE_IMMUTABLE			        √
+D3D11_USAGE_DYNAMIC	    	    √	    √
+D3D11_USAGE_STAGING	    √	    √	    √	    √
+D3D11_USAGE_STAGING: 则完全允许在CPU和GPU之间的数据传输，但它只能作为一个类似中转站的资源，而不能绑定到渲染管线上，即你也不能用该纹理生成mipmaps
+*/
 void D3D11Texture::FillD3DTextureFlags(D3D11_USAGE& usage, UINT& bind_flags, UINT& cpu_access_flags, UINT& misc_flags)
 {
-    bool cpu_read = m_desc.flags & RESOURCE_FLAG_COPY_BACK;
-    bool cpu_write = m_desc.flags & RESOURCE_FLAG_CPU_WRITE;
-    bool gpu_read = m_desc.flags & RESOURCE_FLAG_SRV;
-    bool gpu_write = m_desc.flags & RESOURCE_FLAG_UAV || m_desc.flags & RESOURCE_FLAG_RENDER_TARGET || m_desc.flags & RESOURCE_FLAG_GPU_WRITE;
-    bool generate_mips = m_desc.flags & RESOURCE_FLAG_GENERATE_MIPS;
+    bool cpu_read       = m_desc.flags & RESOURCE_FLAG_CPU_READ;
+    bool cpu_write      = m_desc.flags & RESOURCE_FLAG_CPU_WRITE;
+    bool gpu_read       = m_desc.flags & RESOURCE_FLAG_GPU_READ;
+    bool gpu_write      = m_desc.flags & RESOURCE_FLAG_GPU_WRITE;   // m_desc.flags& RESOURCE_FLAG_UAV || m_desc.flags & RESOURCE_FLAG_GPU_WRITE || m_desc.flags & RESOURCE_FLAG_GPU_WRITE;
+    
+    bool is_uav         = m_desc.flags & RESOURCE_FLAG_UAV;
+    bool generate_mips  = m_desc.flags & RESOURCE_FLAG_GENERATE_MIPS;
+    bool is_draw_indict = m_desc.flags & RESOURCE_FLAG_DRAW_INDIRECT_ARGS;
+    bool is_append      = m_desc.flags & RESOURCE_FLAG_APPEND;
+    bool is_counter     = m_desc.flags & RESOURCE_FLAG_COUNTER;
+    
 
-    if (!cpu_write && !gpu_write)
+    if (cpu_write && gpu_read)
     {
-        if (generate_mips)
-            usage = D3D11_USAGE_DEFAULT;
-        else
-            usage = D3D11_USAGE_IMMUTABLE;
+        usage = D3D11_USAGE_DYNAMIC;
     }
     else
     {
-        if (cpu_write && gpu_read)
+        if (cpu_write)
             usage = D3D11_USAGE_DYNAMIC;
         else
         {
@@ -170,9 +173,9 @@ void D3D11Texture::FillD3DTextureFlags(D3D11_USAGE& usage, UINT& bind_flags, UIN
             }
             else
             {
-                if (!cpu_write)
+                if (!cpu_read && !cpu_write)
                     usage = D3D11_USAGE_DEFAULT;
-                else if (cpu_read)
+                else
                     usage = D3D11_USAGE_STAGING;
             }
         }
@@ -182,8 +185,6 @@ void D3D11Texture::FillD3DTextureFlags(D3D11_USAGE& usage, UINT& bind_flags, UIN
     if (gpu_read || usage == D3D11_USAGE_DYNAMIC)
     {
         bind_flags |= D3D11_BIND_SHADER_RESOURCE;
-        if (m_desc.flags & RESOURCE_FLAG_UAV)
-            bind_flags |= D3D11_BIND_UNORDERED_ACCESS;
     }
     if (gpu_write)
     {
@@ -192,13 +193,15 @@ void D3D11Texture::FillD3DTextureFlags(D3D11_USAGE& usage, UINT& bind_flags, UIN
         else
             bind_flags |= D3D11_BIND_RENDER_TARGET;
     }
+    if (is_uav)
+        bind_flags |= D3D11_BIND_UNORDERED_ACCESS;
 
     cpu_access_flags = 0;
-    if (cpu_read && usage == D3D11_USAGE_STAGING)
+    if (cpu_read || usage == D3D11_USAGE_STAGING)
     {
         cpu_access_flags |= D3D11_CPU_ACCESS_READ;
     }
-    if (cpu_write)
+    if (cpu_write || D3D11_USAGE_DYNAMIC == usage || usage == D3D11_USAGE_STAGING)
     {
         cpu_access_flags |= D3D11_CPU_ACCESS_WRITE;
     }
@@ -285,9 +288,9 @@ D3D11Texture2D::D3D11Texture2D(Context* context, ID3D11Texture2DPtr const& tex)
     }
 
     if (bindFlags & D3D11_BIND_SHADER_RESOURCE)
-        flags |= RESOURCE_FLAG_SRV;
+        flags |= RESOURCE_FLAG_GPU_READ;
     if (bindFlags & D3D11_BIND_RENDER_TARGET)
-        flags |= RESOURCE_FLAG_RENDER_TARGET;
+        flags |= RESOURCE_FLAG_GPU_WRITE;
     m_desc.flags = flags;
 }
 
@@ -493,9 +496,6 @@ SResult D3D11Texture2D::Update(std::span<BitmapBufferPtr> const& bitmap_datas)
 
 SResult D3D11Texture2D::CopyBack(const BitmapBufferPtr bitmap_data, Rect<uint32_t>* rect, CubeFaceType /*not used*/)
 {
-    if (!(m_desc.flags & RESOURCE_FLAG_COPY_BACK))
-        return ERR_INVALID_ARG;
-
     if (!m_pTexture)
         return ERR_INVALID_ARG;
 
@@ -609,7 +609,7 @@ SResult D3D11Texture2D::Resolve()
             ms_desc.MiscFlags = 0;
             if (m_desc.num_mips > 1 && (m_desc.flags & RESOURCE_FLAG_GENERATE_MIPS))
                 ms_desc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
-            if (m_desc.flags & RESOURCE_FLAG_SRV)
+            if (m_desc.flags & RESOURCE_FLAG_GPU_READ)
             {
                 if (m_desc.flags & RESOURCE_FLAG_UAV)
                     ms_desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
@@ -730,7 +730,7 @@ void D3D11TextureCube::FillTextureDesc(D3D11_TEXTURE2D_DESC& desc)
 }
 SResult D3D11TextureCube::CopyBack(BitmapBufferPtr bitmap_data, Rect<uint32_t>* rect, CubeFaceType face)
 {
-    if (!(m_desc.flags & RESOURCE_FLAG_COPY_BACK) || !m_pTexture)
+    if (!m_pTexture)
         return ERR_INVALID_ARG;
 
     if (m_desc.num_samples > 1)

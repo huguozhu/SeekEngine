@@ -301,14 +301,14 @@ SResult ForwardShadingRenderer::PrepareFrameBuffer()
             desc.num_mips = 1;
             desc.num_samples = 1;
             desc.format = pf;
-            desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SRV;
+            desc.flags = RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_GPU_READ;
             m_pRenderSceneColorTex = rc.CreateTexture2D(desc);
         }
         
         if (!m_pRenderSceneDepthTex)
         {
             desc.format = PixelFormat::D32F;
-            desc.flags = RESOURCE_FLAG_RENDER_TARGET;
+            desc.flags = RESOURCE_FLAG_GPU_WRITE;
             m_pRenderSceneDepthTex = rc.CreateTexture2D(desc);
         }
         

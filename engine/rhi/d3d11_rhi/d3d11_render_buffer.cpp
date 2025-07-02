@@ -72,9 +72,6 @@ SResult D3D11RHIRenderBuffer::Update(RHIRenderBufferData* buffer_data)
 
 SResult D3D11RHIRenderBuffer::CopyBack(BufferPtr buffer, int start, int length)
 {
-    if (!(m_iFlags & RESOURCE_FLAG_COPY_BACK))
-        return ERR_INVALID_ARG;
-
     if (!m_pD3DBuffer)
         return ERR_INVALID_ARG;
 
@@ -156,7 +153,7 @@ SResult D3D11RHIRenderBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
     desc.ByteWidth = m_iSize;
     desc.Usage = usage;
     desc.CPUAccessFlags = cpu_access_flags;
-    desc.BindFlags |= (m_iFlags & RESOURCE_FLAG_SRV     ? D3D11_BIND_SHADER_RESOURCE : 0);  ;
+    desc.BindFlags |= (m_iFlags & RESOURCE_FLAG_GPU_READ            ? D3D11_BIND_SHADER_RESOURCE            : 0);
     desc.BindFlags |= (m_iFlags & RESOURCE_FLAG_GPU_WRITE           ? D3D11_BIND_UNORDERED_ACCESS           : 0);
     desc.MiscFlags |= (m_iFlags & RESOURCE_FLAG_DRAW_INDIRECT_ARGS  ? D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS : 0);
     desc.StructureByteStride = 0;
@@ -177,7 +174,10 @@ SResult D3D11RHIRenderBuffer::FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS
     desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
     desc.Buffer.FirstElement = 0;
     desc.Buffer.NumElements = 0;
-    desc.Buffer.Flags = 0;
+    if (m_iFlags & RESOURCE_FLAG_APPEND)
+        desc.Buffer.Flags |= D3D11_BUFFER_UAV_FLAG_APPEND;
+    if (m_iFlags & RESOURCE_FLAG_COUNTER)
+        desc.Buffer.Flags |= D3D11_BUFFER_UAV_FLAG_COUNTER;
     return S_Success;
 }
 /******************************************************************************

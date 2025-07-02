@@ -246,36 +246,36 @@ SResult ParticleComponent::InitResource()
    
     uint32_t max_count = m_iMaxParticles;
     m_pParticleDeadIndices = rc.CreateRWStructuredBuffer(max_count * sizeof(uint),
-        RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE,
         sizeof(uint));
     m_pParticleAliveIndices[0] = rc.CreateRWStructuredBuffer(max_count * sizeof(uint),
-        RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE,
         sizeof(uint));
     m_pParticleAliveIndices[1] = rc.CreateRWStructuredBuffer(max_count * sizeof(uint),
-        RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE,
         sizeof(uint));
     uint32_t sort_capacity = to2power(max_count);
     m_pParticleSortIndices = rc.CreateRWStructuredBuffer(sort_capacity * sizeof(SortInfo),
-        RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE,
         sizeof(SortInfo));
     m_pParticleSortTempIndices = rc.CreateRWStructuredBuffer(sort_capacity * sizeof(SortInfo),
-        RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE,
         sizeof(SortInfo));
     m_pParticleDatas = rc.CreateRWStructuredBuffer(max_count * sizeof(Particle),
-        RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE,
         sizeof(Particle));
     m_pParticleCounters = rc.CreateRWStructuredBuffer(sizeof(ParticleCounters),
-        RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE,
         sizeof(ParticleCounters));
 
     m_pParticleDrawIndirectArgs = rc.CreateRWStructuredBuffer(sizeof(ParticleDrawArgs),
-        RESOURCE_FLAG_SRV | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS,
         sizeof(ParticleDrawArgs));
     m_pParticleDispatchEmitIndirectArgs = rc.CreateRWStructuredBuffer(sizeof(DispatchArgs),
-        RESOURCE_FLAG_SRV | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS,
         sizeof(DispatchArgs));
     m_pParticleDispatchSimulateIndirectArgs = rc.CreateRWStructuredBuffer(sizeof(DispatchArgs),
-        RESOURCE_FLAG_SRV | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS,
         sizeof(DispatchArgs));
 
     // Techs set Params

@@ -88,7 +88,7 @@ SResult GlobalIlluminationSample::InitContext(void* device, void* native_wnd)
     info.enable_debug = true;
     info.renderer_type = RendererType::Deferred;
     info.anti_aliasing_mode = AntiAliasingMode::TAA;
-    info.gi_mode = GlobalIlluminationMode::LPV;
+    info.gi_mode = GlobalIlluminationMode::RSM;
     info.preferred_adapter = 0;
     info.HDR = true;
 
@@ -108,7 +108,7 @@ void GlobalIlluminationSample::AddSkyboxEntity()
     desc.num_mips = 1;
     desc.num_samples = 1;
     desc.format = PixelFormat::R8G8B8A8_UNORM;
-    desc.flags = RESOURCE_FLAG_SRV;
+    desc.flags = RESOURCE_FLAG_GPU_READ;
     std::vector<BitmapBufferPtr> datas(6, nullptr);
     std::string cube_files[6] = {
         FullPath("asset/textures/skybox/positive_x.jpg"),

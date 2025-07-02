@@ -319,14 +319,14 @@ void D3D11Translate::TranslateResourceFlagsToD3D11Foramt(ResourceFlags flags, D3
 {
     bool cpu_write = flags & RESOURCE_FLAG_CPU_WRITE;
     bool gpu_write = false;
-    if (flags & RESOURCE_FLAG_RENDER_TARGET)
+    if (flags & RESOURCE_FLAG_GPU_WRITE)
         gpu_write = true;
     else if (flags & RESOURCE_FLAG_UAV)
         gpu_write = true;
     else if (flags & RESOURCE_FLAG_GPU_WRITE)
         gpu_write = true;
 
-    if (flags & RESOURCE_FLAG_COPY_BACK)
+    if (flags & RESOURCE_FLAG_CPU_READ)
         cpu_access_flags |= D3D11_CPU_ACCESS_READ;
 
     if (cpu_write && gpu_write)

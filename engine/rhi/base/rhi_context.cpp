@@ -188,7 +188,7 @@ RHITexturePtr RHIContext::CreateTexture2D(const BitmapBufferPtr data)
     desc.height = data->Height();
     desc.type = TextureType::Tex2D;
     desc.format = data->Format();
-    desc.flags = RESOURCE_FLAG_SRV | RESOURCE_FLAG_CPU_WRITE;
+    desc.flags = RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_CPU_WRITE;
     return this->CreateTexture2D(desc, data);
 }
 

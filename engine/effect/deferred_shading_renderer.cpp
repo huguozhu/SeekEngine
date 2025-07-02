@@ -81,15 +81,15 @@ SResult DeferredShadingRenderer::Init()
     }
     m_pSsaoSampleKernelCBuffer  = rc.CreateConstantBuffer(sizeof(ssao_kernels[0]) * ssao_kernels.size(), RESOURCE_FLAG_CPU_WRITE);
     m_pSsaoParamCBuffer         = rc.CreateConstantBuffer(sizeof(SsaoParam), RESOURCE_FLAG_CPU_WRITE);
-    m_pLightInfoCBuffer         = rc.CreateByteAddressBuffer(sizeof(LightInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_SRV | RESOURCE_FLAG_CPU_WRITE, nullptr);
-    m_pLightCullingInfoCBuffer  = rc.CreateByteAddressBuffer(sizeof(LightCullingInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_SRV | RESOURCE_FLAG_CPU_WRITE, nullptr);
+    m_pLightInfoCBuffer         = rc.CreateByteAddressBuffer(sizeof(LightInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_CPU_WRITE, nullptr);
+    m_pLightCullingInfoCBuffer  = rc.CreateByteAddressBuffer(sizeof(LightCullingInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_CPU_WRITE, nullptr);
     m_pDeferredLightingInfoCBuffer = rc.CreateConstantBuffer(sizeof(DeferredLightingInfo), RESOURCE_FLAG_CPU_WRITE);
 
     if (use_tile_culling)
     {
         uint32_t tile_width = (w + TILE_SIZE - 1) / TILE_SIZE;
         uint32_t tile_height = (h + TILE_SIZE - 1) / TILE_SIZE;
-        m_pTileInfoBuffer = rc.CreateRWByteAddressBuffer(sizeof(TileInfo) * tile_width * tile_height, RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_COPY_BACK, nullptr);
+        m_pTileInfoBuffer = rc.CreateRWByteAddressBuffer(sizeof(TileInfo) * tile_width * tile_height, RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV, nullptr);
     }
 
     // Step2: Textures
@@ -101,7 +101,7 @@ SResult DeferredShadingRenderer::Init()
     desc.num_mips = 1;
     desc.num_samples = m_pContext->GetNumSamples();
     desc.format = PixelFormat::D16;
-    desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK;
+    desc.flags = RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE;
     m_pSceneDepthStencil = rc.CreateTexture2D(desc);
     m_pSceneDepthCopy = rc.CreateTexture2D(desc);
 
@@ -128,7 +128,7 @@ SResult DeferredShadingRenderer::Init()
 
     desc.num_samples = 1;
     desc.format = PixelFormat::R8G8B8A8_UNORM;
-    desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK;
+    desc.flags = RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_GPU_READ;
     m_pGBufferColor0 = rc.CreateTexture2D(desc);
     m_pGBufferColor1 = rc.CreateTexture2D(desc);
     m_pGBufferColor2 = rc.CreateTexture2D(desc);
@@ -153,7 +153,7 @@ SResult DeferredShadingRenderer::Init()
     desc.type = TextureType::Tex2D;
     desc.width = desc.height = 4;
     desc.format = PixelFormat::R32G32F;
-    desc.flags = RESOURCE_FLAG_SRV;
+    desc.flags = RESOURCE_FLAG_GPU_READ;
     m_pSsaoNoise = rc.CreateTexture2D(desc, ssao_noise_bitmap);
 
 
@@ -619,7 +619,7 @@ RendererReturnValue DeferredShadingRenderer::GenerateGBufferJob()
         LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::GenerateGBufferJob() CopyTexture failed.");
     }
     m_pContext->RHIContextInstance().EndRenderPass();
-#if 0
+#if 1
     static int draw = 1;
     if (draw)
     {
