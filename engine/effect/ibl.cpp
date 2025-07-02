@@ -108,7 +108,7 @@ IrradianceConvolutionPostProcess::IrradianceConvolutionPostProcess(Context* cont
         desc.num_mips = 1;
         desc.num_samples = 1;
         desc.format = PixelFormat::R8G8B8A8_UNORM;
-        desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET;
+        desc.flags = RESOURCE_FLAG_SRV | RESOURCE_FLAG_RENDER_TARGET;
         m_pIrradianceConvolutionTex = rc.CreateTextureCube(desc);
     }
     static const std::string tech_name = "IrradianceConvolutionTech";
@@ -244,7 +244,7 @@ RHITexturePtr const& GenBRDF2DLutPostProcess::GetBRDF2DLutTex(Context* pContext)
         brdf_lut_desc.num_mips = 1;
         brdf_lut_desc.num_samples = 1;
         brdf_lut_desc.format = PixelFormat::R32G32F;
-        brdf_lut_desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET;
+        brdf_lut_desc.flags = RESOURCE_FLAG_SRV | RESOURCE_FLAG_RENDER_TARGET;
         m_pTexBRDF2DLut = pContext->RHIContextInstance().CreateTexture2D(brdf_lut_desc, nullptr);
         pGenBRDF2DLut->SetOutput(0, m_pTexBRDF2DLut);
         pGenBRDF2DLut->Run();
@@ -270,7 +270,7 @@ SplitSumApproximationPostProcess::SplitSumApproximationPostProcess(Context* cont
     prefilter_desc.num_mips = PrefilterEnvPostProcess::MAX_MIP_LEVELS;
     prefilter_desc.num_samples = 1;
     prefilter_desc.format = PixelFormat::R16G16B16A16_FLOAT;
-    prefilter_desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_GENERATE_MIPS;
+    prefilter_desc.flags = RESOURCE_FLAG_SRV | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_GENERATE_MIPS;
     m_pTexPrefilter = rc.CreateTextureCube(prefilter_desc, nullptr);
     m_pTexPrefilter->GenerateMipMap();
     m_pPPPrefilter->SetDstPrefilterTexture(m_pTexPrefilter);

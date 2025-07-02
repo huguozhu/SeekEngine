@@ -49,7 +49,7 @@ SResult ShadowLayer::InitResource()
     desc.num_samples = 1;
     desc.type = TextureType::Tex2D;
     desc.format = sm_pf;
-    desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_COPY_BACK;
+    desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK;
     m_pSmTex = rc.CreateTexture2D(desc);
     desc.format = depth_pf;
     m_pSmDepthTex = rc.CreateTexture2D(desc);
@@ -366,7 +366,7 @@ SResult DeferredShadowLayer::InitResource()
     desc.num_samples = 1;
     desc.type = TextureType::Tex2D;
     desc.format = PixelFormat::R8G8B8A8_UNORM;
-    desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_COPY_BACK;
+    desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK;
     m_pShadowingTex = rc.CreateTexture2D(desc);
     m_pShadowingFb = rc.CreateRHIFrameBuffer();
     m_pShadowingFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pShadowingTex));

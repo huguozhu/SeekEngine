@@ -130,12 +130,12 @@ SResult ParticleComponent::InitShaders()
 }
 SResult ParticleComponent::InitTextures()
 {
-    RHITexture::Desc desc_color{ TextureType::Tex2D, GRADIENT_SAMPLES, 1, 1, 1, 1, 
+    RHITexture::Desc desc_color{ TextureType::Tex2D, GRADIENT_SAMPLES, 1, 1, 1, 1, 1,
         PixelFormat::R8G8B8A8_UNORM, RESOURCE_FLAG_CPU_WRITE };
     m_pTexParticleColorOverLife = m_pContext->RHIContextInstance().CreateTexture2D(desc_color);
     this->UpdateTexture_ColorOverLife();
 
-    RHITexture::Desc desc_size{ TextureType::Tex2D, GRADIENT_SAMPLES, 1, 1, 1, 1,
+    RHITexture::Desc desc_size{ TextureType::Tex2D, GRADIENT_SAMPLES, 1, 1, 1, 1, 1,
         PixelFormat::R32G32F, RESOURCE_FLAG_CPU_WRITE };
     m_pTexParticleSizeOverLife = m_pContext->RHIContextInstance().CreateTexture2D(desc_size);
     this->UpdateTexture_SizeOverLife();
@@ -176,7 +176,8 @@ SResult ParticleComponent::UpdateTexture_ColorOverLife()
         x += delta;
     }
     BitmapBufferPtr bitmap = MakeSharedPtr<BitmapBuffer>(GRADIENT_SAMPLES, 1, PixelFormat::R8G8B8A8_UNORM, (uint8_t*)&samples[0]);
-    m_pTexParticleColorOverLife->Update({ bitmap });
+    std::vector<BitmapBufferPtr> b = { bitmap };
+    m_pTexParticleColorOverLife->Update(b);
     return S_Success;
 }
 SResult ParticleComponent::UpdateTexture_SizeOverLife()
@@ -214,7 +215,8 @@ SResult ParticleComponent::UpdateTexture_SizeOverLife()
         x += delta;
     }
     BitmapBufferPtr bitmap = MakeSharedPtr<BitmapBuffer>(GRADIENT_SAMPLES, 1, PixelFormat::R32G32F, (uint8_t*)&samples[0]);
-    m_pTexParticleSizeOverLife->Update({ bitmap });
+    std::vector< BitmapBufferPtr> bitmap_span = { bitmap };
+    m_pTexParticleSizeOverLife->Update(bitmap_span);
     return S_Success;
 }
 SResult ParticleComponent::InitResource()
@@ -244,36 +246,36 @@ SResult ParticleComponent::InitResource()
    
     uint32_t max_count = m_iMaxParticles;
     m_pParticleDeadIndices = rc.CreateRWStructuredBuffer(max_count * sizeof(uint),
-        RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
+        RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
         sizeof(uint));
     m_pParticleAliveIndices[0] = rc.CreateRWStructuredBuffer(max_count * sizeof(uint),
-        RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
+        RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
         sizeof(uint));
     m_pParticleAliveIndices[1] = rc.CreateRWStructuredBuffer(max_count * sizeof(uint),
-        RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
+        RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
         sizeof(uint));
     uint32_t sort_capacity = to2power(max_count);
     m_pParticleSortIndices = rc.CreateRWStructuredBuffer(sort_capacity * sizeof(SortInfo),
-        RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
+        RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
         sizeof(SortInfo));
     m_pParticleSortTempIndices = rc.CreateRWStructuredBuffer(sort_capacity * sizeof(SortInfo),
-        RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
+        RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
         sizeof(SortInfo));
     m_pParticleDatas = rc.CreateRWStructuredBuffer(max_count * sizeof(Particle),
-        RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
+        RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
         sizeof(Particle));
     m_pParticleCounters = rc.CreateRWStructuredBuffer(sizeof(ParticleCounters),
-        RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
+        RESOURCE_FLAG_SRV | RESOURCE_FLAG_COPY_BACK | RESOURCE_FLAG_GPU_WRITE,
         sizeof(ParticleCounters));
 
     m_pParticleDrawIndirectArgs = rc.CreateRWStructuredBuffer(sizeof(ParticleDrawArgs),
-        RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS,
+        RESOURCE_FLAG_SRV | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS,
         sizeof(ParticleDrawArgs));
     m_pParticleDispatchEmitIndirectArgs = rc.CreateRWStructuredBuffer(sizeof(DispatchArgs),
-        RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS,
+        RESOURCE_FLAG_SRV | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS,
         sizeof(DispatchArgs));
     m_pParticleDispatchSimulateIndirectArgs = rc.CreateRWStructuredBuffer(sizeof(DispatchArgs),
-        RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS,
+        RESOURCE_FLAG_SRV | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS,
         sizeof(DispatchArgs));
 
     // Techs set Params
@@ -592,7 +594,7 @@ SResult ParticleComponent::Tick_GPU(float delta_time)
     }
 
     m_fElapsed += delta_time;
-    if (m_Param.duration != DURATION_INFINITY && m_Param.duration <  m_fElapsed)
+    if (m_Param.duration != (float)DURATION_INFINITY && m_Param.duration <  m_fElapsed)
         this->Stop();
     
     uint2 indices = { m_iPreSimIndex, m_iPostSimIndex };

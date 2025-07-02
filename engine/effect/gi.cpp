@@ -43,7 +43,7 @@ SResult GlobalIllumination::Init()
     desc.num_mips = 1;
     desc.num_samples = 1;
     desc.format = PixelFormat::R16G16B16A16_FLOAT;
-    desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;
+    desc.flags = RESOURCE_FLAG_SRV | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;
     m_pIndirectIlluminationTex = rc.CreateTexture2D(desc);
 
     m_pIndirectIlluminationFb = rc.CreateRHIFrameBuffer();
@@ -72,7 +72,7 @@ SResult RSM::InitGenRsm()
     desc.depth = 1;
     desc.num_mips = RSM_MIPMAP_LEVELS;
     desc.num_samples = 1;
-    desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;
+    desc.flags = RESOURCE_FLAG_SRV | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;
     desc.format = PixelFormat::R8G8B8A8_UNORM;
     m_pRsmTexs[0] = rc.CreateTexture2D(desc);       // normal
     desc.format = PixelFormat::R16G16B16A16_FLOAT;
@@ -80,7 +80,7 @@ SResult RSM::InitGenRsm()
     desc.format = PixelFormat::R16G16B16A16_FLOAT;
     m_pRsmTexs[2] = rc.CreateTexture2D(desc);       // Flux
     desc.format = PixelFormat::D16;
-    desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;;
+    desc.flags = RESOURCE_FLAG_SRV | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;;
     m_pRsmDepthTex = rc.CreateTexture2D(desc);
 
     m_pGenRsmFb = rc.CreateRHIFrameBuffer();
@@ -272,7 +272,7 @@ SResult LPV::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     desc.depth = LPV_SIZE;
     desc.num_mips = 1;
     desc.num_samples = 1;
-    desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;
+    desc.flags = RESOURCE_FLAG_SRV | RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_COPY_BACK;
     desc.format = PixelFormat::R8G8B8A8_UNORM;
     m_pTexRedSh = rc.CreateTexture3D(desc);
     m_pTexGreenSh = rc.CreateTexture3D(desc);
@@ -513,7 +513,7 @@ SResult VXGI::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1,
     desc.width = desc.height = desc.depth = VOLUME_SIZE;
     desc.num_mips = 1;
     desc.num_samples = 1;
-    desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_RENDER_TARGET;
+    desc.flags = RESOURCE_FLAG_SRV | RESOURCE_FLAG_RENDER_TARGET;
     desc.format = PixelFormat::R8G8B8A8_UNORM;
     m_pTexVoxel3D = rc.CreateTexture3D(desc);
     m_pTexVoxel3D_Copy = rc.CreateTexture3D(desc);

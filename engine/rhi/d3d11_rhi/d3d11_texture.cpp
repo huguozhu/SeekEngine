@@ -12,8 +12,16 @@
 
 #define SEEK_MACRO_FILE_UID 12     // this code is auto generated, don't touch it!!!
 
-SEEK_NAMESPACE_BEGIN
 
+//D3D11_USAGE	        CPU读	CPU写	GPU读	GPU写
+//D3D11_USAGE_DEFAULT			        √	    √
+//D3D11_USAGE_IMMUTABLE			        √
+//D3D11_USAGE_DYNAMIC		    √	    √
+//D3D11_USAGE_STAGING	√	    √	    √	    √
+//D3D11_USAGE_STAGING: 则完全允许在CPU和GPU之间的数据传输，但它只能作为一个类似中转站的资源，而不能绑定到渲染管线上，即你也不能用该纹理生成mipmaps
+
+
+SEEK_NAMESPACE_BEGIN
 /******************************************************************************
 * D3D11Texture
 *******************************************************************************/
@@ -136,8 +144,8 @@ void D3D11Texture::FillD3DTextureFlags(D3D11_USAGE& usage, UINT& bind_flags, UIN
 {
     bool cpu_read = m_desc.flags & RESOURCE_FLAG_COPY_BACK;
     bool cpu_write = m_desc.flags & RESOURCE_FLAG_CPU_WRITE;
-    bool gpu_read = m_desc.flags & RESOURCE_FLAG_SHADER_RESOURCE;
-    bool gpu_write = m_desc.flags & RESOURCE_FLAG_SHADER_WRITE || m_desc.flags & RESOURCE_FLAG_RENDER_TARGET || m_desc.flags & RESOURCE_FLAG_GPU_WRITE;
+    bool gpu_read = m_desc.flags & RESOURCE_FLAG_SRV;
+    bool gpu_write = m_desc.flags & RESOURCE_FLAG_UAV || m_desc.flags & RESOURCE_FLAG_RENDER_TARGET || m_desc.flags & RESOURCE_FLAG_GPU_WRITE;
     bool generate_mips = m_desc.flags & RESOURCE_FLAG_GENERATE_MIPS;
 
     if (!cpu_write && !gpu_write)
@@ -174,7 +182,7 @@ void D3D11Texture::FillD3DTextureFlags(D3D11_USAGE& usage, UINT& bind_flags, UIN
     if (gpu_read || usage == D3D11_USAGE_DYNAMIC)
     {
         bind_flags |= D3D11_BIND_SHADER_RESOURCE;
-        if (m_desc.flags & RESOURCE_FLAG_SHADER_WRITE)
+        if (m_desc.flags & RESOURCE_FLAG_UAV)
             bind_flags |= D3D11_BIND_UNORDERED_ACCESS;
     }
     if (gpu_write)
@@ -277,7 +285,7 @@ D3D11Texture2D::D3D11Texture2D(Context* context, ID3D11Texture2DPtr const& tex)
     }
 
     if (bindFlags & D3D11_BIND_SHADER_RESOURCE)
-        flags |= RESOURCE_FLAG_SHADER_RESOURCE;
+        flags |= RESOURCE_FLAG_SRV;
     if (bindFlags & D3D11_BIND_RENDER_TARGET)
         flags |= RESOURCE_FLAG_RENDER_TARGET;
     m_desc.flags = flags;
@@ -407,7 +415,7 @@ void D3D11Texture2D::FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS_VIEW_DES
     }
 }
 
-SResult D3D11Texture2D::Create(std::vector<BitmapBufferPtr> const& bitmap_datas)
+SResult D3D11Texture2D::Create(std::span<BitmapBufferPtr> const& bitmap_datas)
 {
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
@@ -443,7 +451,7 @@ SResult D3D11Texture2D::Create(std::vector<BitmapBufferPtr> const& bitmap_datas)
     m_pTexture = std::move(_texture2d);
     return S_Success;
 }
-SResult D3D11Texture2D::Update(std::vector<BitmapBufferPtr> const& bitmap_datas)
+SResult D3D11Texture2D::Update(std::span<BitmapBufferPtr> const& bitmap_datas)
 {
     if (!(m_desc.flags & RESOURCE_FLAG_CPU_WRITE))
         return ERR_INVALID_ARG;
@@ -601,9 +609,9 @@ SResult D3D11Texture2D::Resolve()
             ms_desc.MiscFlags = 0;
             if (m_desc.num_mips > 1 && (m_desc.flags & RESOURCE_FLAG_GENERATE_MIPS))
                 ms_desc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
-            if (m_desc.flags & RESOURCE_FLAG_SHADER_RESOURCE)
+            if (m_desc.flags & RESOURCE_FLAG_SRV)
             {
-                if (m_desc.flags & RESOURCE_FLAG_SHADER_WRITE)
+                if (m_desc.flags & RESOURCE_FLAG_UAV)
                     ms_desc.BindFlags |= D3D11_BIND_UNORDERED_ACCESS;
                 else
                     ms_desc.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
@@ -806,7 +814,7 @@ D3D11Texture3D::D3D11Texture3D(Context* context, const RHITexture::Desc& tex_des
     :D3D11Texture(context, tex_desc)
 {
 }
-SResult D3D11Texture3D::Create(std::vector<BitmapBufferPtr> const& bitmap_datas)
+SResult D3D11Texture3D::Create(std::span<BitmapBufferPtr> const& bitmap_datas)
 {
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();

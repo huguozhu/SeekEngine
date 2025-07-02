@@ -58,8 +58,8 @@ public:
     D3D11Texture2D(Context* context, ID3D11Texture2DPtr const& tex);
     virtual ~D3D11Texture2D() override;
 
-    SResult Create  (std::vector<BitmapBufferPtr> const& bitmap_datas) override;
-    SResult Update  (std::vector<BitmapBufferPtr> const& bitmap_datas) override;
+    SResult Create  (std::span<BitmapBufferPtr> const& bitmap_datas) override;
+    SResult Update  (std::span<BitmapBufferPtr> const& bitmap_datas) override;
     SResult CopyBack(BitmapBufferPtr bitmap_data, Rect<uint32_t>* rect, CubeFaceType face = CubeFaceType::Num) override;
     SResult Resolve() override;
 
@@ -91,8 +91,8 @@ public:
     void FillDepthStencilViewDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, CubeFaceType face);
     void FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc) override;
 
-    SResult Create(std::vector<BitmapBufferPtr> const& bitmap_datas) override { return S_Success; }
-    SResult Update(std::vector<BitmapBufferPtr> const& bitmap_datas) override { return S_Success; }
+    SResult Create(std::span<BitmapBufferPtr> const& bitmap_datas) override { return S_Success; }
+    SResult Update(std::span<BitmapBufferPtr> const& bitmap_datas) override { return S_Success; }
     SResult CopyBack(BitmapBufferPtr bitmap_data, Rect<uint32_t>* rect, CubeFaceType face = CubeFaceType::Num);
     SResult CreateCube(std::vector<BitmapBufferPtr>* bitmap_datas);
 
@@ -113,8 +113,8 @@ class D3D11Texture3D : public D3D11Texture
 public:
     D3D11Texture3D(Context* context, const RHITexture::Desc& tex_desc);
 
-    SResult Create(std::vector<BitmapBufferPtr> const& bitmap_datas) override;
-    SResult Update(std::vector<BitmapBufferPtr> const& bitmap_datas) override { return S_Success; }
+    SResult Create(std::span<BitmapBufferPtr> const& bitmap_datas) override;
+    SResult Update(std::span<BitmapBufferPtr> const& bitmap_datas) override { return S_Success; }
     SResult CopyBackTexture3D(BitmapBufferPtr bitmap_data, uint32_t array_index, uint32_t mip_level);
 
 private:

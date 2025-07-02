@@ -156,7 +156,7 @@ SResult D3D11RHIRenderBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
     desc.ByteWidth = m_iSize;
     desc.Usage = usage;
     desc.CPUAccessFlags = cpu_access_flags;
-    desc.BindFlags |= (m_iFlags & RESOURCE_FLAG_SHADER_RESOURCE     ? D3D11_BIND_SHADER_RESOURCE : 0);  ;
+    desc.BindFlags |= (m_iFlags & RESOURCE_FLAG_SRV     ? D3D11_BIND_SHADER_RESOURCE : 0);  ;
     desc.BindFlags |= (m_iFlags & RESOURCE_FLAG_GPU_WRITE           ? D3D11_BIND_UNORDERED_ACCESS           : 0);
     desc.MiscFlags |= (m_iFlags & RESOURCE_FLAG_DRAW_INDIRECT_ARGS  ? D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS : 0);
     desc.StructureByteStride = 0;

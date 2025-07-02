@@ -18,7 +18,7 @@ SResult TaaPostProcess::Init()
     m_globalParamCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(sizeof(TAAGlobalParams), RESOURCE_FLAG_CPU_WRITE);
     m_pTechnique->SetParam("GlobalParams", m_globalParamCBuffer);
 
-    RHITexture::Desc& desc = m_pContext->RHIContextInstance().GetScreenRHIFrameBuffer()->GetRenderTargetDesc(RHIFrameBuffer::Attachment::Color0);
+    RHITexture::Desc desc = m_pContext->RHIContextInstance().GetScreenRHIFrameBuffer()->GetRenderTargetDesc(RHIFrameBuffer::Attachment::Color0);
     m_fScreenSize = float2((float)desc.width, (float)desc.height);
     return S_Success;
 }
@@ -32,7 +32,7 @@ SResult TaaPostProcess::Run()
     auto texDesc = rc.GetCurRHIFrameBuffer()->GetRenderTargetDesc(RHIFrameBuffer::Attachment::Color0);
     if (!m_pHistoryTex)
     {
-        texDesc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_GPU_WRITE;
+        texDesc.flags = RESOURCE_FLAG_SRV | RESOURCE_FLAG_GPU_WRITE;
         m_pHistoryTex = rc.CreateTexture2D(texDesc);
         SetParam("historyTex", m_pHistoryTex);
     }
@@ -48,7 +48,7 @@ SResult TaaPostProcess::Run()
     if (m_pHistoryTex->Width() != texDesc.width || m_pHistoryTex->Height() != texDesc.height)
     {
         m_pHistoryTex.reset();
-        texDesc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_GPU_WRITE;
+        texDesc.flags = RESOURCE_FLAG_SRV | RESOURCE_FLAG_GPU_WRITE;
         m_pHistoryTex = rc.CreateTexture2D(texDesc);
     }
     ret = rc.GetCurRHIFrameBuffer()->CopyRenderTarget(RHIFrameBuffer::Attachment::Color0, m_pHistoryTex);

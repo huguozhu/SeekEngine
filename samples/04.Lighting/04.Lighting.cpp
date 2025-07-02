@@ -132,7 +132,7 @@ SResult Lighting::OnCreate()
     desc.num_mips = 1;
     desc.num_samples = 1;
     desc.format = PixelFormat::R8G8B8A8_UNORM;
-    desc.flags = RESOURCE_FLAG_SHADER_RESOURCE;
+    desc.flags = RESOURCE_FLAG_SRV;
     std::vector<BitmapBufferPtr> datas(6, nullptr);
     std::string cube_files[6] = {
         FullPath("asset/textures/skybox/positive_x.jpg"),
@@ -165,7 +165,7 @@ SResult Lighting::OnCreate()
     equirectangular_desc.num_mips = 1;
     equirectangular_desc.num_samples = 1;
     equirectangular_desc.format = equirectangular_bitmap->Format();
-    equirectangular_desc.flags = RESOURCE_FLAG_SHADER_RESOURCE;    
+    equirectangular_desc.flags = RESOURCE_FLAG_SRV;    
     
     TexturePtr tex_equirectangular = rc.CreateTexture2D(equirectangular_desc, equirectangular_bitmap);
     TexturePtr tex_cube_env = this->ConvertEquirectangularToCubeMap(tex_equirectangular);

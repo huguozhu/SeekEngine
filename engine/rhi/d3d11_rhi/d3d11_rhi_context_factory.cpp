@@ -35,7 +35,8 @@ RHITexturePtr D3D11RHIContext::CreateTexture2D(const RHITexture::Desc& tex_desc,
         return nullptr;
 
     RHITexturePtr tex = MakeSharedPtr<D3D11Texture2D>(m_pContext, tex_desc);
-    SResult ret = tex->Create(std::vector<BitmapBufferPtr>{init_data});
+    std::vector<BitmapBufferPtr> data = { init_data };
+    SResult ret = tex->Create(data);
     return SEEK_CHECKFAILED(ret) ? nullptr : tex;
 }
 RHITexturePtr D3D11RHIContext::CreateTexture2D(const RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas)

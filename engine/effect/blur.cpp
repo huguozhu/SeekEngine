@@ -53,7 +53,7 @@ void GaussianBlur::SetSrcTexture(RHITexturePtr const& tex2d)
         desc.width = tex2d->Width();
         desc.height = tex2d->Height();
         desc.format = tex2d->Format();
-        desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SHADER_RESOURCE;
+        desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SRV;
         m_pTemp = m_pContext->RHIContextInstance().CreateTexture2D(desc);
     }
     m_vPPChain[0]->SetOutput(0, m_pTemp);

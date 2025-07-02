@@ -60,9 +60,9 @@ SResult WaterMarkComponent::Render()
     RHIContext& rc = m_pContext->RHIContextInstance();
     // Step1: Create Constant Buffer & Update Datas
     if (!m_pWaterMarkDescCBuffer)
-        m_pWaterMarkDescCBuffer = rc.CreateConstantBuffer(sizeof(WaterMarkDesc), RESOURCE_FLAG_CPU_WRITE | RESOURCE_FLAG_SHADER_RESOURCE);
+        m_pWaterMarkDescCBuffer = rc.CreateConstantBuffer(sizeof(WaterMarkDesc), RESOURCE_FLAG_CPU_WRITE | RESOURCE_FLAG_SRV);
     if (!m_pWaterMarkTargetSizeCBuffer)
-        m_pWaterMarkTargetSizeCBuffer = rc.CreateConstantBuffer(sizeof(float2), RESOURCE_FLAG_CPU_WRITE | RESOURCE_FLAG_SHADER_RESOURCE);
+        m_pWaterMarkTargetSizeCBuffer = rc.CreateConstantBuffer(sizeof(float2), RESOURCE_FLAG_CPU_WRITE | RESOURCE_FLAG_SRV);
     Viewport vp = m_pContext->GetViewport();
     float w = vp.width;
     float h = vp.height;
@@ -93,7 +93,7 @@ SResult WaterMarkComponent::Render()
         desc.height = h;
         desc.type = TextureType::Tex2D;
         desc.format = PixelFormat::R8G8B8A8_UNORM;
-        desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_SHADER_WRITE;
+        desc.flags = RESOURCE_FLAG_SRV | RESOURCE_FLAG_UAV;
         m_pRepeatWaterMark = rc.CreateTexture2D(desc);
     }
 

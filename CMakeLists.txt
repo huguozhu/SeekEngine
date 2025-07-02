@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.30)
-
+set(CMAKE_CXX_STANDARD 20)
 cmake_policy(SET CMP0054 NEW)
-
-project(seek_engine VERSION 0.0.1 DESCRIPTION "Multi Threaded Rendering Engine" HOMEPAGE_URL "https:://github.com/huguozhu/SeekEngine")
+#set_property(TARGET tgt PROPERTY CXX_STANDARD 20)
+ 
+project(seek_engine VERSION 0.0.1 DESCRIPTION "Seek Rendering Engine" HOMEPAGE_URL "https:://github.com/huguozhu/SeekEngine")
 
 set(SHADER_DEPEND_FILE_SUFFIX ".depend")
 set(SHADER_REFLECT_FILE_SUFFIX ".reflect")

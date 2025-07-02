@@ -301,7 +301,7 @@ SResult ForwardShadingRenderer::PrepareFrameBuffer()
             desc.num_mips = 1;
             desc.num_samples = 1;
             desc.format = pf;
-            desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SHADER_RESOURCE;
+            desc.flags = RESOURCE_FLAG_RENDER_TARGET | RESOURCE_FLAG_SRV;
             m_pRenderSceneColorTex = rc.CreateTexture2D(desc);
         }
         

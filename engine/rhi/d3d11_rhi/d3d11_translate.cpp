@@ -321,7 +321,7 @@ void D3D11Translate::TranslateResourceFlagsToD3D11Foramt(ResourceFlags flags, D3
     bool gpu_write = false;
     if (flags & RESOURCE_FLAG_RENDER_TARGET)
         gpu_write = true;
-    else if (flags & RESOURCE_FLAG_SHADER_WRITE)
+    else if (flags & RESOURCE_FLAG_UAV)
         gpu_write = true;
     else if (flags & RESOURCE_FLAG_GPU_WRITE)
         gpu_write = true;

@@ -23,7 +23,7 @@ void Particles::CreateWaterMarkEntity()
         desc.height = bitmap->Height();
         desc.type = TextureType::Tex2D;
         desc.format = bitmap->Format();
-        desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_CPU_WRITE;
+        desc.flags = RESOURCE_FLAG_SRV | RESOURCE_FLAG_CPU_WRITE;
         if (1)
         {
             uint32_t w = bitmap->Width();
@@ -224,7 +224,7 @@ void Particles::CreateParticleEntities()
             desc.height = tex_bitmap->Height();
             desc.type = TextureType::Tex2D;
             desc.format = tex_bitmap->Format();
-            desc.flags = RESOURCE_FLAG_SHADER_RESOURCE | RESOURCE_FLAG_CPU_WRITE;
+            desc.flags = RESOURCE_FLAG_SRV | RESOURCE_FLAG_CPU_WRITE;
             params[i].particle_tex = m_pContext->RHIContextInstance().CreateTexture2D(desc, tex_bitmap);            
         }
 

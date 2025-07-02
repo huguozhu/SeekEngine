@@ -1042,7 +1042,7 @@ LoaderImagePtr glTF2_Loader::LoadImage(uint32_t image_index, bool bColor)
 //                                tex_desc.format = bm->Format();
 //                            }
 //                        }
-//                        tex_desc.flags = RESOURCE_FLAG_SHADER_RESOURCE;
+//                        tex_desc.flags = RESOURCE_FLAG_SRV;
 //                        TexturePtr texPtr = rc->CreateTexture2D(tex_desc, bm);
 
                         //img->texture2DPtr = texPtr;
