@@ -20,7 +20,7 @@ public:
     void OnDetached(RHIFrameBuffer& fb, RHIFrameBuffer::Attachment attach);
     void ClearColor(float4 const& color);
 
-    ID3D11RenderTargetView* GetD3DRenderTargetView() { return m_pD3dRenderTargetView.Get(); }
+    ID3D11RenderTargetView* GetD3DRtv() { return m_pD3dRenderTargetView.Get(); }
 
 protected:
     ID3D11RenderTargetViewPtr m_pD3dRenderTargetView = nullptr;
@@ -52,7 +52,7 @@ public:
     void ClearStencil(uint32_t stencil = 0);
     void ClearDepthStencil(float depth, uint32_t stencil);
 
-    ID3D11DepthStencilView* GetD3DDepthStencilView() { return m_pD3D11DepthStencilView.Get(); }
+    ID3D11DepthStencilView* GetD3DDsv() { return m_pD3D11DepthStencilView.Get(); }
 
 protected:
     ID3D11DepthStencilViewPtr m_pD3D11DepthStencilView = nullptr;

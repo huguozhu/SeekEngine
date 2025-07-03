@@ -37,12 +37,12 @@ SResult D3D11RHIFrameBuffer::OnBind()
             if (m_sampleNum == 1)
             {
                 D3D11RenderTargetView& target = static_cast<D3D11RenderTargetView&>(*m_vRenderTargets[i]);
-                m_vD3dRednerTargets[i] = target.GetD3DRenderTargetView();
+                m_vD3dRednerTargets[i] = target.GetD3DRtv();
             }
             else
             {
                 D3D11Texture* d3dTex = static_cast<D3D11Texture*>(m_msaaColorTex[i].get());
-                m_vD3dRednerTargets[i] = d3dTex->GetD3DRenderTargetView();
+                m_vD3dRednerTargets[i] = d3dTex->GetD3DRtv();
 
                 if (m_colorStoreOptions[i].storeAction == StoreAction::Store)
                     m_resolveFlag |= RequireResolve((Attachment)i);
@@ -57,12 +57,12 @@ SResult D3D11RHIFrameBuffer::OnBind()
             if (m_sampleNum == 1)
             {
                 D3D11DepthStencilView& ds = static_cast<D3D11DepthStencilView&>(*m_pDepthStencilView);
-                m_pD3dDepthStencilView = ds.GetD3DDepthStencilView();
+                m_pD3dDepthStencilView = ds.GetD3DDsv();
             }
             else
             {
                 D3D11Texture* d3dTex = static_cast<D3D11Texture*>(m_msaaDepthStencilTex.get());
-                m_pD3dDepthStencilView = d3dTex->GetD3DDepthStencilView();
+                m_pD3dDepthStencilView = d3dTex->GetD3DDsv();
 
                 if (m_depthStoreOption.storeAction == StoreAction::Store)
                     m_resolveFlag |= RequireResolve(Attachment::Depth);

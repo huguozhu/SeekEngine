@@ -636,25 +636,25 @@ void D3D11RHIContext::BindConstantBuffer(ShaderType stage, uint32_t binding, con
 
 void D3D11RHIContext::BindRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* buffer, const char* name)
 {
-    ID3D11ShaderResourceView* srv = buffer == nullptr ? nullptr : ((D3D11RHIRenderBuffer*)buffer)->GetD3DShaderResourceView();
+    ID3D11ShaderResourceView* srv = buffer == nullptr ? nullptr : ((D3D11RHIRenderBuffer*)buffer)->GetD3DSrv();
     SetD3DShaderResourceViews(stage, binding, 1, &srv);
 }
 
 void D3D11RHIContext::BindRWRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* rw_buffer, const char* name)
 {
-    ID3D11UnorderedAccessView* uav = rw_buffer == nullptr ? nullptr : ((D3D11RHIRenderBuffer*)rw_buffer)->GetD3DUnorderedAccessView();
+    ID3D11UnorderedAccessView* uav = rw_buffer == nullptr ? nullptr : ((D3D11RHIRenderBuffer*)rw_buffer)->GetD3DUav();
     SetD3DUnorderedAccessViews(stage, binding, 1, &uav);
 }
 
 void D3D11RHIContext::BindTexture(ShaderType stage, uint32_t binding, const RHITexture* texture, const char* name)
 {
-    ID3D11ShaderResourceView* srv = texture == nullptr ? nullptr : ((D3D11Texture*)texture)->GetD3DShaderResourceView();
+    ID3D11ShaderResourceView* srv = texture == nullptr ? nullptr : ((D3D11Texture*)texture)->GetD3DSrv();
     SetD3DShaderResourceViews(stage, binding, 1, &srv);
 }
 
 void D3D11RHIContext::BindRWTexture(ShaderType stage, uint32_t binding, const RHITexture* rw_texture, const char* name)
 {
-    ID3D11UnorderedAccessView* uav = rw_texture == nullptr ? nullptr : ((D3D11Texture*)rw_texture)->GetD3DUnorderedAccessView();
+    ID3D11UnorderedAccessView* uav = rw_texture == nullptr ? nullptr : ((D3D11Texture*)rw_texture)->GetD3DUav();
     SetD3DUnorderedAccessViews(stage, binding, 1, &uav);
 }
 

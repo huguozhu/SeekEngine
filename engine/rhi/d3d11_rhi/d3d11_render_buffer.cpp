@@ -101,7 +101,7 @@ SResult D3D11RHIRenderBuffer::CopyBack(BufferPtr buffer, int start, int length)
     pDeviceContext->Unmap(m_pD3DBuffer.Get(), 0);
     return S_Success;
 }
-ID3D11ShaderResourceView * D3D11RHIRenderBuffer::GetD3DShaderResourceView()
+ID3D11ShaderResourceView * D3D11RHIRenderBuffer::GetD3DSrv()
  {
     if (m_pD3DShaderResourceView)
         return m_pD3DShaderResourceView.Get();
@@ -112,16 +112,16 @@ ID3D11ShaderResourceView * D3D11RHIRenderBuffer::GetD3DShaderResourceView()
     D3D11RHIContext & rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
 
     D3D11_SHADER_RESOURCE_VIEW_DESC desc;
-    this->FillShaderResourceViewDesc(desc);
+    this->FillSrvDesc(desc);
     HRESULT hr = rc.GetD3D11Device()->CreateShaderResourceView(m_pD3DBuffer.Get(), &desc, m_pD3DShaderResourceView.GetAddressOf());
     if (FAILED(hr))
     {
-        LOG_ERROR("D3D11Texture::GetD3dShaderResourceView error");
+        LOG_ERROR("D3D11Texture::GetD3DSrv error");
         return nullptr;
     }
     return m_pD3DShaderResourceView.Get();
 }
-ID3D11UnorderedAccessView* D3D11RHIRenderBuffer::GetD3DUnorderedAccessView()
+ID3D11UnorderedAccessView* D3D11RHIRenderBuffer::GetD3DUav()
 {
     if (m_pD3DUnorderAccessView)
         return m_pD3DUnorderAccessView.Get();
@@ -133,7 +133,7 @@ ID3D11UnorderedAccessView* D3D11RHIRenderBuffer::GetD3DUnorderedAccessView()
     ID3D11Device* pDevice = rc.GetD3D11Device();
     D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
 
-    this->FillUnorderedAccessViewDesc(desc);
+    this->FillUavDesc(desc);
     HRESULT hr = pDevice->CreateUnorderedAccessView(m_pD3DBuffer.Get(), &desc, m_pD3DUnorderAccessView.GetAddressOf());
     if (FAILED(hr))
     {
@@ -160,7 +160,7 @@ SResult D3D11RHIRenderBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
     return S_Success;
 }
 
-SResult D3D11RHIRenderBuffer::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
+SResult D3D11RHIRenderBuffer::FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
 {
     desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
     desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
@@ -168,7 +168,7 @@ SResult D3D11RHIRenderBuffer::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_V
     desc.Buffer.NumElements = m_iSize / 16;
     return S_Success;
 }
-SResult D3D11RHIRenderBuffer::FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc)
+SResult D3D11RHIRenderBuffer::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc)
 {
     desc.Format = DXGI_FORMAT_UNKNOWN;
     desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
@@ -242,7 +242,7 @@ SResult D3D11StructuredBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
     return S_Success;
 }
 
-SResult D3D11StructuredBuffer::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
+SResult D3D11StructuredBuffer::FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
 {
     desc.Format = (m_iFlags & RESOURCE_FLAG_GPU_WRITE ? DXGI_FORMAT_R32_TYPELESS : DXGI_FORMAT_UNKNOWN);
     desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFEREX;
@@ -251,7 +251,7 @@ SResult D3D11StructuredBuffer::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_
     desc.BufferEx.Flags = (m_iFlags & RESOURCE_FLAG_GPU_WRITE ? D3D11_BUFFER_UAV_FLAG_RAW : 0);
     return S_Success;
 }
-SResult D3D11StructuredBuffer::FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc)
+SResult D3D11StructuredBuffer::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc)
 {
     desc.Format = (m_iFlags & RESOURCE_FLAG_GPU_WRITE ? DXGI_FORMAT_R32_TYPELESS : DXGI_FORMAT_UNKNOWN);
     desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
@@ -276,7 +276,7 @@ SResult D3D11ByteAddressBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
     return S_Success;
 }
 
-SResult D3D11ByteAddressBuffer::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
+SResult D3D11ByteAddressBuffer::FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
 {
     desc.Format = DXGI_FORMAT_R32_TYPELESS;
     desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFEREX;
@@ -286,7 +286,7 @@ SResult D3D11ByteAddressBuffer::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE
     return S_Success;
 }
 
-SResult D3D11ByteAddressBuffer::FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc)
+SResult D3D11ByteAddressBuffer::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc)
 {
     desc.Format = DXGI_FORMAT_R32_TYPELESS;
     desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;

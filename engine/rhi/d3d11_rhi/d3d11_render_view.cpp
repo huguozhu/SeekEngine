@@ -18,7 +18,7 @@ D3D11RenderTargetView::D3D11RenderTargetView(Context* context, RHITexturePtr con
     if (tex->Type() != TextureType::Cube)
     {
         D3D11Texture& d3d_tex = static_cast<D3D11Texture&>(*tex);
-        m_pD3dRenderTargetView = d3d_tex.GetD3DRenderTargetView();
+        m_pD3dRenderTargetView = d3d_tex.GetD3DRtv();
     }
 }
 D3D11RenderTargetView::~D3D11RenderTargetView()
@@ -54,7 +54,7 @@ D3D11CubeFaceRenderTargetView::D3D11CubeFaceRenderTargetView(Context* context, R
         return;
     m_eCubeType = face;
     D3D11TextureCube& d3d_tex = static_cast<D3D11TextureCube&>(*tex);
-    m_pD3dRenderTargetView = d3d_tex.GetD3DRenderTargetView(face, lod);
+    m_pD3dRenderTargetView = d3d_tex.GetD3DRtv(face, lod);
 }
 
 /******************************************************************************
@@ -66,7 +66,7 @@ D3D11DepthStencilView::D3D11DepthStencilView(Context* context, RHITexturePtr con
     if (tex->Type() != TextureType::Cube)
     {
         D3D11Texture& d3d_tex = static_cast<D3D11Texture&>(*tex);
-        m_pD3D11DepthStencilView = d3d_tex.GetD3DDepthStencilView();
+        m_pD3D11DepthStencilView = d3d_tex.GetD3DDsv();
     }
 }
 D3D11DepthStencilView::~D3D11DepthStencilView()
@@ -123,7 +123,7 @@ D3D11CubeDepthStencilView::D3D11CubeDepthStencilView(Context* context, RHITextur
         return;
     m_eCubeType = face;
     D3D11TextureCube& d3d_tex = static_cast<D3D11TextureCube&>(*tex);
-    m_pD3D11DepthStencilView = d3d_tex.GetD3DDepthStencilView(face);
+    m_pD3D11DepthStencilView = d3d_tex.GetD3DDsv(face);
 }
 
 

@@ -28,7 +28,7 @@ D3D11Texture::~D3D11Texture()
 
 }
 
-ID3D11RenderTargetView* D3D11Texture::GetD3DRenderTargetView()
+ID3D11RenderTargetView* D3D11Texture::GetD3DRtv()
 {
     if (m_pD3DRenderTargetView)
         return m_pD3DRenderTargetView.Get();
@@ -36,18 +36,18 @@ ID3D11RenderTargetView* D3D11Texture::GetD3DRenderTargetView()
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
 
     D3D11_RENDER_TARGET_VIEW_DESC desc;
-    this->FillRenderTargetViewDesc(desc);
+    this->FillRtvDesc(desc);
 
     HRESULT hr = rc.GetD3D11Device()->CreateRenderTargetView(m_pTexture.Get(), &desc, m_pD3DRenderTargetView.GetAddressOf());
     if (FAILED(hr))
     {
-        LOG_ERROR("D3D11Texture::GetD3dRenderTargetView error, hr:0x%x", hr);
+        LOG_ERROR("D3D11Texture::GetD3DRtv error, hr:0x%x", hr);
         return nullptr;
     }
     return m_pD3DRenderTargetView.Get();
 }
 
-ID3D11DepthStencilView* D3D11Texture::GetD3DDepthStencilView()
+ID3D11DepthStencilView* D3D11Texture::GetD3DDsv()
 {
     if (m_pD3DDepthStencilView)
         return m_pD3DDepthStencilView.Get();
@@ -55,17 +55,17 @@ ID3D11DepthStencilView* D3D11Texture::GetD3DDepthStencilView()
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
 
     D3D11_DEPTH_STENCIL_VIEW_DESC desc;
-    this->FillDepthStencilViewDesc(desc);
+    this->FillDsvDesc(desc);
     HRESULT hr = rc.GetD3D11Device()->CreateDepthStencilView(m_pTexture.Get(), &desc, m_pD3DDepthStencilView.GetAddressOf());
     if (FAILED(hr))
     {
-        LOG_ERROR("D3D11Texture::GetD3dDepthStencilView error, hr:0x%x", hr);
+        LOG_ERROR("D3D11Texture::GetD3DDsv error, hr:0x%x", hr);
         return nullptr;
     }
     return m_pD3DDepthStencilView.Get();
 }
 
-ID3D11ShaderResourceView* D3D11Texture::GetD3DShaderResourceView()
+ID3D11ShaderResourceView* D3D11Texture::GetD3DSrv()
 {
     if (m_pD3DShaderResourceView)
         return m_pD3DShaderResourceView.Get();
@@ -80,7 +80,7 @@ ID3D11ShaderResourceView* D3D11Texture::GetD3DShaderResourceView()
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
 
     D3D11_SHADER_RESOURCE_VIEW_DESC desc;
-    this->FillShaderResourceViewDesc(desc);
+    this->FillSrvDesc(desc);
 
     ID3D11Resource* res = m_pTexture.Get();
     if (m_pResolvedTexture)
@@ -89,13 +89,13 @@ ID3D11ShaderResourceView* D3D11Texture::GetD3DShaderResourceView()
     HRESULT hr = rc.GetD3D11Device()->CreateShaderResourceView(res, &desc, m_pD3DShaderResourceView.GetAddressOf());
     if (FAILED(hr))
     {
-        LOG_ERROR("D3D11Texture::GetD3dShaderResourceView error, hr:0x%x", hr);
+        LOG_ERROR("D3D11Texture::GetD3DSrv error, hr:0x%x", hr);
         return nullptr;
     }
     return m_pD3DShaderResourceView.Get();
 }
 
-ID3D11UnorderedAccessView* D3D11Texture::GetD3DUnorderedAccessView()
+ID3D11UnorderedAccessView* D3D11Texture::GetD3DUav()
 {
     if (m_pD3DUnorderedAccessView)
         return m_pD3DUnorderedAccessView.Get();
@@ -110,7 +110,7 @@ ID3D11UnorderedAccessView* D3D11Texture::GetD3DUnorderedAccessView()
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
 
     D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
-    this->FillUnorderedAccessViewDesc(desc);
+    this->FillUavDesc(desc);
 
     ID3D11Resource* res = m_pTexture.Get();
     if (m_pResolvedTexture)
@@ -119,32 +119,32 @@ ID3D11UnorderedAccessView* D3D11Texture::GetD3DUnorderedAccessView()
     HRESULT hr = rc.GetD3D11Device()->CreateUnorderedAccessView(res, &desc, m_pD3DUnorderedAccessView.GetAddressOf());
     if (FAILED(hr))
     {
-        LOG_ERROR("D3D11Texture::GetD3DUnorderedAccessView error, hr:0x%x", hr);
+        LOG_ERROR("D3D11Texture::GetD3DUav error, hr:0x%x", hr);
         return nullptr;
     }
     return m_pD3DUnorderedAccessView.Get();
 }
 SResult D3D11Texture::GenerateMipMap()
 {
-    ID3D11ShaderResourceView* pSrv = this->GetD3DShaderResourceView();
+    ID3D11ShaderResourceView* pSrv = this->GetD3DSrv();
     D3D11RHIContext* pRC = (D3D11RHIContext*)(&m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = pRC->GetD3D11DeviceContext();
     pDeviceContext->GenerateMips(pSrv);
     return S_Success;
 }
-void D3D11Texture::FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc) 
+void D3D11Texture::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc) 
 { 
     SeekUnreachable("Can't be called."); 
 }
-void D3D11Texture::FillDepthStencilViewDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc) 
+void D3D11Texture::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc) 
 {
     SeekUnreachable("Can't be called.");
 }
-void D3D11Texture::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc) 
+void D3D11Texture::FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc) 
 {
     SeekUnreachable("Can't be called.");
 }
-void D3D11Texture::FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc) 
+void D3D11Texture::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc) 
 {
     SeekUnreachable("Can't be called.");
 }
@@ -327,7 +327,7 @@ D3D11Texture2D::D3D11Texture2D(Context* context, ID3D11Texture2DPtr const& tex)
     m_desc.flags = flags;
 }
 
-void D3D11Texture2D::FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc)
+void D3D11Texture2D::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc)
 {
     switch (m_desc.format)
     {
@@ -366,7 +366,7 @@ void D3D11Texture2D::FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC& des
     }
 }
 
-void D3D11Texture2D::FillDepthStencilViewDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc)
+void D3D11Texture2D::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc)
 {
     switch (m_desc.format)
     {
@@ -406,7 +406,7 @@ void D3D11Texture2D::FillDepthStencilViewDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& des
     }
 }
 
-void D3D11Texture2D::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
+void D3D11Texture2D::FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
 {
     // don't support multisample texture2d as srv
     switch (m_desc.format)
@@ -417,23 +417,43 @@ void D3D11Texture2D::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC&
     default:                    desc.Format = m_eDxgiFormat;                        break;
     }
 
-    if (m_desc.depth > 1)
+    if (m_desc.num_array > 1)
     {
-        desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
-        desc.Texture2DArray.MostDetailedMip = 0;
-        desc.Texture2DArray.MipLevels = m_desc.num_mips;
-        desc.Texture2DArray.FirstArraySlice = 0;
-        desc.Texture2DArray.ArraySize = m_desc.depth;
+        //if (m_desc.num_samples > 1)
+        //{
+        //    desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY;
+        //    desc.Texture2DMSArray.FirstArraySlice = first_array_index;
+        //    desc.Texture2DMSArray.ArraySize = array_size;
+        //}
+        //else
+        //{
+        //    desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+        //    desc.Texture2DArray.MostDetailedMip = first_level;
+        //    desc.Texture2DArray.MipLevels = num_levels;
+        //    desc.Texture2DArray.FirstArraySlice = first_array_index;
+        //    desc.Texture2DArray.ArraySize = array_size;
+        //}
     }
     else
     {
-        desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-        desc.Texture2D.MostDetailedMip = 0;
-        desc.Texture2D.MipLevels = m_desc.num_mips;
+        if (m_desc.num_samples > 1)
+        {
+            desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+            desc.Texture2DArray.MostDetailedMip = 0;
+            desc.Texture2DArray.MipLevels = m_desc.num_mips;
+            desc.Texture2DArray.FirstArraySlice = 0;
+            desc.Texture2DArray.ArraySize = m_desc.depth;
+        }
+        else
+        {
+            desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
+            desc.Texture2D.MostDetailedMip = 0;
+            desc.Texture2D.MipLevels = m_desc.num_mips;
+        }
     }
 }
 
-void D3D11Texture2D::FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc)
+void D3D11Texture2D::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc)
 {
     // don't support multisample texture2d as uav
     desc.Format = m_eDxgiFormat;
@@ -664,7 +684,7 @@ D3D11TextureCube::D3D11TextureCube(Context* context, const RHITexture::Desc& tex
 {
     m_vCubeDSV.resize((uint32_t)CubeFaceType::Num, nullptr);
 }
-ID3D11RenderTargetView* D3D11TextureCube::GetD3DRenderTargetView(CubeFaceType face, uint32_t lod)
+ID3D11RenderTargetView* D3D11TextureCube::GetD3DRtv(CubeFaceType face, uint32_t lod)
 {
     if (!m_mCubeRTV[lod].empty() && m_mCubeRTV[lod][(uint32_t)face] )
         return m_mCubeRTV[lod][(uint32_t)face].Get();
@@ -676,18 +696,18 @@ ID3D11RenderTargetView* D3D11TextureCube::GetD3DRenderTargetView(CubeFaceType fa
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
     D3D11_RENDER_TARGET_VIEW_DESC desc;
-    this->FillRenderTargetViewDesc(desc, face, lod);
+    this->FillRtvDesc(desc, face, lod);
     ID3D11RenderTargetViewPtr rtv = nullptr;
     HRESULT hr = pDevice->CreateRenderTargetView(m_pTexture.Get(), &desc, m_mCubeRTV[lod][(uint32_t)face].GetAddressOf());
     if (FAILED(hr))
     {
-        LOG_ERROR("D3D11TextureCube::GetD3DRenderTargetView error");
+        LOG_ERROR("D3D11TextureCube::GetD3DRtv error");
         return nullptr;
     }
 
     return m_mCubeRTV[lod][(uint32_t)face].Get();
 }
-ID3D11DepthStencilView* D3D11TextureCube::GetD3DDepthStencilView(CubeFaceType face)
+ID3D11DepthStencilView* D3D11TextureCube::GetD3DDsv(CubeFaceType face)
 {
     if (m_vCubeDSV[(uint32_t)face])
         return m_vCubeDSV[(uint32_t)face].Get();
@@ -696,17 +716,17 @@ ID3D11DepthStencilView* D3D11TextureCube::GetD3DDepthStencilView(CubeFaceType fa
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
     D3D11_DEPTH_STENCIL_VIEW_DESC desc;
-    this->FillDepthStencilViewDesc(desc, face);
+    this->FillDsvDesc(desc, face);
     HRESULT hr = pDevice->CreateDepthStencilView(m_pTexture.Get(), &desc, m_vCubeDSV[(uint32_t)face].GetAddressOf());
     if (FAILED(hr))
     {
-        LOG_ERROR("D3D11TextureCube::GetD3DRenderTargetView error");
+        LOG_ERROR("D3D11TextureCube::GetD3DRtv error");
         return nullptr;
     }
 
     return m_vCubeDSV[(uint32_t)face].Get();
 }
-void D3D11TextureCube::FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC & desc, CubeFaceType face, uint32_t mip_level)
+void D3D11TextureCube::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC & desc, CubeFaceType face, uint32_t mip_level)
 {
     switch (m_desc.format)
     {
@@ -720,7 +740,7 @@ void D3D11TextureCube::FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC & 
     desc.Texture2DArray.FirstArraySlice = (uint32_t)face;
     desc.Texture2DArray.ArraySize = 1;
 }
-void D3D11TextureCube::FillDepthStencilViewDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, CubeFaceType face)
+void D3D11TextureCube::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, CubeFaceType face)
 {
     switch (m_desc.format)
     {
@@ -735,7 +755,7 @@ void D3D11TextureCube::FillDepthStencilViewDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& d
     desc.Texture2DArray.ArraySize = 1;
     desc.Texture2DArray.FirstArraySlice = (uint32_t)face;
 }
-void D3D11TextureCube::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
+void D3D11TextureCube::FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
 {
     // don't support multisample texture2d as srv
     switch (m_desc.format)
@@ -943,7 +963,7 @@ void D3D11Texture3D::FillTexture3DDesc(D3D11_TEXTURE3D_DESC& desc)
     default:                    desc.Format = m_eDxgiFormat;                break;
     }
 }
-void D3D11Texture3D::FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc)
+void D3D11Texture3D::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc)
 {
     switch (m_desc.format)
     {
@@ -959,7 +979,7 @@ void D3D11Texture3D::FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC& des
     desc.Texture3D.WSize = m_desc.depth;
  
 }
-void D3D11Texture3D::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
+void D3D11Texture3D::FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
 {
     switch (m_desc.format)
     {
