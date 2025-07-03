@@ -404,7 +404,7 @@ SResult LPV::LPVInject()
     if (draw)
     {
         static std::string path = "d:\\sh_red.rgba";
-        m_pTexRedSh->DumpToFile(path, 0, 0);
+        m_pTexRedSh->DumpToFile(path);
         draw--;
     }
 #endif

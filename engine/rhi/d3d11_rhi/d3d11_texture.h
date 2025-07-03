@@ -89,7 +89,7 @@ class D3D11TextureCube : public D3D11Texture
 public:
     D3D11TextureCube(Context* context, const RHITexture::Desc& tex_desc);
 
-    ID3D11RenderTargetView* GetD3DRtv(CubeFaceType face, uint32_t lod = 0);
+    ID3D11RenderTargetView* GetD3DRtv(CubeFaceType face, uint32_t mip_level = 0);
     ID3D11DepthStencilView* GetD3DDsv(CubeFaceType face);
 
     SResult Create(std::span<BitmapBufferPtr> const& bitmap_datas);

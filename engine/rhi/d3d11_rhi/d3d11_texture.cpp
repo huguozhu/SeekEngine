@@ -336,20 +336,20 @@ void D3D11Texture2D::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc)
     case PixelFormat::D32F:     desc.Format = DXGI_FORMAT_R32_FLOAT;                break;
     default:                    desc.Format = m_eDxgiFormat;                        break;
     }
-    if (m_desc.depth > 1)
+    if (m_desc.num_array > 1)
     {
         if (m_desc.num_samples > 1)
         {
             desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMSARRAY;
             desc.Texture2DMSArray.FirstArraySlice = 0;
-            desc.Texture2DMSArray.ArraySize = m_desc.depth;
+            desc.Texture2DMSArray.ArraySize = m_desc.num_array;
         }
         else
         {
             desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
             desc.Texture2DArray.MipSlice = 0;
             desc.Texture2DArray.FirstArraySlice = 0;
-            desc.Texture2DArray.ArraySize = m_desc.depth;
+            desc.Texture2DArray.ArraySize = m_desc.num_array;
         }
     }
     else
@@ -376,13 +376,13 @@ void D3D11Texture2D::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc)
     default:                    desc.Format = m_eDxgiFormat;                        break;
     }
     desc.Flags = 0; // not read only
-    if (m_desc.depth > 1)
+    if (m_desc.num_array > 1)
     {
         if (m_desc.num_samples > 1)
         {
             desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DMSARRAY;
             desc.Texture2DMSArray.FirstArraySlice = 0;
-            desc.Texture2DMSArray.ArraySize = m_desc.depth;
+            desc.Texture2DMSArray.ArraySize = m_desc.num_array;
         }
         else
         {
@@ -419,20 +419,20 @@ void D3D11Texture2D::FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
 
     if (m_desc.num_array > 1)
     {
-        //if (m_desc.num_samples > 1)
-        //{
-        //    desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY;
-        //    desc.Texture2DMSArray.FirstArraySlice = first_array_index;
-        //    desc.Texture2DMSArray.ArraySize = array_size;
-        //}
-        //else
-        //{
-        //    desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
-        //    desc.Texture2DArray.MostDetailedMip = first_level;
-        //    desc.Texture2DArray.MipLevels = num_levels;
-        //    desc.Texture2DArray.FirstArraySlice = first_array_index;
-        //    desc.Texture2DArray.ArraySize = array_size;
-        //}
+        if (m_desc.num_samples > 1)
+        {
+            desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DMSARRAY;
+            desc.Texture2DMSArray.FirstArraySlice = 0;
+            desc.Texture2DMSArray.ArraySize = m_desc.num_array;
+        }
+        else
+        {
+            desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2DARRAY;
+            desc.Texture2DArray.MostDetailedMip = 0;
+            desc.Texture2DArray.MipLevels = m_desc.num_mips;
+            desc.Texture2DArray.FirstArraySlice = 0;
+            desc.Texture2DArray.ArraySize = m_desc.num_array;
+        }
     }
     else
     {
@@ -457,12 +457,12 @@ void D3D11Texture2D::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc)
 {
     // don't support multisample texture2d as uav
     desc.Format = m_eDxgiFormat;
-    if (m_desc.depth > 1)
+    if (m_desc.num_array > 1)
     {
         desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
         desc.Texture2DArray.MipSlice = 0;
         desc.Texture2DArray.FirstArraySlice = 0;
-        desc.Texture2DArray.ArraySize = m_desc.depth;
+        desc.Texture2DArray.ArraySize = m_desc.num_array;
     }
     else
     {
@@ -684,28 +684,28 @@ D3D11TextureCube::D3D11TextureCube(Context* context, const RHITexture::Desc& tex
 {
     m_vCubeDSV.resize((uint32_t)CubeFaceType::Num, nullptr);
 }
-ID3D11RenderTargetView* D3D11TextureCube::GetD3DRtv(CubeFaceType face, uint32_t lod)
+ID3D11RenderTargetView* D3D11TextureCube::GetD3DRtv(CubeFaceType face, uint32_t mip_level)
 {
-    if (!m_mCubeRTV[lod].empty() && m_mCubeRTV[lod][(uint32_t)face] )
-        return m_mCubeRTV[lod][(uint32_t)face].Get();
+    if (!m_mCubeRTV[mip_level].empty() && m_mCubeRTV[mip_level][(uint32_t)face] )
+        return m_mCubeRTV[mip_level][(uint32_t)face].Get();
 
-    if (m_mCubeRTV[lod].empty())
-        m_mCubeRTV[lod].resize((uint32_t)CubeFaceType::Num, nullptr);
+    if (m_mCubeRTV[mip_level].empty())
+        m_mCubeRTV[mip_level].resize((uint32_t)CubeFaceType::Num, nullptr);
         
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
     D3D11_RENDER_TARGET_VIEW_DESC desc;
-    this->FillRtvDesc(desc, face, lod);
+    this->FillRtvDesc(desc, face, mip_level);
     ID3D11RenderTargetViewPtr rtv = nullptr;
-    HRESULT hr = pDevice->CreateRenderTargetView(m_pTexture.Get(), &desc, m_mCubeRTV[lod][(uint32_t)face].GetAddressOf());
+    HRESULT hr = pDevice->CreateRenderTargetView(m_pTexture.Get(), &desc, m_mCubeRTV[mip_level][(uint32_t)face].GetAddressOf());
     if (FAILED(hr))
     {
         LOG_ERROR("D3D11TextureCube::GetD3DRtv error");
         return nullptr;
     }
 
-    return m_mCubeRTV[lod][(uint32_t)face].Get();
+    return m_mCubeRTV[mip_level][(uint32_t)face].Get();
 }
 ID3D11DepthStencilView* D3D11TextureCube::GetD3DDsv(CubeFaceType face)
 {
@@ -735,10 +735,18 @@ void D3D11TextureCube::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC & desc, CubeFac
     case PixelFormat::D32F:     desc.Format = DXGI_FORMAT_R32_FLOAT;                break;
     default:                    desc.Format = m_eDxgiFormat;                        break;
     }
-    desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-    desc.Texture2DArray.MipSlice = mip_level;
-    desc.Texture2DArray.FirstArraySlice = (uint32_t)face;
-    desc.Texture2DArray.ArraySize = 1;
+    if (m_desc.num_samples > 1)
+    {
+        desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMSARRAY;
+        desc.Texture2DMSArray.ArraySize = 1;
+    }
+    else
+    {
+        desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
+        desc.Texture2DArray.MipSlice = mip_level;
+        desc.Texture2DArray.FirstArraySlice = (uint32_t)face;
+        desc.Texture2DArray.ArraySize = 1;
+    }
 }
 void D3D11TextureCube::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, CubeFaceType face)
 {

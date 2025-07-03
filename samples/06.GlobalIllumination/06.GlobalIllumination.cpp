@@ -88,7 +88,7 @@ SResult GlobalIlluminationSample::InitContext(void* device, void* native_wnd)
     info.enable_debug = true;
     info.renderer_type = RendererType::Deferred;
     info.anti_aliasing_mode = AntiAliasingMode::TAA;
-    info.gi_mode = GlobalIlluminationMode::RSM;
+    info.gi_mode = GlobalIlluminationMode::LPV;
     info.preferred_adapter = 0;
     info.HDR = true;
 
