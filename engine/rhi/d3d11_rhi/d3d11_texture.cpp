@@ -653,7 +653,7 @@ SResult D3D11Texture2D::CopySubResource2D(BitmapBufferPtr bitmap_data, uint32_t 
         dst += bitmap_data->RowPitch();
         src += mapped_data.RowPitch;
     }
-    pDeviceContext->Unmap(pCopyRes.Get(), 0);
+    pDeviceContext->Unmap(pCopyRes.Get(), D3D11CalcSubresource(mip_level, array_index, m_desc.num_mips));
     return S_Success;
 }
 /******************************************************************************
@@ -913,7 +913,7 @@ SResult D3D11Texture3D::CopySubResource3D(BitmapBufferPtr bitmap_data, uint32_t 
             src += mapped_data.RowPitch;
         }
     }
-    pDeviceContext->Unmap(pCopyRes.Get(), 0);
+    pDeviceContext->Unmap(pCopyRes.Get(), D3D11CalcSubresource(mip_level, array_index, m_desc.num_mips));
     return S_Success;
 }
 void D3D11Texture3D::FillTexture3DDesc(D3D11_TEXTURE3D_DESC& desc)
@@ -974,7 +974,17 @@ void D3D11Texture3D::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC&
 }
 void D3D11Texture3D::FillStageTexture3DDesc(D3D11_TEXTURE3D_DESC& desc)
 {
-
+    desc.Width = m_desc.width;
+    desc.Height = m_desc.height;
+    desc.Depth = m_desc.depth;
+    desc.MipLevels = m_desc.num_mips;
+    desc.Format = m_eDxgiFormat;
+    desc.Usage = D3D11_USAGE_STAGING;
+    desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+    desc.BindFlags = 0;
+    desc.MiscFlags = 0;
+    if (m_desc.num_mips > 1 && (m_desc.flags & RESOURCE_FLAG_GENERATE_MIPS))
+        desc.MiscFlags |= D3D11_RESOURCE_MISC_GENERATE_MIPS;
 }
 SEEK_NAMESPACE_END
 

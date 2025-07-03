@@ -215,11 +215,15 @@ void BitmapBuffer::DumpToFile(std::string path)
     std::fstream file;
     file.open(path.c_str(), std::ios::out | std::ios::binary | std::ios::trunc);
 
-    for (uint32_t j = 0; j < m_iHeight; j++)
+    uint32_t num_bytes = Formatutil::NumComponentBytes(m_eFormat);
+    for (uint32_t j = 0; j < m_iDepth; j++)
     {
-        const char* ptr = (const char*)m_pData + m_iRowPitch * j;
-        long long size = m_iWidth * Formatutil::NumComponentBytes(m_eFormat);
-        file.write(ptr, size);
+        for (uint32_t i = 0; i < m_iHeight; i++)
+        {
+            const char* ptr = (const char*)m_pData + m_iRowPitch * i + m_iSlicePitch * j;
+            long long size = m_iWidth * num_bytes;
+            file.write(ptr, size);
+        }
     }
     file.close();
 }

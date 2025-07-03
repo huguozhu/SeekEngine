@@ -63,10 +63,28 @@ public:
     virtual SResult CopySubResource3D(BitmapBufferPtr bitmap_data, uint32_t array_index = 0, uint32_t mip_level = 0, Box<uint32_t>* box = nullptr) = 0;
     virtual SResult CopySubResourceCube(BitmapBufferPtr bitmap_data, CubeFaceType face, uint32_t array_index = 0, uint32_t mip_level = 0, Rect<uint32_t>* rect = nullptr) = 0;
 
-    SResult DumpToFile(std::string path)
+    SResult DumpToFile(std::string path, CubeFaceType face = CubeFaceType::Num)
     {
         BitmapBufferPtr bitmap_data = MakeSharedPtr<BitmapBuffer>();
-        SEEK_RETIF_FAIL(this->CopySubResource2D(bitmap_data));
+        switch (m_desc.type)
+        {
+        case TextureType::Tex2D:
+        {
+            SEEK_RETIF_FAIL(this->CopySubResource2D(bitmap_data));
+            break;
+        }
+        case TextureType::Tex3D:
+        {
+            SEEK_RETIF_FAIL(this->CopySubResource3D(bitmap_data));
+            break;
+        }
+        case TextureType::Cube:
+        {
+            SEEK_RETIF_FAIL(this->CopySubResourceCube(bitmap_data, face));
+            break;
+        }
+        }
+        
         bitmap_data->DumpToFile(path);
         return S_Success;
     }
