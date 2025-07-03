@@ -271,7 +271,7 @@ SplitSumApproximationPostProcess::SplitSumApproximationPostProcess(Context* cont
     prefilter_desc.num_samples = 1;
     prefilter_desc.format = PixelFormat::R16G16B16A16_FLOAT;
     prefilter_desc.flags = RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_GENERATE_MIPS;
-    m_pTexPrefilter = rc.CreateTextureCube(prefilter_desc, nullptr);
+    m_pTexPrefilter = rc.CreateTextureCube(prefilter_desc);
     m_pTexPrefilter->GenerateMipMap();
     m_pPPPrefilter->SetDstPrefilterTexture(m_pTexPrefilter);
 }

@@ -56,4 +56,12 @@ std::wstring utf8_to_wchar(const char* src)
 }
 #endif
 
+void SeekUnreachableImp(std::string msg, std::string file, uint32_t line)
+{
+    if (!msg.empty())
+        LOG_ERROR("%s: ", msg);
+    LOG_ERROR("Unreachable executed at file: %s  %d line", file, line);
+    __assume(false);
+}
+
 SEEK_NAMESPACE_END

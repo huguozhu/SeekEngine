@@ -9,18 +9,18 @@ class Rect
 {
 public:
     Rect() {}
-    Rect(T left, T right, T top, T bottom)
+    Rect(T _x, T _y, T _width, T _height)
     {
-        this->left      = left;
-        this->right     = right;
-        this->top       = top;
-        this->bottom    = bottom;
+        this->x = _x;
+        this->y = _y;
+        this->width = _width;
+        this->height = _height;
     }
 
-    T left = {};
-    T right = {};
-    T top = {};
-    T bottom = {};
+    T x = {};
+    T y = {};
+    T width = {};
+    T height = {};
 };
 
 SEEK_NAMESPACE_END

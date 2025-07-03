@@ -49,11 +49,10 @@ public: // virutal factory
     virtual RHIShaderPtr            CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) = 0;
     virtual std::vector<RHITexturePtr> CreateTexture2DFromNative(void* gpu_data, std::vector<PixelFormat> format) { return std::vector<RHITexturePtr>(); }
             RHITexturePtr           CreateTexture2D(const BitmapBufferPtr data);
-    //virtual TexturePtr              CreateTexture(const Texture::Desc& tex_desc, const SubResourceData* init_data = nullptr, uint32_t init_data_size = 0) = 0;
-    virtual RHITexturePtr           CreateTexture2D(const RHITexture::Desc& tex_desc, const BitmapBufferPtr init_data = nullptr) = 0;
-    virtual RHITexturePtr           CreateTexture2D(const RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas) { return nullptr; }
-    virtual RHITexturePtr           CreateTexture3D(const RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas = {}) { return nullptr; }
-    virtual RHITexturePtr           CreateTextureCube(const RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr>* init_data = nullptr) { return nullptr; }
+    virtual RHITexturePtr           CreateTexture2D(const RHITexture::Desc& tex_desc, const BitmapBufferPtr init_data) = 0;
+    virtual RHITexturePtr           CreateTexture2D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) { return nullptr; }
+    virtual RHITexturePtr           CreateTexture3D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) { return nullptr; }
+    virtual RHITexturePtr           CreateTextureCube(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_data = {}) { return nullptr; }
     
     virtual RHIRenderBufferPtr      CreateEmptyVertexBuffer(uint32_t size, ResourceFlags flags) = 0;
     virtual RHIRenderBufferPtr      CreateEmptyIndexBuffer(uint32_t size, ResourceFlags flags) = 0;

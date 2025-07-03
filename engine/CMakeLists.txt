@@ -74,19 +74,18 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/kernel/context.cpp
 
     # math
-    ${SEEK_ENGINE_SOURCE_DIR}/math/vector.h
-    ${SEEK_ENGINE_SOURCE_DIR}/math/hash.h
-    ${SEEK_ENGINE_SOURCE_DIR}/math/rect.h
-    ${SEEK_ENGINE_SOURCE_DIR}/math/math_utility.h
-    ${SEEK_ENGINE_SOURCE_DIR}/math/math_utility.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/math/matrix.h
-    ${SEEK_ENGINE_SOURCE_DIR}/math/matrix.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/math/aabbox.h
     ${SEEK_ENGINE_SOURCE_DIR}/math/aabbox.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/math/box.h
     ${SEEK_ENGINE_SOURCE_DIR}/math/color.h
     ${SEEK_ENGINE_SOURCE_DIR}/math/color.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/math/frustum.h
     ${SEEK_ENGINE_SOURCE_DIR}/math/frustum.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/math/hash.h
+    ${SEEK_ENGINE_SOURCE_DIR}/math/math_utility.h
+    ${SEEK_ENGINE_SOURCE_DIR}/math/math_utility.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/math/matrix.h
+    ${SEEK_ENGINE_SOURCE_DIR}/math/matrix.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/math/plane.h
     ${SEEK_ENGINE_SOURCE_DIR}/math/plane.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/math/quad_mesh_process.h
@@ -95,8 +94,10 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/math/quaternion.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/math/ray.h
     ${SEEK_ENGINE_SOURCE_DIR}/math/ray.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/math/rect.h
     ${SEEK_ENGINE_SOURCE_DIR}/math/transform.h
     ${SEEK_ENGINE_SOURCE_DIR}/math/transform.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/math/vector.h
     
     # rhi
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_object.h

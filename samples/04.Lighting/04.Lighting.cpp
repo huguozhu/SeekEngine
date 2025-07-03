@@ -147,7 +147,7 @@ SResult Lighting::OnCreate()
         BitmapBufferPtr bit = ImageDecodeFromFile(cube_files[i], ImageType::JPEG);
         datas[i] = bit;
     }
-    RHITexturePtr tex_cube = rc.CreateTextureCube(desc, &datas);
+    RHITexturePtr tex_cube = rc.CreateTextureCube(desc, datas);
     m_pSkyBoxEntity = MakeSharedPtr<Entity>(m_pContext.get());
     SkyBoxComponentPtr pSkybox = MakeSharedPtr<SkyBoxComponent>(m_pContext.get());
     pSkybox->SetSkyBoxTex(tex_cube);

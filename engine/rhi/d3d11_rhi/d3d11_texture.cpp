@@ -132,6 +132,40 @@ SResult D3D11Texture::GenerateMipMap()
     pDeviceContext->GenerateMips(pSrv);
     return S_Success;
 }
+void D3D11Texture::FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc) 
+{ 
+    SeekUnreachable("Can't be called."); 
+}
+void D3D11Texture::FillDepthStencilViewDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc) 
+{
+    SeekUnreachable("Can't be called.");
+}
+void D3D11Texture::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc) 
+{
+    SeekUnreachable("Can't be called.");
+}
+void D3D11Texture::FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc) 
+{
+    SeekUnreachable("Can't be called.");
+}
+
+SResult D3D11Texture::CopySubResource2D(BitmapBufferPtr bitmap_data, uint32_t array_index, uint32_t mip_level, Rect<uint32_t>* rect)
+{
+    SeekUnreachable("Can't be called."); 
+    return ERR_INVALID_INVOKE_FLOW;
+}
+SResult D3D11Texture::CopySubResource3D(BitmapBufferPtr bitmap_data, uint32_t array_index, uint32_t mip_level, Box<uint32_t>* box)
+{
+    SeekUnreachable("Can't be called."); 
+    return ERR_INVALID_INVOKE_FLOW;
+}
+SResult D3D11Texture::CopySubResourceCube(BitmapBufferPtr bitmap_data, CubeFaceType face, uint32_t array_index, uint32_t mip_level,
+    Rect<uint32_t>* rect)
+{
+    SeekUnreachable("Can't be called."); 
+    return ERR_INVALID_INVOKE_FLOW;
+}
+
 /*
 D3D11_USAGE	            CPU¶Á	CPUÐ´	GPU¶Á	GPUÐ´
 D3D11_USAGE_DEFAULT 			        ¡Ì	    ¡Ì
@@ -152,7 +186,6 @@ void D3D11Texture::FillD3DTextureFlags(D3D11_USAGE& usage, UINT& bind_flags, UIN
     bool is_draw_indict = m_desc.flags & RESOURCE_FLAG_DRAW_INDIRECT_ARGS;
     bool is_append      = m_desc.flags & RESOURCE_FLAG_APPEND;
     bool is_counter     = m_desc.flags & RESOURCE_FLAG_COUNTER;
-    
 
     if (cpu_write && gpu_read)
     {
@@ -450,7 +483,7 @@ SResult D3D11Texture2D::Create(std::span<BitmapBufferPtr> const& bitmap_datas)
         return ERR_INVALID_ARG;
     }
 
-    _texture2d->GetDesc(&m_textureDesc);
+    _texture2d->GetDesc(&m_d3dTexture2DDesc);
     m_pTexture = std::move(_texture2d);
     return S_Success;
 }
@@ -468,7 +501,7 @@ SResult D3D11Texture2D::Update(std::span<BitmapBufferPtr> const& bitmap_datas)
 
     D3D11_MAPPED_SUBRESOURCE mapped_data = { 0 };
     D3D11_MAP mapFlag = D3D11_MAP_WRITE;
-    if (m_textureDesc.Usage == D3D11_USAGE_DYNAMIC)
+    if (m_d3dTexture2DDesc.Usage == D3D11_USAGE_DYNAMIC)
         mapFlag = D3D11_MAP_WRITE_DISCARD;
     if (FAILED(pDeviceContext->Map(m_pTexture.Get(), 0, mapFlag, 0, &mapped_data)))
         return ERR_INVALID_ARG;
@@ -494,80 +527,7 @@ SResult D3D11Texture2D::Update(std::span<BitmapBufferPtr> const& bitmap_datas)
     return S_Success;
 }
 
-SResult D3D11Texture2D::CopyBack(const BitmapBufferPtr bitmap_data, Rect<uint32_t>* rect, CubeFaceType /*not used*/)
-{
-    if (!m_pTexture)
-        return ERR_INVALID_ARG;
-
-    // don't support copyback the multisample texture2d
-    if (m_desc.num_samples > 1 && !m_pResolvedTexture)
-    {
-        LOG_ERROR("msaa is enabled, but the resolved texture is null, call Resolve first");
-        return ERR_INVALID_ARG;
-    }
-
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
-    ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
-    ID3D11Device* pDevice = rc.GetD3D11Device();
-
-    bool bCPUAccessRead = m_textureDesc.CPUAccessFlags & D3D11_CPU_ACCESS_READ;
-    ID3D11ResourcePtr pSrcRes = m_pTexture;
-    if (m_pResolvedTexture)
-    {
-        D3D11_TEXTURE2D_DESC resolvedTextureDesc;
-        ID3D11Texture2DPtr tex = nullptr;
-        m_pResolvedTexture.As(&tex);
-        tex->GetDesc(&resolvedTextureDesc);
-
-        bCPUAccessRead = resolvedTextureDesc.CPUAccessFlags & D3D11_CPU_ACCESS_READ;
-        pSrcRes = m_pResolvedTexture;
-    }
-
-    ID3D11ResourcePtr pCopyRes = nullptr;
-    if (!bCPUAccessRead)
-    {
-        D3D11_TEXTURE2D_DESC stage_desc;
-        FillStageTextureDesc(stage_desc);
-
-        ID3D11Texture2DPtr _texture2d;
-        if (FAILED(pDevice->CreateTexture2D(&stage_desc, nullptr, _texture2d.GetAddressOf())))
-            return ERR_INVALID_ARG;
-        pCopyRes = std::move(_texture2d);
-
-        pDeviceContext->CopyResource(pCopyRes.Get(), pSrcRes.Get());
-    }
-    else
-    {
-        pCopyRes = pSrcRes;
-    }
-
-    D3D11_MAPPED_SUBRESOURCE mapped_data = { 0 };
-    HRESULT hr = pDeviceContext->Map(pCopyRes.Get(), 0, D3D11_MAP_READ, 0, &mapped_data);
-    if (FAILED(hr))
-        return ERR_INVALID_ARG;
-
-    Rect<uint32_t> copyRegion(0, m_desc.width, 0, m_desc.height);
-    if (rect)
-        copyRegion = *rect;
-    uint32_t copyWidth = copyRegion.right - copyRegion.left;
-    uint32_t copyHeight = copyRegion.bottom - copyRegion.top;
-    if (!bitmap_data->Expand(copyWidth, copyHeight, m_desc.format))
-        return ERR_NO_MEM;
-
-    uint8_t* dst = bitmap_data->Data();
-    uint8_t* src = (uint8_t*)mapped_data.pData + copyRegion.top * mapped_data.RowPitch + copyRegion.left * Formatutil::NumComponentBytes(m_desc.format);
-    for (int i = 0; i < copyHeight; i++)
-    {
-        memcpy_s(dst, copyWidth * Formatutil::NumComponentBytes(m_desc.format), src, copyWidth * Formatutil::NumComponentBytes(m_desc.format));
-        dst += bitmap_data->RowPitch();
-        src += mapped_data.RowPitch;
-    }
-
-    pDeviceContext->Unmap(pCopyRes.Get(), 0);
-    return S_Success;
-}
-
-void D3D11Texture2D::FillStageTextureDesc(D3D11_TEXTURE2D_DESC& desc)
+void D3D11Texture2D::FillStageTexture2DDesc(D3D11_TEXTURE2D_DESC& desc)
 {
     desc.Width = m_desc.width;
     desc.Height = m_desc.height;
@@ -627,7 +587,75 @@ SResult D3D11Texture2D::Resolve()
     }
     return S_Success;
 }
+SResult D3D11Texture2D::CopySubResource2D(BitmapBufferPtr bitmap_data, uint32_t array_index, uint32_t mip_level, Rect<uint32_t>* rect)
+{
+    if (!m_pTexture)
+        return ERR_INVALID_ARG;
 
+    // don't support copyback the multisample texture2d
+    if (m_desc.num_samples > 1 && !m_pResolvedTexture)
+    {
+        LOG_ERROR("msaa is enabled, but the resolved texture is null, call Resolve first");
+        return ERR_INVALID_ARG;
+    }
+
+    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
+    ID3D11Device* pDevice = rc.GetD3D11Device();
+
+    bool bCPUAccessRead = m_d3dTexture2DDesc.CPUAccessFlags & D3D11_CPU_ACCESS_READ;
+    ID3D11ResourcePtr pSrcRes = m_pTexture;
+    if (m_pResolvedTexture)
+    {
+        D3D11_TEXTURE2D_DESC resolvedTextureDesc;
+        ID3D11Texture2DPtr tex = nullptr;
+        m_pResolvedTexture.As(&tex);
+        tex->GetDesc(&resolvedTextureDesc);
+
+        bCPUAccessRead = resolvedTextureDesc.CPUAccessFlags & D3D11_CPU_ACCESS_READ;
+        pSrcRes = m_pResolvedTexture;
+    }
+
+    ID3D11ResourcePtr pCopyRes = nullptr;
+    if (!bCPUAccessRead)
+    {
+        D3D11_TEXTURE2D_DESC stage_desc;
+        FillStageTexture2DDesc(stage_desc);
+
+        ID3D11Texture2DPtr _texture2d;
+        if (FAILED(pDevice->CreateTexture2D(&stage_desc, nullptr, _texture2d.GetAddressOf())))
+            return ERR_INVALID_ARG;
+        pCopyRes = std::move(_texture2d);
+
+        pDeviceContext->CopyResource(pCopyRes.Get(), pSrcRes.Get());
+    }
+    else
+    {
+        pCopyRes = pSrcRes;
+    }
+
+    D3D11_MAPPED_SUBRESOURCE mapped_data = { 0 };
+    HRESULT hr = pDeviceContext->Map(pCopyRes.Get(), D3D11CalcSubresource(mip_level, array_index, m_desc.num_mips), D3D11_MAP_READ, 0, &mapped_data);
+    if (FAILED(hr))
+        return ERR_INVALID_ARG;
+
+    Rect<uint32_t> copyRect(0, 0, m_desc.width, m_desc.height);
+    if (rect)
+        copyRect = *rect;
+    if (!bitmap_data->Expand(copyRect.width, copyRect.height, m_desc.format))
+        return ERR_NO_MEM;
+
+    uint8_t* dst = bitmap_data->Data();
+    uint8_t* src = (uint8_t*)mapped_data.pData + copyRect.y * mapped_data.RowPitch + copyRect.x * Formatutil::NumComponentBytes(m_desc.format);
+    for (int i = 0; i < copyRect.height; i++)
+    {
+        memcpy_s(dst, copyRect.width * Formatutil::NumComponentBytes(m_desc.format), src, copyRect.width * Formatutil::NumComponentBytes(m_desc.format));
+        dst += bitmap_data->RowPitch();
+        src += mapped_data.RowPitch;
+    }
+    pDeviceContext->Unmap(pCopyRes.Get(), 0);
+    return S_Success;
+}
 /******************************************************************************
 * D3D11TextureCube
 *******************************************************************************/
@@ -678,7 +706,7 @@ ID3D11DepthStencilView* D3D11TextureCube::GetD3DDepthStencilView(CubeFaceType fa
 
     return m_vCubeDSV[(uint32_t)face].Get();
 }
-void D3D11TextureCube::FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC & desc, CubeFaceType face, uint32_t lod)
+void D3D11TextureCube::FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC & desc, CubeFaceType face, uint32_t mip_level)
 {
     switch (m_desc.format)
     {
@@ -688,7 +716,7 @@ void D3D11TextureCube::FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC & 
     default:                    desc.Format = m_eDxgiFormat;                        break;
     }
     desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-    desc.Texture2DArray.MipSlice = lod;
+    desc.Texture2DArray.MipSlice = mip_level;
     desc.Texture2DArray.FirstArraySlice = (uint32_t)face;
     desc.Texture2DArray.ArraySize = 1;
 }
@@ -728,52 +756,10 @@ void D3D11TextureCube::FillTextureDesc(D3D11_TEXTURE2D_DESC& desc)
     desc.ArraySize = 6;
     desc.MiscFlags |= D3D11_RESOURCE_MISC_TEXTURECUBE;
 }
-SResult D3D11TextureCube::CopyBack(BitmapBufferPtr bitmap_data, Rect<uint32_t>* rect, CubeFaceType face)
+SResult D3D11TextureCube::Create(std::span<BitmapBufferPtr> const& bitmap_datas)
 {
-    if (!m_pTexture)
-        return ERR_INVALID_ARG;
-
-    if (m_desc.num_samples > 1)
-    {
-        LOG_ERROR("num_samples is not supported");
-        return ERR_INVALID_ARG;
-    }
-
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
-    ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
-    ID3D11Device* pDevice = rc.GetD3D11Device();
-    pDeviceContext->Flush();
-
-    D3D11_MAPPED_SUBRESOURCE mapped_data = { 0 };
-    HRESULT hr = pDeviceContext->Map(m_pTexture.Get(), (uint32_t)face, D3D11_MAP_READ, 0, &mapped_data);
-    if (FAILED(hr))
-    {
-        LOG_ERROR("D3D11TextureCube::CopyBack Map Error, hr = %d", hr);
-        return ERR_INVALID_ARG;
-    }
-    Rect<uint32_t> copyRegion(0, m_desc.width, 0, m_desc.height);
-    if (rect)
-        copyRegion = *rect;
-    uint32_t copyWidth = copyRegion.right - copyRegion.left;
-    uint32_t copyHeight = copyRegion.bottom - copyRegion.top;
-    if (!bitmap_data->Expand(copyWidth, copyHeight, m_desc.format))
-        return ERR_NO_MEM;
-
-    uint8_t* dst = bitmap_data->Data();
-    uint8_t* src = (uint8_t*)mapped_data.pData + copyRegion.top * mapped_data.RowPitch + copyRegion.left * Formatutil::NumComponentBytes(m_desc.format);
-    for (int i = 0; i < copyHeight; i++)
-    {
-        memcpy_s(dst, copyWidth * Formatutil::NumComponentBytes(m_desc.format), src, copyWidth * Formatutil::NumComponentBytes(m_desc.format));
-        dst += bitmap_data->RowPitch();
-        src += mapped_data.RowPitch;
-    }
-
-    pDeviceContext->Unmap(m_pTexture.Get(), (uint32_t)face);
-    return S_Success;
-}
-SResult D3D11TextureCube::CreateCube(std::vector<BitmapBufferPtr>* bitmap_datas)
-{
-    if (bitmap_datas && bitmap_datas->size() != (uint32_t)CubeFaceType::Num)
+    if (bitmap_datas.size() != (uint32_t)CubeFaceType::Num &&
+        bitmap_datas.size() != 0)
         return ERR_INVALID_ARG;
 
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
@@ -784,21 +770,20 @@ SResult D3D11TextureCube::CreateCube(std::vector<BitmapBufferPtr>* bitmap_datas)
     this->FillTextureDesc(desc);
     
     std::vector<D3D11_SUBRESOURCE_DATA> subr_data;
-    HRESULT hr;
-    if (bitmap_datas)
+    if (!bitmap_datas.empty())
     {
-        subr_data.resize((uint32_t)CubeFaceType::Num);
-        for (uint32_t i = 0; i < (uint32_t)CubeFaceType::Num; i++)
+        subr_data.resize((uint32_t)bitmap_datas.size());
+        for (uint32_t i = 0; i < (uint32_t)bitmap_datas.size(); i++)
         {
-            if (bitmap_datas && (*bitmap_datas)[i])
+            if (bitmap_datas[i])
             {
-                subr_data[i].pSysMem = (*bitmap_datas)[i]->Data();
-                subr_data[i].SysMemPitch = (*bitmap_datas)[i]->RowPitch();
+                subr_data[i].pSysMem = bitmap_datas[i]->Data();
+                subr_data[i].SysMemPitch = bitmap_datas[i]->RowPitch();
                 subr_data[i].SysMemSlicePitch = m_desc.height * subr_data[i].SysMemPitch;
             }
         }
     }
-    hr = pDevice->CreateTexture2D(&desc, subr_data.data(), (ID3D11Texture2D**)m_pTexture.GetAddressOf());
+    HRESULT hr = pDevice->CreateTexture2D(&desc, subr_data.data(), (ID3D11Texture2D**)m_pTexture.GetAddressOf());
     if (FAILED(hr))
     {
         LOG_ERROR("Create D3D11 Texture Failed");
@@ -806,13 +791,18 @@ SResult D3D11TextureCube::CreateCube(std::vector<BitmapBufferPtr>* bitmap_datas)
     }
     return S_Success;
 }
+SResult D3D11TextureCube::CopySubResourceCube(BitmapBufferPtr bitmap_data, CubeFaceType face, uint32_t array_index, uint32_t mip_level, Rect<uint32_t>* rect)
+{
 
+    return true;
+}
 /******************************************************************************
 * D3D11Texture3D
 *******************************************************************************/
 D3D11Texture3D::D3D11Texture3D(Context* context, const RHITexture::Desc& tex_desc)
     :D3D11Texture(context, tex_desc)
 {
+
 }
 SResult D3D11Texture3D::Create(std::span<BitmapBufferPtr> const& bitmap_datas)
 {
@@ -850,33 +840,80 @@ SResult D3D11Texture3D::Create(std::span<BitmapBufferPtr> const& bitmap_datas)
         LOG_ERROR("Create D3D11 Texture Failed");
         return ERR_INVALID_ARG;
     }
-
+    _texture3d->GetDesc(&m_d3dTexture3DDesc);
     m_pTexture = std::move(_texture3d);
     return S_Success;
 }   
-SResult D3D11Texture3D::CopyBackTexture3D(BitmapBufferPtr bitmap_data, uint32_t array_index, uint32_t mip_level)
+SResult D3D11Texture3D::CopySubResource3D(BitmapBufferPtr bitmap_data, uint32_t array_index, uint32_t mip_level, Box<uint32_t>* box)
 {
+    if (!m_pTexture)
+        return ERR_INVALID_ARG;
+
+    // don't support copyback the multisample texture2d
+    if (m_desc.num_samples > 1 && !m_pResolvedTexture)
+    {
+        LOG_ERROR("msaa is enabled, but the resolved texture is null, call Resolve first");
+        return ERR_INVALID_ARG;
+    }
+
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
+    ID3D11Device* pDevice = rc.GetD3D11Device();
 
-    D3D11_MAPPED_SUBRESOURCE mapped_data;
-    pDeviceContext->Map(m_pTexture.Get(), D3D11CalcSubresource(mip_level, array_index, m_desc.num_mips), D3D11_MAP_READ, 0, &mapped_data);
+    bool bCPUAccessRead = m_d3dTexture3DDesc.CPUAccessFlags & D3D11_CPU_ACCESS_READ;
+    ID3D11ResourcePtr pSrcRes = m_pTexture;
+    if (m_pResolvedTexture)
+    {
+        D3D11_TEXTURE3D_DESC resolvedTextureDesc;
+        ID3D11Texture3DPtr tex = nullptr;
+        m_pResolvedTexture.As(&tex);
+        tex->GetDesc(&resolvedTextureDesc);
 
-    Rect<uint32_t> copyRegion(0, m_desc.width, 0, m_desc.height);
-    uint32_t copyWidth = copyRegion.right - copyRegion.left;
-    uint32_t copyHeight = copyRegion.bottom - copyRegion.top;
-    if (!bitmap_data->Expand(m_desc.width, m_desc.height, m_desc.format))
+        bCPUAccessRead = resolvedTextureDesc.CPUAccessFlags & D3D11_CPU_ACCESS_READ;
+        pSrcRes = m_pResolvedTexture;
+    }
+
+    ID3D11ResourcePtr pCopyRes = nullptr;
+    if (!bCPUAccessRead)
+    {
+        D3D11_TEXTURE3D_DESC stage_desc;
+        FillStageTexture3DDesc(stage_desc);
+
+        ID3D11Texture3DPtr _texture3d;
+        if (FAILED(pDevice->CreateTexture3D(&stage_desc, nullptr, _texture3d.GetAddressOf())))
+            return ERR_INVALID_ARG;
+        pCopyRes = std::move(_texture3d);
+
+        pDeviceContext->CopyResource(pCopyRes.Get(), pSrcRes.Get());
+    }
+    else
+    {
+        pCopyRes = pSrcRes;
+    }
+
+    D3D11_MAPPED_SUBRESOURCE mapped_data = { 0 };
+    HRESULT hr = pDeviceContext->Map(pCopyRes.Get(), D3D11CalcSubresource(mip_level, array_index, m_desc.num_mips), D3D11_MAP_READ, 0, &mapped_data);
+    if (FAILED(hr))
+        return ERR_INVALID_ARG;
+
+    Box<uint32_t> copyBox(0, 0, 0, m_desc.width, m_desc.height, m_desc.depth);
+    if (box)
+        copyBox = *box;
+    if (!bitmap_data->Expand(copyBox.width, copyBox.height, m_desc.format, copyBox.depth))
         return ERR_NO_MEM;
 
-    uint8_t* dst = bitmap_data->Data();
-    uint8_t* src = (uint8_t*)mapped_data.pData + copyRegion.top * mapped_data.RowPitch + copyRegion.left * Formatutil::NumComponentBytes(m_desc.format);
-    for (int i = 0; i < copyHeight; i++)
+    for (uint32_t j = 0; j < copyBox.depth; j++)
     {
-        memcpy_s(dst, copyWidth * Formatutil::NumComponentBytes(m_desc.format), src, copyWidth * Formatutil::NumComponentBytes(m_desc.format));
-        dst += bitmap_data->RowPitch();
-        src += mapped_data.RowPitch;
+        uint8_t* dst = bitmap_data->Data() + bitmap_data->SlicePitch() * j;
+        uint8_t* src = (uint8_t*)mapped_data.pData + copyBox.y * mapped_data.RowPitch + copyBox.x * Formatutil::NumComponentBytes(m_desc.format) + mapped_data.DepthPitch * (j+copyBox.z);
+        for (int i = 0; i < copyBox.height; i++)
+        {
+            memcpy_s(dst, copyBox.width * Formatutil::NumComponentBytes(m_desc.format), src, copyBox.width * Formatutil::NumComponentBytes(m_desc.format));
+            dst += bitmap_data->RowPitch();
+            src += mapped_data.RowPitch;
+        }
     }
-    pDeviceContext->Unmap(m_pTexture.Get(), D3D11CalcSubresource(mip_level, array_index, m_desc.num_mips));
+    pDeviceContext->Unmap(pCopyRes.Get(), 0);
     return S_Success;
 }
 void D3D11Texture3D::FillTexture3DDesc(D3D11_TEXTURE3D_DESC& desc)
@@ -934,6 +971,10 @@ void D3D11Texture3D::FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC&
     desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE3D;
     desc.Texture3D.MostDetailedMip = 0;
     desc.Texture3D.MipLevels = m_desc.num_mips;
+}
+void D3D11Texture3D::FillStageTexture3DDesc(D3D11_TEXTURE3D_DESC& desc)
+{
+
 }
 SEEK_NAMESPACE_END
 

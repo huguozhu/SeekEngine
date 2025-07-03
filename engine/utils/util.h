@@ -49,4 +49,8 @@ std::wstring utf8_to_wchar(const char* src);
     #define SEEK_EXPORT
 #endif
 
+void SeekUnreachableImp(std::string msg, std::string file, uint32_t line);
+
+#define SeekUnreachable(msg) seek_engine::SeekUnreachableImp(msg, __FILE__, __LINE__)
+
 SEEK_NAMESPACE_END

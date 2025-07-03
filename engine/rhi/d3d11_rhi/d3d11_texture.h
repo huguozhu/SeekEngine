@@ -4,6 +4,7 @@
 #include "rhi/base/rhi_texture.h"
 #include "rhi/d3d11_rhi/d3d11_predeclare.h"
 #include "utils/log.h"
+#include "utils/util.h"
 
 SEEK_NAMESPACE_BEGIN
 
@@ -19,19 +20,22 @@ public:
     virtual SResult Resolve() { return S_Success; }
     ID3D11Resource* GetD3DTexture() { return m_pTexture.Get(); }
     ID3D11Resource* GetD3DResolvedTexture() { return m_pResolvedTexture.Get(); }
+    DXGI_FORMAT GetD3DFormat() { return m_eDxgiFormat; }
 
     virtual ID3D11RenderTargetView*     GetD3DRenderTargetView();
     virtual ID3D11DepthStencilView*     GetD3DDepthStencilView();
     virtual ID3D11ShaderResourceView*   GetD3DShaderResourceView();
     virtual ID3D11UnorderedAccessView*  GetD3DUnorderedAccessView();
-
-    virtual void FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc) {}
-    virtual void FillDepthStencilViewDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc) {}
-    virtual void FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc) {}
-    virtual void FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc) {}
     virtual SResult GenerateMipMap() override;
 
-    DXGI_FORMAT GetD3DFormat() { return m_eDxgiFormat; }
+    virtual void FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc);
+    virtual void FillDepthStencilViewDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc);
+    virtual void FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc);
+    virtual void FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc);
+
+    virtual SResult CopySubResource2D(BitmapBufferPtr bitmap_data, uint32_t array_index = 0, uint32_t mip_level = 0, Rect<uint32_t>* rect = nullptr);
+    virtual SResult CopySubResource3D(BitmapBufferPtr bitmap_data, uint32_t array_index = 0, uint32_t mip_level = 0, Box<uint32_t>* box = nullptr);
+    virtual SResult CopySubResourceCube(BitmapBufferPtr bitmap_data, CubeFaceType face, uint32_t array_index = 0, uint32_t mip_level = 0, Rect<uint32_t>* rect = nullptr);
 
 protected:
     void FillD3DTextureFlags(D3D11_USAGE& usage, UINT& bind_flags, UINT& cpu_access_flags, UINT& misc_flags);
@@ -60,8 +64,9 @@ public:
 
     SResult Create  (std::span<BitmapBufferPtr> const& bitmap_datas) override;
     SResult Update  (std::span<BitmapBufferPtr> const& bitmap_datas) override;
-    SResult CopyBack(BitmapBufferPtr bitmap_data, Rect<uint32_t>* rect, CubeFaceType face = CubeFaceType::Num) override;
     SResult Resolve() override;
+    SResult CopySubResource2D(BitmapBufferPtr bitmap_data, uint32_t array_index = 0, uint32_t mip_level = 0, Rect<uint32_t>* rect = nullptr);
+
 
 protected:
     void FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc) override;
@@ -70,9 +75,9 @@ protected:
     void FillUnorderedAccessViewDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc) override;
 
 private:
-    void FillStageTextureDesc(D3D11_TEXTURE2D_DESC& desc);
+    void FillStageTexture2DDesc(D3D11_TEXTURE2D_DESC& desc);
 
-    D3D11_TEXTURE2D_DESC m_textureDesc = {};
+    D3D11_TEXTURE2D_DESC m_d3dTexture2DDesc = {};
 };
 using D3D11Texture2DPtr = std::shared_ptr<D3D11Texture2D>;
 
@@ -84,20 +89,21 @@ class D3D11TextureCube : public D3D11Texture
 public:
     D3D11TextureCube(Context* context, const RHITexture::Desc& tex_desc);
 
-    virtual ID3D11RenderTargetView* GetD3DRenderTargetView(CubeFaceType face, uint32_t lod = 0);
-    virtual ID3D11DepthStencilView* GetD3DDepthStencilView(CubeFaceType face);
+    ID3D11RenderTargetView* GetD3DRenderTargetView(CubeFaceType face, uint32_t lod = 0);
+    ID3D11DepthStencilView* GetD3DDepthStencilView(CubeFaceType face);
 
-    void FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, CubeFaceType face, uint32_t lod = 0);
+    SResult Create(std::span<BitmapBufferPtr> const& bitmap_datas);
+    SResult Update(std::span<BitmapBufferPtr> const& bitmap_datas) override { return S_Success; }
+    SResult CopySubResourceCube(BitmapBufferPtr bitmap_data, CubeFaceType face, uint32_t array_index = 0, uint32_t mip_level = 0, Rect<uint32_t>* rect = nullptr);
+
+
+private:
+    void FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, CubeFaceType face, uint32_t mip_level = 0);
     void FillDepthStencilViewDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, CubeFaceType face);
     void FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc) override;
 
-    SResult Create(std::span<BitmapBufferPtr> const& bitmap_datas) override { return S_Success; }
-    SResult Update(std::span<BitmapBufferPtr> const& bitmap_datas) override { return S_Success; }
-    SResult CopyBack(BitmapBufferPtr bitmap_data, Rect<uint32_t>* rect, CubeFaceType face = CubeFaceType::Num);
-    SResult CreateCube(std::vector<BitmapBufferPtr>* bitmap_datas);
-
 private:
-    virtual void FillTextureDesc(D3D11_TEXTURE2D_DESC& desc) override;
+    void FillTextureDesc(D3D11_TEXTURE2D_DESC& desc) override;
     std::map<uint32_t, std::vector<ID3D11RenderTargetViewPtr>> m_mCubeRTV;
     std::vector<ID3D11DepthStencilViewPtr>   m_vCubeDSV = { nullptr };
 
@@ -115,13 +121,15 @@ public:
 
     SResult Create(std::span<BitmapBufferPtr> const& bitmap_datas) override;
     SResult Update(std::span<BitmapBufferPtr> const& bitmap_datas) override { return S_Success; }
-    SResult CopyBackTexture3D(BitmapBufferPtr bitmap_data, uint32_t array_index, uint32_t mip_level);
+
+    SResult CopySubResource3D(BitmapBufferPtr bitmap_data, uint32_t array_index = 0, uint32_t mip_level = 0, Box<uint32_t>* box = nullptr);
 
 private:
-    virtual void FillTexture3DDesc(D3D11_TEXTURE3D_DESC& desc);
-    virtual void FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc) override;
-    virtual void FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc) override;
-
+    void FillTexture3DDesc(D3D11_TEXTURE3D_DESC& desc);
+    void FillRenderTargetViewDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc) override;
+    void FillShaderResourceViewDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc) override;
+    void FillStageTexture3DDesc(D3D11_TEXTURE3D_DESC& desc);
+    D3D11_TEXTURE3D_DESC m_d3dTexture3DDesc = {};
 };
 using D3D11Texture3DPtr = std::shared_ptr<D3D11Texture3D>;
 SEEK_NAMESPACE_END

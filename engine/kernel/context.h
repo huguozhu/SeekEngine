@@ -5,6 +5,7 @@
 #include "scene_manager/scene_manager.h"
 #include "rhi/base/viewport.h"
 #include "resource/resource_mgr.h"
+#include "utils/timer.h"
 
 
 SEEK_NAMESPACE_BEGIN

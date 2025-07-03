@@ -39,7 +39,7 @@ RHITexturePtr D3D11RHIContext::CreateTexture2D(const RHITexture::Desc& tex_desc,
     SResult ret = tex->Create(data);
     return SEEK_CHECKFAILED(ret) ? nullptr : tex;
 }
-RHITexturePtr D3D11RHIContext::CreateTexture2D(const RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas)
+RHITexturePtr D3D11RHIContext::CreateTexture2D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas)
 {
     if (tex_desc.type != TextureType::Tex2D || tex_desc.width < 0 || tex_desc.height < 0 || tex_desc.num_mips <= 0)
         return nullptr;
@@ -47,7 +47,7 @@ RHITexturePtr D3D11RHIContext::CreateTexture2D(const RHITexture::Desc& tex_desc,
     SResult ret = tex->Create(init_datas);
     return SEEK_CHECKFAILED(ret) ? nullptr : tex;
 }
-RHITexturePtr D3D11RHIContext::CreateTexture3D(const RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr> init_datas)
+RHITexturePtr D3D11RHIContext::CreateTexture3D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas)
 {
     if (tex_desc.type != TextureType::Tex3D || tex_desc.width < 0 || tex_desc.height < 0 || tex_desc.num_mips <= 0)
         return nullptr;
@@ -55,12 +55,12 @@ RHITexturePtr D3D11RHIContext::CreateTexture3D(const RHITexture::Desc& tex_desc,
     SResult ret = tex->Create(init_datas);
     return SEEK_CHECKFAILED(ret) ? nullptr : tex;
 }
-RHITexturePtr D3D11RHIContext::CreateTextureCube(const RHITexture::Desc& tex_desc, std::vector<BitmapBufferPtr>* init_data)
+RHITexturePtr D3D11RHIContext::CreateTextureCube(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_data)
 {
     if (tex_desc.type != TextureType::Cube || tex_desc.width < 0 || tex_desc.height < 0 || tex_desc.num_mips <= 0)
         return nullptr;
     D3D11TextureCubePtr tex = MakeSharedPtr<D3D11TextureCube>(m_pContext, tex_desc);
-    SResult ret = tex->CreateCube(init_data);
+    SResult ret = tex->Create(init_data);
     return SEEK_CHECKFAILED(ret) ? nullptr : tex;
 }
 

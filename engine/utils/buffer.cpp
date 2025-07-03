@@ -143,12 +143,12 @@ SEEKPicture Buffer::ToSEEKPicture(uint32_t _width, uint32_t _height, uint32_t _r
     return pic;
 }
 
-BitmapBuffer::BitmapBuffer(uint32_t width, uint32_t height, PixelFormat format, uint8_t* data, uint32_t rowpitch)
+BitmapBuffer::BitmapBuffer(uint32_t width, uint32_t height, PixelFormat format, uint8_t* data, uint32_t rowpitch, uint32_t depth)
 {
-    Create(width, height, format, data, rowpitch);
+    Create(width, height, format, data, rowpitch, depth);
 }
 
-void BitmapBuffer::Create(uint32_t width, uint32_t height, PixelFormat format, uint8_t* data, uint32_t rowpitch)
+void BitmapBuffer::Create(uint32_t width, uint32_t height, PixelFormat format, uint8_t* data, uint32_t rowpitch, uint32_t depth)
 {
     if (data)
     {
@@ -157,11 +157,14 @@ void BitmapBuffer::Create(uint32_t width, uint32_t height, PixelFormat format, u
             this->m_iRowPitch = rowpitch;
         else
             this->m_iRowPitch = width;
+        
         this->m_iWidth = width;
         this->m_iHeight = height;
+        this->m_iDepth = depth;
         this->m_eFormat = format;
         this->m_pData = data;
-        this->m_iBufSize = this->m_iSize = this->m_iRowPitch * this->m_iHeight;
+        this->m_iSlicePitch = this->m_iRowPitch * this->m_iHeight;
+        this->m_iBufSize = this->m_iSize = this->m_iSlicePitch * this->m_iDepth;
         this->m_bExternalMemory = true;
     }
     else
@@ -170,26 +173,28 @@ void BitmapBuffer::Create(uint32_t width, uint32_t height, PixelFormat format, u
     }
 }
 
-void BitmapBuffer::UpdateSize(uint32_t width, uint32_t height, PixelFormat format)
+void BitmapBuffer::UpdateSize(uint32_t width, uint32_t height, PixelFormat format, uint32_t depth)
 {
     this->m_iWidth = width;
     this->m_iHeight = height;
+    this->m_iDepth = depth;
     this->m_eFormat = format;
     // we want each row address is align to MEM_DEFAULT_ALIGN
     // TODO: NumComponentBytes is 2 or 4, no need to align width to MEM_DEFAULT_ALIGN
     this->m_iRowPitch = seek_alignup(width, MEM_DEFAULT_ALIGN) * Formatutil::NumComponentBytes(format);
-    this->m_iSize = this->m_iRowPitch * this->m_iHeight;
+    this->m_iSlicePitch = this->m_iRowPitch * this->m_iHeight;
+    this->m_iSize = this->m_iSlicePitch * this->m_iDepth;
 }
 
-bool BitmapBuffer::Alloc(uint32_t width, uint32_t height, PixelFormat format)
+bool BitmapBuffer::Alloc(uint32_t width, uint32_t height, PixelFormat format, uint32_t depth)
 {
-    UpdateSize(width, height, format);
+    UpdateSize(width, height, format, depth);
     return Buffer::Alloc(this->m_iSize);
 }
 
-bool BitmapBuffer::Expand(uint32_t width, uint32_t height, PixelFormat format)
+bool BitmapBuffer::Expand(uint32_t width, uint32_t height, PixelFormat format, uint32_t depth)
 {
-    UpdateSize(width, height, format);
+    UpdateSize(width, height, format, depth);
     return Buffer::Expand(this->m_iSize);
 }
 

@@ -3,6 +3,7 @@
 #include "kernel/kernel.h"
 #include "rhi/base/rhi_definition.h"
 #include "math/rect.h"
+#include "math/box.h"
 #include "utils/buffer.h"
 #include <span>
 
@@ -56,26 +57,16 @@ public:
 
     virtual SResult     Create(std::span<BitmapBufferPtr> const& bitmap_datas) = 0;
     virtual SResult     Update(std::span<BitmapBufferPtr> const& bitmap_datas) = 0;
-    virtual SResult     CopyBack(BitmapBufferPtr bitmap_data, Rect<uint32_t>* rect, CubeFaceType face = CubeFaceType::Num) { return S_Success; }
-    virtual SResult     CopyBackTexture3D(BitmapBufferPtr bitmap_data, uint32_t array_index, uint32_t mip_level) { return S_Success; }
     virtual SResult     GenerateMipMap() { return S_Success; }
 
-    SResult DumpToFile(std::string path, CubeFaceType face = CubeFaceType::Num)
-    {
-        BitmapBufferPtr bitmap_data = MakeSharedPtr<BitmapBuffer>();
-        Rect<uint32_t> rect;
-        rect.left = rect.top = 0;
-        rect.right = m_desc.width;
-        rect.bottom = m_desc.height;
-        SEEK_RETIF_FAIL(this->CopyBack(bitmap_data, &rect, face));
-        bitmap_data->DumpToFile(path);
-        return S_Success;
-    }
+    virtual SResult CopySubResource2D(BitmapBufferPtr bitmap_data, uint32_t array_index = 0, uint32_t mip_level = 0, Rect<uint32_t>* rect = nullptr) = 0;
+    virtual SResult CopySubResource3D(BitmapBufferPtr bitmap_data, uint32_t array_index = 0, uint32_t mip_level = 0, Box<uint32_t>* box = nullptr) = 0;
+    virtual SResult CopySubResourceCube(BitmapBufferPtr bitmap_data, CubeFaceType face, uint32_t array_index = 0, uint32_t mip_level = 0, Rect<uint32_t>* rect = nullptr) = 0;
 
-    SResult DumpToFile(std::string path, uint32_t array_index, uint32_t mip_level)
+    SResult DumpToFile(std::string path)
     {
         BitmapBufferPtr bitmap_data = MakeSharedPtr<BitmapBuffer>();
-        SEEK_RETIF_FAIL(this->CopyBackTexture3D(bitmap_data, array_index, mip_level));
+        SEEK_RETIF_FAIL(this->CopySubResource2D(bitmap_data));
         bitmap_data->DumpToFile(path);
         return S_Success;
     }
