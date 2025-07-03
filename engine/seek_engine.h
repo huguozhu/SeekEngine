@@ -16,6 +16,7 @@
 #include "components/watermark_component.h"
 
 // effect
+#include "effect/ibl.h"
 
 // importer
 #include "importer/loader.h"

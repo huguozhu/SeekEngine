@@ -1,9 +1,9 @@
 //STAGE:vs
 #include "shared/SkyBox.h"
 
-cbuffer GlobalParams
+cbuffer cb_SkyBoxParams
 {
-    SkyBoxGlobalParams global_params;
+    SkyBoxParams params;
 }
 
 void main(
@@ -13,6 +13,6 @@ void main(
 )
 {
 	float4 pos = float4(iPos, 1.0);
-	oTc = mul(pos, global_params.inv_mvp).xyz;
+	oTc = mul(pos, params.inv_mvp).xyz;
 	oPos = pos;
 }

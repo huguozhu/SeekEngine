@@ -49,13 +49,11 @@ EquirectangularToCubeMapPostProcess::EquirectangularToCubeMapPostProcess(Context
     {
         PostProcessPtr pp = MakeSharedPtr<PostProcess>(context, names[face], PostProcessRenderType::Render_Cube);
         pp->Init(tech_name, NULL_PREDEFINES);
-        //pp->SetParam("mvp", mvp[face].Transpose());
 		float4x4 m = mvp[face].Transpose();
 		m_pMVPCBuffer->Update(&m, sizeof(float4x4));
-		pp->SetParam("mvp", m_pMVPCBuffer);
+		pp->SetParam("cb_CubeVSParams", m_pMVPCBuffer);
         this->AddPostProcess(pp);
     }
-
 }
 
 void EquirectangularToCubeMapPostProcess::SetSrcTexture(RHITexturePtr const& tex_2d)
@@ -80,7 +78,6 @@ void EquirectangularToCubeMapPostProcess::SetDstTexture(RHITexturePtr const& tex
         fb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rv);
     }
 }
-
 
 /******************************************************************************
  * IrradianceConvolution
@@ -119,10 +116,9 @@ IrradianceConvolutionPostProcess::IrradianceConvolutionPostProcess(Context* cont
     {
         PostProcessPtr pp = MakeSharedPtr<PostProcess>(context, names[face], PostProcessRenderType::Render_Cube);
         pp->Init(tech_name, NULL_PREDEFINES);
-        //pp->SetParam("mvp", mvp[face].Transpose());
         float4x4 m = mvp[face].Transpose();
         m_pMVPCBuffer->Update(&m, sizeof(float4x4));
-        pp->SetParam("mvp", m_pMVPCBuffer);
+        pp->SetParam("cb_CubeVSParams", m_pMVPCBuffer);
 
         RHIRenderViewPtr rv = rc.CreateRenderTargetView(m_pIrradianceConvolutionTex, (CubeFaceType)face);
         pp->GetFrameBuffer()->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rv);
@@ -169,7 +165,7 @@ PrefilterEnvPostProcess::PrefilterEnvPostProcess(Context* context)
         pp->Init(tech_name, NULL_PREDEFINES);
         float4x4 m = mvp[face].Transpose();
         m_pMVPCBuffer->Update(&m, sizeof(float4x4));
-        pp->SetParam("mvp", m_pMVPCBuffer);
+        pp->SetParam("cb_CubeVSParams", m_pMVPCBuffer);
         this->AddPostProcess(pp);
     }
     for (uint32_t i = 0; i< MAX_MIP_LEVELS; i++)

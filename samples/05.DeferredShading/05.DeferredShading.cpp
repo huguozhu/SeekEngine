@@ -144,29 +144,6 @@ SResult DeferredShading::OnCreate()
     m_pSkyBoxEntity->AddSceneComponent(pSkybox);
     //m_pSkyBoxEntity->AddToTopScene();
 
-#if (0)
-    std::string equirectangular_file = FullPath("asset/textures/Hamarikyu_Bridge.jpg");
-    BitmapBufferPtr equirectangular_bitmap = ImageDecodeFromFile(equirectangular_file, ImageType::JPEG);
-    Texture::Desc equirectangular_desc;
-    equirectangular_desc.type = TextureType::Tex2D;
-    equirectangular_desc.width = equirectangular_bitmap->Width();
-    equirectangular_desc.height = equirectangular_bitmap->Height();
-    equirectangular_desc.depth = 1;
-    equirectangular_desc.num_mips = 1;
-    equirectangular_desc.num_samples = 1;
-    equirectangular_desc.format = equirectangular_bitmap->Format();
-    equirectangular_desc.flags = RESOURCE_FLAG_SRV;    
-    
-    TexturePtr tex_equirectangular = rc.CreateTexture2D(equirectangular_desc, equirectangular_bitmap);
-    TexturePtr tex_cube_env = this->ConvertEquirectangularToCubeMap(tex_equirectangular);
-    m_pSkyBoxEntity->SetSkyBoxTex(tex_cube_env);
-
-    TexturePtr tex_ir_conv = this->ConvertIrradianceConvolution(tex_cube_env);
-    m_pSkyBoxEntity->SetSkyBoxTex(tex_ir_conv);
-
-    this->TestSplitSumApproximation(tex_cube_env);
-
-#endif
 #endif
     return S_Success;
 }

@@ -1,14 +1,14 @@
 //STAGE:vs
 #include "Common.dsh"
 
-struct CubeMapGlobalParams
+struct CubeMapVSParams
 {
     float4x4 mvp;
 };
 
-cbuffer GlobalParams
+cbuffer cb_CubeVSParams
 {
-    CubeMapGlobalParams global_params;
+    CubeMapVSParams params;
 }
 
 void main(
@@ -18,5 +18,5 @@ void main(
 )
 {
 	oWorldPos = iPos;
-	oPos = mul(float4(iPos, 1.0), global_params.mvp);
+	oPos = mul(float4(iPos, 1.0), params.mvp);
 }

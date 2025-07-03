@@ -48,7 +48,7 @@ SResult SkyBoxComponent::OnRenderBegin(Technique* tech, RHIMeshPtr mesh)
     SceneManager& sm = m_pContext->SceneManagerInstance();
     Matrix4 inv_mvp = Matrix4::Identity();
     CameraComponent* cam = sm.GetActiveCamera();
-    SkyBoxGlobalParams global_params;
+    SkyBoxParams global_params;
     if (cam)
     {
         Matrix4 v = cam->GetViewMatrix();
@@ -63,10 +63,10 @@ SResult SkyBoxComponent::OnRenderBegin(Technique* tech, RHIMeshPtr mesh)
 
     if (!m_GlobalParamsCBuffer)
     {
-        m_GlobalParamsCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(sizeof(SkyBoxGlobalParams), RESOURCE_FLAG_CPU_WRITE);
+        m_GlobalParamsCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(sizeof(SkyBoxParams), RESOURCE_FLAG_CPU_WRITE);
     }
     m_GlobalParamsCBuffer->Update(&global_params, sizeof(global_params));
-    tech->SetParam("GlobalParams", m_GlobalParamsCBuffer);
+    tech->SetParam("cb_SkyBoxParams", m_GlobalParamsCBuffer);
     tech->SetParam("skybox_tex", m_pTexSkyBox);
 
     return S_Success;

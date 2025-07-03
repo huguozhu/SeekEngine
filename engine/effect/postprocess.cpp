@@ -45,7 +45,6 @@ SResult PostProcess::Init(const std::string& tech_name, const std::vector<Effect
         RHIContext& rc = m_pContext->RHIContextInstance();
         m_pFrameBuffer = rc.CreateRHIFrameBuffer();
         
-        // TODO: don't hardcode
         m_pFrameBuffer->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, { RHIFrameBuffer::LoadAction::DontCare });
         m_pFrameBuffer->SetColorStoreOption(RHIFrameBuffer::Attachment::Color0, { RHIFrameBuffer::StoreAction::Store });
         

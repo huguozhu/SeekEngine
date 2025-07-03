@@ -1,6 +1,6 @@
 #pragma once
 
-struct SkyBoxGlobalParams
+struct SkyBoxParams
 {
 	float4x4 inv_mvp;
 };
