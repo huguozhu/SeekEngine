@@ -4,8 +4,6 @@
 
 #define SEEK_MACRO_FILE_UID 46     // this code is auto generated, don't touch it!!!
 
-#define DEFAULT_RENDER_WIDTH  1280
-#define DEFAULT_RENDER_HEIGHT 720
 void Particles::CreateWaterMarkEntity()
 {
     m_pWaterMarkEntity = MakeSharedPtr<Entity>(m_pContext.get(), "WaterMarkEntity");
@@ -241,9 +239,14 @@ void Particles::CreateParticleEntities()
 }
 SResult Particles::OnCreate()
 {
+    RHIContext& rc = m_pContext->RHIContextInstance();
+    Viewport const& vp = rc.GetScreenRHIFrameBuffer()->GetViewport();
+    float w = vp.width;
+    float h = vp.height;
+
     m_pCameraEntity = MakeSharedPtr<Entity>(m_pContext.get(), "CameraEntity");
     CameraComponentPtr pCam = MakeSharedPtr<CameraComponent>(m_pContext.get());
-    pCam->ProjPerspectiveParams(Math::PI / 4, DEFAULT_RENDER_WIDTH * 1.0f / DEFAULT_RENDER_HEIGHT, 0.1f, 1000.0f);
+    pCam->ProjPerspectiveParams(Math::PI / 4, w / h, 0.1f, 1000.0f);
     pCam->SetLookAt(float3(0, 0, -5), float3(0, 0, 0), float3(0, 1, 0));
     m_pCameraEntity->AddSceneComponent(pCam);
     m_pCameraEntity->AddToTopScene();

@@ -1,32 +1,23 @@
-#include <cmath>
-#include <float.h>
-#include <stdlib.h>
+
 #include "04.Lighting.h" 
 
 #define SEEK_MACRO_FILE_UID 91     // this code is auto generated, don't touch it!!!
 
 
-#define DEFAULT_RENDER_WIDTH  1280
-#define DEFAULT_RENDER_HEIGHT 720
-
-
 SResult Lighting::OnCreate()
 {
     RHIContext& rc = m_pContext->RHIContextInstance();
+    Viewport const& vp = rc.GetScreenRHIFrameBuffer()->GetViewport();
+    float w = vp.width;
+    float h = vp.height;
 
-    float3 cam_pos = float3(0, 4, -4);
-    int width = DEFAULT_RENDER_WIDTH;
-    int height = DEFAULT_RENDER_HEIGHT;
-    float3 cam_look_at = float3(0, 0, 0);
-    float3 cam_up_vec = float3(0, 1, 0);
-    float fov = 45.0 * Math::DEG2RAD;
-    float aspect = (float)width / (float)height;
     m_pCameraEntity = MakeSharedPtr<Entity>(m_pContext.get());
     CameraComponentPtr pCam = MakeSharedPtr<CameraComponent>(m_pContext.get());
-    pCam->ProjPerspectiveParams(fov, aspect, 0.1f, 200.0f);
-    pCam->SetLookAt(cam_pos, cam_look_at, cam_up_vec);
+    pCam->ProjPerspectiveParams(60 * Math::DEG2RAD, w/h, 0.1f, 200.0f);
+    pCam->SetLookAt(float3(0, 4, -4), float3(0, 0, 0), float3(0, 1, 0));
     m_pCameraEntity->AddSceneComponent(pCam);
     m_pCameraEntity->AddToTopScene();
+    m_CameraController.SetCamera(pCam.get());
 
     // Step3: add Light Entity
     // NOTE: if the lighting result is wrong, check if hdr is enabled(now, it's disabled for phong)
@@ -157,7 +148,7 @@ SResult Lighting::OnCreate()
 #if (0)
     std::string equirectangular_file = FullPath("asset/textures/Hamarikyu_Bridge.jpg");
     BitmapBufferPtr equirectangular_bitmap = ImageDecodeFromFile(equirectangular_file, ImageType::JPEG);
-    Texture::Desc equirectangular_desc;
+    RHITexture::Desc equirectangular_desc;
     equirectangular_desc.type = TextureType::Tex2D;
     equirectangular_desc.width = equirectangular_bitmap->Width();
     equirectangular_desc.height = equirectangular_bitmap->Height();
@@ -165,16 +156,16 @@ SResult Lighting::OnCreate()
     equirectangular_desc.num_mips = 1;
     equirectangular_desc.num_samples = 1;
     equirectangular_desc.format = equirectangular_bitmap->Format();
-    equirectangular_desc.flags = RESOURCE_FLAG_SRV;    
+    equirectangular_desc.flags = RESOURCE_FLAG_GPU_READ;    
     
-    TexturePtr tex_equirectangular = rc.CreateTexture2D(equirectangular_desc, equirectangular_bitmap);
-    TexturePtr tex_cube_env = this->ConvertEquirectangularToCubeMap(tex_equirectangular);
-    m_pSkyBoxEntity->SetSkyBoxTex(tex_cube_env);
+    RHITexturePtr tex_equirectangular = rc.CreateTexture2D(equirectangular_desc, equirectangular_bitmap);
+    RHITexturePtr tex_cube_env = this->CreateCubeFromEquirectangular(tex_equirectangular);
+    pSkybox->SetSkyBoxTex(tex_cube_env);
 
-    TexturePtr tex_ir_conv = this->ConvertIrradianceConvolution(tex_cube_env);
-    m_pSkyBoxEntity->SetSkyBoxTex(tex_ir_conv);
+    RHITexturePtr tex_ir_conv = this->ConvertIrradianceConvolution(tex_cube_env);
+    //pSkybox->SetSkyBoxTex(tex_ir_conv);
 
-    this->TestSplitSumApproximation(tex_cube_env);
+    //this->TestSplitSumApproximation(tex_cube_env);
 
 #endif
 
@@ -183,7 +174,14 @@ SResult Lighting::OnCreate()
 
 SResult Lighting::OnUpdate()
 {
-    return m_pContext->Update();
+    m_CameraController.Update(m_pContext->GetDeltaTime());
+    SEEK_RETIF_FAIL(m_pContext->Tick());
+    SEEK_RETIF_FAIL(m_pContext->BeginRender());
+    SEEK_RETIF_FAIL(m_pContext->RenderFrame());
+    IMGUI_Begin();
+    IMGUI_Rendering();
+    SEEK_RETIF_FAIL(m_pContext->EndRender());
+    return S_Success;
 }
 SResult Lighting::InitContext(void* device, void* native_wnd)
 {
@@ -199,6 +197,41 @@ SResult Lighting::InitContext(void* device, void* native_wnd)
 
     return S_Success;
 }
+RHITexturePtr Lighting::CreateCubeFromEquirectangular(RHITexturePtr tex_equirectangular)
+{
+    RHIContext& rc = m_pContext->RHIContextInstance();
+    RHITexture::Desc cube_desc = { TextureType::Cube, 512, 512, 1, 1, 1, 1, PixelFormat::R8G8B8A8_UNORM,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE };
+    RHITexturePtr tex_cube = rc.CreateTextureCube(cube_desc);
+
+    EquirectangularToCubeMapPostProcessPtr equirectangular_2_cubemap_pp = MakeSharedPtr<EquirectangularToCubeMapPostProcess>(m_pContext.get());
+    equirectangular_2_cubemap_pp->SetSrcTexture(tex_equirectangular);
+    equirectangular_2_cubemap_pp->SetDstTexture(tex_cube);
+    equirectangular_2_cubemap_pp->Run();
+
+    return tex_cube;
+}
+RHITexturePtr Lighting::ConvertIrradianceConvolution(RHITexturePtr tex_cube_env)
+{
+    IrradianceConvolutionPostProcessPtr ir_convolution_pp = MakeSharedPtr<IrradianceConvolutionPostProcess>(m_pContext.get());
+    ir_convolution_pp->SetSrcTexture(tex_cube_env);
+    ir_convolution_pp->Run();
+
+    return ir_convolution_pp->GetIrradianceConvolutionTex();
+}
+void Lighting::TestSplitSumApproximation(RHITexturePtr tex_cube_env)
+{
+    RHIContext& rc = m_pContext->RHIContextInstance();
+
+    SplitSumApproximationPostProcessPtr ssa_pp = MakeSharedPtr<SplitSumApproximationPostProcess>(m_pContext.get());
+    ssa_pp->SetSrcEnvTex(tex_cube_env);
+    SResult res = ssa_pp->Run();
+    res = res;
+
+    RHITexturePtr tex_prefilter = ssa_pp->GetPreFilterTexture();
+    ((SkyBoxComponent*)m_pSkyBoxEntity->GetComponent(ComponentType::SkyBox))->SetSkyBoxTex(tex_prefilter);
+}
+
 int main()
 {
     Lighting theApp;

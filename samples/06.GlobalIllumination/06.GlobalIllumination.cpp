@@ -1,13 +1,7 @@
-#include <cmath>
-#include <float.h>
-#include <stdlib.h>
+
 #include "06.GlobalIllumination.h" 
 
 #define SEEK_MACRO_FILE_UID 91     // this code is auto generated, don't touch it!!!
-
-
-#define DEFAULT_RENDER_WIDTH  1280
-#define DEFAULT_RENDER_HEIGHT 720
 
 struct MeshInfo
 {
