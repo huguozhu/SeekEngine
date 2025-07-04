@@ -54,7 +54,7 @@ void FirstPersonCameraController::Update(float delta_time)
             m_fMoveVelocity = 0.0f;
         }
     }    
-    m_pCamera->WorldTranslate(Math::Normalize(m_MoveDir) * m_fMoveVelocity * delta_time);
+    m_pCamera->LocalTranslate(Math::Normalize(m_MoveDir) * m_fMoveVelocity * delta_time);
 }
 
 SEEK_NAMESPACE_END
