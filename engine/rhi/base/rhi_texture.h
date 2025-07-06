@@ -37,7 +37,7 @@ public:
         uint32_t width = 0;
         uint32_t height = 0;
         uint32_t depth = 1;
-        uint32_t num_mips = 1;          // if =0 --> create max mipmap auto
+        uint32_t num_mips = 1;          // if = 0 --> create max mipmap auto
         uint32_t num_samples = 1;
         uint32_t num_array = 1;
         PixelFormat format = PixelFormat::Unknown;
@@ -59,9 +59,9 @@ public:
     virtual SResult     Update(std::span<BitmapBufferPtr> const& bitmap_datas) = 0;
     virtual SResult     GenerateMipMap() { return S_Success; }
 
-    virtual SResult CopySubResource2D(BitmapBufferPtr bitmap_data, uint32_t array_index = 0, uint32_t mip_level = 0, Rect<uint32_t>* rect = nullptr) = 0;
-    virtual SResult CopySubResource3D(BitmapBufferPtr bitmap_data, uint32_t array_index = 0, uint32_t mip_level = 0, Box<uint32_t>* box = nullptr) = 0;
-    virtual SResult CopySubResourceCube(BitmapBufferPtr bitmap_data, CubeFaceType face, uint32_t array_index = 0, uint32_t mip_level = 0, Rect<uint32_t>* rect = nullptr) = 0;
+    virtual SResult DumpSubResource2D(BitmapBufferPtr bitmap_data, uint32_t array_index = 0, uint32_t mip_level = 0, Rect<uint32_t>* rect = nullptr) = 0;
+    virtual SResult DumpSubResource3D(BitmapBufferPtr bitmap_data, uint32_t array_index = 0, uint32_t mip_level = 0, Box<uint32_t>* box = nullptr) = 0;
+    virtual SResult DumpSubResourceCube(BitmapBufferPtr bitmap_data, CubeFaceType face, uint32_t array_index = 0, uint32_t mip_level = 0, Rect<uint32_t>* rect = nullptr) = 0;
 
     SResult DumpToFile(std::string path, CubeFaceType face = CubeFaceType::Num)
     {
@@ -70,17 +70,17 @@ public:
         {
         case TextureType::Tex2D:
         {
-            SEEK_RETIF_FAIL(this->CopySubResource2D(bitmap_data));
+            SEEK_RETIF_FAIL(this->DumpSubResource2D(bitmap_data));
             break;
         }
         case TextureType::Tex3D:
         {
-            SEEK_RETIF_FAIL(this->CopySubResource3D(bitmap_data));
+            SEEK_RETIF_FAIL(this->DumpSubResource3D(bitmap_data));
             break;
         }
         case TextureType::Cube:
         {
-            SEEK_RETIF_FAIL(this->CopySubResourceCube(bitmap_data, face));
+            SEEK_RETIF_FAIL(this->DumpSubResourceCube(bitmap_data, face));
             break;
         }
         }

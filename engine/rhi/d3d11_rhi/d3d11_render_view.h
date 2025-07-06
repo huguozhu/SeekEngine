@@ -13,8 +13,8 @@ SEEK_NAMESPACE_BEGIN
 class D3D11RenderTargetView : public RHIRenderView
 {
 public:
-    D3D11RenderTargetView(Context* context, RHITexturePtr const& tex, uint32_t lod = 0);
-    virtual ~D3D11RenderTargetView() override;
+    D3D11RenderTargetView(Context* context, RHITexturePtr const& tex, uint32_t mip_level = 0);
+    virtual ~D3D11RenderTargetView();
 
     void OnAttached(RHIFrameBuffer& fb, RHIFrameBuffer::Attachment attach);
     void OnDetached(RHIFrameBuffer& fb, RHIFrameBuffer::Attachment attach);
@@ -34,7 +34,7 @@ protected:
 class D3D11CubeFaceRenderTargetView : public D3D11RenderTargetView
 {
 public:
-    D3D11CubeFaceRenderTargetView(Context* context, RHITexturePtr const& tex, CubeFaceType face, uint32_t lod = 0);
+    D3D11CubeFaceRenderTargetView(Context* context, RHITexturePtr const& tex, CubeFaceType face, uint32_t mip_level = 0);
 };
 
 /******************************************************************************
@@ -44,7 +44,7 @@ class D3D11DepthStencilView : public RHIRenderView
 {
 public:
     D3D11DepthStencilView(Context* context, RHITexturePtr const& tex);
-    virtual ~D3D11DepthStencilView() override;
+    virtual ~D3D11DepthStencilView();
 
     void OnAttached(RHIFrameBuffer& fb);
     void OnDetached(RHIFrameBuffer& fb);

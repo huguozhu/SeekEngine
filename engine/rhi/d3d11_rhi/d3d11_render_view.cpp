@@ -12,8 +12,8 @@ SEEK_NAMESPACE_BEGIN
 /******************************************************************************
 * D3D11RenderTarget
 *******************************************************************************/
-D3D11RenderTargetView::D3D11RenderTargetView(Context* context, RHITexturePtr const& tex, uint32_t lod)
-    : RHIRenderView(context, tex, lod), m_pD3dRenderTargetView(nullptr)
+D3D11RenderTargetView::D3D11RenderTargetView(Context* context, RHITexturePtr const& tex, uint32_t mip_level)
+    : RHIRenderView(context, tex, mip_level), m_pD3dRenderTargetView(nullptr)
 {
     if (tex->Type() != TextureType::Cube)
     {
@@ -47,14 +47,14 @@ void D3D11RenderTargetView::ClearColor(float4 const& color)
 /******************************************************************************
  * D3D11RenderTarget
  ******************************************************************************/
-D3D11CubeFaceRenderTargetView::D3D11CubeFaceRenderTargetView(Context* context, RHITexturePtr const& tex, CubeFaceType face, uint32_t lod)
-    :D3D11RenderTargetView(context, tex, lod)
+D3D11CubeFaceRenderTargetView::D3D11CubeFaceRenderTargetView(Context* context, RHITexturePtr const& tex, CubeFaceType face, uint32_t mip_level)
+    :D3D11RenderTargetView(context, tex, mip_level)
 {
     if (tex->Type() != TextureType::Cube)
         return;
     m_eCubeType = face;
     D3D11TextureCube& d3d_tex = static_cast<D3D11TextureCube&>(*tex);
-    m_pD3dRenderTargetView = d3d_tex.GetD3DRtv(face, lod);
+    m_pD3dRenderTargetView = d3d_tex.GetD3DRtv(face, mip_level);
 }
 
 /******************************************************************************
