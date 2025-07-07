@@ -8,30 +8,6 @@
 SEEK_NAMESPACE_BEGIN
 
 /******************************************************************************
-* Render Target
-*******************************************************************************/
-class D3D11RenderTargetView : public RHIRenderView
-{
-public:
-    D3D11RenderTargetView(Context* context, RHITexturePtr const& tex, uint32_t mip_level = 0);
-    virtual ~D3D11RenderTargetView();
-
-    void OnAttached(RHIFrameBuffer& fb, RHIFrameBuffer::Attachment attach);
-    void OnDetached(RHIFrameBuffer& fb, RHIFrameBuffer::Attachment attach);
-    void ClearColor(float4 const& color);
-
-    ID3D11RenderTargetView* GetD3DRtv() { return m_pD3dRenderTargetView.Get(); }
-
-protected:
-    ID3D11RenderTargetViewPtr m_pD3dRenderTargetView = nullptr;
-};
-class D3D11CubeFaceRenderTargetView : public D3D11RenderTargetView
-{
-public:
-    D3D11CubeFaceRenderTargetView(Context* context, RHITexturePtr const& tex, CubeFaceType face, uint32_t mip_level = 0);
-};
-
-/******************************************************************************
 * D3D11 Rtv
 *******************************************************************************/
 class D3D11Rtv : public RHIRenderTargetView

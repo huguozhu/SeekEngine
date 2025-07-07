@@ -9,7 +9,7 @@ class D3D11RHIFrameBuffer : public RHIFrameBuffer
 {
 public:
     D3D11RHIFrameBuffer(Context* context);
-    virtual ~D3D11RHIFrameBuffer() override;
+    virtual ~D3D11RHIFrameBuffer();
 
     SResult OnBind() override;
     SResult OnUnbind() override;

@@ -117,10 +117,10 @@ SResult PostProcess::SetOutput(uint32_t index, RHITexturePtr const& tex, CubeFac
         {
             if ((uint8_t)type >= (uint8_t)CubeFaceType::Num)
                 return ERR_INVALID_ARG;
-			m_pFrameBuffer->AttachTargetView((RHIFrameBuffer::Attachment)(RHIFrameBuffer::Color0 + index), rc.CreateRenderTargetView(tex, type));
+			m_pFrameBuffer->AttachTargetView((RHIFrameBuffer::Attachment)(RHIFrameBuffer::Color0 + index), rc.Create2DRtv(tex, 0, type, 0));
         }
         else
-            m_pFrameBuffer->AttachTargetView((RHIFrameBuffer::Attachment)(RHIFrameBuffer::Color0 + index), rc.CreateRenderTargetView(tex));
+            m_pFrameBuffer->AttachTargetView((RHIFrameBuffer::Attachment)(RHIFrameBuffer::Color0 + index), rc.Create2DRtv(tex));
 
         if (0 == index)
             m_pFrameBuffer->SetViewport({ 0, 0, tex->Width(), tex->Height() });
@@ -128,7 +128,7 @@ SResult PostProcess::SetOutput(uint32_t index, RHITexturePtr const& tex, CubeFac
     return S_Success;
 }
 
-SResult PostProcess::SetOutput(uint32_t index, RHIRenderViewPtr const& target)
+SResult PostProcess::SetOutput(uint32_t index, RHIRenderTargetViewPtr const& target)
 {
     if (!m_bInitSucceed)
         return ERR_INVALID_INIT;

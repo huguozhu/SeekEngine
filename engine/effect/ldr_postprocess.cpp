@@ -74,7 +74,7 @@ SResult LDRPostProcess::SetOutput(uint32_t index, RHITexturePtr const& tex, Cube
         return m_pFxaaPostProcess->SetOutput(index, tex, type);
     return S_Success;
 }
-SResult LDRPostProcess::SetOutput(uint32_t index, RHIRenderViewPtr const& target)
+SResult LDRPostProcess::SetOutput(uint32_t index, RHIRenderTargetViewPtr const& target)
 {
     AntiAliasingMode aa_mode = m_pContext->GetAntiAliasingMode();
     if (aa_mode == AntiAliasingMode::None)

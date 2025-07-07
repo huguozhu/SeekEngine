@@ -12,7 +12,7 @@ Viewport const & RHIFrameBuffer::GetViewport()
     return m_stViewport;
 }
 
-void RHIFrameBuffer::AttachTargetView(Attachment att, RHIRenderViewPtr const& view)
+void RHIFrameBuffer::AttachTargetView(Attachment att, RHIRenderTargetViewPtr const& view)
 {
     uint8_t index = to_underlying(att);
     if (index >= MAX_COLOR_ATTACHMENTS)
@@ -67,7 +67,7 @@ void RHIFrameBuffer::DetachAllTargetView()
     }
     this->SetViewport({ 0, 0, 0, 0 });
 }
-RHIRenderViewPtr RHIFrameBuffer::GetRenderTarget(Attachment att) const
+RHIRenderTargetViewPtr RHIFrameBuffer::GetRenderTarget(Attachment att) const
 {
     uint32_t color_index = att - Attachment::Color0;
     if (color_index < m_vRenderTargets.size())

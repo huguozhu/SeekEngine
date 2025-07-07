@@ -9,50 +9,6 @@
 #define SEEK_MACRO_FILE_UID 4     // this code is auto generated, don't touch it!!!
 
 SEEK_NAMESPACE_BEGIN
-/******************************************************************************
-* D3D11RenderTarget
-*******************************************************************************/
-D3D11RenderTargetView::D3D11RenderTargetView(Context* context, RHITexturePtr const& tex, uint32_t mip_level)
-    : RHIRenderView(context, tex, mip_level), m_pD3dRenderTargetView(nullptr)
-{
-    if (tex->Type() != TextureType::Cube)
-    {
-        D3D11Texture& d3d_tex = static_cast<D3D11Texture&>(*tex);
-        m_pD3dRenderTargetView = d3d_tex.GetD3DRtv();
-    }
-}
-D3D11RenderTargetView::~D3D11RenderTargetView()
-{
-    m_pD3dRenderTargetView.Reset();
-}
-void D3D11RenderTargetView::OnAttached(RHIFrameBuffer& fb, RHIFrameBuffer::Attachment attach)
-{
-    // empty
-}
-void D3D11RenderTargetView::OnDetached(RHIFrameBuffer& fb, RHIFrameBuffer::Attachment attach)
-{
-    // empty
-}
-void D3D11RenderTargetView::ClearColor(float4 const& color)
-{
-    if (m_pD3dRenderTargetView)
-    {
-        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
-        rc.GetD3D11DeviceContext()->ClearRenderTargetView(m_pD3dRenderTargetView.Get(), &color[0]);
-    }
-    else
-        LOG_ERROR("render target view is null");
-}
-D3D11CubeFaceRenderTargetView::D3D11CubeFaceRenderTargetView(Context* context, RHITexturePtr const& tex, CubeFaceType face, uint32_t mip_level)
-    :D3D11RenderTargetView(context, tex, mip_level)
-{
-    if (tex->Type() != TextureType::Cube)
-        return;
-    m_eCubeType = face;
-    D3D11TextureCube& d3d_tex = static_cast<D3D11TextureCube&>(*tex);
-    m_pD3dRenderTargetView = d3d_tex.GetD3DRtv(face, mip_level);
-}
-
 
 /******************************************************************************
 * D3D11 Rtv

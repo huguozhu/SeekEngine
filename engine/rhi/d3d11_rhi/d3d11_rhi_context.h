@@ -71,8 +71,9 @@ public:
     RHIRenderStatePtr   CreateRenderState(RenderStateDesc const& desc) override;
     RHISamplerPtr       CreateSampler(SamplerDesc const& desc) override;
 
-    RHIRenderViewPtr    CreateRenderTargetView(RHITexturePtr const& tex, uint32_t lod = 0) override;
-    RHIRenderViewPtr    CreateRenderTargetView(RHITexturePtr const& tex, CubeFaceType face, uint32_t lod = 0) override;
+    RHIRenderTargetViewPtr Create2DRtv(RHITexturePtr const& texture, int first_array_index = 0, int array_size = 1, int mip_level = 0) override;
+    RHIRenderTargetViewPtr Create2DRtv(RHITexturePtr const& tex_cube, int array_index, CubeFaceType face, uint32_t mip_level) override;
+
     RHIRenderViewPtr    CreateDepthStencilView(RHITexturePtr const& tex) override;
     RHIRenderViewPtr    CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face) override;
 

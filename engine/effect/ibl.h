@@ -53,7 +53,7 @@ public:
 
     static const uint32_t MAX_MIP_LEVELS = 5;
 private:
-    RHIRenderViewPtr m_vRenderViews[(uint32_t)CubeFaceType::Num][MAX_MIP_LEVELS] = { nullptr };
+    RHIRenderTargetViewPtr m_vRenderViews[(uint32_t)CubeFaceType::Num][MAX_MIP_LEVELS] = { nullptr };
     RHIRenderBufferPtr  m_pMVPCBuffer = nullptr;
     RHIRenderBufferPtr  m_pRoughnessCBuffer[MAX_MIP_LEVELS] = { nullptr };
 };

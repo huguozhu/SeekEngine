@@ -31,7 +31,7 @@ public:
     virtual SResult     RunComputePipeline();
     
     virtual SResult     SetOutput(uint32_t index, RHITexturePtr const& tex, CubeFaceType type = CubeFaceType::Positive_X);
-    virtual SResult     SetOutput(uint32_t index, RHIRenderViewPtr const& target);
+    virtual SResult     SetOutput(uint32_t index, RHIRenderTargetViewPtr const& target);
 
     template <typename T>
     void SetParam(const std::string& name, const T& val)

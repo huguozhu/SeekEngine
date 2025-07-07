@@ -95,7 +95,7 @@ SResult D3D11Window::Create(D3DAdapter* adapter, std::string const& name, void* 
         }
 
         RHITexturePtr pBackBufferTex = d3d11_rc.CreateTexture2D(back_buffer);
-        RHIRenderViewPtr drv = d3d11_rc.CreateRenderTargetView(pBackBufferTex);
+        RHIRenderTargetViewPtr drv = d3d11_rc.Create2DRtv(pBackBufferTex);
         this->AttachTargetView(Attachment::Color0, drv);
 
         RHITexture::Desc tex_desc;

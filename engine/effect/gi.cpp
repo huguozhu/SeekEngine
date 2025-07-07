@@ -47,7 +47,7 @@ SResult GlobalIllumination::Init()
     m_pIndirectIlluminationTex = rc.CreateTexture2D(desc);
 
     m_pIndirectIlluminationFb = rc.CreateRHIFrameBuffer();
-    m_pIndirectIlluminationFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pIndirectIlluminationTex));
+    m_pIndirectIlluminationFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.Create2DRtv(m_pIndirectIlluminationTex));
     return S_Success;
 }
 /******************************************************************************
@@ -84,9 +84,9 @@ SResult RSM::InitGenRsm()
     m_pRsmDepthTex = rc.CreateTexture2D(desc);
 
     m_pGenRsmFb = rc.CreateRHIFrameBuffer();
-    m_pGenRsmFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pRsmTexs[0]));
-    m_pGenRsmFb->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.CreateRenderTargetView(m_pRsmTexs[1]));
-    m_pGenRsmFb->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.CreateRenderTargetView(m_pRsmTexs[2]));
+    m_pGenRsmFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.Create2DRtv(m_pRsmTexs[0]));
+    m_pGenRsmFb->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.Create2DRtv(m_pRsmTexs[1]));
+    m_pGenRsmFb->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.Create2DRtv(m_pRsmTexs[2]));
     m_pGenRsmFb->AttachDepthStencilView(rc.CreateDepthStencilView(m_pRsmDepthTex));
 
     return S_Success;
@@ -279,9 +279,9 @@ SResult LPV::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     m_pTexBlueSh = rc.CreateTexture3D(desc);
 
     m_pFbInject = rc.CreateRHIFrameBuffer();
-    m_pFbInject->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pTexRedSh));
-    m_pFbInject->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.CreateRenderTargetView(m_pTexGreenSh));
-    m_pFbInject->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.CreateRenderTargetView(m_pTexBlueSh));
+    m_pFbInject->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.Create2DRtv(m_pTexRedSh));
+    m_pFbInject->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.Create2DRtv(m_pTexGreenSh));
+    m_pFbInject->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.Create2DRtv(m_pTexBlueSh));
     m_pFbInject->SetViewport({ 0, 0, LPV_SIZE, LPV_SIZE });
 
     // RenderState
@@ -319,12 +319,12 @@ SResult LPV::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     m_pTexAccuBlueSh = rc.CreateTexture3D(desc);
 
     m_pFbPropagation_Bak = rc.CreateRHIFrameBuffer();
-    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pTexRedSh_Bak));
-    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.CreateRenderTargetView(m_pTexGreenSh_Bak));
-    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.CreateRenderTargetView(m_pTexBlueSh_Bak));
-    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color3, rc.CreateRenderTargetView(m_pTexAccuRedSh));
-    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color4, rc.CreateRenderTargetView(m_pTexAccuGreenSh));
-    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color5, rc.CreateRenderTargetView(m_pTexAccuBlueSh));
+    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.Create2DRtv(m_pTexRedSh_Bak));
+    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.Create2DRtv(m_pTexGreenSh_Bak));
+    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.Create2DRtv(m_pTexBlueSh_Bak));
+    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color3, rc.Create2DRtv(m_pTexAccuRedSh));
+    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color4, rc.Create2DRtv(m_pTexAccuGreenSh));
+    m_pFbPropagation_Bak->AttachTargetView(RHIFrameBuffer::Attachment::Color5, rc.Create2DRtv(m_pTexAccuBlueSh));
     m_pFbPropagation_Bak->SetViewport({ 0, 0, LPV_SIZE, LPV_SIZE });
     effect.LoadTechnique(TechName_LPVPropagation_Bak, &m_PropagationRsDesc, "LPVPropagationVS", "LPVPropagationPS", nullptr);
     Technique* pPropagationTech_Bak = effect.GetTechnique(TechName_LPVPropagation_Bak);
@@ -340,12 +340,12 @@ SResult LPV::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
 
     // for Propagation
     m_pFbPropagation = rc.CreateRHIFrameBuffer();
-    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.CreateRenderTargetView(m_pTexRedSh));
-    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.CreateRenderTargetView(m_pTexGreenSh));
-    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.CreateRenderTargetView(m_pTexBlueSh));
-    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color3, rc.CreateRenderTargetView(m_pTexAccuRedSh));
-    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color4, rc.CreateRenderTargetView(m_pTexAccuGreenSh));
-    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color5, rc.CreateRenderTargetView(m_pTexAccuBlueSh));
+    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.Create2DRtv(m_pTexRedSh));
+    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.Create2DRtv(m_pTexGreenSh));
+    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.Create2DRtv(m_pTexBlueSh));
+    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color3, rc.Create2DRtv(m_pTexAccuRedSh));
+    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color4, rc.Create2DRtv(m_pTexAccuGreenSh));
+    m_pFbPropagation->AttachTargetView(RHIFrameBuffer::Attachment::Color5, rc.Create2DRtv(m_pTexAccuBlueSh));
     m_pFbPropagation->SetViewport({ 0, 0, LPV_SIZE, LPV_SIZE });
 
     effect.LoadTechnique(TechName_LPVPropagation, &m_PropagationRsDesc, "LPVPropagationVS", "LPVPropagationPS", nullptr);

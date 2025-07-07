@@ -77,6 +77,11 @@ public:
     RHIRenderTargetView(Context* context)
         :m_pContext(context) {}
 
+    uint32_t        Width()     const { return m_iWidth; }
+    uint32_t        Height()    const { return m_iHeight; }
+    PixelFormat     Format()    const { return m_Param.pixel_format; }
+    RHITexturePtr&  Texture()         { return m_Param.texture; }
+
 protected:
     Context*    m_pContext = nullptr;
     uint32_t    m_iWidth = 0;
@@ -92,6 +97,11 @@ class RHIDepthStencilView      // Dsv
 public:
     RHIDepthStencilView(Context* context)
         : m_pContext(context) {}
+
+    uint32_t        Width()     const { return m_iWidth; }
+    uint32_t        Height()    const { return m_iHeight; }
+    PixelFormat     Format()    const { return m_Param.pixel_format; }
+    RHITexturePtr&  Texture()         { return m_Param.texture; }
 
 protected:
     Context*    m_pContext = nullptr;
