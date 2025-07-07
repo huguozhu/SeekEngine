@@ -51,7 +51,7 @@ ID3D11RenderTargetView* D3D11Texture::GetD3DRtv()
 
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
 
-    D3D11_RENDER_TARGET_VIEW_DESC desc;
+    D3D11_RENDER_TARGET_VIEW_DESC desc = {};
     this->FillRtvDesc(desc);
 
     HRESULT hr = rc.GetD3D11Device()->CreateRenderTargetView(m_pTexture.Get(), &desc, m_pD3DRenderTargetView.GetAddressOf());
@@ -70,7 +70,7 @@ ID3D11DepthStencilView* D3D11Texture::GetD3DDsv()
 
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
 
-    D3D11_DEPTH_STENCIL_VIEW_DESC desc;
+    D3D11_DEPTH_STENCIL_VIEW_DESC desc = {};
     this->FillDsvDesc(desc);
     HRESULT hr = rc.GetD3D11Device()->CreateDepthStencilView(m_pTexture.Get(), &desc, m_pD3DDepthStencilView.GetAddressOf());
     if (FAILED(hr))
@@ -95,7 +95,7 @@ ID3D11ShaderResourceView* D3D11Texture::GetD3DSrv()
 
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
 
-    D3D11_SHADER_RESOURCE_VIEW_DESC desc;
+    D3D11_SHADER_RESOURCE_VIEW_DESC desc = {};
     this->FillSrvDesc(desc);
 
     ID3D11Resource* res = m_pTexture.Get();
@@ -125,7 +125,7 @@ ID3D11UnorderedAccessView* D3D11Texture::GetD3DUav()
 
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
 
-    D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
+    D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
     this->FillUavDesc(desc);
 
     ID3D11Resource* res = m_pTexture.Get();
@@ -191,7 +191,7 @@ ID3D11ShaderResourceViewPtr const& D3D11Texture::GetD3DSrv(uint32_t array_index,
     else
     {
         D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
-        D3D11_SHADER_RESOURCE_VIEW_DESC desc;
+        D3D11_SHADER_RESOURCE_VIEW_DESC desc = {};
         this->FillSrvDesc(desc, array_index, face, first_level, num_levels);
         ID3D11ShaderResourceViewPtr d3d_srv = {};
         rc.GetD3D11Device()->CreateShaderResourceView(m_pTexture.Get(), &desc, d3d_srv.GetAddressOf());
@@ -245,7 +245,7 @@ ID3D11RenderTargetViewPtr const& D3D11Texture::GetD3DRtv(uint32_t array_index, u
     else
     {
         D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
-        D3D11_RENDER_TARGET_VIEW_DESC desc;
+        D3D11_RENDER_TARGET_VIEW_DESC desc = {};
         this->FillRtvDesc(desc, array_index, first_slice, num_slices, level);
         ID3D11RenderTargetViewPtr d3d_rtv = {};
         rc.GetD3D11Device()->CreateRenderTargetView(m_pTexture.Get(), &desc, d3d_rtv.GetAddressOf());
@@ -300,7 +300,7 @@ ID3D11DepthStencilViewPtr const& D3D11Texture::GetD3DDsv(uint32_t first_array_in
     else
     {
         D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
-        D3D11_DEPTH_STENCIL_VIEW_DESC desc;
+        D3D11_DEPTH_STENCIL_VIEW_DESC desc = {};
         this->FillDsvDesc(desc, first_array_index, array_size, level);
         ID3D11DepthStencilViewPtr d3d_dsv;
         rc.GetD3D11Device()->CreateDepthStencilView(m_pTexture.Get(), &desc, d3d_dsv.GetAddressOf());
@@ -326,7 +326,7 @@ ID3D11DepthStencilViewPtr const& D3D11Texture::GetD3DDsv(uint32_t array_index, u
     else
     {
         D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
-        D3D11_DEPTH_STENCIL_VIEW_DESC desc;
+        D3D11_DEPTH_STENCIL_VIEW_DESC desc = {};
         this->FillDsvDesc(desc, array_index, first_slice, num_slices, level);
         ID3D11DepthStencilViewPtr d3d_dsv;
         rc.GetD3D11Device()->CreateDepthStencilView(m_pTexture.Get(), &desc, d3d_dsv.GetAddressOf());
@@ -351,7 +351,7 @@ ID3D11DepthStencilViewPtr const& D3D11Texture::GetD3DDsv(uint32_t array_index, C
     else
     {
         D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
-        D3D11_DEPTH_STENCIL_VIEW_DESC desc;
+        D3D11_DEPTH_STENCIL_VIEW_DESC desc = {};
         this->FillDsvDesc(desc, array_index, face, level);
         ID3D11DepthStencilViewPtr d3d_dsv;
         rc.GetD3D11Device()->CreateDepthStencilView(m_pTexture.Get(), &desc, d3d_dsv.GetAddressOf());
@@ -377,7 +377,7 @@ ID3D11UnorderedAccessViewPtr const& D3D11Texture::GetD3DUav(uint32_t first_array
     else
     {
         D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
-        D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
+        D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
         this->FillUavDesc(desc, first_array_index, array_size, level);
         ID3D11UnorderedAccessViewPtr d3d_ua_view;
         rc.GetD3D11Device()->CreateUnorderedAccessView(m_pTexture.Get(), &desc, d3d_ua_view.GetAddressOf());
@@ -402,7 +402,7 @@ ID3D11UnorderedAccessViewPtr const& D3D11Texture::GetD3DUav(uint32_t array_index
     else
     {
         D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
-        D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
+        D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
         this->FillUavDesc(desc, array_index, first_slice, num_slices, level);
         ID3D11UnorderedAccessViewPtr d3d_ua_view;
         rc.GetD3D11Device()->CreateUnorderedAccessView(m_pTexture.Get(), &desc, d3d_ua_view.GetAddressOf());
@@ -427,7 +427,7 @@ ID3D11UnorderedAccessViewPtr const& D3D11Texture::GetD3DUav(uint32_t first_array
     else
     {
         D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
-        D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
+        D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
         this->FillUavDesc(desc, first_array_index, array_size, first_face, num_faces, level);
         ID3D11UnorderedAccessViewPtr d3d_ua_view;
         rc.GetD3D11Device()->CreateUnorderedAccessView(m_pTexture.Get(), &desc, d3d_ua_view.GetAddressOf());
@@ -980,7 +980,7 @@ SResult D3D11Texture2D::Resolve()
     {
         if (!m_pResolvedTexture)
         {
-            D3D11_TEXTURE2D_DESC ms_desc;
+            D3D11_TEXTURE2D_DESC ms_desc = {};
             ms_desc.Width = m_desc.width;
             ms_desc.Height = m_desc.height;
             ms_desc.MipLevels = m_desc.num_mips;
@@ -1032,7 +1032,7 @@ SResult D3D11Texture2D::DumpSubResource2D(BitmapBufferPtr bitmap_data, uint32_t 
     ID3D11ResourcePtr pSrcRes = m_pTexture;
     if (m_pResolvedTexture)
     {
-        D3D11_TEXTURE2D_DESC resolvedTextureDesc;
+        D3D11_TEXTURE2D_DESC resolvedTextureDesc = {};
         ID3D11Texture2DPtr tex = nullptr;
         m_pResolvedTexture.As(&tex);
         tex->GetDesc(&resolvedTextureDesc);
@@ -1100,7 +1100,7 @@ ID3D11RenderTargetView* D3D11TextureCube::GetD3DRtv(CubeFaceType face, uint32_t 
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
-    D3D11_RENDER_TARGET_VIEW_DESC desc;
+    D3D11_RENDER_TARGET_VIEW_DESC desc = {};
     this->FillRtvDesc(desc, face, mip_level);
     ID3D11RenderTargetViewPtr rtv = nullptr;
     HRESULT hr = pDevice->CreateRenderTargetView(m_pTexture.Get(), &desc, m_mCubeRTV[mip_level][(uint32_t)face].GetAddressOf());
@@ -1120,7 +1120,7 @@ ID3D11DepthStencilView* D3D11TextureCube::GetD3DDsv(CubeFaceType face)
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
-    D3D11_DEPTH_STENCIL_VIEW_DESC desc;
+    D3D11_DEPTH_STENCIL_VIEW_DESC desc = {};
     this->FillDsvDesc(desc, face);
     HRESULT hr = pDevice->CreateDepthStencilView(m_pTexture.Get(), &desc, m_vCubeDSV[(uint32_t)face].GetAddressOf());
     if (FAILED(hr))
@@ -1438,7 +1438,7 @@ SResult D3D11Texture3D::DumpSubResource3D(BitmapBufferPtr bitmap_data, uint32_t 
     ID3D11ResourcePtr pSrcRes = m_pTexture;
     if (m_pResolvedTexture)
     {
-        D3D11_TEXTURE3D_DESC resolvedTextureDesc;
+        D3D11_TEXTURE3D_DESC resolvedTextureDesc = {};
         ID3D11Texture3DPtr tex = nullptr;
         m_pResolvedTexture.As(&tex);
         tex->GetDesc(&resolvedTextureDesc);
@@ -1450,7 +1450,7 @@ SResult D3D11Texture3D::DumpSubResource3D(BitmapBufferPtr bitmap_data, uint32_t 
     ID3D11ResourcePtr pCopyRes = nullptr;
     if (!bCPUAccessRead)
     {
-        D3D11_TEXTURE3D_DESC stage_desc;
+        D3D11_TEXTURE3D_DESC stage_desc = {};
         FillStageTexture3DDesc(stage_desc);
 
         ID3D11Texture3DPtr _texture3d;

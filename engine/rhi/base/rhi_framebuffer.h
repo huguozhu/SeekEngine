@@ -37,7 +37,7 @@ public:
     {
         return (RequireResolve(attachment) & resolveFlag) != 0;
     }
-    
+    using RtvArray = std::array<RHIRenderTargetViewPtr, MAX_COLOR_ATTACHMENTS>;
     enum class LoadAction
     {
         Load = 0,
@@ -119,12 +119,12 @@ public:
     void                        DetachTargetView(Attachment att);
     void                        DetachAllTargetView();
 
-    void                        AttachDepthStencilView(RHIRenderViewPtr const& view);
+    void                        AttachDepthStencilView(RHIDepthStencilViewPtr const& view);
     void                        DetachDepthStencilView();
 
     RHIRenderTargetViewPtr      GetRenderTarget(Attachment att) const;
-    std::array<RHIRenderTargetViewPtr, MAX_COLOR_ATTACHMENTS> const& GetRenderTargets() const { return m_vRenderTargets; }
-    RHIRenderViewPtr const&     GetDepthStencilView() const { return m_pDepthStencilView; }
+    RtvArray const&             GetRenderTargets() const { return m_vRenderTargets; }
+    RHIDepthStencilViewPtr const& GetDepthStencilView() const { return m_pDepthStencilView; }
 
     enum ClearBufferMask : uint32_t
     {
@@ -158,13 +158,12 @@ protected:
     RHIFrameBuffer(Context* context) :m_pContext(context) {}
     virtual ~RHIFrameBuffer() {}
 
-    Context*                            m_pContext = nullptr;
-
-    bool                                m_bViewDirty = false;
-    Viewport                            m_stViewport;
-    std::array<RHIRenderTargetViewPtr, MAX_COLOR_ATTACHMENTS> m_vRenderTargets;
-    RHIRenderViewPtr                    m_pDepthStencilView;
-    uint32_t                            m_sampleNum = 1;
+    Context*                m_pContext = nullptr;
+    bool                    m_bViewDirty = false;
+    Viewport                m_stViewport;
+    RtvArray                m_vRenderTargets;
+    RHIDepthStencilViewPtr  m_pDepthStencilView;
+    uint32_t                m_sampleNum = 1;
     
     LoadOption m_colorLoadOptions[MAX_COLOR_ATTACHMENTS];
     StoreOption m_colorStoreOptions[MAX_COLOR_ATTACHMENTS];

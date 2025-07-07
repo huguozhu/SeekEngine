@@ -48,7 +48,7 @@ void GaussianBlur::SetSrcTexture(RHITexturePtr const& tex2d)
         m_pTemp->Height() != tex2d->Height() ||
         m_pTemp->Format() != tex2d->Format()  )
     {
-        RHITexture::Desc desc;
+        RHITexture::Desc desc = {};
         desc.type = TextureType::Tex2D;
         desc.width = tex2d->Width();
         desc.height = tex2d->Height();

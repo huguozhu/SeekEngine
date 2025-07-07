@@ -74,7 +74,7 @@ void EquirectangularToCubeMapPostProcess::SetDstTexture(RHITexturePtr const& tex
     for (uint32_t face = 0; face < (uint32_t)CubeFaceType::Num; face++)
     {
         RHIFrameBufferPtr fb = m_vPPChain[face]->GetFrameBuffer();
-        RHIRenderTargetViewPtr rv = rc.Create2DRtv(tex_cube, 0, (CubeFaceType)face, 0);
+        RHIRenderTargetViewPtr rv = rc.Create2DRenderTargetView(tex_cube, 0, (CubeFaceType)face, 0);
         fb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rv);
     }
 }
@@ -120,7 +120,7 @@ IrradianceConvolutionPostProcess::IrradianceConvolutionPostProcess(Context* cont
         m_pMVPCBuffer->Update(&m, sizeof(float4x4));
         pp->SetParam("cb_CubeVSParams", m_pMVPCBuffer);
 
-        RHIRenderTargetViewPtr rv = rc.Create2DRtv(m_pIrradianceConvolutionTex, 0, (CubeFaceType)face, 0);
+        RHIRenderTargetViewPtr rv = rc.Create2DRenderTargetView(m_pIrradianceConvolutionTex, 0, (CubeFaceType)face, 0);
         pp->GetFrameBuffer()->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rv);
 
         this->AddPostProcess(pp);
@@ -195,7 +195,7 @@ void PrefilterEnvPostProcess::SetDstPrefilterTexture(RHITexturePtr const& tex_cu
     {
         for (uint32_t mip = 0; mip < MAX_MIP_LEVELS; ++mip)
         {         
-            m_vRenderViews[face][mip] = rc.Create2DRtv(tex_cube_prefilter, 0, (CubeFaceType)face, mip);
+            m_vRenderViews[face][mip] = rc.Create2DRenderTargetView(tex_cube_prefilter, 0, (CubeFaceType)face, mip);
         }
     }
 }

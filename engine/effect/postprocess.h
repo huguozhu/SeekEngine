@@ -23,7 +23,6 @@ public:
     PostProcess(Context* context, std::string const& name, PostProcessRenderType type = PostProcessRenderType::Render_2D);
     virtual ~PostProcess()
     {
-        std::fill(m_vOutputs.begin(), m_vOutputs.end(), nullptr);
     }
 
     virtual SResult     Run();
@@ -64,8 +63,6 @@ protected:
 
     RHIFrameBufferPtr   m_pFrameBuffer = nullptr;
     RHIMeshPtr          m_pPostProcessMesh = nullptr;
-
-    std::array<RHIRenderViewPtr, RHIFrameBuffer::MAX_COLOR_ATTACHMENTS> m_vOutputs;
 
     // for Compute Shader PostProcess
     uint32_t            m_iCsDispatchX;

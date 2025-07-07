@@ -312,8 +312,8 @@ SResult ForwardShadingRenderer::PrepareFrameBuffer()
             m_pRenderSceneDepthTex = rc.CreateTexture2D(desc);
         }
         
-        m_pRenderSceneFB->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.Create2DRtv(m_pRenderSceneColorTex));
-        m_pRenderSceneFB->AttachDepthStencilView(rc.CreateDepthStencilView(m_pRenderSceneDepthTex));
+        m_pRenderSceneFB->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.Create2DRenderTargetView(m_pRenderSceneColorTex));
+        m_pRenderSceneFB->AttachDepthStencilView(rc.Create2DDepthStencilView(m_pRenderSceneDepthTex));
         
         m_pToneMappingPostProcess->SetParam("src_rgba", m_pRenderSceneColorTex);
         const RHIFrameBuffer* finalFB = rc.GetFinalRHIFrameBuffer().get();

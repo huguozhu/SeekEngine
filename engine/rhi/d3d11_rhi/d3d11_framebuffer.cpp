@@ -36,7 +36,7 @@ SResult D3D11RHIFrameBuffer::OnBind()
                 continue;
             if (m_sampleNum == 1)
             {
-                D3D11Rtv& target = static_cast<D3D11Rtv&>(*m_vRenderTargets[i]);
+                D3D11RenderTargetView& target = static_cast<D3D11RenderTargetView&>(*m_vRenderTargets[i]);
                 m_vD3dRednerTargets[i] = target.GetD3DRtv();
             }
             else
@@ -125,7 +125,7 @@ void D3D11RHIFrameBuffer::Clear(uint32_t flags, float4 const& clr, float depth, 
         {
             if (m_vRenderTargets[i])
             {
-                D3D11Rtv& view = static_cast<D3D11Rtv&>(*m_vRenderTargets[i]);
+                D3D11RenderTargetView& view = static_cast<D3D11RenderTargetView&>(*m_vRenderTargets[i]);
                 view.ClearColor(clr);
             }
         }
@@ -154,7 +154,7 @@ void D3D11RHIFrameBuffer::ClearRenderTarget(Attachment att, float4 const& clr)
         uint32_t i = (uint32_t)Attachment::Color7 - (uint32_t)att;
         if (m_vRenderTargets[i])
         {
-            D3D11Rtv& view = static_cast<D3D11Rtv&>(*m_vRenderTargets[i]);
+            D3D11RenderTargetView& view = static_cast<D3D11RenderTargetView&>(*m_vRenderTargets[i]);
             view.ClearColor(clr);
         }
     }

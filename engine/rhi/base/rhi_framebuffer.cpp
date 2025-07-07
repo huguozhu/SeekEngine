@@ -26,7 +26,7 @@ void RHIFrameBuffer::AttachTargetView(Attachment att, RHIRenderTargetViewPtr con
     }
 }
 
-void RHIFrameBuffer::AttachDepthStencilView(RHIRenderViewPtr const& view)
+void RHIFrameBuffer::AttachDepthStencilView(RHIDepthStencilViewPtr const& view)
 {
     m_pDepthStencilView = view;
     m_bViewDirty = true;

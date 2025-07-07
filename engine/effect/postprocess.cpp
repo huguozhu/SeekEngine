@@ -23,7 +23,6 @@ SEEK_NAMESPACE_BEGIN
 PostProcess::PostProcess(Context* context, std::string const& name, PostProcessRenderType type)
     : m_pContext(context), m_szName(name), m_eRenderType(type)
 {
-    std::fill(m_vOutputs.begin(), m_vOutputs.end(), nullptr);
 }
 
 SResult PostProcess::Init(const std::string& tech_name, const std::vector<EffectPredefine>& predefines)
@@ -117,10 +116,10 @@ SResult PostProcess::SetOutput(uint32_t index, RHITexturePtr const& tex, CubeFac
         {
             if ((uint8_t)type >= (uint8_t)CubeFaceType::Num)
                 return ERR_INVALID_ARG;
-			m_pFrameBuffer->AttachTargetView((RHIFrameBuffer::Attachment)(RHIFrameBuffer::Color0 + index), rc.Create2DRtv(tex, 0, type, 0));
+			m_pFrameBuffer->AttachTargetView((RHIFrameBuffer::Attachment)(RHIFrameBuffer::Color0 + index), rc.Create2DRenderTargetView(tex, 0, type, 0));
         }
         else
-            m_pFrameBuffer->AttachTargetView((RHIFrameBuffer::Attachment)(RHIFrameBuffer::Color0 + index), rc.Create2DRtv(tex));
+            m_pFrameBuffer->AttachTargetView((RHIFrameBuffer::Attachment)(RHIFrameBuffer::Color0 + index), rc.Create2DRenderTargetView(tex));
 
         if (0 == index)
             m_pFrameBuffer->SetViewport({ 0, 0, tex->Width(), tex->Height() });
@@ -132,9 +131,6 @@ SResult PostProcess::SetOutput(uint32_t index, RHIRenderTargetViewPtr const& tar
 {
     if (!m_bInitSucceed)
         return ERR_INVALID_INIT;
-    
-    if (index >= m_vOutputs.size())
-        return ERR_INVALID_ARG;
     
     m_pFrameBuffer->AttachTargetView((RHIFrameBuffer::Attachment)(RHIFrameBuffer::Color0 + index), target);
     if (0 == index)

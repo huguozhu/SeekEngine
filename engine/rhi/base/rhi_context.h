@@ -67,12 +67,10 @@ public: // virutal factory
     virtual RHIRenderBufferPtr      CreateIndexBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) = 0;
 
 
-    virtual RHIRenderTargetViewPtr  Create2DRtv(RHITexturePtr const& texture, int first_array_index = 0, int array_size = 1, int mip_level = 0) = 0;
-    virtual RHIRenderTargetViewPtr  Create2DRtv(RHITexturePtr const& tex_cube, int array_index, CubeFaceType face, uint32_t mip_level) = 0;
-
-    virtual RHIRenderViewPtr        CreateDepthStencilView(RHITexturePtr const& tex) = 0;
-    virtual RHIRenderViewPtr        CreateDepthStencilView(RHITexturePtr const& tex, CubeFaceType face) { return nullptr; }
-
+    virtual RHIRenderTargetViewPtr  Create2DRenderTargetView(RHITexturePtr const& tex_2d,   uint32_t first_array_index = 0, uint32_t array_size = 1, uint32_t mip_level = 0) = 0;
+    virtual RHIRenderTargetViewPtr  Create2DRenderTargetView(RHITexturePtr const& tex_cube, uint32_t array_index, CubeFaceType face, uint32_t mip_level) = 0;
+    virtual RHIDepthStencilViewPtr  Create2DDepthStencilView(RHITexturePtr const& tex_2d,   uint32_t first_array_index = 0, uint32_t array_size = 1, uint32_t mip_level = 0) = 0;
+    virtual RHIDepthStencilViewPtr  Create2DDepthStencilView(RHITexturePtr const& tex_2d,   uint32_t array_index, CubeFaceType face, uint32_t mip_level) = 0;
 
     virtual RHIFrameBufferPtr       CreateRHIFrameBuffer() = 0;
     virtual RHIProgramPtr           CreateRHIProgram() = 0;

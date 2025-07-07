@@ -54,9 +54,9 @@ SResult ShadowLayer::InitResource()
     desc.format = depth_pf;
     m_pSmDepthTex = rc.CreateTexture2D(desc);
     m_pSmFb = rc.CreateRHIFrameBuffer();
-    RHIRenderTargetViewPtr sm_color_view = rc.Create2DRtv(m_pSmTex);
+    RHIRenderTargetViewPtr sm_color_view = rc.Create2DRenderTargetView(m_pSmTex);
     m_pSmFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, sm_color_view);
-    m_pSmFb->AttachDepthStencilView(rc.CreateDepthStencilView(m_pSmDepthTex));
+    m_pSmFb->AttachDepthStencilView(rc.Create2DDepthStencilView(m_pSmDepthTex));
 
     PixelFormat filter_sm_fmt = PixelFormat::R8G8B8A8_UNORM;
     CapabilitySet const& cap_set = m_pContext->RHIContextInstance().GetCapabilitySet();
@@ -79,8 +79,8 @@ SResult ShadowLayer::InitResource()
         m_vCsmTex[i] = rc.CreateTexture2D(desc);
 
         m_vCsmFb[i] = rc.CreateRHIFrameBuffer();
-        m_vCsmFb[i]->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.Create2DRtv(m_vCsmTex[i]));
-        m_vCsmFb[i]->AttachDepthStencilView(rc.CreateDepthStencilView(m_vCsmDepthTex[i]));
+        m_vCsmFb[i]->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.Create2DRenderTargetView(m_vCsmTex[i]));
+        m_vCsmFb[i]->AttachDepthStencilView(rc.Create2DDepthStencilView(m_vCsmDepthTex[i]));
     }
 
     // Cube Shadow Map
@@ -92,8 +92,8 @@ SResult ShadowLayer::InitResource()
     m_pCubeSmDepthTex = rc.CreateTextureCube(desc);
     for (uint32_t i = (uint32_t)CubeFaceType::Positive_X; i < (uint32_t)CubeFaceType::Num; i++)
     {
-        RHIRenderTargetViewPtr cube_rtv = rc.Create2DRtv(m_pCubeSmTex, 0, (CubeFaceType)i, 0);
-        RHIRenderViewPtr cube_dsv = rc.CreateDepthStencilView(m_pCubeSmDepthTex, (CubeFaceType)i);
+        RHIRenderTargetViewPtr cube_rtv = rc.Create2DRenderTargetView(m_pCubeSmTex, 0, (CubeFaceType)i, 0);
+        RHIDepthStencilViewPtr cube_dsv = rc.Create2DDepthStencilView(m_pCubeSmDepthTex, 0, (CubeFaceType)i, 0);
         m_pCubeSmFb[i] = rc.CreateRHIFrameBuffer();
         m_pCubeSmFb[i]->AttachTargetView(RHIFrameBuffer::Attachment::Color0, cube_rtv);
         m_pCubeSmFb[i]->AttachDepthStencilView(cube_dsv);
@@ -369,7 +369,7 @@ SResult DeferredShadowLayer::InitResource()
     desc.flags = RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_GPU_READ;
     m_pShadowingTex = rc.CreateTexture2D(desc);
     m_pShadowingFb = rc.CreateRHIFrameBuffer();
-    m_pShadowingFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.Create2DRtv(m_pShadowingTex));
+    m_pShadowingFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.Create2DRenderTargetView(m_pShadowingTex));
 
     m_pShadowingRenderStates[0] = rc.GetRenderState(RenderStateDesc::ShadowCopyR());
     m_pShadowingRenderStates[1] = rc.GetRenderState(RenderStateDesc::ShadowCopyG());

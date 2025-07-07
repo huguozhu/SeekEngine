@@ -88,7 +88,7 @@ SResult WaterMarkComponent::Render()
     {
         if (m_pRepeatWaterMark)
             m_pRepeatWaterMark.reset();        
-        RHITexture::Desc desc;
+        RHITexture::Desc desc = {};
         desc.width = w;
         desc.height = h;
         desc.type = TextureType::Tex2D;

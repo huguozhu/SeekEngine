@@ -10,10 +10,10 @@ SEEK_NAMESPACE_BEGIN
 /******************************************************************************
 * D3D11 Rtv
 *******************************************************************************/
-class D3D11Rtv : public RHIRenderTargetView
+class D3D11RenderTargetView : public RHIRenderTargetView
 {
 public:
-    D3D11Rtv(Context* context, void* src, uint32_t first_subres, uint32_t num_subres);
+    D3D11RenderTargetView(Context* context, void* src, uint32_t first_subres, uint32_t num_subres);
     void OnAttached(RHIFrameBuffer& fb, RHIFrameBuffer::Attachment attach) {}
     void OnDetached(RHIFrameBuffer& fb, RHIFrameBuffer::Attachment attach) {}
     void ClearColor(float4 const& color);
@@ -27,37 +27,35 @@ protected:
     uint32_t m_iNumSubres;
 };
 
-class D3D11Texture2DCubeRtv final : public D3D11Rtv
+class D3D11Texture2DCubeRtv final : public D3D11RenderTargetView
 {
 public:
-    D3D11Texture2DCubeRtv(Context* context, RHITexturePtr const& texture_2d_cube, int first_array_index, int array_size, int mip_level);
+    D3D11Texture2DCubeRtv(Context* context, RHITexturePtr const& tex_2d_cube, int first_array_index, int array_size, int mip_level);
 
     ID3D11RenderTargetView* GetD3DRtv();
 };
-class D3D11Texture3DRtv final : public D3D11Rtv
+class D3D11Texture3DRtv final : public D3D11RenderTargetView
 {
 public:
-    D3D11Texture3DRtv(Context* context, RHITexturePtr const& texture_3d, int array_index, uint32_t first_slice, uint32_t num_slices, int mip_level);
+    D3D11Texture3DRtv(Context* context, RHITexturePtr const& tex_3d, int array_index, uint32_t first_slice, uint32_t num_slices, int mip_level);
 
     ID3D11RenderTargetView* GetD3DRtv();
 };
-class D3D11TextureCubeFaceRtv final : public D3D11Rtv
+class D3D11TextureCubeFaceRtv final : public D3D11RenderTargetView
 {
 public:
-    D3D11TextureCubeFaceRtv(Context* context, RHITexturePtr const& texture_cube, int array_index, CubeFaceType face, int mip_level);
+    D3D11TextureCubeFaceRtv(Context* context, RHITexturePtr const& tex_cube, int array_index, CubeFaceType face, int mip_level);
 
     ID3D11RenderTargetView* GetD3DRtv();
 };
-
 
 /******************************************************************************
-* D3D11DepthStencilView
+* D3D11Dsv
 *******************************************************************************/
-class D3D11DepthStencilView : public RHIRenderView
+class D3D11DepthStencilView : public RHIDepthStencilView
 {
 public:
-    D3D11DepthStencilView(Context* context, RHITexturePtr const& tex);
-    virtual ~D3D11DepthStencilView();
+    D3D11DepthStencilView(Context* context, void* src, uint32_t first_subres, uint32_t num_subres);
 
     void OnAttached(RHIFrameBuffer& fb);
     void OnDetached(RHIFrameBuffer& fb);
@@ -65,17 +63,27 @@ public:
     void ClearStencil(uint32_t stencil = 0);
     void ClearDepthStencil(float depth, uint32_t stencil);
 
-    ID3D11DepthStencilView* GetD3DDsv() { return m_pD3D11DepthStencilView.Get(); }
+    virtual ID3D11DepthStencilView* GetD3DDsv() = 0;
 
 protected:
-    ID3D11DepthStencilViewPtr m_pD3D11DepthStencilView = nullptr;
-
+    ID3D11DepthStencilViewPtr m_pD3D11Dsv = nullptr;
+    void* m_pSrc = nullptr;
+    uint32_t m_iFirstSubres;
+    uint32_t m_iNumSubres;
 };
 
-class D3D11CubeDepthStencilView : public D3D11DepthStencilView
+class D3D11Texture2DDsv : public D3D11DepthStencilView
 {
 public:
-    D3D11CubeDepthStencilView(Context* context, RHITexturePtr const& tex, CubeFaceType face);
+    D3D11Texture2DDsv(Context* context, RHITexturePtr const& tex_2d, uint32_t first_array_index = 0, uint32_t array_size = 1, uint32_t mip_level = 0);
+    ID3D11DepthStencilView* GetD3DDsv();
 };
+class D3D11TextureCubeFaceDsv : public D3D11DepthStencilView
+{
+public:
+    D3D11TextureCubeFaceDsv(Context* context, RHITexturePtr const& tex_cube, uint32_t array_index, CubeFaceType face, uint32_t mip_level);
+    ID3D11DepthStencilView* GetD3DDsv();
+};
+
 
 SEEK_NAMESPACE_END
