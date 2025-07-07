@@ -6,8 +6,6 @@
 
 SEEK_NAMESPACE_BEGIN
 
-uint32_t D3D11CalcSubresource(uint32_t mip_slice, uint32_t array_slice, uint32_t mip_levels);
-
 class D3D11Translate
 {
 public:

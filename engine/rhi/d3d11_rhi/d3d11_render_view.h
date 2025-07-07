@@ -8,7 +8,7 @@
 SEEK_NAMESPACE_BEGIN
 
 /******************************************************************************
-* D3D11RenderTarget
+* Render Target
 *******************************************************************************/
 class D3D11RenderTargetView : public RHIRenderView
 {
@@ -24,18 +24,55 @@ public:
 
 protected:
     ID3D11RenderTargetViewPtr m_pD3dRenderTargetView = nullptr;
-
 };
-
-
-/******************************************************************************
- * D3D11RenderTarget
- ******************************************************************************/
 class D3D11CubeFaceRenderTargetView : public D3D11RenderTargetView
 {
 public:
     D3D11CubeFaceRenderTargetView(Context* context, RHITexturePtr const& tex, CubeFaceType face, uint32_t mip_level = 0);
 };
+
+/******************************************************************************
+* D3D11 Rtv
+*******************************************************************************/
+class D3D11Rtv : public RHIRenderTargetView
+{
+public:
+    D3D11Rtv(Context* context, void* src, uint32_t first_subres, uint32_t num_subres);
+    void OnAttached(RHIFrameBuffer& fb, RHIFrameBuffer::Attachment attach) {}
+    void OnDetached(RHIFrameBuffer& fb, RHIFrameBuffer::Attachment attach) {}
+    void ClearColor(float4 const& color);
+
+    virtual ID3D11RenderTargetView* GetD3DRtv() = 0;
+
+protected:
+    ID3D11RenderTargetViewPtr m_pD3DRtv = nullptr;
+    void* m_pSrc = nullptr;
+    uint32_t m_iFirstSubres;
+    uint32_t m_iNumSubres;
+};
+
+class D3D11Texture2DCubeRtv final : public D3D11Rtv
+{
+public:
+    D3D11Texture2DCubeRtv(Context* context, RHITexturePtr const& texture_2d_cube, int first_array_index, int array_size, int mip_level);
+
+    ID3D11RenderTargetView* GetD3DRtv();
+};
+class D3D11Texture3DRtv final : public D3D11Rtv
+{
+public:
+    D3D11Texture3DRtv(Context* context, RHITexturePtr const& texture_3d, int array_index, uint32_t first_slice, uint32_t num_slices, int mip_level);
+
+    ID3D11RenderTargetView* GetD3DRtv();
+};
+class D3D11TextureCubeFaceRtv final : public D3D11Rtv
+{
+public:
+    D3D11TextureCubeFaceRtv(Context* context, RHITexturePtr const& texture_cube, int array_index, CubeFaceType face, int mip_level);
+
+    ID3D11RenderTargetView* GetD3DRtv();
+};
+
 
 /******************************************************************************
 * D3D11DepthStencilView

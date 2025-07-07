@@ -4,11 +4,6 @@
 
 SEEK_NAMESPACE_BEGIN
 
-uint32_t D3D11CalcSubresource(uint32_t mip_slice, uint32_t array_slice, uint32_t mip_levels)
-{
-    return mip_slice + array_slice * mip_levels;
-}
-
 const char* D3D11Translate::TranslateVertexElementUsageSemantic(VertexElementUsage usage)
 {
     static const char* POSITION     = "POSITION";

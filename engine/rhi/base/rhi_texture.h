@@ -5,6 +5,8 @@
 #include "math/rect.h"
 #include "math/box.h"
 #include "utils/buffer.h"
+#include "utils/util.h"
+#include "math/math_utility.h"
 #include <span>
 
 SEEK_NAMESPACE_BEGIN
@@ -46,9 +48,9 @@ public:
 
     Desc const&         Descriptor()    const { return m_desc; };
     TextureType         Type()          const { return m_desc.type; }
-    uint32_t            Width()         const { return m_desc.width; }
-    uint32_t            Height()        const { return m_desc.height; }
-    uint32_t            Depth()         const { return m_desc.depth; }
+    uint32_t            Width(uint32_t mip_level = 0)   const { SEEK_ASSERT(mip_level < m_desc.num_mips); return std::max(1U, m_desc.width  >> mip_level); }
+    uint32_t            Height(uint32_t mip_level = 0)  const { SEEK_ASSERT(mip_level < m_desc.num_mips); return std::max(1U, m_desc.height >> mip_level); }
+    uint32_t            Depth(uint32_t mip_level = 0)   const { SEEK_ASSERT(mip_level < m_desc.num_mips); return std::max(1U, m_desc.depth  >> mip_level); }
     uint32_t            NumMips()       const { return m_desc.num_mips; }
     uint32_t            NumSamples()    const { return m_desc.num_samples; }
     uint32_t            NumArray()      const { return m_desc.num_array; }

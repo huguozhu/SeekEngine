@@ -52,23 +52,23 @@ protected:
     uint32_t        m_iNumMipLevels = 1;
 };
 
-struct ViewDesc
+struct ViewParam
 {
-    PixelFormat     m_ePixelFormat = PixelFormat::Unknown;
+    PixelFormat     pixel_format = PixelFormat::Unknown;
 
-    // for Texture2D
-    RHITexturePtr   m_pTexture = nullptr;
-    uint32_t        m_iFirstArrayIndex = 0;
-    uint32_t        m_iNumArrays = 1;
-    uint32_t        m_iMipLevel = 0;
+    // for Textures
+    RHITexturePtr   texture = nullptr;
+    uint32_t        first_array_index = 0;
+    uint32_t        num_arrays = 1;
+    uint32_t        mip_level = 0;
 
     // for Texture3D
-    uint32_t        m_iFirstSlice = 0;
-    uint32_t        m_iNumSlices = 1;
+    uint32_t        first_slice = 0;
+    uint32_t        num_slices = 1;
 
     // for TextureCube
-    CubeFaceType    m_eFirstFace = CubeFaceType::Num;
-    uint32_t        m_iNumFaces = 1;
+    CubeFaceType    first_face = CubeFaceType::Num;
+    uint32_t        num_faces = 1;
 };
 
 class RHIRenderTargetView            // Rtv
@@ -81,9 +81,10 @@ protected:
     Context*    m_pContext = nullptr;
     uint32_t    m_iWidth = 0;
     uint32_t    m_iHeight = 0;
+    PixelFormat m_ePixelFormat;
     uint32_t    m_iNumSamples = 1;
 
-    ViewDesc    m_desc;
+    ViewParam    m_Param;
 };
 
 class RHIDepthStencilView      // Dsv
@@ -97,7 +98,7 @@ protected:
     uint32_t    m_iWidth = 0;
     uint32_t    m_iHeight = 0;
     uint32_t    m_iNumSamples = 1;
-    ViewDesc    m_desc;
+    ViewParam   m_Param;
 };
 
 class RHIUnorderedAccessView  // Uav
@@ -108,7 +109,7 @@ public:
 
 protected:
     Context*    m_pContext = nullptr;
-    ViewDesc    m_desc;
+    ViewParam   m_Param;
 };
 
 SEEK_NAMESPACE_END
