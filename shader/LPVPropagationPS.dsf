@@ -2,9 +2,14 @@
 #include "shared/GI.h"
 #include "Common.dsh"
 
-Texture3D<float4> redSH;
-Texture3D<float4> greenSH;
-Texture3D<float4> blueSH;
+Texture3D redSH;
+Texture3D greenSH;
+Texture3D blueSH;
+
+cbuffer cb_RTIndex
+{
+	uint index;
+}
 
 struct PSInput
 {
@@ -66,7 +71,10 @@ float3 getReprojSideDirection(int index, int3 orientation)
 SHContribution GetSHGatheringContribution(int4 cellIndex)
 {
     SHContribution result = (SHContribution) 0;
-    
+	result.red = redSH.Load(cellIndex);
+	result.green = greenSH.Load(cellIndex);
+	result.blue = blueSH.Load(cellIndex);
+	
     for (int neighbourCell = 0; neighbourCell < 6; neighbourCell++)
     {
         int4 neighbourPos = cellIndex - int4(cellDirections[neighbourCell], 0);
@@ -103,17 +111,16 @@ SHContribution GetSHGatheringContribution(int4 cellIndex)
 
 PSOutput main(float4 pos : SV_POSITION)
 {
-	int4 cellIndex = int4(pos.xy - 0.5, pos.z * LPV_DIM, 0);
+	int4 cellIndex = int4(pos.xy - 0.5, index, 0);
 	SHContribution resultContribution = GetSHGatheringContribution(cellIndex);
     
-	PSOutput output = (PSOutput)0;
-	output.redSH = resultContribution.red;
-	output.greenSH = resultContribution.green;
-	output.blueSH = resultContribution.blue;
-
-	output.acc_redSH = resultContribution.red;
-	output.acc_greenSH = resultContribution.green;
-	output.acc_blueSH = resultContribution.blue;
+	PSOutput output 	= (PSOutput)0;
+	output.redSH 		= resultContribution.red;
+	output.greenSH 		= resultContribution.green;
+	output.blueSH 		= resultContribution.blue;
+	output.acc_redSH 	= resultContribution.red;
+	output.acc_greenSH 	= resultContribution.green;
+	output.acc_blueSH 	= resultContribution.blue;
 
 	return output;
 }

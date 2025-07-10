@@ -29,7 +29,7 @@ void D3D11RenderTargetView::ClearColor(float4 const& color)
         LOG_ERROR("render target view is null");
 }
 
-D3D11Texture2DCubeRtv::D3D11Texture2DCubeRtv(Context* context, RHITexturePtr const& tex_2d_cube, int first_array_index, int array_size, int mip_level)
+D3D11Texture2DCubeRtv::D3D11Texture2DCubeRtv(Context* context, RHITexturePtr const& tex_2d_cube, uint32_t first_array_index, uint32_t array_size, uint32_t mip_level)
     : D3D11RenderTargetView(context, tex_2d_cube.get(), D3D11CalcSubresource(mip_level, first_array_index, tex_2d_cube->NumMips()), 1)
 {
     // for Texture
@@ -53,7 +53,7 @@ ID3D11RenderTargetView* D3D11Texture2DCubeRtv::GetD3DRtv()
     return m_pD3DRtv.Get();
 }
 
-D3D11Texture3DRtv::D3D11Texture3DRtv(Context* context, RHITexturePtr const& tex_3d, int array_index, uint32_t first_slice, uint32_t num_slices, int mip_level)
+D3D11Texture3DRtv::D3D11Texture3DRtv(Context* context, RHITexturePtr const& tex_3d, uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level)
     :D3D11RenderTargetView(context, tex_3d.get(), D3D11CalcSubresource(mip_level, array_index * tex_3d->Depth(mip_level) + first_slice, tex_3d->NumMips()), num_slices* tex_3d->NumMips() + mip_level)
 {
     m_iWidth = tex_3d->Width(mip_level);
@@ -77,7 +77,7 @@ ID3D11RenderTargetView* D3D11Texture3DRtv::GetD3DRtv()
     }
     return m_pD3DRtv.Get();
 }
-D3D11TextureCubeFaceRtv::D3D11TextureCubeFaceRtv(Context* context, RHITexturePtr const& tex_cube, int array_index, CubeFaceType face, int mip_level)
+D3D11TextureCubeFaceRtv::D3D11TextureCubeFaceRtv(Context* context, RHITexturePtr const& tex_cube, uint32_t array_index, CubeFaceType face, uint32_t mip_level)
     :D3D11RenderTargetView(context, tex_cube.get(), D3D11CalcSubresource(mip_level, array_index * 6 + (uint32_t)face, tex_cube->NumMips()), 1)
 {
     m_iWidth = tex_cube->Width(mip_level);

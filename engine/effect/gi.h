@@ -3,7 +3,9 @@
 #include "kernel/context.h"
 #include "effect/scene_renderer.h"
 
+
 SEEK_NAMESPACE_BEGIN
+
 
 /******************************************************************************
  * GlobalIllumination
@@ -70,6 +72,7 @@ class LPV : public RSM
 {
 public:
     LPV(Context* context);
+    virtual ~LPV();
 
     virtual SResult             OnBegin() override;
     virtual SResult             Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, RHITexturePtr const& gbuffer_depth);
@@ -83,20 +86,18 @@ private:
     RHITexturePtr           m_pTexRedSh     = nullptr;
     RHITexturePtr           m_pTexGreenSh   = nullptr;
     RHITexturePtr           m_pTexBlueSh    = nullptr;
-    RHIFrameBufferPtr       m_pFbInject     = nullptr;
+    std::vector<RHIFrameBufferPtr>       m_pFbInject = {};
+    RHIRenderBufferPtr      m_pRTIndexCBuffer = nullptr;
 
     RHITexturePtr           m_pTexAccuRedSh = nullptr;
     RHITexturePtr           m_pTexAccuGreenSh = nullptr;
     RHITexturePtr           m_pTexAccuBlueSh = nullptr;
-    RHIFrameBufferPtr       m_pFbPropagation = nullptr;
-
     RHITexturePtr           m_pTexRedSh_Bak = nullptr;
     RHITexturePtr           m_pTexGreenSh_Bak = nullptr;
     RHITexturePtr           m_pTexBlueSh_Bak = nullptr;
-    RHIFrameBufferPtr       m_pFbPropagation_Bak = nullptr;
+    std::vector<RHIFrameBufferPtr>       m_pFbPropagation = {};
 
     RenderStateDesc         m_PropagationRsDesc;
-
     RHIRenderBufferPtr      m_pInjectVerticsCBuffer = nullptr;    
 
     PostProcessPtr          m_pGiLpvPp = nullptr;
@@ -111,7 +112,6 @@ private:
 
     static const std::string TechName_LPVInject;
     static const std::string TechName_LPVPropagation;
-    static const std::string TechName_LPVPropagation_Bak;
 };
 
 

@@ -199,7 +199,7 @@ ID3D11ShaderResourceViewPtr const& D3D11Texture::GetD3DSrv(uint32_t array_index,
     }
 }
 
-ID3D11RenderTargetViewPtr const& D3D11Texture::GetD3DRtv(uint32_t first_array_index, uint32_t array_size, uint32_t level)
+ID3D11RenderTargetViewPtr const& D3D11Texture::GetD3DRtv(uint32_t first_array_index, uint32_t array_size, uint32_t mip_level)
 {
     SEEK_ASSERT(m_desc.flags & RESOURCE_FLAG_GPU_WRITE);
     SEEK_ASSERT(first_array_index < m_desc.num_array);
@@ -207,7 +207,7 @@ ID3D11RenderTargetViewPtr const& D3D11Texture::GetD3DRtv(uint32_t first_array_in
 
     size_t hash_val = HashValue(first_array_index);
     HashCombine(hash_val, array_size);
-    HashCombine(hash_val, level);
+    HashCombine(hash_val, mip_level);
     HashCombine(hash_val, 0);
     HashCombine(hash_val, 0);
 
@@ -220,20 +220,20 @@ ID3D11RenderTargetViewPtr const& D3D11Texture::GetD3DRtv(uint32_t first_array_in
     {
         D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
         D3D11_RENDER_TARGET_VIEW_DESC desc = {};
-        this->FillRtvDesc(desc, first_array_index, array_size, level);
+        this->FillRtvDesc(desc, first_array_index, array_size, mip_level);
         ID3D11RenderTargetViewPtr d3d_rtv;
         rc.GetD3D11Device()->CreateRenderTargetView(m_pTexture.Get(), &desc, d3d_rtv.GetAddressOf());
         return m_mD3dRtvs.emplace(hash_val, std::move(d3d_rtv)).first->second;
     }
 }
-ID3D11RenderTargetViewPtr const& D3D11Texture::GetD3DRtv(uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t level)
+ID3D11RenderTargetViewPtr const& D3D11Texture::GetD3DRtv(uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level)
 {
     SEEK_ASSERT(m_desc.flags & RESOURCE_FLAG_GPU_WRITE);
     SEEK_ASSERT(0 == array_index);
 
     size_t hash_val = HashValue(array_index);
     HashCombine(hash_val, 1);
-    HashCombine(hash_val, level);
+    HashCombine(hash_val, mip_level);
     HashCombine(hash_val, first_slice);
     HashCombine(hash_val, num_slices);
 
@@ -246,19 +246,19 @@ ID3D11RenderTargetViewPtr const& D3D11Texture::GetD3DRtv(uint32_t array_index, u
     {
         D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
         D3D11_RENDER_TARGET_VIEW_DESC desc = {};
-        this->FillRtvDesc(desc, array_index, first_slice, num_slices, level);
+        this->FillRtvDesc(desc, array_index, first_slice, num_slices, mip_level);
         ID3D11RenderTargetViewPtr d3d_rtv = {};
         rc.GetD3D11Device()->CreateRenderTargetView(m_pTexture.Get(), &desc, d3d_rtv.GetAddressOf());
         return m_mD3dRtvs.emplace(hash_val, std::move(d3d_rtv)).first->second;
     }
 }
-ID3D11RenderTargetViewPtr const& D3D11Texture::GetD3DRtv(uint32_t array_index, CubeFaceType face, uint32_t level)
+ID3D11RenderTargetViewPtr const& D3D11Texture::GetD3DRtv(uint32_t array_index, CubeFaceType face, uint32_t mip_level)
 {
     SEEK_ASSERT(m_desc.flags & RESOURCE_FLAG_GPU_WRITE);
 
     size_t hash_val = HashValue(array_index * 6 + (uint32_t)face);
     HashCombine(hash_val, 1);
-    HashCombine(hash_val, level);
+    HashCombine(hash_val, mip_level);
     HashCombine(hash_val, 0);
     HashCombine(hash_val, 0);
 
@@ -271,7 +271,7 @@ ID3D11RenderTargetViewPtr const& D3D11Texture::GetD3DRtv(uint32_t array_index, C
     {
         D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
         D3D11_RENDER_TARGET_VIEW_DESC desc = {};
-        this->FillRtvDesc(desc, array_index, face, level);
+        this->FillRtvDesc(desc, array_index, face, mip_level);
         ID3D11RenderTargetViewPtr d3d_rtv;
         rc.GetD3D11Device()->CreateRenderTargetView(m_pTexture.Get(), &desc, d3d_rtv.GetAddressOf());
         return m_mD3dRtvs.emplace(hash_val, std::move(d3d_rtv)).first->second;
@@ -280,7 +280,7 @@ ID3D11RenderTargetViewPtr const& D3D11Texture::GetD3DRtv(uint32_t array_index, C
 
 
 
-ID3D11DepthStencilViewPtr const& D3D11Texture::GetD3DDsv(uint32_t first_array_index, uint32_t array_size, uint32_t level)
+ID3D11DepthStencilViewPtr const& D3D11Texture::GetD3DDsv(uint32_t first_array_index, uint32_t array_size, uint32_t mip_level)
 {
     SEEK_ASSERT(m_desc.flags & RESOURCE_FLAG_GPU_WRITE);
     SEEK_ASSERT(first_array_index < m_desc.num_array);
@@ -288,7 +288,7 @@ ID3D11DepthStencilViewPtr const& D3D11Texture::GetD3DDsv(uint32_t first_array_in
 
     size_t hash_val = HashValue(first_array_index);
     HashCombine(hash_val, array_size);
-    HashCombine(hash_val, level);
+    HashCombine(hash_val, mip_level);
     HashCombine(hash_val, 0);
     HashCombine(hash_val, 0);
 
@@ -301,22 +301,22 @@ ID3D11DepthStencilViewPtr const& D3D11Texture::GetD3DDsv(uint32_t first_array_in
     {
         D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
         D3D11_DEPTH_STENCIL_VIEW_DESC desc = {};
-        this->FillDsvDesc(desc, first_array_index, array_size, level);
+        this->FillDsvDesc(desc, first_array_index, array_size, mip_level);
         ID3D11DepthStencilViewPtr d3d_dsv;
         rc.GetD3D11Device()->CreateDepthStencilView(m_pTexture.Get(), &desc, d3d_dsv.GetAddressOf());
         return m_mD3dDsvs.emplace(hash_val, std::move(d3d_dsv)).first->second;
     }
 }
-ID3D11DepthStencilViewPtr const& D3D11Texture::GetD3DDsv(uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t level)
+ID3D11DepthStencilViewPtr const& D3D11Texture::GetD3DDsv(uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level)
 {
     SEEK_ASSERT(m_desc.flags & RESOURCE_FLAG_GPU_WRITE);
     SEEK_ASSERT(0 == array_index);
 
     size_t hash_val = HashValue(array_index);
     HashCombine(hash_val, 1);
-    HashCombine(hash_val, level);
+    HashCombine(hash_val, mip_level);
     HashCombine(hash_val, first_slice);
-    HashCombine(hash_val, level);
+    HashCombine(hash_val, num_slices);
 
     auto iter = m_mD3dDsvs.find(hash_val);
     if (iter != m_mD3dDsvs.end())
@@ -327,19 +327,19 @@ ID3D11DepthStencilViewPtr const& D3D11Texture::GetD3DDsv(uint32_t array_index, u
     {
         D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
         D3D11_DEPTH_STENCIL_VIEW_DESC desc = {};
-        this->FillDsvDesc(desc, array_index, first_slice, num_slices, level);
+        this->FillDsvDesc(desc, array_index, first_slice, num_slices, mip_level);
         ID3D11DepthStencilViewPtr d3d_dsv;
         rc.GetD3D11Device()->CreateDepthStencilView(m_pTexture.Get(), &desc, d3d_dsv.GetAddressOf());
         return m_mD3dDsvs.emplace(hash_val, std::move(d3d_dsv)).first->second;
     }
 }
-ID3D11DepthStencilViewPtr const& D3D11Texture::GetD3DDsv(uint32_t array_index, CubeFaceType face, uint32_t level)
+ID3D11DepthStencilViewPtr const& D3D11Texture::GetD3DDsv(uint32_t array_index, CubeFaceType face, uint32_t mip_level)
 {
     SEEK_ASSERT(m_desc.flags & RESOURCE_FLAG_GPU_WRITE);
 
     size_t hash_val = HashValue(array_index * 6 + (uint32_t)face);
     HashCombine(hash_val, 1);
-    HashCombine(hash_val, level);
+    HashCombine(hash_val, mip_level);
     HashCombine(hash_val, 0);
     HashCombine(hash_val, 0);
 
@@ -352,20 +352,20 @@ ID3D11DepthStencilViewPtr const& D3D11Texture::GetD3DDsv(uint32_t array_index, C
     {
         D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
         D3D11_DEPTH_STENCIL_VIEW_DESC desc = {};
-        this->FillDsvDesc(desc, array_index, face, level);
+        this->FillDsvDesc(desc, array_index, face, mip_level);
         ID3D11DepthStencilViewPtr d3d_dsv;
         rc.GetD3D11Device()->CreateDepthStencilView(m_pTexture.Get(), &desc, d3d_dsv.GetAddressOf());
         return m_mD3dDsvs.emplace(hash_val, std::move(d3d_dsv)).first->second;
     }
 }
 
-ID3D11UnorderedAccessViewPtr const& D3D11Texture::GetD3DUav(uint32_t first_array_index, uint32_t array_size, uint32_t level)
+ID3D11UnorderedAccessViewPtr const& D3D11Texture::GetD3DUav(uint32_t first_array_index, uint32_t array_size, uint32_t mip_level)
 {
     SEEK_ASSERT(m_desc.flags & RESOURCE_FLAG_UAV);
 
     size_t hash_val = HashValue(first_array_index);
     HashCombine(hash_val, array_size);
-    HashCombine(hash_val, level);
+    HashCombine(hash_val, mip_level);
     HashCombine(hash_val, 0);
     HashCombine(hash_val, 0);
 
@@ -378,19 +378,19 @@ ID3D11UnorderedAccessViewPtr const& D3D11Texture::GetD3DUav(uint32_t first_array
     {
         D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
         D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
-        this->FillUavDesc(desc, first_array_index, array_size, level);
+        this->FillUavDesc(desc, first_array_index, array_size, mip_level);
         ID3D11UnorderedAccessViewPtr d3d_ua_view;
         rc.GetD3D11Device()->CreateUnorderedAccessView(m_pTexture.Get(), &desc, d3d_ua_view.GetAddressOf());
         return m_mD3dUavs.emplace(hash_val, std::move(d3d_ua_view)).first->second;
     }
 }
-ID3D11UnorderedAccessViewPtr const& D3D11Texture::GetD3DUav(uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t level)
+ID3D11UnorderedAccessViewPtr const& D3D11Texture::GetD3DUav(uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level)
 {
     SEEK_ASSERT(m_desc.flags & RESOURCE_FLAG_UAV);
 
     size_t hash_val = HashValue(array_index);
     HashCombine(hash_val, 1);
-    HashCombine(hash_val, level);
+    HashCombine(hash_val, mip_level);
     HashCombine(hash_val, first_slice);
     HashCombine(hash_val, num_slices);
 
@@ -403,19 +403,19 @@ ID3D11UnorderedAccessViewPtr const& D3D11Texture::GetD3DUav(uint32_t array_index
     {
         D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
         D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
-        this->FillUavDesc(desc, array_index, first_slice, num_slices, level);
+        this->FillUavDesc(desc, array_index, first_slice, num_slices, mip_level);
         ID3D11UnorderedAccessViewPtr d3d_ua_view;
         rc.GetD3D11Device()->CreateUnorderedAccessView(m_pTexture.Get(), &desc, d3d_ua_view.GetAddressOf());
         return m_mD3dUavs.emplace(hash_val, std::move(d3d_ua_view)).first->second;
     }
 }
-ID3D11UnorderedAccessViewPtr const& D3D11Texture::GetD3DUav(uint32_t first_array_index, uint32_t array_size, CubeFaceType first_face, uint32_t num_faces, uint32_t level)
+ID3D11UnorderedAccessViewPtr const& D3D11Texture::GetD3DUav(uint32_t first_array_index, uint32_t array_size, CubeFaceType first_face, uint32_t num_faces, uint32_t mip_level)
 {
     SEEK_ASSERT(m_desc.flags & RESOURCE_FLAG_UAV);
 
     size_t hash_val = HashValue(first_array_index * 6 + (uint32_t)first_face);
     HashCombine(hash_val, array_size * 6 + num_faces);
-    HashCombine(hash_val, level);
+    HashCombine(hash_val, mip_level);
     HashCombine(hash_val, 0);
     HashCombine(hash_val, 0);
 
@@ -428,7 +428,7 @@ ID3D11UnorderedAccessViewPtr const& D3D11Texture::GetD3DUav(uint32_t first_array
     {
         D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
         D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
-        this->FillUavDesc(desc, first_array_index, array_size, first_face, num_faces, level);
+        this->FillUavDesc(desc, first_array_index, array_size, first_face, num_faces, mip_level);
         ID3D11UnorderedAccessViewPtr d3d_ua_view;
         rc.GetD3D11Device()->CreateUnorderedAccessView(m_pTexture.Get(), &desc, d3d_ua_view.GetAddressOf());
         return m_mD3dUavs.emplace(hash_val, std::move(d3d_ua_view)).first->second;
@@ -636,7 +636,7 @@ void D3D11Texture2D::FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc, uint32_t
         }
     }
 }
-void D3D11Texture2D::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t level)
+void D3D11Texture2D::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t mip_level)
 {
     switch (m_desc.format)
     {
@@ -656,7 +656,7 @@ void D3D11Texture2D::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, uint32_t f
         else
         {
             desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-            desc.Texture2DArray.MipSlice = level;
+            desc.Texture2DArray.MipSlice = mip_level;
             desc.Texture2DArray.FirstArraySlice = first_array_index;
             desc.Texture2DArray.ArraySize = array_size;
         }
@@ -670,11 +670,11 @@ void D3D11Texture2D::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, uint32_t f
         else
         {
             desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-            desc.Texture2D.MipSlice = level;
+            desc.Texture2D.MipSlice = mip_level;
         }
     }
 }
-void D3D11Texture2D::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t level)
+void D3D11Texture2D::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t mip_level)
 {
     switch (m_desc.format)
     {
@@ -694,7 +694,7 @@ void D3D11Texture2D::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, uint32_t f
         else
         {
             desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
-            desc.Texture2DArray.MipSlice = level;
+            desc.Texture2DArray.MipSlice = mip_level;
             desc.Texture2DArray.FirstArraySlice = first_array_index;
             desc.Texture2DArray.ArraySize = array_size;
         }
@@ -708,11 +708,11 @@ void D3D11Texture2D::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, uint32_t f
         else
         {
             desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
-            desc.Texture2D.MipSlice = level;
+            desc.Texture2D.MipSlice = mip_level;
         }
     }
 }
-void D3D11Texture2D::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t level)
+void D3D11Texture2D::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t mip_level)
 {
     switch (m_desc.format)
     {
@@ -724,14 +724,14 @@ void D3D11Texture2D::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_
     if (m_desc.num_array > 1)
     {
         desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
-        desc.Texture2DArray.MipSlice = level;
+        desc.Texture2DArray.MipSlice = mip_level;
         desc.Texture2DArray.FirstArraySlice = first_array_index;
         desc.Texture2DArray.ArraySize = array_size;
     }
     else
     {
         desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2D;
-        desc.Texture2D.MipSlice = level;
+        desc.Texture2D.MipSlice = mip_level;
     }
 }
 
@@ -1159,7 +1159,7 @@ void D3D11TextureCube::FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc, uint32
     desc.Texture2DArray.FirstArraySlice = array_index * 6 + (uint32_t)face;
     desc.Texture2DArray.ArraySize = 1;
 }
-void D3D11TextureCube::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t level) 
+void D3D11TextureCube::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t mip_level) 
 {
     switch (m_desc.format)
     {
@@ -1176,11 +1176,11 @@ void D3D11TextureCube::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, uint32_t
     {
         desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
     }
-    desc.Texture2DArray.MipSlice = level;
+    desc.Texture2DArray.MipSlice = mip_level;
     desc.Texture2DArray.FirstArraySlice = first_array_index * 6;
     desc.Texture2DArray.ArraySize = array_size * 6;
 }
-void D3D11TextureCube::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, uint32_t array_index, CubeFaceType face, uint32_t level) 
+void D3D11TextureCube::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, uint32_t array_index, CubeFaceType face, uint32_t mip_level) 
 {
     switch (m_desc.format)
     {
@@ -1197,11 +1197,11 @@ void D3D11TextureCube::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, uint32_t
     {
         desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
     }
-    desc.Texture2DArray.MipSlice = level;
+    desc.Texture2DArray.MipSlice = mip_level;
     desc.Texture2DArray.FirstArraySlice = array_index * 6 + (uint32_t)face;
     desc.Texture2DArray.ArraySize = 1;
 }
-void D3D11TextureCube::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t level) 
+void D3D11TextureCube::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t mip_level) 
 {
     switch (m_desc.format)
     {
@@ -1219,11 +1219,11 @@ void D3D11TextureCube::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, uint32_t
     {
         desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
     }
-    desc.Texture2DArray.MipSlice = level;
+    desc.Texture2DArray.MipSlice = mip_level;
     desc.Texture2DArray.FirstArraySlice = first_array_index * 6;
     desc.Texture2DArray.ArraySize = array_size * 6;
 }
-void D3D11TextureCube::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, uint32_t array_index, CubeFaceType face, uint32_t level)
+void D3D11TextureCube::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, uint32_t array_index, CubeFaceType face, uint32_t mip_level)
 {
     switch (m_desc.format)
     {
@@ -1241,11 +1241,11 @@ void D3D11TextureCube::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, uint32_t
     {
         desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
     }
-    desc.Texture2DArray.MipSlice = level;
+    desc.Texture2DArray.MipSlice = mip_level;
     desc.Texture2DArray.FirstArraySlice = array_index * 6 + (uint32_t)face;
     desc.Texture2DArray.ArraySize = 1;
 }
-void D3D11TextureCube::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t level) 
+void D3D11TextureCube::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t mip_level) 
 {
     switch (m_desc.format)
     {
@@ -1254,9 +1254,9 @@ void D3D11TextureCube::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint3
     case PixelFormat::D32F:     desc.Format = DXGI_FORMAT_R32_FLOAT;                break;
     default:                    desc.Format = m_eDxgiFormat;                        break;
     }
-    return this->FillUavDesc(desc, first_array_index, array_size, CubeFaceType::Positive_X, 6, level);
+    return this->FillUavDesc(desc, first_array_index, array_size, CubeFaceType::Positive_X, 6, mip_level);
 }
-void D3D11TextureCube::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, CubeFaceType first_face, uint32_t num_faces, uint32_t level)
+void D3D11TextureCube::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, CubeFaceType first_face, uint32_t num_faces, uint32_t mip_level)
 {
     switch (m_desc.format)
     {
@@ -1266,7 +1266,7 @@ void D3D11TextureCube::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint3
     default:                    desc.Format = m_eDxgiFormat;                        break;
     }
     desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE2DARRAY;
-    desc.Texture2DArray.MipSlice = level;
+    desc.Texture2DArray.MipSlice = mip_level;
     desc.Texture2DArray.FirstArraySlice = first_array_index * 6 + (uint32_t)first_face;
     desc.Texture2DArray.ArraySize = array_size * 6 + num_faces;
 }
@@ -1503,7 +1503,7 @@ void D3D11Texture3D::FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc, uint32_t
     desc.Texture3D.MostDetailedMip = first_level;
     desc.Texture3D.MipLevels = num_levels;
 }
-void D3D11Texture3D::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t level)
+void D3D11Texture3D::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level)
 {
     switch (m_desc.format)
     {
@@ -1513,11 +1513,11 @@ void D3D11Texture3D::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, uint32_t a
     default:                    desc.Format = m_eDxgiFormat;                        break;
     }
     desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE3D;
-    desc.Texture3D.MipSlice = level;
+    desc.Texture3D.MipSlice = mip_level;
     desc.Texture3D.FirstWSlice = first_slice;
     desc.Texture3D.WSize = num_slices;
 }
-void D3D11Texture3D::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t level)
+void D3D11Texture3D::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level)
 {
     switch (m_desc.format)
     {
@@ -1535,15 +1535,15 @@ void D3D11Texture3D::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, uint32_t a
     {
         desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
     }
-    desc.Texture2DArray.MipSlice = level;
+    desc.Texture2DArray.MipSlice = mip_level;
     desc.Texture2DArray.FirstArraySlice = first_slice;
     desc.Texture2DArray.ArraySize = num_slices;
 }
-void D3D11Texture3D::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t level)
+void D3D11Texture3D::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t mip_level)
 {
-    return this->FillUavDesc(desc, first_array_index, 0, m_desc.depth >> level, level);
+    return this->FillUavDesc(desc, first_array_index, 0, m_desc.depth >> mip_level, mip_level);
 }
-void D3D11Texture3D::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t level)
+void D3D11Texture3D::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level)
 {
     switch (m_desc.format)
     {
@@ -1553,7 +1553,7 @@ void D3D11Texture3D::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_
     default:                    desc.Format = m_eDxgiFormat;                        break;
     }
     desc.ViewDimension = D3D11_UAV_DIMENSION_TEXTURE3D;
-    desc.Texture3D.MipSlice = level;
+    desc.Texture3D.MipSlice = mip_level;
     desc.Texture3D.FirstWSlice = first_slice;
     desc.Texture3D.WSize = num_slices;
 }

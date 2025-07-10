@@ -1,6 +1,7 @@
 #pragma once
 
 // Global Illimination
+
 #define VPL_NUM 64
 struct GiRsmParam
 {
@@ -30,7 +31,7 @@ struct VPL
 #define SH_C0 0.282094792f 				// 1 / 2sqrt(pi)
 #define SH_C1 0.488602512f 				// sqrt(3/pi) / 2
 
-#define LPV_DIM 32
-#define LPV_DIM_HALF 16
-#define LPV_DIM_INVERSE 0.03125f
+#define LPV_SIZE 32
+#define LPV_SIZE_HALF 16
+#define LPV_SIZE_INVERSE 0.03125f
 #define LPV_SCALE 0.25f

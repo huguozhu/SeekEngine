@@ -30,21 +30,21 @@ protected:
 class D3D11Texture2DCubeRtv final : public D3D11RenderTargetView
 {
 public:
-    D3D11Texture2DCubeRtv(Context* context, RHITexturePtr const& tex_2d_cube, int first_array_index, int array_size, int mip_level);
+    D3D11Texture2DCubeRtv(Context* context, RHITexturePtr const& tex_2d_cube, uint32_t first_array_index, uint32_t array_size, uint32_t mip_level);
 
     ID3D11RenderTargetView* GetD3DRtv();
 };
 class D3D11Texture3DRtv final : public D3D11RenderTargetView
 {
 public:
-    D3D11Texture3DRtv(Context* context, RHITexturePtr const& tex_3d, int array_index, uint32_t first_slice, uint32_t num_slices, int mip_level);
+    D3D11Texture3DRtv(Context* context, RHITexturePtr const& tex_3d, uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level);
 
     ID3D11RenderTargetView* GetD3DRtv();
 };
 class D3D11TextureCubeFaceRtv final : public D3D11RenderTargetView
 {
 public:
-    D3D11TextureCubeFaceRtv(Context* context, RHITexturePtr const& tex_cube, int array_index, CubeFaceType face, int mip_level);
+    D3D11TextureCubeFaceRtv(Context* context, RHITexturePtr const& tex_cube, uint32_t array_index, CubeFaceType face, uint32_t mip_level);
 
     ID3D11RenderTargetView* GetD3DRtv();
 };

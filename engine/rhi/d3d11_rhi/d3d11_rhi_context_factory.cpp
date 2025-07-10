@@ -138,15 +138,20 @@ RHIRenderTargetViewPtr D3D11RHIContext::Create2DRenderTargetView(RHITexturePtr c
     RHIRenderTargetViewPtr rtv = MakeSharedPtr<D3D11TextureCubeFaceRtv>(m_pContext, tex_cube, array_index, face, mip_level);
     return rtv;
 }
+RHIRenderTargetViewPtr D3D11RHIContext::Create3DRenderTargetView(RHITexturePtr const& tex_3d, uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level)
+{
+    RHIRenderTargetViewPtr rtv = MakeSharedPtr<D3D11Texture3DRtv>(m_pContext, tex_3d, array_index, first_slice, num_slices, mip_level);
+    return rtv;
+}
 RHIDepthStencilViewPtr D3D11RHIContext::Create2DDepthStencilView(RHITexturePtr const& tex_2d, uint32_t first_array_index, uint32_t array_size, uint32_t mip_level)
 {
-    RHIDepthStencilViewPtr rtv = MakeSharedPtr<D3D11Texture2DDsv>(m_pContext, tex_2d, first_array_index, array_size, mip_level);
-    return rtv;
+    RHIDepthStencilViewPtr dsv = MakeSharedPtr<D3D11Texture2DDsv>(m_pContext, tex_2d, first_array_index, array_size, mip_level);
+    return dsv;
 }
 RHIDepthStencilViewPtr D3D11RHIContext::Create2DDepthStencilView(RHITexturePtr const& tex_2d, uint32_t array_index, CubeFaceType face, uint32_t mip_level)
 {
-    RHIDepthStencilViewPtr rtv = MakeSharedPtr<D3D11TextureCubeFaceDsv>(m_pContext, tex_2d, array_index, face, mip_level);
-    return rtv;
+    RHIDepthStencilViewPtr dsv = MakeSharedPtr<D3D11TextureCubeFaceDsv>(m_pContext, tex_2d, array_index, face, mip_level);
+    return dsv;
 }
 RHIFrameBufferPtr D3D11RHIContext::CreateRHIFrameBuffer()
 {

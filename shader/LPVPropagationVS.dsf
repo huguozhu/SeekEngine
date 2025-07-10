@@ -6,10 +6,8 @@ cbuffer cb_InjectVertics
 }
 
 float4 main(
-	uint vertex_id : SV_VertexID,
-	uint instance_id : SV_InstanceID) : SV_Position
+	uint vertex_id : SV_VertexID) : SV_Position
 {
 	float4 pos = vertices[vertex_id];
-	pos.z = instance_id * LPV_DIM_INVERSE;
 	return pos;
 }

@@ -42,7 +42,7 @@ float4 main(
 	pos_world /= pos_world.w;
 	
 	float4 SHintensity = DirToSH(frag_normal.rgb);
-	float3 lpvCellCoords = (pos_world.rgb * LPV_SCALE + float3(LPV_DIM_HALF, LPV_DIM_HALF, LPV_DIM_HALF)) * LPV_DIM_INVERSE;
+	float3 lpvCellCoords = (pos_world.rgb * LPV_SCALE + float3(LPV_SIZE_HALF, LPV_SIZE_HALF, LPV_SIZE_HALF)) * LPV_SIZE_INVERSE;
 	float4 lpvIntensity = float4(
 							max(0.0f, dot(SHintensity, redSH.Sample(point_sampler, lpvCellCoords))),
 							max(0.0f, dot(SHintensity, greenSH.Sample(point_sampler, lpvCellCoords))),

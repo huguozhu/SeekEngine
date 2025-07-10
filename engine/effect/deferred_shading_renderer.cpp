@@ -583,11 +583,11 @@ RendererReturnValue DeferredShadingRenderer::RenderPreZJob()
     }
     m_eCurRenderStage = RenderStage::None;
     m_pContext->RHIContextInstance().EndRenderPass();
-#if 1
+#if 0
     static int draw = 0;
     if (draw)
     {
-        m_pSceneDepthStencil->DumpToFile("d:\\depth_map.g16l");
+        m_pSceneDepthStencil->DumpToFile("d:\\dump\\depth_map.g16l");
         draw--;
     }
 #endif
@@ -619,15 +619,15 @@ RendererReturnValue DeferredShadingRenderer::GenerateGBufferJob()
         LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::GenerateGBufferJob() CopyTexture failed.");
     }
     m_pContext->RHIContextInstance().EndRenderPass();
-#if 1
+#if 0
     static int draw = 1;
     if (draw)
     {
-        m_pGBufferColor0->DumpToFile("d:\\GBuffer_RT0.rgba");
-        m_pGBufferColor1->DumpToFile("d:\\GBuffer_RT1.rgba");
-        m_pGBufferColor2->DumpToFile("d:\\GBuffer_RT2.rgba");
-        m_pSceneDepthStencil->DumpToFile("d:\\GBuffer_DS.g16l");
-        m_pSceneDepthCopy->DumpToFile("d:\\GBuffer_Depth_Copy.g16l");
+        m_pGBufferColor0->DumpToFile("d:\\dump\\GBuffer_RT0.rgba");
+        m_pGBufferColor1->DumpToFile("d:\\dump\\GBuffer_RT1.rgba");
+        m_pGBufferColor2->DumpToFile("d:\\dump\\GBuffer_RT2.rgba");
+        m_pSceneDepthStencil->DumpToFile("d:\\dump\\GBuffer_DS.g16l");
+        m_pSceneDepthCopy->DumpToFile("d:\\dump\\GBuffer_Depth_Copy.g16l");
         draw--;
     }
 #endif
@@ -671,11 +671,11 @@ RendererReturnValue DeferredShadingRenderer::SSAOJob()
         return RRV_NextJob;
     }
 
-#if 1
+#if 0
     static int draw = 1;
     if (draw)
     {
-        m_pSsaoColor->DumpToFile("d:\\ssao.gray");
+        m_pSsaoColor->DumpToFile("d:\\dump\\ssao.gray");
         draw--;
     }
 #endif
@@ -852,11 +852,11 @@ RendererReturnValue DeferredShadingRenderer::LightingJob()
     }
     m_pContext->RHIContextInstance().EndRenderPass();
 
-#if 1
+#if 0
     static int draw = 1;
     if (draw)
     {
-        m_pHDRColor->DumpToFile("d:\\HDR.rgba");
+        m_pHDRColor->DumpToFile("d:\\dump\\HDR.rgba");
         draw--;
     }
 #endif
@@ -890,11 +890,11 @@ RendererReturnValue DeferredShadingRenderer::HDRJob()
     if (res != S_Success)
         LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::HDRJob() m_pHDRPostProcess->Run() failed.");
     m_pContext->RHIContextInstance().EndRenderPass();
-#if 1
+#if 0
     static int draw = 1;
     if (draw)
     {
-        m_pLDRColor->DumpToFile("d:\\LDR.rgba");
+        m_pLDRColor->DumpToFile("d:\\dump\\LDR.rgba");
         draw--;
     }
 #endif
@@ -935,12 +935,12 @@ RendererReturnValue DeferredShadingRenderer::LDRJob()
         LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::LDRJob() m_pLDRPostProcess->Run() failed.");
     m_pContext->RHIContextInstance().EndRenderPass();
 
-#if  1
+#if  0
     static int draw = 1;
     if (draw)
     {
         draw--;
-        m_pLDRColor->DumpToFile("d:\\ldr_color.rgba");
+        m_pLDRColor->DumpToFile("d:\\dump\\ldr_color.rgba");
         draw = draw;
     }
 #endif

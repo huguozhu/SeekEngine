@@ -69,6 +69,7 @@ public: // virutal factory
 
     virtual RHIRenderTargetViewPtr  Create2DRenderTargetView(RHITexturePtr const& tex_2d,   uint32_t first_array_index = 0, uint32_t array_size = 1, uint32_t mip_level = 0) = 0;
     virtual RHIRenderTargetViewPtr  Create2DRenderTargetView(RHITexturePtr const& tex_cube, uint32_t array_index, CubeFaceType face, uint32_t mip_level) = 0;
+    virtual RHIRenderTargetViewPtr  Create3DRenderTargetView(RHITexturePtr const& tex_3d,   uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level) = 0;
     virtual RHIDepthStencilViewPtr  Create2DDepthStencilView(RHITexturePtr const& tex_2d,   uint32_t first_array_index = 0, uint32_t array_size = 1, uint32_t mip_level = 0) = 0;
     virtual RHIDepthStencilViewPtr  Create2DDepthStencilView(RHITexturePtr const& tex_2d,   uint32_t array_index, CubeFaceType face, uint32_t mip_level) = 0;
 

@@ -65,6 +65,14 @@ public:
     virtual SResult DumpSubResource3D(BitmapBufferPtr bitmap_data, uint32_t array_index = 0, uint32_t mip_level = 0, Box<uint32_t>* box = nullptr) = 0;
     virtual SResult DumpSubResourceCube(BitmapBufferPtr bitmap_data, CubeFaceType face, uint32_t array_index = 0, uint32_t mip_level = 0, Rect<uint32_t>* rect = nullptr) = 0;
 
+    SResult DumpToFile(std::string path, BitmapBufferPtr bitmap_data)
+    {
+        if (!bitmap_data)
+            return -1;
+        bitmap_data->DumpToFile(path);
+        return S_Success;
+    }
+
     SResult DumpToFile(std::string path, CubeFaceType face = CubeFaceType::Num)
     {
         BitmapBufferPtr bitmap_data = MakeSharedPtr<BitmapBuffer>();

@@ -176,7 +176,7 @@ RendererReturnValue ShadowLayer::GenerateShadowMapJob(uint32_t light_index)
         static int draw = 1;
         if (draw)
         {
-            m_pSmDepthTex->DumpToFile("d:\\sm_depth.g16l");
+            m_pSmDepthTex->DumpToFile("d:\\dump\\sm_depth.g16l");
             --draw;
         }
     #endif
@@ -207,7 +207,7 @@ RendererReturnValue ShadowLayer::GenerateShadowMapJob(uint32_t light_index)
             static int draw = 6;
             if (draw)
             {
-                //m_pCubeSmTex->DumpToFile("d:\\sm_cube.rgba", (CubeFaceType)i);
+                //m_pCubeSmTex->DumpToFile("d:\\dump\\sm_cube.rgba", (CubeFaceType)i);
                 --draw;
             }
 #endif
@@ -254,8 +254,8 @@ RendererReturnValue ShadowLayer::GenerateCascadedShadowMapJob(uint32_t light_ind
     {
         for (uint32_t i = 0; i < NUM_CSM_LEVELS; ++i)
         {
-            m_vCsmTex[i]->DumpToFile("d:\\csm_" + std::to_string(i) + ".rgba");
-            m_vCsmDepthTex[i]->DumpToFile("d:\\csm_depth_" + std::to_string(i) + ".g16l");
+            m_vCsmTex[i]->DumpToFile("d:\\dump\\csm_" + std::to_string(i) + ".rgba");
+            m_vCsmDepthTex[i]->DumpToFile("d:\\dump\\csm_depth_" + std::to_string(i) + ".g16l");
         }
         draw--;
     }
@@ -337,7 +337,7 @@ RendererReturnValue ForwardShadowLayer::PostProcessShadowMapJob(uint32_t light_i
         static int draw = 2;
         if (draw)
         {
-            m_pFilteredSmTex->DumpToFile("d:\\m_pFilteredSmTex.rgba");
+            m_pFilteredSmTex->DumpToFile("d:\\dump\\m_pFilteredSmTex.rgba");
             --draw;
         }
 #endif
@@ -512,7 +512,7 @@ RendererReturnValue DeferredShadowLayer::PostProcessShadowMapJob(uint32_t light_
     static int draw = 1;
     if (draw)
     {
-        m_pShadowingTex->DumpToFile("d:\\shadowing.rgba");
+        m_pShadowingTex->DumpToFile("d:\\dump\\shadowing.rgba");
         --draw;
     }
 #endif
