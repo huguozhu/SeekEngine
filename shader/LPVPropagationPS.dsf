@@ -71,10 +71,6 @@ float3 getReprojSideDirection(int index, int3 orientation)
 SHContribution GetSHGatheringContribution(int4 cellIndex)
 {
     SHContribution result = (SHContribution) 0;
-	result.red = redSH.Load(cellIndex);
-	result.green = greenSH.Load(cellIndex);
-	result.blue = blueSH.Load(cellIndex);
-	
     for (int neighbourCell = 0; neighbourCell < 6; neighbourCell++)
     {
         int4 neighbourPos = cellIndex - int4(cellDirections[neighbourCell], 0);

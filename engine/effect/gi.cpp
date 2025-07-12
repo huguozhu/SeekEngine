@@ -320,9 +320,12 @@ SResult LPV::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     m_pInjectVerticsCBuffer = rc.CreateConstantBuffer(sizeof(float4) * 3, RESOURCE_FLAG_CPU_WRITE);
     m_pInjectVerticsCBuffer->Update(vertices, sizeof(float4) * 3);
 
-    m_pTexRedSh_Bak = rc.CreateTexture3D(desc);
-    m_pTexGreenSh_Bak = rc.CreateTexture3D(desc);
-    m_pTexBlueSh_Bak = rc.CreateTexture3D(desc);
+    m_pTexRedSh_Src = rc.CreateTexture3D(desc);
+    m_pTexGreenSh_Src = rc.CreateTexture3D(desc);
+    m_pTexBlueSh_Src = rc.CreateTexture3D(desc);
+    m_pTexRedSh_RT = rc.CreateTexture3D(desc);
+    m_pTexGreenSh_RT = rc.CreateTexture3D(desc);
+    m_pTexBlueSh_RT = rc.CreateTexture3D(desc);
     m_pTexAccuRedSh = rc.CreateTexture3D(desc);
     m_pTexAccuGreenSh = rc.CreateTexture3D(desc);
     m_pTexAccuBlueSh = rc.CreateTexture3D(desc);
@@ -332,9 +335,9 @@ SResult LPV::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     for (uint32_t i = 0; i < LPV_SIZE; i++)
     {
         m_pFbPropagation[i] = rc.CreateRHIFrameBuffer();
-        m_pFbPropagation[i]->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.Create3DRenderTargetView(m_pTexRedSh_Bak,      0, i, 1, 0));
-        m_pFbPropagation[i]->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.Create3DRenderTargetView(m_pTexGreenSh_Bak,    0, i, 1, 0));
-        m_pFbPropagation[i]->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.Create3DRenderTargetView(m_pTexBlueSh_Bak,     0, i, 1, 0));
+        m_pFbPropagation[i]->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.Create3DRenderTargetView(m_pTexRedSh_RT,      0, i, 1, 0));
+        m_pFbPropagation[i]->AttachTargetView(RHIFrameBuffer::Attachment::Color1, rc.Create3DRenderTargetView(m_pTexGreenSh_RT,    0, i, 1, 0));
+        m_pFbPropagation[i]->AttachTargetView(RHIFrameBuffer::Attachment::Color2, rc.Create3DRenderTargetView(m_pTexBlueSh_RT,     0, i, 1, 0));
         m_pFbPropagation[i]->AttachTargetView(RHIFrameBuffer::Attachment::Color3, rc.Create3DRenderTargetView(m_pTexAccuRedSh,      0, i, 1, 0));
         m_pFbPropagation[i]->AttachTargetView(RHIFrameBuffer::Attachment::Color4, rc.Create3DRenderTargetView(m_pTexAccuGreenSh,    0, i, 1, 0));
         m_pFbPropagation[i]->AttachTargetView(RHIFrameBuffer::Attachment::Color5, rc.Create3DRenderTargetView(m_pTexAccuBlueSh,     0, i, 1, 0));
@@ -348,9 +351,9 @@ SResult LPV::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
         LOG_ERROR("Load technique %s failed", TechName_LPVPropagation.c_str());
         return ERR_INVALID_INIT;
     }
-    pPropagationTech->SetParam("redSH", m_pTexRedSh);
-    pPropagationTech->SetParam("greenSH", m_pTexGreenSh);
-    pPropagationTech->SetParam("blueSH", m_pTexBlueSh);
+    pPropagationTech->SetParam("redSH", m_pTexRedSh_Src);
+    pPropagationTech->SetParam("greenSH", m_pTexGreenSh_Src);
+    pPropagationTech->SetParam("blueSH", m_pTexBlueSh_Src);
     pPropagationTech->SetParam("cb_InjectVertics", m_pInjectVerticsCBuffer);
     pPropagationTech->SetParam("cb_RTIndex", m_pRTIndexCBuffer);
 
@@ -371,9 +374,9 @@ SResult LPV::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
     m_pGiLpvPp->SetParam("cb_InvProjMatrix", m_pLpvInvProjCBuffer);
     m_pGiLpvPp->SetParam("cb_CameraInfo", m_pLpvCameraInfoCBuffer);
     m_pGiLpvPp->SetParam("cb_GiLpvPSParam", m_pLpvParamCBuffer);
-    m_pGiLpvPp->SetParam("redSH",   m_pTexRedSh);
-    m_pGiLpvPp->SetParam("greenSH", m_pTexGreenSh);
-    m_pGiLpvPp->SetParam("blueSH",  m_pTexBlueSh);
+    m_pGiLpvPp->SetParam("redSH",   m_pTexAccuRedSh);
+    m_pGiLpvPp->SetParam("greenSH", m_pTexAccuGreenSh);
+    m_pGiLpvPp->SetParam("blueSH",  m_pTexAccuBlueSh);
     m_pGiLpvPp->SetOutput(0, m_pIndirectIlluminationTex);
     m_pGiLpvPp->SetPostProcessRenderStateDesc(RenderStateDesc::PostProcessAccumulate());
     return S_Success;
@@ -429,44 +432,37 @@ SResult LPV::LPVPropagation()
 {
     for (uint32_t i = 0; i < LPV_SIZE; i++)
     {
-        if (i == 0)
-        {
-
-            m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, float4(0.0));
-            m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color1, float4(0.0));
-            m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color2, float4(0.0));
-            m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color3, float4(0.0));
-            m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color4, float4(0.0));
-            m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color5, float4(0.0));
-        }
-        else
-        {
-            m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, RHIFrameBuffer::LoadAction::DontCare);
-            m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color1, RHIFrameBuffer::LoadAction::DontCare);
-            m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color2, RHIFrameBuffer::LoadAction::DontCare);
-            m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color3, RHIFrameBuffer::LoadAction::Load);
-            m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color4, RHIFrameBuffer::LoadAction::Load);
-            m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color5, RHIFrameBuffer::LoadAction::Load);
-        }
+        m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, RHIFrameBuffer::LoadAction::DontCare);
+        m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color1, RHIFrameBuffer::LoadAction::DontCare);
+        m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color2, RHIFrameBuffer::LoadAction::DontCare);
+        m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color3, RHIFrameBuffer::LoadAction::Load);
+        m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color4, RHIFrameBuffer::LoadAction::Load);
+        m_pFbPropagation[i]->SetColorLoadOption(RHIFrameBuffer::Attachment::Color5, RHIFrameBuffer::LoadAction::Load);
     }
     
     RHIContext& rc = m_pContext->RHIContextInstance();
     Effect& effect = m_pContext->EffectInstance();
     Technique* pTech = effect.GetTechnique(TechName_LPVPropagation);
-    
+
+    m_pFbPropagation[0]->Clear();
     for (uint32_t j = 0; j < LPV_SIZE; j++)
-    {
+    {        
+        rc.CopyTexture(m_pTexRedSh, m_pTexRedSh_Src);
+        rc.CopyTexture(m_pTexGreenSh, m_pTexGreenSh_Src);
+        rc.CopyTexture(m_pTexBlueSh, m_pTexBlueSh_Src);
+
         m_pRTIndexCBuffer->Update(&j, sizeof(uint32_t));
         rc.BeginRenderPass({ "LPVPropagation", m_pFbPropagation[j].get() });
         for (uint32_t i = 0; i < m_iPropagationSteps; ++i)
         {
             pTech->DrawInstanced(MeshTopologyType::Triangles, 3, 1, 0, 0);
-            rc.CopyTexture(m_pTexRedSh_Bak, m_pTexRedSh);
-            rc.CopyTexture(m_pTexGreenSh_Bak, m_pTexGreenSh);
-            rc.CopyTexture(m_pTexBlueSh_Bak, m_pTexBlueSh);
+            rc.CopyTexture(m_pTexRedSh_RT, m_pTexRedSh_Src);
+            rc.CopyTexture(m_pTexGreenSh_RT, m_pTexGreenSh_Src);
+            rc.CopyTexture(m_pTexBlueSh_RT, m_pTexBlueSh_Src);
         }
         rc.EndRenderPass();
     }
+
 #if 0
     static int draw = 1;
     if (draw)
@@ -474,10 +470,10 @@ SResult LPV::LPVPropagation()
         BitmapBufferPtr bitmap_data[LPV_SIZE] = {};
         for (uint32_t i = 0; i < LPV_SIZE; i++)
         {
-            std::string path = "d:\\dump\\sh_red\\sh_red_" + std::to_string(i) + ".rgba";
+            std::string path = "d:\\dump\\accu_sh_red\\accu_sh_red_step" + std::to_string(i) + ".rgba";
             bitmap_data[i] = MakeSharedPtr<BitmapBuffer>();
-            Box<uint32_t> box = { 0, 0, i, m_pTexRedSh->Width(), m_pTexRedSh->Height(), 1 };
-            m_pTexRedSh->DumpSubResource3D(bitmap_data[i], 0, 0, &box);
+            Box<uint32_t> box = { 0, 0, i, m_pTexAccuRedSh->Width(), m_pTexAccuRedSh->Height(), 1 };
+            m_pTexAccuRedSh->DumpSubResource3D(bitmap_data[i], 0, 0, &box);
             bitmap_data[i]->DumpToFile(path);
         }
         draw--;

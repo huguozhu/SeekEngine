@@ -89,12 +89,16 @@ private:
     std::vector<RHIFrameBufferPtr>       m_pFbInject = {};
     RHIRenderBufferPtr      m_pRTIndexCBuffer = nullptr;
 
+    RHITexturePtr           m_pTexRedSh_Src = nullptr;
+    RHITexturePtr           m_pTexGreenSh_Src = nullptr;
+    RHITexturePtr           m_pTexBlueSh_Src = nullptr;
+    RHITexturePtr           m_pTexRedSh_RT = nullptr;
+    RHITexturePtr           m_pTexGreenSh_RT = nullptr;
+    RHITexturePtr           m_pTexBlueSh_RT = nullptr;
     RHITexturePtr           m_pTexAccuRedSh = nullptr;
     RHITexturePtr           m_pTexAccuGreenSh = nullptr;
     RHITexturePtr           m_pTexAccuBlueSh = nullptr;
-    RHITexturePtr           m_pTexRedSh_Bak = nullptr;
-    RHITexturePtr           m_pTexGreenSh_Bak = nullptr;
-    RHITexturePtr           m_pTexBlueSh_Bak = nullptr;
+    
     std::vector<RHIFrameBufferPtr>       m_pFbPropagation = {};
 
     RenderStateDesc         m_PropagationRsDesc;
@@ -105,7 +109,7 @@ private:
     RHIRenderBufferPtr      m_pLpvParamCBuffer = nullptr;
     RHIRenderBufferPtr      m_pLpvCameraInfoCBuffer = nullptr;
 
-    uint32_t                m_iPropagationSteps = 25;
+    uint32_t                m_iPropagationSteps = 10;
     float                   m_fLpvAttenuation = 1.0;
     float                   m_fLpvPower = 1.0;
     float                   m_fLpvCutoff = 0.2;

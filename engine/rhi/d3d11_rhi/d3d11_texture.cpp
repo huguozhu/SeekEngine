@@ -1479,7 +1479,7 @@ SResult D3D11Texture3D::DumpSubResource3D(BitmapBufferPtr bitmap_data, uint32_t 
     for (uint32_t j = 0; j < copyBox.depth; j++)
     {
         uint8_t* dst = bitmap_data->Data() + bitmap_data->SlicePitch() * j;
-        uint8_t* src = (uint8_t*)mapped_data.pData + copyBox.y * mapped_data.RowPitch + copyBox.x * Formatutil::NumComponentBytes(m_desc.format) + mapped_data.DepthPitch * (j+copyBox.z);
+        uint8_t* src = (uint8_t*)mapped_data.pData + mapped_data.DepthPitch * (j + copyBox.z) + copyBox.y * mapped_data.RowPitch + copyBox.x * Formatutil::NumComponentBytes(m_desc.format);
         for (int i = 0; i < copyBox.height; i++)
         {
             memcpy_s(dst, copyBox.width * Formatutil::NumComponentBytes(m_desc.format), src, copyBox.width * Formatutil::NumComponentBytes(m_desc.format));
