@@ -51,22 +51,17 @@ public:
     RHIShaderPtr CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) override;
 
     RHITexturePtr       CreateTexture2D(ID3D11Texture2DPtr const& tex);
-    RHITexturePtr       CreateTexture2D(const  RHITexture::Desc& tex_desc, const BitmapBufferPtr init_data = nullptr) override;
-    RHITexturePtr       CreateTexture2D(const  RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas) override;
+    RHITexturePtr       CreateTexture2D(const  RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) override;
     RHITexturePtr       CreateTexture3D(const  RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) override;
     RHITexturePtr       CreateTextureCube(const  RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_data = {}) override;
-
-    RHIRenderBufferPtr  CreateEmptyVertexBuffer(uint32_t size, ResourceFlags flags) override;
-    RHIRenderBufferPtr  CreateEmptyIndexBuffer(uint32_t size, ResourceFlags flags) override;
-    RHITexturePtr       CreateEmptyTexture2D(RHITexture::Desc desc) override;
 
     RHIRenderBufferPtr  CreateConstantBuffer(uint32_t size, ResourceFlags usage) override;
     RHIRenderBufferPtr  CreateStructuredBuffer  (uint32_t size, ResourceFlags usage, uint32_t structure_byte_stride, RHIRenderBufferData* pData) override;
     RHIRenderBufferPtr  CreateRWStructuredBuffer(uint32_t size, ResourceFlags usage, uint32_t structure_byte_stride, RHIRenderBufferData* pData) override;
     RHIRenderBufferPtr  CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) override;
     RHIRenderBufferPtr  CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) override;
-    RHIRenderBufferPtr  CreateVertexBuffer(uint32_t size, ResourceFlags usage, RHIRenderBufferData* pData) override;
-    RHIRenderBufferPtr  CreateIndexBuffer(uint32_t size, ResourceFlags usage, RHIRenderBufferData* pData) override;
+    RHIRenderBufferPtr  CreateVertexBuffer(uint32_t size, RHIRenderBufferData* pData) override;
+    RHIRenderBufferPtr  CreateIndexBuffer(uint32_t size, RHIRenderBufferData* pData) override;
 
     RHIRenderStatePtr   CreateRenderState(RenderStateDesc const& desc) override;
     RHISamplerPtr       CreateSampler(SamplerDesc const& desc) override;

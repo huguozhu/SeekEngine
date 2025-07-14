@@ -28,17 +28,6 @@ RHITexturePtr D3D11RHIContext::CreateTexture2D(ID3D11Texture2DPtr const& tex)
 {
     return MakeSharedPtr<D3D11Texture2D>(m_pContext, tex);
 }
-
-RHITexturePtr D3D11RHIContext::CreateTexture2D(const RHITexture::Desc& tex_desc, const BitmapBufferPtr init_data)
-{
-    if (tex_desc.type != TextureType::Tex2D || tex_desc.width < 0 || tex_desc.height < 0 || tex_desc.num_mips <= 0)
-        return nullptr;
-
-    RHITexturePtr tex = MakeSharedPtr<D3D11Texture2D>(m_pContext, tex_desc);
-    std::vector<BitmapBufferPtr> data = { init_data };
-    SResult ret = tex->Create(data);
-    return SEEK_CHECKFAILED(ret) ? nullptr : tex;
-}
 RHITexturePtr D3D11RHIContext::CreateTexture2D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas)
 {
     if (tex_desc.type != TextureType::Tex2D || tex_desc.width < 0 || tex_desc.height < 0 || tex_desc.num_mips <= 0)
@@ -63,30 +52,15 @@ RHITexturePtr D3D11RHIContext::CreateTextureCube(const RHITexture::Desc& tex_des
     SResult ret = tex->Create(init_data);
     return SEEK_CHECKFAILED(ret) ? nullptr : tex;
 }
-
-RHIRenderBufferPtr D3D11RHIContext::CreateEmptyVertexBuffer(uint32_t size, ResourceFlags flags)
+RHIRenderBufferPtr D3D11RHIContext::CreateVertexBuffer(uint32_t size, RHIRenderBufferData* pData)
 {
-    RHIRenderBufferPtr buf = MakeSharedPtr<D3D11VertexBuffer>(m_pContext, size, flags);
-    return buf;
-}
-RHIRenderBufferPtr D3D11RHIContext::CreateEmptyIndexBuffer(uint32_t size, ResourceFlags flags)
-{
-    RHIRenderBufferPtr buf = MakeSharedPtr<D3D11IndexBuffer>(m_pContext, size, flags);
-    return buf;
-}
-RHITexturePtr D3D11RHIContext::CreateEmptyTexture2D(RHITexture::Desc desc)
-{
-    return MakeSharedPtr<D3D11Texture2D>(m_pContext, desc);
-}
-RHIRenderBufferPtr D3D11RHIContext::CreateVertexBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData)
-{
-    RHIRenderBufferPtr buf = MakeSharedPtr<D3D11VertexBuffer>(m_pContext, size, flags);
+    RHIRenderBufferPtr buf = MakeSharedPtr<D3D11VertexBuffer>(m_pContext, size);
     buf->Create(pData);
     return buf;
 }
-RHIRenderBufferPtr D3D11RHIContext::CreateIndexBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData)
+RHIRenderBufferPtr D3D11RHIContext::CreateIndexBuffer(uint32_t size, RHIRenderBufferData* pData)
 {
-    RHIRenderBufferPtr buf = MakeSharedPtr<D3D11IndexBuffer>(m_pContext, size, flags);
+    RHIRenderBufferPtr buf = MakeSharedPtr<D3D11IndexBuffer>(m_pContext, size);
     buf->Create(pData);
     return buf;
 }

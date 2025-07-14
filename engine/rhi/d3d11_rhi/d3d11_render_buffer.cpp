@@ -183,8 +183,8 @@ SResult D3D11RHIRenderBuffer::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc
 /******************************************************************************
  * D3D11VertexBuffer
  *******************************************************************************/
-D3D11VertexBuffer::D3D11VertexBuffer(Context* context, uint32_t size, ResourceFlags flags)
-    :D3D11RHIRenderBuffer(context, size, flags | RESOURCE_FLAG_CPU_WRITE)
+D3D11VertexBuffer::D3D11VertexBuffer(Context* context, uint32_t size)
+    :D3D11RHIRenderBuffer(context, size, RESOURCE_FLAG_CPU_WRITE)
 {
 }
 SResult D3D11VertexBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
@@ -197,8 +197,8 @@ SResult D3D11VertexBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
 /******************************************************************************
  * D3D11IndexBuffer
  *******************************************************************************/
-D3D11IndexBuffer::D3D11IndexBuffer(Context* context, uint32_t size, ResourceFlags flags)
-    :D3D11RHIRenderBuffer(context, size, flags | RESOURCE_FLAG_CPU_WRITE)
+D3D11IndexBuffer::D3D11IndexBuffer(Context* context, uint32_t size)
+    :D3D11RHIRenderBuffer(context, size, RESOURCE_FLAG_CPU_WRITE)
 {
 }
 SResult D3D11IndexBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)

@@ -117,7 +117,7 @@ void RHIContext::CreateCommonMesh()
             -1.0f,  1.0f,  1.0f,  0.0f,  1.0f,  0.0f, 0.0f, 0.0f  // bottom-left
         };
         RHIRenderBufferData vertex_data(sizeof(vertexs), vertexs);
-        RHIRenderBufferPtr vertex_buffer = this->CreateVertexBuffer(sizeof(vertexs), RESOURCE_FLAG_NONE, &vertex_data);
+        RHIRenderBufferPtr vertex_buffer = this->CreateVertexBuffer(sizeof(vertexs), &vertex_data);
         uint32_t stride = sizeof(float) * 8;
         m_pCubeMesh->AddVertexStream(vertex_buffer, 0,                   stride, VertexFormat::Float3, VertexElementUsage::Position, 0);
         m_pCubeMesh->AddVertexStream(vertex_buffer, sizeof(float) * 3,   stride, VertexFormat::Float3, VertexElementUsage::Normal,    0);
@@ -171,11 +171,11 @@ void RHIContext::CreateCommonMesh()
 
         m_pConeMesh = this->CreateMesh();
         RHIRenderBufferData vertex_data(sizeof(float3)* vertices.size(), &vertices[0]);
-        RHIRenderBufferPtr vertex_buffer = this->CreateVertexBuffer((uint32_t)(sizeof(float3) * vertices.size()), RESOURCE_FLAG_NONE, &vertex_data);
+        RHIRenderBufferPtr vertex_buffer = this->CreateVertexBuffer((uint32_t)(sizeof(float3) * vertices.size()), &vertex_data);
         m_pConeMesh->AddVertexStream(vertex_buffer, 0, sizeof(float3), VertexFormat::Float3, VertexElementUsage::Position, 0);
 
         RHIRenderBufferData index_data(sizeof(uint16_t)* indices.size(), &indices[0]);
-        RHIRenderBufferPtr index_buffer = this->CreateIndexBuffer((uint32_t)(sizeof(uint16_t) * indices.size()), RESOURCE_FLAG_NONE, &index_data);
+        RHIRenderBufferPtr index_buffer = this->CreateIndexBuffer((uint32_t)(sizeof(uint16_t) * indices.size()), &index_data);
         m_pConeMesh->SetIndexBuffer(index_buffer, IndexBufferType::UInt16);
         m_pConeMesh->SetTopologyType(MeshTopologyType::Triangles);
     }
@@ -191,7 +191,11 @@ RHITexturePtr RHIContext::CreateTexture2D(const BitmapBufferPtr data)
     desc.flags = RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_CPU_WRITE;
     return this->CreateTexture2D(desc, data);
 }
-
+RHITexturePtr RHIContext::CreateTexture2D(const RHITexture::Desc& tex_desc, const BitmapBufferPtr init_data)
+{
+    std::vector<BitmapBufferPtr> data = { init_data };
+    return this->CreateTexture2D(tex_desc, data);
+}
 RHISamplerPtr RHIContext::GetSampler(SamplerDesc const& desc)
 {
     auto it = m_Samplers.find(desc);

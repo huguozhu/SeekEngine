@@ -35,7 +35,7 @@ RHIRenderBufferPtr const& RHIMesh::GetIndexBuffer()
     {
         RHIContext& rc = m_pContext->RHIContextInstance();
         RHIRenderBufferData index_data{ m_indicesRes->_size, m_indicesRes->_data };
-        m_pIndexBuffer = rc.CreateIndexBuffer((uint32_t)m_indicesRes->_size, 0, &index_data);
+        m_pIndexBuffer = rc.CreateIndexBuffer((uint32_t)m_indicesRes->_size, &index_data);
     }
     return m_pIndexBuffer;
 }
@@ -209,7 +209,7 @@ std::vector<VertexStream>& RHIMesh::GetVertexStreams()
             m_vVertexStreams.emplace_back(_vs);
             VertexStream& vs = m_vVertexStreams.back();
             RHIRenderBufferData vertex_data(_vsBuf->_size, _vsBuf->_data);
-            vs.render_buffer = rc.CreateVertexBuffer((uint32_t)_vsBuf->_size, 0, &vertex_data);
+            vs.render_buffer = rc.CreateVertexBuffer((uint32_t)_vsBuf->_size, &vertex_data);
         }
     }
     
