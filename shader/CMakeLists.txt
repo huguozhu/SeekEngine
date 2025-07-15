@@ -85,7 +85,7 @@ set(shader_sources_files
 
 ################## shader_target_platform ##################
 if(TARGET_PLATFORM_WINDOWS)
-    set(shader_target_platform "hlsl")
+    set(shader_target_platform "dxil")
 elseif(TARGET_PLATFORM_MACOS)
     set(shader_target_platform "msl_macos")
 elseif(TARGET_PLATFORM_IOS)
@@ -131,6 +131,10 @@ set(shader_compile_options)
 
 if (shader_target_platform STREQUAL "hlsl")
     list(APPEND shader_compile_options "--define=\"SEEK_HLSL=1\"")
+elseif (shader_target_platform STREQUAL "dxil")
+    list(APPEND shader_compile_options "--define=\"SEEK_DXIL=1\"")  
+elseif (shader_target_platform STREQUAL "spirv")
+    list(APPEND shader_compile_options "--define=\"SEEK_SPIRV=1\"")
 elseif(shader_target_platform STREQUAL "essl")
     list(APPEND shader_compile_options "--define=\"SEEK_GLSL_ES=1\"")
 elseif(shader_target_platform STREQUAL "msl_macos")

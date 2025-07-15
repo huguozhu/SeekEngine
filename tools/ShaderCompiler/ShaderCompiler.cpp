@@ -533,7 +533,7 @@ int main(int argc, char** argv)
     std::vector<std::string> targetName;
     app.add_option("--target", targetName, "target platforms to generate, format: t1;t2;t3")
         ->delimiter(';')
-        ->check(CLI::IsMember({ "hlsl", "essl", "msl_macos", "msl_ios"}));
+        ->check(CLI::IsMember({ "dxil", "spirv", "hlsl", "essl", "msl_macos", "msl_ios"}));
 
     bool generateByteCode = false;
     app.add_flag("--bytecode", generateByteCode, "generate the compiled IR bytecode in header file");
