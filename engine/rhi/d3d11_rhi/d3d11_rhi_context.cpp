@@ -8,7 +8,6 @@
 #include "rhi/d3d11_rhi/d3d11_framebuffer.h"
 #include "rhi/d3d11_rhi/d3d11_translate.h"
 #include "rhi/d3d11_rhi/d3d11_texture.h"
-#include "rhi/d3d11_rhi/d3d11_fence.h"
 #include "rhi/d3d_rhi_common/d3d_adapter.h"
 
 #include "rhi/base/rhi_mesh.h"
@@ -26,6 +25,8 @@ const char* GetD3D11FeatureLevelStr(D3D_FEATURE_LEVEL feature_level)
 {
     switch (feature_level)
     {
+        case D3D_FEATURE_LEVEL_12_2:
+            return "12.2";
         case D3D_FEATURE_LEVEL_12_1:
             return "12.1";
         case D3D_FEATURE_LEVEL_12_0:
@@ -77,6 +78,7 @@ SResult D3D11RHIContext::Init()
         }
         D3D_FEATURE_LEVEL feature_levels[] =
         {
+            D3D_FEATURE_LEVEL_12_2,
             D3D_FEATURE_LEVEL_12_1,
             D3D_FEATURE_LEVEL_12_0,
             D3D_FEATURE_LEVEL_11_1,
@@ -618,16 +620,6 @@ void D3D11RHIContext::EndCapture()
     }
 }
 
-//void D3D11RHIContext::BeginRHITimeQuery(RHITimeQueryPtr& timerRHIQuery)
-//{
-//    //m_RHITimerQueryExecutor.Begin(timerRHIQuery);
-//}
-//
-//void D3D11RHIContext::EndRHITimeQuery(RHITimeQueryPtr& timeRHIQuery)
-//{
-//    //m_RHITimerQueryExecutor.End(timeRHIQuery);
-//}
-
 void D3D11RHIContext::BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* cbuffer, const char* name)
 {
     ID3D11Buffer* d3d_buffer = cbuffer == nullptr ? nullptr : ((D3D11RHIRenderBuffer*)cbuffer)->GetD3DBuffer();
@@ -662,10 +654,6 @@ void D3D11RHIContext::BindSampler(ShaderType stage, uint32_t binding, const RHIS
 {
     ID3D11SamplerState* d3d_sampler = sampler == nullptr ? nullptr : ((D3D11Sampler*)sampler)->GetD3D11SamplerState();
     SetD3DSamplers(stage, binding, 1, &d3d_sampler);
-}
-RHIFencePtr D3D11RHIContext::CreateFence()
-{
-    return MakeSharedPtr<D3D11RHIFence>(m_pContext);
 }
 
 extern "C"

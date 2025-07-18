@@ -13,8 +13,15 @@ public:
     virtual void Uninit();
 
     D3DAdapterPtr   ActiveAdapter();
-    void            SetDXGIFactory1(IDXGIFactory1* p);
+    IDXGIFactory*   GetDXGIFactory()  { return m_pDxgiFactory.Get(); }
     IDXGIFactory1*  GetDXGIFactory1() { return m_pDxgiFactory1.Get(); }
+    IDXGIFactory2*  GetDXGIFactory2() { return m_pDxgiFactory2.Get(); }
+    IDXGIFactory3*  GetDXGIFactory3() { return m_pDxgiFactory3.Get(); }
+    IDXGIFactory4*  GetDXGIFactory4() { return m_pDxgiFactory4.Get(); }
+    IDXGIFactory5*  GetDXGIFactory5() { return m_pDxgiFactory5.Get(); }
+    IDXGIFactory6*  GetDXGIFactory6() { return m_pDxgiFactory6.Get(); }
+    
+
     uint8_t         GetDxgiSubVerion() { return m_iDxgiSubVer; }
 
 protected:

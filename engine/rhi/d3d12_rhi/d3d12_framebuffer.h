@@ -15,12 +15,15 @@ public:
     SResult OnUnbind() override;
     SResult Resolve();
 
-    //ID3D12RenderTargetView* GetRenderTargetView() const { return m_vD3dRednerTargets[0]; }
+    void Clear(uint32_t flags = CBM_ALL, float4 const& clr = float4(0.0, 0.0, 0.0, 0.0), float depth = 1.0, int32_t stencil = 0);
+    void ClearRenderTarget(Attachment att, float4 const& clr = float4(0.0, 0.0, 0.0, 0.0));
+
+    ID3D12Resource* GetRenderTargetView() const { return m_vD3dRednerTargets[0]; }
 
 protected:
-    //std::vector<D3D12Resource*> m_vD3dRednerTargets;
-    //ID3D11DepthStencilView* m_pD3dDepthStencilView = nullptr;
-    //D3D11_VIEWPORT m_stD3dViewport;
+    std::vector<ID3D12Resource*> m_vD3dRednerTargets;
+    ID3D12Resource* m_pD3dDepthStencil = nullptr;
+    D3D12_VIEWPORT m_stD3dViewport;
 };
 
 SEEK_NAMESPACE_END

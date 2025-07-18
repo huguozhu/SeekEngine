@@ -23,7 +23,6 @@ private:
 
     D3DAdapter* m_pAdapter = nullptr;
 
-    DXGI_SWAP_CHAIN_DESC m_stSwapChainDesc;
     IDXGISwapChainPtr m_pSwapChain = nullptr;
     int32_t m_iLeft = 0;
     int32_t m_iTop = 0;

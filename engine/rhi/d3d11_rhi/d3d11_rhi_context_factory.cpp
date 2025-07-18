@@ -8,6 +8,7 @@
 #include "rhi/d3d11_rhi/d3d11_shader.h"
 #include "rhi/d3d11_rhi/d3d11_mesh.h"
 #include "rhi/d3d11_rhi/d3d11_render_view.h"
+#include "rhi/d3d11_rhi/d3d11_fence.h"
 
 #define SEEK_MACRO_FILE_UID 8     // this code is auto generated, don't touch it!!!
 
@@ -139,6 +140,10 @@ RHIProgramPtr D3D11RHIContext::CreateRHIProgram()
 RHITimeQueryPtr D3D11RHIContext::CreateRHITimeQuery()
 {
     return MakeSharedPtr<D3D11RHITimeQuery>(m_pContext);
+}
+RHIFencePtr D3D11RHIContext::CreateFence()
+{
+    return MakeSharedPtr<D3D11RHIFence>(m_pContext);
 }
 SEEK_NAMESPACE_END
 

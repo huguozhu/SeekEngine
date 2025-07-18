@@ -103,6 +103,7 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_object.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/format.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/format.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_fence.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_framebuffer.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_framebuffer.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/material.h
@@ -165,15 +166,17 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_window.cpp
 
     # d3d12 rhi
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_framebuffer.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_framebuffer.cpp
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_predeclare.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_rhi_context.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_rhi_context.cpp
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_rhi_context_factory.cpp
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_window.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_window.cpp
-    #
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_fence.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_fence.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_framebuffer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_framebuffer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_predeclare.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_rhi_context.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_rhi_context.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_rhi_context_factory.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_window.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_window.cpp
+    
     ## vulkan rhi
     #${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan_rhi/vulkan_rhi_context.h
     #${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan_rhi/vulkan_rhi_context.cpp

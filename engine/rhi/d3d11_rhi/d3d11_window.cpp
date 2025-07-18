@@ -39,33 +39,34 @@ SResult D3D11Window::Create(D3DAdapter* adapter, std::string const& name, void* 
         m_iWidth = rc.right - rc.left;
         m_iHeight = rc.bottom - rc.top;
 
-        m_stSwapChainDesc.BufferCount = 2;
-        m_stSwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        m_stSwapChainDesc.BufferDesc.Width = m_iWidth;
-        m_stSwapChainDesc.BufferDesc.Height = m_iHeight;
-        m_stSwapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM_SRGB;
-        m_stSwapChainDesc.BufferDesc.RefreshRate.Numerator = 60;
-        m_stSwapChainDesc.BufferDesc.RefreshRate.Denominator = 1;
-        m_stSwapChainDesc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
-        m_stSwapChainDesc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
-        m_stSwapChainDesc.SampleDesc.Count = 1;
-        m_stSwapChainDesc.SampleDesc.Quality = 0;
+        DXGI_SWAP_CHAIN_DESC desc;
+        desc.BufferCount = 2;
+        desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        desc.BufferDesc.Width = m_iWidth;
+        desc.BufferDesc.Height = m_iHeight;
+        desc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        desc.BufferDesc.RefreshRate.Numerator = 60;
+        desc.BufferDesc.RefreshRate.Denominator = 1;
+        desc.BufferDesc.ScanlineOrdering = DXGI_MODE_SCANLINE_ORDER_UNSPECIFIED;
+        desc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
+        desc.SampleDesc.Count = 1;
+        desc.SampleDesc.Quality = 0;
         if (1/*d3d11_rc.GetDxgiSubVerion() < 4 || m_pContext->GetNumSamples() > 1*/)
         {
-            m_stSwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-            m_stSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
+            desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+            desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
         }
         else
         {
-            m_stSwapChainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING | DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
-            m_stSwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+            desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING | DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
+            desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
         }
-        m_stSwapChainDesc.Windowed = TRUE;
-        m_stSwapChainDesc.OutputWindow = m_hWnd;
+        desc.Windowed = TRUE;
+        desc.OutputWindow = m_hWnd;
 
         IDXGIFactory1* factory1 = d3d11_rc.GetDXGIFactory1();
         ID3D11Device* pD3DDevice = d3d11_rc.GetD3D11Device();
-        HRESULT hr = factory1->CreateSwapChain(pD3DDevice, &m_stSwapChainDesc, m_pSwapChain.GetAddressOf());
+        HRESULT hr = factory1->CreateSwapChain(pD3DDevice, &desc, m_pSwapChain.GetAddressOf());
         if (FAILED(hr))
         {
             LOG_ERROR("CreateSwapChain Error: %x.", hr);
@@ -118,7 +119,6 @@ SResult D3D11Window::Create(D3DAdapter* adapter, std::string const& name, void* 
 void D3D11Window::Destroy()
 {
     Reset();
-    m_stSwapChainDesc = {};
     m_pSwapChain.Reset();
     m_pAdapter = nullptr;
     m_szName.clear();

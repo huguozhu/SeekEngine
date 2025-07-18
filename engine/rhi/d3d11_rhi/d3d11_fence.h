@@ -18,8 +18,8 @@ public:
 	virtual ~D3D11RHIFence() {}
 
 	virtual uint64_t Signal() override;
-	virtual void Wait(uint64_t id) override;
-	virtual bool IsCompleted(uint64_t id) override;
+	virtual void Wait(uint64_t value) override;
+	virtual bool IsCompleted(uint64_t value) override;
 
 private:
 	std::map<uint64_t, ID3D11QueryPtr> m_mFences;

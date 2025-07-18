@@ -70,16 +70,16 @@ SResult DxgiHelper::Init(int32_t preferred_adapter, bool debug)
             if (debug)
                 dxgi_factory_flag |= DXGI_CREATE_FACTORY_DEBUG;
 
-            hr = Func_CreateDXGIFactory2(dxgi_factory_flag, __uuidof(IDXGIFactory1), (void**)m_pDxgiFactory1.GetAddressOf());
+            hr = Func_CreateDXGIFactory2(dxgi_factory_flag, __uuidof(IDXGIFactory1), (void**)m_pDxgiFactory.GetAddressOf());
             if (FAILED(hr))
             {
                 LOG_WARNING("CreateDXGIFactory2 Error, hr=%x, try CreateDXGIFactory1", hr);
             }
         }
 
-        if (!m_pDxgiFactory1)
+        if (!m_pDxgiFactory)
         {
-            hr = Func_CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)m_pDxgiFactory1.GetAddressOf());
+            hr = Func_CreateDXGIFactory1(__uuidof(IDXGIFactory1), (void**)m_pDxgiFactory.GetAddressOf());
             if (FAILED(hr))
             {
                 LOG_WARNING("CreateDXGIFactory1 Error, hr=%x, ", hr);
@@ -87,22 +87,25 @@ SResult DxgiHelper::Init(int32_t preferred_adapter, bool debug)
             }
         }
 
-        m_iDxgiSubVer = 1;
-        if (SUCCEEDED(m_pDxgiFactory1.As(&m_pDxgiFactory2)))
+        if (SUCCEEDED(m_pDxgiFactory.As(&m_pDxgiFactory1)))
         {
-            m_iDxgiSubVer = 2;
-            if (SUCCEEDED(m_pDxgiFactory1.As(&m_pDxgiFactory3)))
+            m_iDxgiSubVer = 1;
+            if (SUCCEEDED(m_pDxgiFactory.As(&m_pDxgiFactory2)))
             {
-                m_iDxgiSubVer = 3;
-                if (SUCCEEDED(m_pDxgiFactory1.As(&m_pDxgiFactory4)))
+                m_iDxgiSubVer = 2;
+                if (SUCCEEDED(m_pDxgiFactory.As(&m_pDxgiFactory3)))
                 {
-                    m_iDxgiSubVer = 4;
-                    if (SUCCEEDED(m_pDxgiFactory1.As(&m_pDxgiFactory5)))
+                    m_iDxgiSubVer = 3;
+                    if (SUCCEEDED(m_pDxgiFactory.As(&m_pDxgiFactory4)))
                     {
-                        m_iDxgiSubVer = 5;
-                        if (SUCCEEDED(m_pDxgiFactory1.As(&m_pDxgiFactory6)))
+                        m_iDxgiSubVer = 4;
+                        if (SUCCEEDED(m_pDxgiFactory.As(&m_pDxgiFactory5)))
                         {
-                            m_iDxgiSubVer = 6;
+                            m_iDxgiSubVer = 5;
+                            if (SUCCEEDED(m_pDxgiFactory.As(&m_pDxgiFactory6)))
+                            {
+                                m_iDxgiSubVer = 6;
+                            }
                         }
                     }
                 }
@@ -197,6 +200,7 @@ void DxgiHelper::Uninit()
     m_vAdapterList.clear();
     m_iCurAdapterNo = INVALID_ADAPTER_INDEX;
     m_iDxgiSubVer = 0;
+    m_pDxgiFactory.Reset();
     m_pDxgiFactory1.Reset();
     m_pDxgiFactory2.Reset();
     m_pDxgiFactory3.Reset();
@@ -210,10 +214,6 @@ D3DAdapterPtr DxgiHelper::ActiveAdapter()
         return m_vAdapterList[m_iCurAdapterNo];
     else
         return nullptr;
-}
-void DxgiHelper::SetDXGIFactory1(IDXGIFactory1* p)
-{
-    m_pDxgiFactory1 = p;
 }
 
 void OutputD3DCommonDebugInfo()

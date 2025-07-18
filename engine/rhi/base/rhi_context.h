@@ -41,13 +41,13 @@ public:
 
 public: // virutal factory
     virtual ~RHIContext() {}
-    virtual SResult                 Init() = 0;
-    virtual SResult                 CheckCapabilitySetSupport() = 0;
+    virtual SResult                 Init() = 0;    
     virtual void                    Uninit() = 0;
+    virtual SResult                 CheckCapabilitySetSupport() = 0;
     virtual SResult                 AttachNativeWindow(std::string const& name, void* native_wnd = nullptr) = 0;
     virtual RHIMeshPtr              CreateMesh() = 0;
     virtual RHIShaderPtr            CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) = 0;
-    virtual std::vector<RHITexturePtr> CreateTexture2DFromNative(void* gpu_data, std::vector<PixelFormat> format) { return std::vector<RHITexturePtr>(); }
+
             RHITexturePtr           CreateTexture2D(const BitmapBufferPtr data);
             RHITexturePtr           CreateTexture2D(const RHITexture::Desc& tex_desc, const BitmapBufferPtr init_data);
     virtual RHITexturePtr           CreateTexture2D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) { return nullptr; }
@@ -72,6 +72,7 @@ public: // virutal factory
     virtual RHIFrameBufferPtr       CreateRHIFrameBuffer() = 0;
     virtual RHIProgramPtr           CreateRHIProgram() = 0;
     virtual RHITimeQueryPtr         CreateRHITimeQuery() = 0;
+    virtual RHIFencePtr             CreateFence() = 0;
 
     virtual void                    BindRHIProgram(RHIProgram* program) {}
 
@@ -114,8 +115,6 @@ public: // virutal factory
     virtual void                    BindTexture(ShaderType stage, uint32_t binding, const RHITexture* texture, const char* name) = 0;
     virtual void                    BindRWTexture(ShaderType stage, uint32_t binding, const RHITexture* rw_texture, const char* name) = 0;
     virtual void                    BindSampler(ShaderType stage, uint32_t binding, const RHISampler* sampler, const char* name) = 0;
-
-    virtual RHIFencePtr             CreateFence() { return nullptr; }
 
 protected:
     // Functions that only can been called by Context

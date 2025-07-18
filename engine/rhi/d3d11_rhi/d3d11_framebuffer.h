@@ -15,10 +15,10 @@ public:
     SResult OnUnbind() override;
     SResult Resolve();
 
-    virtual void Clear(uint32_t flags = CBM_ALL, float4 const& clr = float4(0.0, 0.0, 0.0, 0.0), float depth = 1.0, int32_t stencil = 0) override;
-    virtual void ClearRenderTarget(Attachment att, float4 const& clr = float4(0.0, 0.0, 0.0, 0.0)) override;
+    void Clear(uint32_t flags = CBM_ALL, float4 const& clr = float4(0.0, 0.0, 0.0, 0.0), float depth = 1.0, int32_t stencil = 0);
+    void ClearRenderTarget(Attachment att, float4 const& clr = float4(0.0, 0.0, 0.0, 0.0));
 
-    ID3D11RenderTargetView* GetRenderTargetView() const { return m_vD3dRednerTargets[0]; }
+    ID3D11RenderTargetView* GetRenderTargetView(uint32_t rt_index = 0) const { return m_vD3dRednerTargets[rt_index]; }
 
 protected:
     std::vector<ID3D11RenderTargetView*> m_vD3dRednerTargets;

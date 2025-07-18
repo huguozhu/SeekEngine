@@ -44,16 +44,17 @@ protected:
 
 // Rendering Object Factory
 public:
-    virtual SResult Init() override;
-    virtual void Uninit() override;
-    SResult CheckCapabilitySetSupport() override;
-    RHIMeshPtr CreateMesh() override;
-    RHIShaderPtr CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) override;
+    SResult             Init() override;
+    void                Uninit() override;
+    SResult             CheckCapabilitySetSupport() override;
+    SResult             AttachNativeWindow(std::string const& name, void* native_wnd = nullptr) override;
+    RHIMeshPtr          CreateMesh() override;
+    RHIShaderPtr        CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) override;
 
     RHITexturePtr       CreateTexture2D(ID3D11Texture2DPtr const& tex);
-    RHITexturePtr       CreateTexture2D(const  RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) override;
-    RHITexturePtr       CreateTexture3D(const  RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) override;
-    RHITexturePtr       CreateTextureCube(const  RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_data = {}) override;
+    RHITexturePtr       CreateTexture2D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) override;
+    RHITexturePtr       CreateTexture3D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) override;
+    RHITexturePtr       CreateTextureCube(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_data = {}) override;
 
     RHIRenderBufferPtr  CreateConstantBuffer(uint32_t size, ResourceFlags usage) override;
     RHIRenderBufferPtr  CreateStructuredBuffer  (uint32_t size, ResourceFlags usage, uint32_t structure_byte_stride, RHIRenderBufferData* pData) override;
@@ -61,10 +62,7 @@ public:
     RHIRenderBufferPtr  CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) override;
     RHIRenderBufferPtr  CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) override;
     RHIRenderBufferPtr  CreateVertexBuffer(uint32_t size, RHIRenderBufferData* pData) override;
-    RHIRenderBufferPtr  CreateIndexBuffer(uint32_t size, RHIRenderBufferData* pData) override;
-
-    RHIRenderStatePtr   CreateRenderState(RenderStateDesc const& desc) override;
-    RHISamplerPtr       CreateSampler(SamplerDesc const& desc) override;
+    RHIRenderBufferPtr  CreateIndexBuffer(uint32_t size, RHIRenderBufferData* pData) override;    
 
     RHIRenderTargetViewPtr Create2DRenderTargetView(RHITexturePtr const& tex_2d, uint32_t first_array_index = 0, uint32_t array_size = 1, uint32_t mip_level = 0) override;
     RHIRenderTargetViewPtr Create2DRenderTargetView(RHITexturePtr const& tex_cube, uint32_t array_index, CubeFaceType face, uint32_t mip_level) override;
@@ -75,8 +73,7 @@ public:
     RHIFrameBufferPtr   CreateRHIFrameBuffer() override;
     RHIProgramPtr       CreateRHIProgram() override;
     RHITimeQueryPtr     CreateRHITimeQuery() override;
-
-    SResult             AttachNativeWindow(std::string const& name, void* native_wnd = nullptr) override;
+    RHIFencePtr         CreateFence() override;
 
     SResult             BeginFrame() override;
     SResult             EndFrame() override;
@@ -92,21 +89,26 @@ public:
     SResult             DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, MeshTopologyType type, uint32_t vertexCountPerInstance, uint32_t instanceCount, uint32_t startVertexLocation, uint32_t startInstanceLocation) override;
     void                EndComputePass() override;
 
-    SResult SyncTexture(RHITexturePtr tex) override { return S_Success; }
-    SResult CopyTexture(RHITexturePtr tex_src, RHITexturePtr tex_dst) override;
-    SResult CopyTextureRegion(RHITexturePtr tex_src, RHITexturePtr tex_dst, int32_t dst_x = 0, int32_t dst_y = 0, int32_t dst_z = 0) override;
+    SResult             SyncTexture(RHITexturePtr tex) override { return S_Success; }
+    SResult             CopyTexture(RHITexturePtr tex_src, RHITexturePtr tex_dst) override;
+    SResult             CopyTextureRegion(RHITexturePtr tex_src, RHITexturePtr tex_dst, int32_t dst_x = 0, int32_t dst_y = 0, int32_t dst_z = 0) override;
 
-    void BeginCapture() override;
-    void EndCapture() override;
+    void                BeginCapture() override;
+    void                EndCapture() override;
 
-    void BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* cbuffer, const char* name) override;
-    void BindRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* buffer, const char* name) override;
-    void BindRWRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* rw_buffer, const char* name) override;
-    void BindTexture(ShaderType stage, uint32_t binding, const  RHITexture* texture, const char* name) override;
-    void BindRWTexture(ShaderType stage, uint32_t binding, const  RHITexture* rw_texture, const char* name) override;
-    void BindSampler(ShaderType stage, uint32_t binding, const RHISampler* sampler, const char* name) override;
+    void                BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* cbuffer, const char* name) override;
+    void                BindRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* buffer, const char* name) override;
+    void                BindRWRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* rw_buffer, const char* name) override;
+    void                BindTexture(ShaderType stage, uint32_t binding, const  RHITexture* texture, const char* name) override;
+    void                BindRWTexture(ShaderType stage, uint32_t binding, const  RHITexture* rw_texture, const char* name) override;
+    void                BindSampler(ShaderType stage, uint32_t binding, const RHISampler* sampler, const char* name) override;
 
-    RHIFencePtr CreateFence() override;
+    
+
+protected:
+    friend class Context;
+    RHIRenderStatePtr   CreateRenderState(RenderStateDesc const& desc) override;
+    RHISamplerPtr       CreateSampler(SamplerDesc const& desc) override;
 };
 
 SEEK_NAMESPACE_END

@@ -15,6 +15,7 @@
 #include <DXProgrammableCapture.h>
 
 #include "kernel/context.h"
+#include "utils/log.h"
 
 
 SEEK_NAMESPACE_BEGIN
@@ -23,7 +24,14 @@ SEEK_NAMESPACE_BEGIN
 #define SAFE_RELEASE(p)      { if (p) { (p)->Release(); (p)=NULL; } }
 #endif
 
-template<class T> using ComPtr     = Microsoft::WRL::ComPtr<T>;
+inline void SEEK_THROW_IFFAIL(HRESULT hr)
+{
+    if (FAILED(hr))
+        ErrUnreachable("");
+}
+
+
+template<class T> using ComPtr      = Microsoft::WRL::ComPtr<T>;
 using IDXGraphicsAnalysisPtr		= ComPtr<IDXGraphicsAnalysis>;
 using IDXGIFactoryPtr               = ComPtr<IDXGIFactory>;
 using IDXGIFactory1Ptr              = ComPtr<IDXGIFactory1>;

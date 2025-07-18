@@ -195,14 +195,7 @@ SResult Context::EndRender()
 void Context::SetFpsLimitType(FPSLimitType b)
 {
     m_InitInfo.fps_limit_type = b;
-    switch (b)
-    {
-    case FPSLimitType::FPS_30:  m_fMinFrameTime = 0.0333f; break;
-    case FPSLimitType::FPS_60:  m_fMinFrameTime = 0.0167f; break;
-    case FPSLimitType::FPS_120: m_fMinFrameTime = 0.0083f; break;
-    case FPSLimitType::NoLImit:
-    default: m_fMinFrameTime = 0.0f;
-    }
+    m_fMinFrameTime = 1.0f / (float)b;
 }
 
 SResult Context::InitRHIContext()
@@ -210,7 +203,7 @@ SResult Context::InitRHIContext()
     if (m_InitInfo.rhi_type == RHIType::D3D11)
         MakeD3D11RHIContext(this, m_pRHIContext);
     else if (m_InitInfo.rhi_type == RHIType::D3D12)
-        ;// MakeD3D12RHIContext(this, m_pRHIContext);
+        MakeD3D12RHIContext(this, m_pRHIContext);
     else  if (m_InitInfo.rhi_type == RHIType::Vulkan)
         ;//MakeVulkanRHIContext(this, m_pRHIContext);
     SResult ret = m_pRHIContext->Init();

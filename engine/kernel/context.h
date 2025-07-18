@@ -42,10 +42,10 @@ enum class AntiAliasingMode : uint32_t
 };
 enum class FPSLimitType : uint32_t
 {
-    NoLImit,
-    FPS_30,
-    FPS_60,
-    FPS_120,
+    NoLImit = 1000,
+    FPS_30  = 30,
+    FPS_60  = 60,
+    FPS_120 = 90,
 };
 enum class GlobalIlluminationMode : uint32_t
 {
@@ -57,6 +57,7 @@ enum class GlobalIlluminationMode : uint32_t
 };
 struct RenderInitInfo
 {
+    uint32_t                is_full_screen = false;
     uint32_t                enable_debug = false;
     uint32_t                enable_profile = false;
     uint32_t                enable_transparent = false;
@@ -68,6 +69,7 @@ struct RenderInitInfo
     int32_t                 preferred_adapter = 0;
     LightingMode            lighting_mode = LightingMode::Phong;
     RendererType            renderer_type = RendererType::Forward;
+
 
     AntiAliasingMode        anti_aliasing_mode = AntiAliasingMode::None;
     FPSLimitType            fps_limit_type = FPSLimitType::FPS_60;
@@ -95,6 +97,7 @@ public:
     void                    SetClearColor(float4 color) { m_fClearColor = color; }
     float4                  GetClearColor() const { return m_fClearColor; }
 
+    bool                    IsFullScreen()              const { return m_InitInfo.is_full_screen; }
     bool                    EnableProfile()             const { return m_InitInfo.enable_profile; }
     bool                    EnableDebug()               const { return m_InitInfo.enable_debug; }
     bool                    EnableTransparent()         const { return m_InitInfo.enable_transparent; }
@@ -106,6 +109,7 @@ public:
     LightingMode            GetLightingMode()           const { return m_InitInfo.lighting_mode; }
 	RendererType            GetRendererType()           const { return m_InitInfo.renderer_type; }
     AntiAliasingMode        GetAntiAliasingMode()       const { return m_InitInfo.anti_aliasing_mode; }
+    FPSLimitType            GetFpsLimitType()           const { return m_InitInfo.fps_limit_type; }
 	GlobalIlluminationMode  GetGlobalIlluminationMode() const { return m_InitInfo.gi_mode; }
 
     uint32_t                GetFrameCount()             const { return m_FrameCount; }
