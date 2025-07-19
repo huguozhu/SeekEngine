@@ -14,8 +14,6 @@ class D3D11RenderTargetView : public RHIRenderTargetView
 {
 public:
     D3D11RenderTargetView(Context* context, void* src, uint32_t first_subres, uint32_t num_subres);
-    void OnAttached(RHIFrameBuffer& fb, RHIFrameBuffer::Attachment attach) {}
-    void OnDetached(RHIFrameBuffer& fb, RHIFrameBuffer::Attachment attach) {}
     void ClearColor(float4 const& color);
 
     virtual ID3D11RenderTargetView* GetD3DRtv() = 0;
@@ -57,8 +55,6 @@ class D3D11DepthStencilView : public RHIDepthStencilView
 public:
     D3D11DepthStencilView(Context* context, void* src, uint32_t first_subres, uint32_t num_subres);
 
-    void OnAttached(RHIFrameBuffer& fb);
-    void OnDetached(RHIFrameBuffer& fb);
     void ClearDepth(float depth = 1.0);
     void ClearStencil(uint32_t stencil = 0);
     void ClearDepthStencil(float depth, uint32_t stencil);

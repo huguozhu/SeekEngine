@@ -110,15 +110,6 @@ D3D11DepthStencilView::D3D11DepthStencilView(Context* context, void* src, uint32
     :RHIDepthStencilView(context)
 {
 }
-
-void D3D11DepthStencilView::OnAttached(RHIFrameBuffer& fb)
-{
-    // empty
-}
-void D3D11DepthStencilView::OnDetached(RHIFrameBuffer& fb)
-{
-    // empty
-}
 void D3D11DepthStencilView::ClearDepth(float depth)
 {
     if (m_pD3D11Dsv)
