@@ -166,14 +166,23 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_window.cpp
 
     # d3d12 rhi
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_descriptor_allocator.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_descriptor_allocator.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_fence.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_fence.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_framebuffer.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_framebuffer.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_predeclare.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_render_view.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_render_view.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_resource.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_resource.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_rhi_context.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_rhi_context.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_rhi_context_factory.cpp
+
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_texture.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_texture.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_window.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_window.cpp
     
@@ -211,7 +220,6 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/utils/zbase64.h
     ${SEEK_ENGINE_SOURCE_DIR}/utils/zbase64.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/utils/file.h
-    ${SEEK_ENGINE_SOURCE_DIR}/utils/seek_defs.h
 
 
     # scene_manager

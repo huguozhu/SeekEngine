@@ -2,18 +2,19 @@
 
 #include "kernel/kernel.h"
 #include "rhi/base/rhi_texture.h"
+#include "rhi/d3d12_rhi/d3d12_resource.h"
 
 SEEK_NAMESPACE_BEGIN
 
-class D3D12Texture : public RHITexture
+class D3D12Texture : public RHITexture, public D3D12Resource
 {
 public:
     D3D12Texture(Context* context, const RHITexture::Desc& tex_desc);
 
-    void UpdateResourceBarrier(ID3D12GraphicsCommandList* cmd_list, uint32_t sub_res, D3D12_RESOURCE_STATES target_state);
-
 protected:
 
+protected:
+    DXGI_FORMAT                     m_eDxgiFormat = DXGI_FORMAT_UNKNOWN;
 
 };
 

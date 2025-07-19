@@ -68,6 +68,22 @@ void D3D12RHIContext::FlushResourceBarriers(ID3D12GraphicsCommandList* cmd_list)
         res_barriers->clear();
     }
 }
+void D3D12RHIContext::AddResourceBarrier(ID3D12GraphicsCommandList* cmd_list, std::span<D3D12_RESOURCE_BARRIER> barriers)
+{
+    std::vector<D3D12_RESOURCE_BARRIER>* res_barriers = this->FindResourceBarriers(cmd_list, false);
+    res_barriers->insert(res_barriers->end(), barriers.begin(), barriers.end());
+}
+void D3D12RHIContext::AddStallResource(ID3D12ResourcePtr const& resource)
+{
+    if (resource)
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        m_vStallResources.push_back(resource);
+    }
+}
+
+
+
 SResult D3D12RHIContext::Init()
 {
     SEEK_RETIF_FAIL(DxgiHelper::Init(m_pContext->GetPreferredAdapter(), m_pContext->EnableDebug()));

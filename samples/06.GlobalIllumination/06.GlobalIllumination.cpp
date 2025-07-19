@@ -79,6 +79,7 @@ SResult GlobalIlluminationSample::OnUpdate()
 SResult GlobalIlluminationSample::InitContext(void* device, void* native_wnd)
 {
     RenderInitInfo info;
+    info.rhi_type = RHIType::D3D12;
     info.enable_debug = true;
     info.renderer_type = RendererType::Deferred;
     info.anti_aliasing_mode = AntiAliasingMode::TAA;

@@ -85,64 +85,6 @@ bool Buffer::Expand(size_t size)
     return true;
 }
 
-SEEKPicture Buffer::ToSEEKPicture(uint32_t _width, uint32_t _height, uint32_t _rowPitch, SEEK_PIC_FORMAT _format) const
-{
-    SEEKPicture pic;
-    seek_memset_s(&pic, sizeof(pic), 0, sizeof(pic));
-    pic.pData[0] = m_pData;
-    pic.iRowPitch[0] = _rowPitch;
-    pic.iWidth = _width;
-    pic.iHeight = _height;
-    pic.eFormat = _format;
-
-    switch (_format)
-    {
-        case SEEK_PIC_FORMAT::SEEKPicFormat_AYUV_I420:
-            pic.iRowPitch[1] = _rowPitch;
-            pic.iRowPitch[2] = _rowPitch >> 1;
-            pic.iRowPitch[3] = _rowPitch >> 1;
-            pic.pData[1] = pic.pData[0] + pic.iRowPitch[0] * _height;
-            pic.pData[2] = pic.pData[1] + pic.iRowPitch[1] * _height;
-            pic.pData[3] = pic.pData[2] + pic.iRowPitch[2] * (_height >> 1);
-            break;
-        case SEEK_PIC_FORMAT::SEEKPicFormat_YUVA_I420:
-            pic.iRowPitch[1] = _rowPitch >> 1;
-            pic.iRowPitch[2] = _rowPitch >> 1;
-            pic.iRowPitch[3] = _rowPitch;
-            pic.pData[1] = pic.pData[0] + pic.iRowPitch[0] * _height;
-            pic.pData[2] = pic.pData[1] + pic.iRowPitch[1] * (_height >> 1);
-            pic.pData[3] = pic.pData[2] + pic.iRowPitch[2] * (_height >> 1);
-            break;
-        case SEEK_PIC_FORMAT::SEEKPicFormat_I420:
-            pic.iRowPitch[1] = _rowPitch >> 1;
-            pic.iRowPitch[2] = _rowPitch >> 1;
-            pic.pData[1] = pic.pData[0] + pic.iRowPitch[0] * _height;
-            pic.pData[2] = pic.pData[1] + pic.iRowPitch[1] * (_height >> 1);
-            break;
-        case SEEK_PIC_FORMAT::SEEKPicFormat_I444:
-            pic.iRowPitch[1] = _rowPitch;
-            pic.iRowPitch[2] = _rowPitch;
-            pic.pData[1] = pic.pData[0] + pic.iRowPitch[0] * _height;
-            pic.pData[2] = pic.pData[1] + pic.iRowPitch[1] * _height;
-            break;
-        case SEEK_PIC_FORMAT::SEEKPicFormat_NV12:
-            pic.iRowPitch[1] = _rowPitch;
-            pic.pData[1] = pic.pData[0] + pic.iRowPitch[0] * _height;
-            break;
-        case SEEK_PIC_FORMAT::SEEKPicFormat_YV12:
-            pic.iRowPitch[1] = _rowPitch >> 1;
-            pic.iRowPitch[2] = _rowPitch >> 1;
-            pic.pData[1] = pic.pData[0] + pic.iRowPitch[0] * _height;
-            pic.pData[2] = pic.pData[1] + pic.iRowPitch[1] * (_height >> 1);
-            break;
-        default:
-        {
-            break;
-        }
-    }
-    return pic;
-}
-
 BitmapBuffer::BitmapBuffer(uint32_t width, uint32_t height, PixelFormat format, uint8_t* data, uint32_t rowpitch, uint32_t depth)
 {
     Create(width, height, format, data, rowpitch, depth);
@@ -196,18 +138,6 @@ bool BitmapBuffer::Expand(uint32_t width, uint32_t height, PixelFormat format, u
 {
     UpdateSize(width, height, format, depth);
     return Buffer::Expand(this->m_iSize);
-}
-
-SEEKPicture BitmapBuffer::ToSEEKPicture() const
-{
-    SEEK_PIC_FORMAT _format = SEEKPicFormat_Unknown;
-    if (m_eFormat == PixelFormat::R8G8B8A8_UNORM ||
-        m_eFormat == PixelFormat::R8G8B8A8_UINT)
-    {
-        _format = SEEK_PIC_FORMAT::SEEKPicFormat_RGBA;
-    }
-
-    return Buffer::ToSEEKPicture(m_iWidth, m_iHeight, m_iRowPitch, _format);
 }
 
 void BitmapBuffer::DumpToFile(std::string path)

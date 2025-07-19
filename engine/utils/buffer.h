@@ -2,7 +2,6 @@
 
 #include "kernel/kernel.h"
 #include "rhi/base/format.h"
-#include "utils/seek_defs.h"
 
 SEEK_NAMESPACE_BEGIN
 
@@ -21,8 +20,6 @@ public:
 
     uint8_t*                Data() const { return m_pData; }
     size_t                  Size() const { return m_iSize; }
-
-    virtual SEEKPicture      ToSEEKPicture(uint32_t _width, uint32_t _height, uint32_t _rowPitch, SEEK_PIC_FORMAT _format) const;
 
 protected:
     void                    Free();
@@ -54,8 +51,6 @@ public:
     PixelFormat             Format()            const { return m_eFormat; }
     ColorSpace              GetColorSpace()     const { return m_eColorSpace; }
     void                    SetColorSpace(ColorSpace cs) { m_eColorSpace = cs; }
-
-    virtual SEEKPicture     ToSEEKPicture() const;
 
     void                    DumpToFile(std::string path);
 

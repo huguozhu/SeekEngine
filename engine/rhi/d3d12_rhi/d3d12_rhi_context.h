@@ -5,6 +5,7 @@
 #include "rhi/d3d_rhi_common/dxgi_helper.h"
 
 #include <thread>
+#include <mutex>
 
 SEEK_NAMESPACE_BEGIN
 
@@ -22,6 +23,10 @@ public:
 
     std::vector<D3D12_RESOURCE_BARRIER>* FindResourceBarriers(ID3D12GraphicsCommandList* cmd_list, bool allow_creation);
     void FlushResourceBarriers(ID3D12GraphicsCommandList* cmd_list);
+    void AddResourceBarrier(ID3D12GraphicsCommandList* cmd_list, std::span<D3D12_RESOURCE_BARRIER> barriers);
+    void AddStallResource(ID3D12ResourcePtr const& resource);
+
+
 
     SResult                 Init() override;
     void                    Uninit() override;
@@ -114,6 +119,8 @@ private:
     ID3D12CommandSignaturePtr       m_pDispatchIndirectSign = nullptr;
 
     std::vector<std::pair<ID3D12GraphicsCommandList*, std::vector<D3D12_RESOURCE_BARRIER>>> m_vResBarriers;
+    std::vector<ID3D12ResourcePtr> m_vStallResources;
+    std::mutex m_Mutex;
 
 };
 
