@@ -126,73 +126,73 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/viewport.h
     
     # d3d_rhi_common
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_rhi_common/d3d_common_predeclare.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_rhi_common/d3d_adapter.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_rhi_common/d3d_adapter.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_rhi_common/dxgi_helper.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_rhi_common/dxgi_helper.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_common/d3d_common_predeclare.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_common/d3d_adapter.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_common/d3d_adapter.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_common/dxgi_helper.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_common/dxgi_helper.cpp
 
     # d3d11_rhi
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_fence.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_fence.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_framebuffer.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_framebuffer.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_mesh.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_mesh.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_predeclare.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_fence.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_fence.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_framebuffer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_framebuffer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_mesh.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_mesh.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_predeclare.h
 
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_program.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_program.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_query.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_query.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_render_buffer.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_render_buffer.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_render_state.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_render_state.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_render_view.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_render_view.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_rhi_context.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_rhi_context.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_rhi_context_factory.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_shader.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_shader.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_shader_param_assign_helper.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_shader_param_assign_helper.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_texture.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_texture.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_translate.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_translate.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_window.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11_rhi/d3d11_window.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_program.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_program.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_query.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_query.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_render_buffer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_render_buffer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_render_state.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_render_state.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_render_view.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_render_view.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_rhi_context.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_rhi_context.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_rhi_context_factory.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_shader.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_shader.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_shader_param_assign_helper.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_shader_param_assign_helper.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_texture.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_texture.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_translate.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_translate.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_window.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_window.cpp
 
     # d3d12 rhi
     
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_fence.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_fence.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_framebuffer.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_framebuffer.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_gpu_descriptor_allocator.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_gpu_descriptor_allocator.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_gpu_memory_allocator.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_gpu_memory_allocator.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_predeclare.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_render_view.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_render_view.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_resource.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_resource.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_rhi_context.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_rhi_context.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_rhi_context_factory.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_fence.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_fence.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_framebuffer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_framebuffer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_descriptor_allocator.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_descriptor_allocator.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_memory_allocator.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_memory_allocator.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_predeclare.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_view.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_view.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_resource.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_resource.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_rhi_context.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_rhi_context.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_rhi_context_factory.cpp
 
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_texture.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_texture.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_window.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12_rhi/d3d12_window.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_texture.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_texture.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_window.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_window.cpp
     
     ## vulkan rhi
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan_rhi/vulkan_rhi_context.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan_rhi/vulkan_rhi_context.cpp
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan_rhi/vulkan_rhi_context_factory.cpp
+    #${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_rhi_context.h
+    #${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_rhi_context.cpp
+    #${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_rhi_context_factory.cpp
 
     # resource
     ${SEEK_ENGINE_SOURCE_DIR}/resource/resource_mgr.h

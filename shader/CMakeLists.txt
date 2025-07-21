@@ -85,7 +85,7 @@ set(shader_sources_files
 
 ################## shader_target_platform ##################
 if(TARGET_PLATFORM_WINDOWS)
-    set(shader_target_platform "dxil")
+    set(shader_target_platform "hlsl")
 elseif(TARGET_PLATFORM_MACOS)
     set(shader_target_platform "msl_macos")
 elseif(TARGET_PLATFORM_IOS)
