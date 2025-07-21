@@ -1,5 +1,5 @@
 #include "rhi/d3d12_rhi/d3d12_predeclare.h"
-#include "rhi/d3d12_rhi/d3d12_descriptor_allocator.h"
+#include "rhi/d3d12_rhi/d3d12_gpu_descriptor_allocator.h"
 #include "rhi/d3d12_rhi/d3d12_rhi_context.h"
 #include "kernel/context.h"
 
@@ -37,16 +37,16 @@ D3D12GpuDescriptorPage::D3D12GpuDescriptorPage(Context* context, int32_t size, D
 	m_hGpuHandle = m_pHeap->GetGPUDescriptorHandleForHeapStart();
 }
 
-D3D12GpuDescriptorPage::D3D12GpuDescriptorPage(D3D12GpuDescriptorPage&& other) noexcept = default;
-D3D12GpuDescriptorPage& D3D12GpuDescriptorPage::operator=(D3D12GpuDescriptorPage&& other) noexcept = default;
+D3D12GpuDescriptorPage::D3D12GpuDescriptorPage(D3D12GpuDescriptorPage&& rhs) noexcept = default;
+D3D12GpuDescriptorPage& D3D12GpuDescriptorPage::operator=(D3D12GpuDescriptorPage&& rhs) noexcept = default;
 
 
 /******************************************************************************
 * D3D12GpuDescriptorBlock
 *******************************************************************************/
 D3D12GpuDescriptorBlock::D3D12GpuDescriptorBlock() noexcept = default;
-D3D12GpuDescriptorBlock::D3D12GpuDescriptorBlock(D3D12GpuDescriptorBlock&& other) noexcept = default;
-D3D12GpuDescriptorBlock& D3D12GpuDescriptorBlock::operator=(D3D12GpuDescriptorBlock&& other) noexcept = default;
+D3D12GpuDescriptorBlock::D3D12GpuDescriptorBlock(D3D12GpuDescriptorBlock&& rhs) noexcept = default;
+D3D12GpuDescriptorBlock& D3D12GpuDescriptorBlock::operator=(D3D12GpuDescriptorBlock&& rhs) noexcept = default;
 void D3D12GpuDescriptorBlock::Reset() noexcept
 {
 	m_pHeap = nullptr;
@@ -77,18 +77,18 @@ D3D12GpuDescriptorAllocator::D3D12GpuDescriptorAllocator(Context* context, D3D12
 	: m_pContext(context), m_eType(type), m_iFlags(flags)
 {
 }
-D3D12GpuDescriptorAllocator::D3D12GpuDescriptorAllocator(D3D12GpuDescriptorAllocator&& other)
-	: m_pContext(other.m_pContext), m_eType(other.m_eType), m_iFlags(other.m_iFlags), m_vPages(std::move(other.m_vPages))
+D3D12GpuDescriptorAllocator::D3D12GpuDescriptorAllocator(D3D12GpuDescriptorAllocator&& rhs)
+	: m_pContext(rhs.m_pContext), m_eType(rhs.m_eType), m_iFlags(rhs.m_iFlags), m_vPages(std::move(rhs.m_vPages))
 {
 }
 
-D3D12GpuDescriptorAllocator& D3D12GpuDescriptorAllocator::operator=(D3D12GpuDescriptorAllocator&& other)
+D3D12GpuDescriptorAllocator& D3D12GpuDescriptorAllocator::operator=(D3D12GpuDescriptorAllocator&& rhs)
 {
-	if (this != &other)
+	if (this != &rhs)
 	{
-		SEEK_ASSERT(m_eType == other.m_eType);
-		SEEK_ASSERT(m_iFlags == other.m_iFlags);
-		m_vPages = std::move(other.m_vPages);
+		SEEK_ASSERT(m_eType == rhs.m_eType);
+		SEEK_ASSERT(m_iFlags == rhs.m_iFlags);
+		m_vPages = std::move(rhs.m_vPages);
 	}
 	return *this;
 }
@@ -245,6 +245,7 @@ void D3D12GpuDescriptorAllocator::Clear()
 	std::lock_guard<std::mutex> lock(m_AllocationMutex);
 	m_vPages.clear();
 }
+
 
 
 SEEK_NAMESPACE_END

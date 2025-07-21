@@ -1,7 +1,6 @@
 #pragma once
 
 #include "kernel/kernel.h"
-#include "rhi/base/rhi_render_view.h"
 #include "rhi/d3d12_rhi/d3d12_predeclare.h"
 
 #include <mutex>
@@ -17,8 +16,8 @@ class D3D12GpuDescriptorPage
 public:
 	D3D12GpuDescriptorPage(Context* context, int32_t size, D3D12_DESCRIPTOR_HEAP_TYPE type, D3D12_DESCRIPTOR_HEAP_FLAGS flags);
 
-	D3D12GpuDescriptorPage(D3D12GpuDescriptorPage&& other) noexcept;
-	D3D12GpuDescriptorPage& operator=(D3D12GpuDescriptorPage&& other) noexcept;
+	D3D12GpuDescriptorPage(D3D12GpuDescriptorPage&& rhs) noexcept;
+	D3D12GpuDescriptorPage& operator=(D3D12GpuDescriptorPage&& rhs) noexcept;
 
 	ID3D12DescriptorHeap* GetHeap() const noexcept { return m_pHeap.Get(); }
 	D3D12_CPU_DESCRIPTOR_HANDLE GetCpuHandle() const noexcept { return m_hCpuHandle; }
@@ -38,8 +37,8 @@ class D3D12GpuDescriptorBlock
 {
 public:
 	D3D12GpuDescriptorBlock() noexcept;
-	D3D12GpuDescriptorBlock(D3D12GpuDescriptorBlock&& other) noexcept;
-	D3D12GpuDescriptorBlock& operator=(D3D12GpuDescriptorBlock&& other) noexcept;
+	D3D12GpuDescriptorBlock(D3D12GpuDescriptorBlock&& rhs) noexcept;
+	D3D12GpuDescriptorBlock& operator=(D3D12GpuDescriptorBlock&& rhs) noexcept;
 
 	ID3D12DescriptorHeap* GetHeap() const noexcept { return m_pHeap.Get(); }
 	int32_t GetOffset() const { return m_iOffset; }
@@ -67,8 +66,8 @@ class D3D12GpuDescriptorAllocator
 public:
 	D3D12GpuDescriptorAllocator(Context* context, D3D12_DESCRIPTOR_HEAP_TYPE type, D3D12_DESCRIPTOR_HEAP_FLAGS flags);
 
-	D3D12GpuDescriptorAllocator(D3D12GpuDescriptorAllocator&& other);
-	D3D12GpuDescriptorAllocator& operator=(D3D12GpuDescriptorAllocator&& other);
+	D3D12GpuDescriptorAllocator(D3D12GpuDescriptorAllocator&& rhs);
+	D3D12GpuDescriptorAllocator& operator=(D3D12GpuDescriptorAllocator&& rhs);
 
 	uint32_t DescriptorSize() const;
 
