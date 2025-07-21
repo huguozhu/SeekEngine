@@ -115,5 +115,5 @@ private:
 
 	std::vector<D3D12GpuMemoryPage> m_vLargePages;
 };
-
+using D3D12GpuMemoryAllocatorPtr = std::shared_ptr<D3D12GpuMemoryAllocator>;
 SEEK_NAMESPACE_END

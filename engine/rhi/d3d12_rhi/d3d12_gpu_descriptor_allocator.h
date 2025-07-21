@@ -109,6 +109,6 @@ private:
 	};
 	std::vector<PageInfo> m_vPages;
 };
-typedef std::shared_ptr<D3D12GpuDescriptorAllocator> D3D12GpuDescriptorAllocatorPtr;
+using D3D12GpuDescriptorAllocatorPtr = std::shared_ptr<D3D12GpuDescriptorAllocator>;
 
 SEEK_NAMESPACE_END

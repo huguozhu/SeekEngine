@@ -11,7 +11,7 @@
 SEEK_NAMESPACE_BEGIN
 
 /******************************************************************************
-* D3D11RenderTargetView
+* D3D11 Rtv
 *******************************************************************************/
 D3D11RenderTargetView::D3D11RenderTargetView(Context* context, void* src, uint32_t first_subres, uint32_t num_subres)
     : RHIRenderTargetView(context), m_pSrc(src), m_iFirstSubres(first_subres), m_iNumSubres(num_subres)
@@ -104,7 +104,7 @@ ID3D11RenderTargetView* D3D11TextureCubeFaceRtv::GetD3DRtv()
 }
 
 /******************************************************************************
-* D3D11Dsv
+* D3D11 Dsv
 *******************************************************************************/
 D3D11DepthStencilView::D3D11DepthStencilView(Context* context, void* src, uint32_t first_subres, uint32_t num_subres)
     :RHIDepthStencilView(context)

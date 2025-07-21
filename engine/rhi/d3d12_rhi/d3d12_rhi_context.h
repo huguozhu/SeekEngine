@@ -1,8 +1,11 @@
 #pragma once
 #include "rhi/base/rhi_context.h"
+#include "rhi/base/rhi_shader.h"
 #include "rhi/d3d12_rhi/d3d12_predeclare.h"
 #include "rhi/d3d_rhi_common/d3d_adapter.h"
 #include "rhi/d3d_rhi_common/dxgi_helper.h"
+#include "rhi/d3d12_rhi/d3d12_gpu_descriptor_allocator.h"
+#include "rhi/d3d12_rhi/d3d12_gpu_memory_allocator.h"
 
 #include <thread>
 #include <mutex>
@@ -20,6 +23,29 @@ public:
     ID3D12Device* GetD3D12Device() { return m_pDevice.Get(); }
     ID3D12CommandQueue* GetD3D12CommandQueue() { return m_pCommandQueueGraphics.Get(); }
     ID3D12GraphicsCommandList* GetD3D12CommandList() { return m_pCmdListGraphics[m_iCurBufferIndex].Get(); }
+
+    D3D12GpuDescriptorBlock AllocRtvDescBlock(uint32_t size);
+    void DeallocRtvDescBlock(D3D12GpuDescriptorBlock&& desc_block);
+    void RenewRtvDescBlock(D3D12GpuDescriptorBlock& desc_block, uint32_t size);
+    D3D12GpuDescriptorBlock AllocDsvDescBlock(uint32_t size);
+    void DeallocDsvDescBlock(D3D12GpuDescriptorBlock&& desc_block);
+    void RenewDsvDescBlock(D3D12GpuDescriptorBlock& desc_block, uint32_t size);
+    D3D12GpuDescriptorBlock AllocCbvSrvUavDescBlock(uint32_t size);
+    void DeallocCbvSrvUavDescBlock(D3D12GpuDescriptorBlock&& desc_block);
+    void RenewCbvSrvUavDescBlock(D3D12GpuDescriptorBlock& desc_block, uint32_t size);
+    D3D12GpuDescriptorBlock AllocDynamicCbvSrvUavDescBlock(uint32_t size);
+    void DeallocDynamicCbvSrvUavDescBlock(D3D12GpuDescriptorBlock&& desc_block);
+    void RenewDynamicCbvSrvUavDescBlock(D3D12GpuDescriptorBlock& desc_block, uint32_t size);
+    D3D12GpuDescriptorBlock AllocSamplerDescBlock(uint32_t size);
+    void DeallocSamplerDescBlock(D3D12GpuDescriptorBlock&& desc_block);
+    void RenewSamplerDescBlock(D3D12GpuDescriptorBlock& desc_block, uint32_t size);
+
+    D3D12GpuMemoryBlock AllocUploadMemBlock(uint32_t size_in_bytes, uint32_t alignment);
+    void DeallocUploadMemBlock(D3D12GpuMemoryBlock&& mem_block);
+    void RenewUploadMemBlock(D3D12GpuMemoryBlock& mem_block, uint32_t size_in_bytes, uint32_t alignment);
+    D3D12GpuMemoryBlock AllocReadbackMemBlock(uint32_t size_in_bytes, uint32_t alignment);
+    void DeallocReadbackMemBlock(D3D12GpuMemoryBlock&& mem_block);
+    void RenewReadbackMemBlock(D3D12GpuMemoryBlock& mem_block, uint32_t size_in_bytes, uint32_t alignment);
 
     std::vector<D3D12_RESOURCE_BARRIER>* FindResourceBarriers(ID3D12GraphicsCommandList* cmd_list, bool allow_creation);
     void FlushResourceBarriers(ID3D12GraphicsCommandList* cmd_list);
@@ -121,6 +147,26 @@ private:
     std::vector<std::pair<ID3D12GraphicsCommandList*, std::vector<D3D12_RESOURCE_BARRIER>>> m_vResBarriers;
     std::vector<ID3D12ResourcePtr> m_vStallResources;
     std::mutex m_Mutex;
+
+    D3D12GpuDescriptorAllocatorPtr m_pRtvDescAllocator = nullptr;
+    D3D12GpuDescriptorAllocatorPtr m_pDsvDescAllocator = nullptr;
+    D3D12GpuDescriptorAllocatorPtr m_pCbvSrvUavDescAllocator = nullptr;
+    D3D12GpuDescriptorAllocatorPtr m_pDynamicCbvSrvUavDescAllocator = nullptr;
+    D3D12GpuDescriptorAllocatorPtr m_pSamplerDescAllocator = nullptr;
+
+    D3D12GpuDescriptorBlock     m_NullSrvUavDescBlock;
+    D3D12_CPU_DESCRIPTOR_HANDLE m_hNullSrvHandle;
+    D3D12_CPU_DESCRIPTOR_HANDLE m_hNullUavHandle;
+
+    D3D12GpuMemoryAllocatorPtr m_pUploadMemoryAllocator = nullptr;
+    D3D12GpuMemoryAllocatorPtr m_pReadbackMemoryAllocator = nullptr;
+
+    RHIFencePtr m_pFrameFence;
+    uint64_t m_iFrameFenceValue = 0;
+
+    char const* shader_profiles_[(uint32_t)ShaderType::Num];
+
+    
 
 };
 

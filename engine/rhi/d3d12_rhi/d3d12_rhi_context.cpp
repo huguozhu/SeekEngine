@@ -33,11 +33,107 @@ const char* GetD3D12FeatureLevelStr(D3D_FEATURE_LEVEL feature_level)
 D3D12RHIContext::D3D12RHIContext(Context* context)
     :RHIContext(context)
 {
+    m_pRtvDescAllocator             = MakeSharedPtr<D3D12GpuDescriptorAllocator>(m_pContext, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+    m_pDsvDescAllocator             = MakeSharedPtr<D3D12GpuDescriptorAllocator>(m_pContext, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+    m_pCbvSrvUavDescAllocator       = MakeSharedPtr<D3D12GpuDescriptorAllocator>(m_pContext, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_NONE);
+    m_pDynamicCbvSrvUavDescAllocator= MakeSharedPtr<D3D12GpuDescriptorAllocator>(m_pContext, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+    m_pSamplerDescAllocator         = MakeSharedPtr<D3D12GpuDescriptorAllocator>(m_pContext, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE);
+
+    m_pUploadMemoryAllocator        = MakeSharedPtr<D3D12GpuMemoryAllocator>(m_pContext, true);
+    m_pReadbackMemoryAllocator      = MakeSharedPtr<D3D12GpuMemoryAllocator>(m_pContext, false);
 }
 D3D12RHIContext::~D3D12RHIContext()
 {
     this->Uninit();
 }
+D3D12GpuDescriptorBlock D3D12RHIContext::AllocRtvDescBlock(uint32_t size)
+{
+    return m_pRtvDescAllocator->Allocate(size);
+}
+void D3D12RHIContext::DeallocRtvDescBlock(D3D12GpuDescriptorBlock&& desc_block)
+{
+    m_pRtvDescAllocator->Deallocate(std::move(desc_block), m_iFrameFenceValue);
+}
+void D3D12RHIContext::RenewRtvDescBlock(D3D12GpuDescriptorBlock& desc_block, uint32_t size)
+{
+    m_pRtvDescAllocator->Renew(desc_block, m_iFrameFenceValue, size);
+}
+D3D12GpuDescriptorBlock D3D12RHIContext::AllocDsvDescBlock(uint32_t size)
+{
+    return m_pDsvDescAllocator->Allocate(size);
+}
+void D3D12RHIContext::DeallocDsvDescBlock(D3D12GpuDescriptorBlock&& desc_block)
+{
+    m_pDsvDescAllocator->Deallocate(std::move(desc_block), m_iFrameFenceValue);
+}
+void D3D12RHIContext::RenewDsvDescBlock(D3D12GpuDescriptorBlock& desc_block, uint32_t size)
+{
+    m_pDsvDescAllocator->Renew(desc_block, m_iFrameFenceValue, size);
+}
+D3D12GpuDescriptorBlock D3D12RHIContext::AllocCbvSrvUavDescBlock(uint32_t size)
+{
+    return m_pCbvSrvUavDescAllocator->Allocate(size);
+}
+void D3D12RHIContext::DeallocCbvSrvUavDescBlock(D3D12GpuDescriptorBlock&& desc_block)
+{
+    m_pCbvSrvUavDescAllocator->Deallocate(std::move(desc_block), m_iFrameFenceValue);
+}
+void D3D12RHIContext::RenewCbvSrvUavDescBlock(D3D12GpuDescriptorBlock& desc_block, uint32_t size)
+{
+    m_pCbvSrvUavDescAllocator->Renew(desc_block, m_iFrameFenceValue, size);
+}
+D3D12GpuDescriptorBlock D3D12RHIContext::AllocDynamicCbvSrvUavDescBlock(uint32_t size)
+{
+    return m_pDynamicCbvSrvUavDescAllocator->Allocate(size);
+}
+void D3D12RHIContext::DeallocDynamicCbvSrvUavDescBlock(D3D12GpuDescriptorBlock&& desc_block)
+{
+    m_pDynamicCbvSrvUavDescAllocator->Deallocate(std::move(desc_block), m_iFrameFenceValue);
+}
+void D3D12RHIContext::RenewDynamicCbvSrvUavDescBlock(D3D12GpuDescriptorBlock& desc_block, uint32_t size)
+{
+    m_pDynamicCbvSrvUavDescAllocator->Renew(desc_block, m_iFrameFenceValue, size);
+}
+
+D3D12GpuDescriptorBlock D3D12RHIContext::AllocSamplerDescBlock(uint32_t size)
+{
+    return m_pSamplerDescAllocator->Allocate(size);
+}
+void D3D12RHIContext::DeallocSamplerDescBlock(D3D12GpuDescriptorBlock&& desc_block)
+{
+    m_pSamplerDescAllocator->Deallocate(std::move(desc_block), m_iFrameFenceValue);
+}
+void D3D12RHIContext::RenewSamplerDescBlock(D3D12GpuDescriptorBlock& desc_block, uint32_t size)
+{
+    m_pSamplerDescAllocator->Renew(desc_block, m_iFrameFenceValue, size);
+}
+
+D3D12GpuMemoryBlock D3D12RHIContext::AllocUploadMemBlock(uint32_t size_in_bytes, uint32_t alignment)
+{
+    m_pUploadMemoryAllocator->Allocate(size_in_bytes, alignment);
+}
+void D3D12RHIContext::DeallocUploadMemBlock(D3D12GpuMemoryBlock&& mem_block)
+{
+    m_pUploadMemoryAllocator->Deallocate(std::move(mem_block), m_iFrameFenceValue);
+}
+void D3D12RHIContext::RenewUploadMemBlock(D3D12GpuMemoryBlock& mem_block, uint32_t size_in_bytes, uint32_t alignment)
+{
+    m_pUploadMemoryAllocator->Renew(mem_block, m_iFrameFenceValue, size_in_bytes, alignment);
+}
+D3D12GpuMemoryBlock D3D12RHIContext::AllocReadbackMemBlock(uint32_t size_in_bytes, uint32_t alignment)
+{
+    m_pReadbackMemoryAllocator->Allocate(size_in_bytes, alignment);
+}
+void D3D12RHIContext::DeallocReadbackMemBlock(D3D12GpuMemoryBlock&& mem_block)
+{
+    m_pReadbackMemoryAllocator->Deallocate(std::move(mem_block), m_iFrameFenceValue);
+}
+void D3D12RHIContext::RenewReadbackMemBlock(D3D12GpuMemoryBlock& mem_block, uint32_t size_in_bytes, uint32_t alignment)
+{
+    m_pReadbackMemoryAllocator->Renew(mem_block, m_iFrameFenceValue, size_in_bytes, alignment);
+}
+
+
 std::vector<D3D12_RESOURCE_BARRIER>* D3D12RHIContext::FindResourceBarriers(ID3D12GraphicsCommandList* cmd_list, bool allow_creation)
 {
     auto iter = m_vResBarriers.begin();
