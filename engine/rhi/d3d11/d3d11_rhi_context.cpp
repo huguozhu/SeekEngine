@@ -640,13 +640,13 @@ void D3D11RHIContext::BindRWRHIRenderBuffer(ShaderType stage, uint32_t binding, 
 
 void D3D11RHIContext::BindTexture(ShaderType stage, uint32_t binding, const RHITexture* texture, const char* name)
 {
-    ID3D11ShaderResourceView* srv = texture == nullptr ? nullptr : ((D3D11Texture*)texture)->GetD3DSrv();
+    ID3D11ShaderResourceView* srv = texture == nullptr ? nullptr : ((D3D11Texture*)texture)->GetD3DSrv().Get();
     SetD3DShaderResourceViews(stage, binding, 1, &srv);
 }
 
 void D3D11RHIContext::BindRWTexture(ShaderType stage, uint32_t binding, const RHITexture* rw_texture, const char* name)
 {
-    ID3D11UnorderedAccessView* uav = rw_texture == nullptr ? nullptr : ((D3D11Texture*)rw_texture)->GetD3DUav();
+    ID3D11UnorderedAccessView* uav = rw_texture == nullptr ? nullptr : ((D3D11Texture*)rw_texture)->GetD3DUav().Get();
     SetD3DUnorderedAccessViews(stage, binding, 1, &uav);
 }
 

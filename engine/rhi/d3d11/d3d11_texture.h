@@ -23,22 +23,21 @@ public:
     DXGI_FORMAT GetD3DFormat() { return m_eDxgiFormat; }
     virtual SResult GenerateMipMap() override;
 
-    virtual ID3D11RenderTargetView*     GetD3DRtv();
-    virtual ID3D11DepthStencilView*     GetD3DDsv();
-    virtual ID3D11ShaderResourceView*   GetD3DSrv();
-    virtual ID3D11UnorderedAccessView*  GetD3DUav();
-
+    ID3D11ShaderResourceViewPtr const& GetD3DSrv();
     ID3D11ShaderResourceViewPtr const& GetD3DSrv(uint32_t first_array_index, uint32_t array_size, uint32_t first_level, uint32_t num_levels);
     ID3D11ShaderResourceViewPtr const& GetD3DSrv(uint32_t array_index, CubeFaceType face,  uint32_t first_level, uint32_t num_levels);
 
+    ID3D11RenderTargetViewPtr const& GetD3DRtv();
     ID3D11RenderTargetViewPtr const& GetD3DRtv(uint32_t first_array_index, uint32_t array_size, uint32_t mip_level);
     ID3D11RenderTargetViewPtr const& GetD3DRtv(uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level);
     ID3D11RenderTargetViewPtr const& GetD3DRtv(uint32_t array_index, CubeFaceType face, uint32_t mip_level);
 
+    ID3D11DepthStencilViewPtr const& GetD3DDsv();
     ID3D11DepthStencilViewPtr const& GetD3DDsv(uint32_t first_array_index, uint32_t array_size, uint32_t mip_level);
     ID3D11DepthStencilViewPtr const& GetD3DDsv(uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level);
     ID3D11DepthStencilViewPtr const& GetD3DDsv(uint32_t array_index, CubeFaceType face, uint32_t mip_level);
 
+    ID3D11UnorderedAccessViewPtr const& GetD3DUav();
     ID3D11UnorderedAccessViewPtr const& GetD3DUav(uint32_t first_array_index, uint32_t array_size, uint32_t mip_level);
     ID3D11UnorderedAccessViewPtr const& GetD3DUav(uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level);
     ID3D11UnorderedAccessViewPtr const& GetD3DUav(uint32_t first_array_index, uint32_t array_size, CubeFaceType first_face, uint32_t num_faces, uint32_t mip_level);
@@ -58,10 +57,6 @@ public:
     virtual void FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level)               { ErrUnreachable("Can't be called."); }
     virtual void FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, CubeFaceType first_face, uint32_t num_faces, uint32_t mip_level)  { ErrUnreachable("Can't be called."); }
 
-    virtual void FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc)       { ErrUnreachable("Can't be called."); } 
-    virtual void FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc)       { ErrUnreachable("Can't be called."); }
-    virtual void FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)     { ErrUnreachable("Can't be called."); }
-    virtual void FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc)    { ErrUnreachable("Can't be called."); }
 
     virtual SResult DumpSubResource2D(BitmapBufferPtr bitmap_data, uint32_t array_index = 0, uint32_t mip_level = 0, Rect<uint32_t>* rect = nullptr)                        { ErrUnreachable("Can't be called."); return S_Success; } 
     virtual SResult DumpSubResource3D(BitmapBufferPtr bitmap_data, uint32_t array_index = 0, uint32_t mip_level = 0, Box<uint32_t>* box = nullptr)                          { ErrUnreachable("Can't be called."); return S_Success; } 
@@ -108,11 +103,6 @@ protected:
     void FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc,       uint32_t first_array_index, uint32_t array_size, uint32_t mip_level) override;
     void FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc,    uint32_t first_array_index, uint32_t array_size, uint32_t mip_level) override;
 
-    void FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc) override;
-    void FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc) override;
-    void FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc) override;
-    void FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc) override;
-
 private:
     void FillStageTexture2DDesc(D3D11_TEXTURE2D_DESC& desc);
 
@@ -147,7 +137,6 @@ private:
 
     void FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, CubeFaceType face, uint32_t mip_level = 0);
     void FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, CubeFaceType face);
-    void FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc) override;
 
 private:
     void FillTextureDesc(D3D11_TEXTURE2D_DESC& desc) override;
@@ -179,8 +168,6 @@ private:
     void FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level) ;
 
     void FillTexture3DDesc(D3D11_TEXTURE3D_DESC& desc);
-    void FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc);
-    void FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc);
     void FillStageTexture3DDesc(D3D11_TEXTURE3D_DESC& desc);
     D3D11_TEXTURE3D_DESC m_d3dTexture3DDesc = {};
 };

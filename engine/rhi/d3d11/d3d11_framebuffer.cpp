@@ -42,7 +42,7 @@ SResult D3D11RHIFrameBuffer::OnBind()
             else
             {
                 D3D11Texture* d3dTex = static_cast<D3D11Texture*>(m_msaaColorTex[i].get());
-                m_vD3dRednerTargets[i] = d3dTex->GetD3DRtv();
+                m_vD3dRednerTargets[i] = d3dTex->GetD3DRtv().Get();
 
                 if (m_colorStoreOptions[i].storeAction == StoreAction::Store)
                     m_resolveFlag |= RequireResolve((Attachment)i);
@@ -62,7 +62,7 @@ SResult D3D11RHIFrameBuffer::OnBind()
             else
             {
                 D3D11Texture* d3dTex = static_cast<D3D11Texture*>(m_msaaDepthStencilTex.get());
-                m_pD3dDepthStencilView = d3dTex->GetD3DDsv();
+                m_pD3dDepthStencilView = d3dTex->GetD3DDsv().Get();
 
                 if (m_depthStoreOption.storeAction == StoreAction::Store)
                     m_resolveFlag |= RequireResolve(Attachment::Depth);

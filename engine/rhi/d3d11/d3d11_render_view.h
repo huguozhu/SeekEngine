@@ -29,21 +29,21 @@ class D3D11Texture2DCubeRtv final : public D3D11RenderTargetView
 public:
     D3D11Texture2DCubeRtv(Context* context, RHITexturePtr const& tex_2d_cube, uint32_t first_array_index, uint32_t array_size, uint32_t mip_level);
 
-    ID3D11RenderTargetView* GetD3DRtv();
+    ID3D11RenderTargetView* GetD3DRtv() override;
 };
 class D3D11Texture3DRtv final : public D3D11RenderTargetView
 {
 public:
     D3D11Texture3DRtv(Context* context, RHITexturePtr const& tex_3d, uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level);
 
-    ID3D11RenderTargetView* GetD3DRtv();
+    ID3D11RenderTargetView* GetD3DRtv() override;
 };
 class D3D11TextureCubeFaceRtv final : public D3D11RenderTargetView
 {
 public:
     D3D11TextureCubeFaceRtv(Context* context, RHITexturePtr const& tex_cube, uint32_t array_index, CubeFaceType face, uint32_t mip_level);
 
-    ID3D11RenderTargetView* GetD3DRtv();
+    ID3D11RenderTargetView* GetD3DRtv() override;
 };
 
 /******************************************************************************
@@ -71,13 +71,13 @@ class D3D11Texture2DDsv : public D3D11DepthStencilView
 {
 public:
     D3D11Texture2DDsv(Context* context, RHITexturePtr const& tex_2d, uint32_t first_array_index = 0, uint32_t array_size = 1, uint32_t mip_level = 0);
-    ID3D11DepthStencilView* GetD3DDsv();
+    ID3D11DepthStencilView* GetD3DDsv() override;
 };
 class D3D11TextureCubeFaceDsv : public D3D11DepthStencilView
 {
 public:
     D3D11TextureCubeFaceDsv(Context* context, RHITexturePtr const& tex_cube, uint32_t array_index, CubeFaceType face, uint32_t mip_level);
-    ID3D11DepthStencilView* GetD3DDsv();
+    ID3D11DepthStencilView* GetD3DDsv() override;
 };
 
 
