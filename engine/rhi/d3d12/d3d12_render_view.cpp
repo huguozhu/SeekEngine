@@ -14,17 +14,18 @@ D3D12Rtv::D3D12Rtv(Context* context, D3D12Resource* res, D3D12_RENDER_TARGET_VIE
     D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
     ID3D12Device* pDevice = rc.GetD3D12Device();
     m_Desc = rc.AllocRtvDescBlock(1);
-    pDevice->CreateRenderTargetView(res->GetD3DResource(), &rtv_desc, m_Desc.GetCpuHandle());
+    pDevice->CreateRenderTargetView(res->GetD3DResource(), &rtv_desc, m_Desc.CpuHandle());
 
 }
 D3D12Rtv::~D3D12Rtv()
 {
+    D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+    rc.DeallocRtvDescBlock(std::move(m_Desc));
 }
 
 D3D12RenderTargetView::D3D12RenderTargetView(Context* context, D3D12ResourcePtr const& src, uint32_t first_subres, uint32_t num_subres)
     :RHIRenderTargetView(context), m_pRtvResource(src)
 {
-
 }
 
 void D3D12RenderTargetView::ClearColor(float4 const& color)
@@ -37,13 +38,24 @@ void D3D12RenderTargetView::ClearColor(float4 const& color)
     }
 
     rc.FlushResourceBarriers(cmd_list);
-    //cmd_list->ClearRenderTargetView(m_pRtvHandle->)
-
+    cmd_list->ClearRenderTargetView(m_pRtvHandle->Handle(), &color.x(), 0, nullptr);
 }
 
 /******************************************************************************
 * D3D12 Dsv
 *******************************************************************************/
+D3D12Dsv::D3D12Dsv(Context* context, D3D12Resource* res, D3D12_DEPTH_STENCIL_VIEW_DESC const& dsv_desc)
+    :m_pContext(context), m_pD3dResource(res)
+{
+    D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+    ID3D12Device* pDevice = rc.GetD3D12Device();
+    m_Desc = rc.AllocDsvDescBlock(1);
+    pDevice->CreateDepthStencilView(res->GetD3DResource(), &dsv_desc, m_Desc.CpuHandle());
 
+}
+D3D12Dsv::~D3D12Dsv()
+{
+
+}
 
 SEEK_NAMESPACE_END

@@ -20,8 +20,8 @@ public:
 	D3D12GpuDescriptorPage& operator=(D3D12GpuDescriptorPage&& rhs) noexcept;
 
 	ID3D12DescriptorHeap* GetHeap() const noexcept { return m_pHeap.Get(); }
-	D3D12_CPU_DESCRIPTOR_HANDLE GetCpuHandle() const noexcept { return m_hCpuHandle; }
-	D3D12_GPU_DESCRIPTOR_HANDLE GetGpuHandle() const noexcept { return m_hGpuHandle; }
+	D3D12_CPU_DESCRIPTOR_HANDLE CpuHandle() const noexcept { return m_hCpuHandle; }
+	D3D12_GPU_DESCRIPTOR_HANDLE GpuHandle() const noexcept { return m_hGpuHandle; }
 
 private:
 	ID3D12DescriptorHeapPtr m_pHeap;
@@ -44,8 +44,8 @@ public:
 	int32_t GetOffset() const { return m_iOffset; }
 
 	uint32_t GetSize() const { return m_iSize; }
-	D3D12_CPU_DESCRIPTOR_HANDLE GetCpuHandle() const noexcept { return m_hCpuHandle; }
-	D3D12_GPU_DESCRIPTOR_HANDLE GetGpuHandle() const noexcept { return m_hGpuHandle; }
+	D3D12_CPU_DESCRIPTOR_HANDLE CpuHandle() const noexcept { return m_hCpuHandle; }
+	D3D12_GPU_DESCRIPTOR_HANDLE GpuHandle() const noexcept { return m_hGpuHandle; }
 
 	void Reset() noexcept;
 	void Reset(D3D12GpuDescriptorPage const& page, uint32_t offset, uint32_t size) noexcept;

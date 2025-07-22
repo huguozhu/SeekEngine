@@ -65,8 +65,8 @@ void D3D12GpuDescriptorBlock::Reset(D3D12GpuDescriptorPage const& page, uint32_t
 
 	uint32_t const desc_size = s_DescriptorSize[m_pHeap->GetDesc().Type];
 
-	m_hCpuHandle = { page.GetCpuHandle().ptr + offset * desc_size };
-	m_hGpuHandle = { page.GetGpuHandle().ptr + offset * desc_size };
+	m_hCpuHandle = { page.CpuHandle().ptr + offset * desc_size };
+	m_hGpuHandle = { page.GpuHandle().ptr + offset * desc_size };
 }
 
 
