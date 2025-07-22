@@ -30,7 +30,7 @@ void D3D11RenderTargetView::ClearColor(float4 const& color)
 }
 
 D3D11Texture2DCubeRtv::D3D11Texture2DCubeRtv(Context* context, RHITexturePtr const& tex_2d_cube, uint32_t first_array_index, uint32_t array_size, uint32_t mip_level)
-    : D3D11RenderTargetView(context, tex_2d_cube.get(), D3D11CalcSubresource(mip_level, first_array_index, tex_2d_cube->NumMips()), 1)
+    : D3D11RenderTargetView(context, tex_2d_cube.get(), D3D11CalcSubresource(mip_level, first_array_index, tex_2d_cube->NumMips()), array_size)
 {
     // for Texture
     m_iWidth = tex_2d_cube->Width();
@@ -142,7 +142,7 @@ void D3D11DepthStencilView::ClearDepthStencil(float depth, uint32_t stencil)
 }
 
 D3D11Texture2DDsv::D3D11Texture2DDsv(Context* context, RHITexturePtr const& tex_2d, uint32_t first_array_index, uint32_t array_size, uint32_t mip_level)
-    :D3D11DepthStencilView(context, tex_2d.get(), D3D11CalcSubresource(mip_level, first_array_index, tex_2d->NumMips()), 1)
+    :D3D11DepthStencilView(context, tex_2d.get(), D3D11CalcSubresource(mip_level, first_array_index, tex_2d->NumMips()), array_size)
 {
     // for Texture
     m_iWidth = tex_2d->Width();

@@ -7,6 +7,7 @@ SEEK_NAMESPACE_BEGIN
 
 class RHIShaderResourceView  // Srv
 {
+public:
     RHIShaderResourceView(Context* context)
         :m_pContext(context){}
 
@@ -21,6 +22,7 @@ protected:
     uint32_t        m_iFirstMipLevel = 0;
     uint32_t        m_iNumMipLevels = 1;
 };
+using RHIShaderResourceViewPtr = std::shared_ptr<RHIShaderResourceView>;
 
 struct ViewParam
 {
@@ -60,6 +62,7 @@ protected:
     uint32_t    m_iNumSamples = 1;
     ViewParam   m_Param;
 };
+using RHIRenderTargetViewPtr = std::shared_ptr<RHIRenderTargetView>;
 
 class RHIDepthStencilView
 {
@@ -80,7 +83,7 @@ protected:
     uint32_t    m_iNumSamples = 1;
     ViewParam   m_Param;
 };
-
+using RHIDepthStencilViewPtr = std::shared_ptr<RHIDepthStencilView>;
 
 class RHIUnorderedAccessView
 {
@@ -88,9 +91,12 @@ public:
     RHIUnorderedAccessView(Context* context)
         : m_pContext(context) {}
 
+    virtual void Clear(float4 const& v) = 0;
+    virtual void Clear(uint4 const& v) = 0;
+
 protected:
     Context*    m_pContext = nullptr;
     ViewParam   m_Param;
 };
-
+using RHIUnorderedAccessViewPtr = std::shared_ptr<RHIUnorderedAccessView>;
 SEEK_NAMESPACE_END

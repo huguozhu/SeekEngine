@@ -42,8 +42,8 @@ public:
     ID3D11UnorderedAccessViewPtr const& GetD3DUav(uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level);
     ID3D11UnorderedAccessViewPtr const& GetD3DUav(uint32_t first_array_index, uint32_t array_size, CubeFaceType first_face, uint32_t num_faces, uint32_t mip_level);
 
-    virtual void FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t first_level, uint32_t num_levels)     { ErrUnreachable("Can't be called."); }
-    virtual void FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc, uint32_t array_index, CubeFaceType face, uint32_t first_level, uint32_t num_levels)             { ErrUnreachable("Can't be called."); }
+    virtual void FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t first_level, uint32_t num_levels)         { ErrUnreachable("Can't be called."); }
+    virtual void FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc, uint32_t array_index, CubeFaceType face, uint32_t first_level, uint32_t num_levels)                 { ErrUnreachable("Can't be called."); }
 
     virtual void FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t mip_level)                                  { ErrUnreachable("Can't be called."); }
     virtual void FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level)                  { ErrUnreachable("Can't be called."); }
@@ -57,7 +57,6 @@ public:
     virtual void FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level)               { ErrUnreachable("Can't be called."); }
     virtual void FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, CubeFaceType first_face, uint32_t num_faces, uint32_t mip_level)  { ErrUnreachable("Can't be called."); }
 
-
     virtual SResult DumpSubResource2D(BitmapBufferPtr bitmap_data, uint32_t array_index = 0, uint32_t mip_level = 0, Rect<uint32_t>* rect = nullptr)                        { ErrUnreachable("Can't be called."); return S_Success; } 
     virtual SResult DumpSubResource3D(BitmapBufferPtr bitmap_data, uint32_t array_index = 0, uint32_t mip_level = 0, Box<uint32_t>* box = nullptr)                          { ErrUnreachable("Can't be called."); return S_Success; } 
     virtual SResult DumpSubResourceCube(BitmapBufferPtr bitmap_data, CubeFaceType face, uint32_t array_index = 0, uint32_t mip_level = 0, Rect<uint32_t>* rect = nullptr)   { ErrUnreachable("Can't be called."); return S_Success; } 
@@ -70,10 +69,6 @@ protected:
     DXGI_FORMAT                     m_eDxgiFormat = DXGI_FORMAT_UNKNOWN;
     ID3D11ResourcePtr               m_pTexture = nullptr;
     ID3D11ResourcePtr               m_pResolvedTexture = nullptr;
-    ID3D11RenderTargetViewPtr       m_pD3DRenderTargetView = nullptr;
-    ID3D11DepthStencilViewPtr       m_pD3DDepthStencilView = nullptr;
-    ID3D11ShaderResourceViewPtr     m_pD3DShaderResourceView = nullptr;
-    ID3D11UnorderedAccessViewPtr    m_pD3DUnorderedAccessView = nullptr;
 
     std::unordered_map<size_t, ID3D11ShaderResourceViewPtr>     m_mD3dSrvs;
     std::unordered_map<size_t, ID3D11RenderTargetViewPtr>       m_mD3dRtvs;
