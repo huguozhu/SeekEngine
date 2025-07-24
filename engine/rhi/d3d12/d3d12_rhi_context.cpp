@@ -2,7 +2,7 @@
 #include "rhi/d3d12/d3d12_predeclare.h"
 #include "rhi/d3d_common/d3d_adapter.h"
 #include "rhi/d3d12/d3d12_window.h"
-#include "rhi/base/rhi_fence.h"
+#include "rhi/d3d12/d3d12_fence.h"
 #include "kernel/context.h"
 
 #include "utils/dll_loader.h"
@@ -46,6 +46,53 @@ D3D12RHIContext::~D3D12RHIContext()
 {
     this->Uninit();
 }
+ID3D12CommandAllocator* D3D12RHIContext::D3DRenderCmdAllocator() const
+{
+    return this->CurThreadContext(true).D3DCmdAllocator(m_iCurFrameIndex);
+}
+ID3D12GraphicsCommandList* D3D12RHIContext::D3DRenderCmdList() const
+{
+    return this->CurThreadContext(true).D3DCmdList();
+}
+
+ID3D12CommandAllocator* D3D12RHIContext::D3DLoadCmdAllocator() const
+{
+    return this->CurThreadContext(false).D3DCmdAllocator(m_iCurFrameIndex);
+}
+ID3D12GraphicsCommandList* D3D12RHIContext::D3DLoadCmdList() const
+{
+    return this->CurThreadContext(false).D3DCmdList();
+}
+void D3D12RHIContext::CommitLoadCmd()
+{
+    this->CurThreadContext(false).CommitCmd(m_pCmdQueue.Get(), m_iCurFrameIndex);
+}
+void D3D12RHIContext::SyncLoadCmd()
+{
+    this->CurThreadContext(false).SyncCmd(m_iCurFrameIndex);
+}
+void D3D12RHIContext::ResetLoadCmd()
+{
+    this->CurThreadContext(false).ResetCmd(m_iCurFrameIndex);
+}
+void D3D12RHIContext::ForceFlush()
+{
+    auto& context = this->CurThreadContext(true);
+    this->CommitRenderCmd(context);
+    this->ResetRenderCmd(context);
+    this->RestoreRenderCmdStates(context.D3DCmdList());
+}
+void D3D12RHIContext::ForceFinish()
+{
+
+}
+
+
+
+
+
+
+
 D3D12GpuDescriptorBlock D3D12RHIContext::AllocRtvDescBlock(uint32_t size)
 {
     return m_pRtvDescAllocator->Allocate(size);
@@ -177,6 +224,42 @@ void D3D12RHIContext::AddStallResource(ID3D12ResourcePtr const& resource)
         m_vStallResources.push_back(resource);
     }
 }
+D3D12RHIContext::PerThreadContext& D3D12RHIContext::CurThreadContext(bool is_render_context) const
+{
+    std::thread::id thread_id = std::this_thread::get_id();
+    auto& thread_cmd_contexts = is_render_context ? m_vRenderThreadCmdContexts : m_vLoadThreadCmdContexts;
+    auto iter = std::find_if(thread_cmd_contexts.begin(), thread_cmd_contexts.end(),
+        [&thread_id](std::unique_ptr<PerThreadContext> const& context) { return context->ThreadID() == thread_id; });
+    if (iter == thread_cmd_contexts.end())
+    {
+        auto new_context = MakeUniquePtr<PerThreadContext>(m_pDevice.Get(), m_pFrameFence);
+        if (!is_render_context)
+        {
+            new_context->D3DCmdList()->Close();
+        }
+
+        thread_cmd_contexts.emplace_back(std::move(new_context));
+        iter = thread_cmd_contexts.end() - 1;
+    }
+    return *(*iter);
+}
+void D3D12RHIContext::CommitRenderCmd(PerThreadContext& context)
+{
+    this->CommitRenderCmd(this->CurThreadContext(true));
+}
+void D3D12RHIContext::SyncRenderCmd(PerThreadContext& context)
+{
+    this->SyncRenderCmd(this->CurThreadContext(true));
+}
+void D3D12RHIContext::ResetRenderCmd(PerThreadContext& context)
+{
+    context.SyncCmd(m_iCurFrameIndex);
+}
+
+
+
+
+
 
 
 
@@ -245,40 +328,13 @@ SResult D3D12RHIContext::Init()
         }
         LOG_INFO("device supported feature level %s", GetD3D12FeatureLevelStr(feature_levels[feature_level_start_index]));
 
-        {
-            // Init Grphics Resources
-            D3D12_COMMAND_QUEUE_DESC queue_desc = {};
-            queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-            queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-            m_pDevice->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(m_pCommandQueueGraphics.ReleaseAndGetAddressOf()));
-
-            for (uint32_t i = 0; i < m_iBackBufferCount; i++)
-            {
-                SEEK_THROW_IFFAIL(m_pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(m_pCmdAllocGraphics[i][0].ReleaseAndGetAddressOf())));
-                SEEK_THROW_IFFAIL(m_pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(m_pCmdAllocGraphics[i][1].ReleaseAndGetAddressOf())));
-            }
-            SEEK_THROW_IFFAIL(m_pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_pCmdAllocGraphics[0][0].Get(), nullptr, IID_PPV_ARGS(m_pCmdListGraphics[0].ReleaseAndGetAddressOf())));
-            SEEK_THROW_IFFAIL(m_pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_pCmdAllocGraphics[0][1].Get(), nullptr, IID_PPV_ARGS(m_pCmdListGraphics[1].ReleaseAndGetAddressOf())));
-            m_pCmdListGraphics[1]->Close();
-
-        }
+        // Init Grphics Resources
+        D3D12_COMMAND_QUEUE_DESC queue_desc = {};
+        queue_desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+        queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+        m_pDevice->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(m_pCmdQueue.ReleaseAndGetAddressOf()));
         
-        {
-            // Init Compute Resources
-            D3D12_COMMAND_QUEUE_DESC queue_desc = {};
-            queue_desc.Type = D3D12_COMMAND_LIST_TYPE_COMPUTE;
-            queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-            m_pDevice->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(m_pCommandQueueCompute.ReleaseAndGetAddressOf()));
 
-            for (uint32_t i = 0; i < m_iBackBufferCount; i++)
-            {
-                SEEK_THROW_IFFAIL(m_pDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(m_pCmdAllocCompute[i].ReleaseAndGetAddressOf())));
-            }
-            SEEK_THROW_IFFAIL(m_pDevice->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_pCmdAllocCompute[0].Get(), nullptr, IID_PPV_ARGS(m_pCmdListCompute.ReleaseAndGetAddressOf())));
-            m_pCmdListCompute->Close();
-
-            m_pFenceCompute = m_pContext->RHIContextInstance().CreateFence();
-        }
 
         {
             D3D12_INDIRECT_ARGUMENT_DESC desc;
@@ -350,6 +406,95 @@ SResult D3D12RHIContext::EndFrame()
 {
     return S_Success;
 }
+
+/******************************************************************************
+* D3D12RHIContext::PerThreadContext
+*******************************************************************************/
+D3D12RHIContext::PerThreadContext::PerThreadContext(ID3D12Device* d3d_device, RHIFencePtr const& frame_fence)
+    : m_ThreadId(std::this_thread::get_id()), m_pFrameFence(frame_fence)
+{
+    for (auto& context : m_vPerFrameContexts)
+    {
+        SEEK_THROW_IFFAIL(d3d_device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, 
+            IID_PPV_ARGS(context.d3d_cmd_allocator.ReleaseAndGetAddressOf())));
+    }
+    SEEK_THROW_IFFAIL(d3d_device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_vPerFrameContexts[0].d3d_cmd_allocator.Get(),
+        nullptr, IID_PPV_ARGS(m_pD3dCmdList.ReleaseAndGetAddressOf())));
+}
+D3D12RHIContext::PerThreadContext::~PerThreadContext()
+{
+    if (auto fence = m_pFrameFence.lock())
+    {
+        uint64_t max_fence_val = 0;
+        for (auto const& context : m_vPerFrameContexts)
+        {
+            max_fence_val = std::max(max_fence_val, context.fence_value);
+        }
+        fence->Wait(max_fence_val);
+        m_pFrameFence.reset();
+    }
+
+    m_pD3dCmdList.Reset();
+    for (auto& context : m_vPerFrameContexts)
+    {
+        context.d3d_cmd_allocator.Reset();
+        context.fence_value = 0;
+    }
+}
+void D3D12RHIContext::PerThreadContext::CommitCmd(ID3D12CommandQueue* d3d_cmd_queue, uint32_t frame_index)
+{
+    SEEK_THROW_IFFAIL(m_pD3dCmdList->Close());
+    ID3D12CommandList* cmd_lists[] = { m_pD3dCmdList.Get() };
+    d3d_cmd_queue->ExecuteCommandLists(static_cast<uint32_t>(std::size(cmd_lists)), cmd_lists);
+    m_vPerFrameContexts[frame_index].fence_value = static_cast<D3D12Fence&>(*m_pFrameFence.lock()).Signal(d3d_cmd_queue);
+}
+void D3D12RHIContext::PerThreadContext::SyncCmd(uint32_t frame_index)
+{
+    m_pFrameFence.lock()->Wait(m_vPerFrameContexts[frame_index].fence_value);
+}
+
+void D3D12RHIContext::PerThreadContext::ResetCmd(uint32_t frame_index)
+{
+    m_pD3dCmdList->Reset(this->D3DCmdAllocator(frame_index), nullptr);
+}
+void D3D12RHIContext::PerThreadContext::Reset(uint32_t frame_index)
+{
+    this->SyncCmd(frame_index);
+    this->D3DCmdAllocator(frame_index)->Reset();
+}
+ID3D12CommandAllocator* D3D12RHIContext::PerThreadContext::D3DCmdAllocator(uint32_t frame_index) const
+{
+    return m_vPerFrameContexts[frame_index].d3d_cmd_allocator.Get();
+}
+ID3D12GraphicsCommandList* D3D12RHIContext::PerThreadContext::D3DCmdList() const
+{
+    return m_pD3dCmdList.Get();
+}
+uint64_t D3D12RHIContext::PerThreadContext::FrameFenceValue(uint32_t frame_index) const
+{
+    return m_vPerFrameContexts[frame_index].fence_value;
+}
+
+D3D12RHIContext::PerFrameContext::~PerFrameContext()
+{
+    m_vStallResources.clear();
+}
+void D3D12RHIContext::PerFrameContext::AddStallResource(ID3D12ResourcePtr const& resource)
+{
+    if (resource)
+    {
+        std::lock_guard<std::mutex> lock(m_Mutex);
+        m_vStallResources.push_back(resource);
+    }
+}
+void D3D12RHIContext::PerFrameContext::ClearStallResources()
+{
+    std::lock_guard<std::mutex> lock(m_Mutex);
+    m_vStallResources.clear();
+}
+
+
+
 
 
 

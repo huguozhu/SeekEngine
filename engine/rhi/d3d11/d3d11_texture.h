@@ -113,9 +113,6 @@ class D3D11TextureCube : public D3D11Texture
 public:
     D3D11TextureCube(Context* context, const RHITexture::Desc& tex_desc);
 
-    ID3D11RenderTargetView* GetD3DRtv(CubeFaceType face, uint32_t mip_level = 0);
-    ID3D11DepthStencilView* GetD3DDsv(CubeFaceType face);
-
     SResult Create(std::span<BitmapBufferPtr> const& bitmap_datas);
     SResult Update(std::span<BitmapBufferPtr> const& bitmap_datas) override { return S_Success; }
     SResult DumpSubResourceCube(BitmapBufferPtr bitmap_data, CubeFaceType face, uint32_t array_index = 0, uint32_t mip_level = 0, Rect<uint32_t>* rect = nullptr);
@@ -130,14 +127,8 @@ private:
     void FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t mip_level);
     void FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, CubeFaceType first_face, uint32_t num_faces, uint32_t mip_level);
 
-    void FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC& desc, CubeFaceType face, uint32_t mip_level = 0);
-    void FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, CubeFaceType face);
-
 private:
     void FillTextureDesc(D3D11_TEXTURE2D_DESC& desc) override;
-    std::map<uint32_t, std::vector<ID3D11RenderTargetViewPtr>> m_mCubeRTV;
-    std::vector<ID3D11DepthStencilViewPtr>   m_vCubeDSV = { nullptr };
-
 };
 using D3D11TextureCubePtr = std::shared_ptr<D3D11TextureCube>;
 
@@ -152,7 +143,6 @@ public:
 
     SResult Create(std::span<BitmapBufferPtr> const& bitmap_datas) override;
     SResult Update(std::span<BitmapBufferPtr> const& bitmap_datas) override { return S_Success; }
-
     SResult DumpSubResource3D(BitmapBufferPtr bitmap_data, uint32_t array_index = 0, uint32_t mip_level = 0, Box<uint32_t>* box = nullptr);
 
 private:

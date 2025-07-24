@@ -9,6 +9,7 @@
 #include "rhi/d3d11/d3d11_translate.h"
 #include "rhi/d3d11/d3d11_texture.h"
 #include "rhi/d3d_common/d3d_adapter.h"
+#include "rhi/d3d_common/d3d_common_translate.h"
 
 #include "rhi/base/rhi_mesh.h"
 #include "rhi/base/rhi_program.h"
@@ -216,7 +217,7 @@ SResult D3D11RHIContext::CheckCapabilitySetSupport()
 
     for (size_t i = 0; i < (size_t)PixelFormat::Num; i++)
     {
-        DXGI_FORMAT dxgi_format = D3D11Translate::TranslateToPlatformFormat((PixelFormat)i);
+        DXGI_FORMAT dxgi_format = D3DCommonTranslate::TranslateToPlatformFormat((PixelFormat)i);
         UINT supported_bits;
         HRESULT hr = m_pDevice->CheckFormatSupport(dxgi_format, &supported_bits);
         if (SUCCEEDED(hr))

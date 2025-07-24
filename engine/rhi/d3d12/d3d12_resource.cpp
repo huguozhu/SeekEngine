@@ -4,15 +4,14 @@
 #include <algorithm>
 SEEK_NAMESPACE_BEGIN
 
-D3D12Resource::D3D12Resource(Context* context)
-	:m_pContext(context)
+D3D12Resource::D3D12Resource(D3D12RHIContext* rhi_context)
+	:m_pRHIContext(rhi_context)
 {
 }
 
 D3D12Resource::~D3D12Resource()
 {
-	D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
-	rc.AddStallResource(m_pD3dResource);
+	m_pRHIContext->AddStallResource(m_pD3dResource);
 }
 
 void D3D12Resource::UpdateResourceBarrier(ID3D12GraphicsCommandList* cmd_list, uint32_t sub_res, D3D12_RESOURCE_STATES target_state)
@@ -20,7 +19,7 @@ void D3D12Resource::UpdateResourceBarrier(ID3D12GraphicsCommandList* cmd_list, u
 	if (!m_pD3dResource)
 		return;
 
-	D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+	D3D12RHIContext& rc = *m_pRHIContext;
 
 	D3D12_RESOURCE_BARRIER barrier;
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;

@@ -20,9 +20,6 @@ public:
     static D3D11_FILTER TranslateTexFilterOp(TexFilterOp filter);
     static D3D11_TEXTURE_ADDRESS_MODE TranslateAddressMode(TexAddressMode AddressMode);
 
-    static PixelFormat TranslateFromPlatformFormat(DXGI_FORMAT format);
-    static DXGI_FORMAT TranslateToPlatformFormat(PixelFormat format);
-    static DXGI_FORMAT TranslateToPlatformFormat(VertexFormat format);
     static void TranslateResourceFlagsToD3D11Foramt(ResourceFlags flags, D3D11_USAGE& usage, UINT& cpu_access_flags);
 };
 

@@ -2,6 +2,7 @@
 #include "rhi/d3d11/d3d11_texture.h"
 #include "rhi/d3d11/d3d11_rhi_context.h"
 #include "rhi/d3d11/d3d11_translate.h"
+#include "rhi/d3d_common/d3d_common_translate.h"
 #include "rhi/base/format.h"
 #include "kernel/context.h"
 
@@ -21,7 +22,7 @@ SEEK_NAMESPACE_BEGIN
 D3D11Texture::D3D11Texture(Context* context, const RHITexture::Desc& tex_desc)
     : RHITexture(context, tex_desc)
 {
-    m_eDxgiFormat = D3D11Translate::TranslateToPlatformFormat(m_desc.format);
+    m_eDxgiFormat = D3DCommonTranslate::TranslateToPlatformFormat(m_desc.format);
     uint32_t num_mips = tex_desc.num_mips;
     if (0 == num_mips)
     {
@@ -481,7 +482,7 @@ D3D11Texture2D::D3D11Texture2D(Context* context, ID3D11Texture2DPtr const& tex)
     m_desc.height = desc.Height;
     m_desc.depth = desc.ArraySize;
     m_desc.num_mips = desc.MipLevels;
-    m_desc.format = D3D11Translate::TranslateFromPlatformFormat(desc.Format);
+    m_desc.format = D3DCommonTranslate::TranslateFromPlatformFormat(desc.Format);
     m_desc.num_samples = desc.SampleDesc.Count;
     m_eDxgiFormat = desc.Format;
     m_pTexture = tex;
@@ -861,49 +862,6 @@ SResult D3D11Texture2D::DumpSubResource2D(BitmapBufferPtr bitmap_data, uint32_t 
 D3D11TextureCube::D3D11TextureCube(Context* context, const RHITexture::Desc& tex_desc)
     :D3D11Texture(context, tex_desc)
 {
-    m_vCubeDSV.resize((uint32_t)CubeFaceType::Num, nullptr);
-}
-ID3D11RenderTargetView* D3D11TextureCube::GetD3DRtv(CubeFaceType face, uint32_t mip_level)
-{
-    if (!m_mCubeRTV[mip_level].empty() && m_mCubeRTV[mip_level][(uint32_t)face] )
-        return m_mCubeRTV[mip_level][(uint32_t)face].Get();
-
-    if (m_mCubeRTV[mip_level].empty())
-        m_mCubeRTV[mip_level].resize((uint32_t)CubeFaceType::Num, nullptr);
-        
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
-    ID3D11Device* pDevice = rc.GetD3D11Device();
-
-    D3D11_RENDER_TARGET_VIEW_DESC desc = {};
-    this->FillRtvDesc(desc, face, mip_level);
-    ID3D11RenderTargetViewPtr rtv = nullptr;
-    HRESULT hr = pDevice->CreateRenderTargetView(m_pTexture.Get(), &desc, m_mCubeRTV[mip_level][(uint32_t)face].GetAddressOf());
-    if (FAILED(hr))
-    {
-        LOG_ERROR("D3D11TextureCube::GetD3DRtv error");
-        return nullptr;
-    }
-
-    return m_mCubeRTV[mip_level][(uint32_t)face].Get();
-}
-ID3D11DepthStencilView* D3D11TextureCube::GetD3DDsv(CubeFaceType face)
-{
-    if (m_vCubeDSV[(uint32_t)face])
-        return m_vCubeDSV[(uint32_t)face].Get();
-
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
-    ID3D11Device* pDevice = rc.GetD3D11Device();
-
-    D3D11_DEPTH_STENCIL_VIEW_DESC desc = {};
-    this->FillDsvDesc(desc, face);
-    HRESULT hr = pDevice->CreateDepthStencilView(m_pTexture.Get(), &desc, m_vCubeDSV[(uint32_t)face].GetAddressOf());
-    if (FAILED(hr))
-    {
-        LOG_ERROR("D3D11TextureCube::GetD3DRtv error");
-        return nullptr;
-    }
-
-    return m_vCubeDSV[(uint32_t)face].Get();
 }
 void D3D11TextureCube::FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc, uint32_t first_array_index, uint32_t array_size, uint32_t first_level, uint32_t num_levels) 
 {
@@ -1043,45 +1001,6 @@ void D3D11TextureCube::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint3
     desc.Texture2DArray.MipSlice = mip_level;
     desc.Texture2DArray.FirstArraySlice = first_array_index * 6 + (uint32_t)first_face;
     desc.Texture2DArray.ArraySize = array_size * 6 + num_faces;
-}
-
-void D3D11TextureCube::FillRtvDesc(D3D11_RENDER_TARGET_VIEW_DESC & desc, CubeFaceType face, uint32_t mip_level)
-{
-    switch (m_desc.format)
-    {
-    case PixelFormat::D16:      desc.Format = DXGI_FORMAT_R16_UNORM;                break;
-    case PixelFormat::D24S8:    desc.Format = DXGI_FORMAT_R24_UNORM_X8_TYPELESS;    break;
-    case PixelFormat::D32F:     desc.Format = DXGI_FORMAT_R32_FLOAT;                break;
-    default:                    desc.Format = m_eDxgiFormat;                        break;
-    }
-    if (m_desc.num_samples > 1)
-    {
-        desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DMSARRAY;
-        desc.Texture2DMSArray.ArraySize = 1;
-        desc.Texture2DMSArray.FirstArraySlice = (uint32_t)face;
-    }
-    else
-    {
-        desc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2DARRAY;
-        desc.Texture2DArray.MipSlice = mip_level;
-        desc.Texture2DArray.FirstArraySlice = (uint32_t)face;
-        desc.Texture2DArray.ArraySize = 1;
-    }
-}
-void D3D11TextureCube::FillDsvDesc(D3D11_DEPTH_STENCIL_VIEW_DESC& desc, CubeFaceType face)
-{
-    switch (m_desc.format)
-    {
-    case PixelFormat::D16:      desc.Format = DXGI_FORMAT_D16_UNORM;                break;
-    case PixelFormat::D24S8:    desc.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;     break;
-    case PixelFormat::D32F:     desc.Format = DXGI_FORMAT_D32_FLOAT;                break;
-    default:                    desc.Format = m_eDxgiFormat;                        break;
-    }
-    desc.Flags = 0; // not read only
-    desc.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2DARRAY;
-    desc.Texture2DArray.MipSlice = 0;
-    desc.Texture2DArray.ArraySize = 1;
-    desc.Texture2DArray.FirstArraySlice = (uint32_t)face;
 }
 void D3D11TextureCube::FillTextureDesc(D3D11_TEXTURE2D_DESC& desc)
 {

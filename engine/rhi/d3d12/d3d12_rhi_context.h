@@ -1,6 +1,7 @@
 #pragma once
 #include "rhi/base/rhi_context.h"
 #include "rhi/base/rhi_shader.h"
+#include "rhi/base/rhi_fence.h"
 #include "rhi/d3d12/d3d12_predeclare.h"
 #include "rhi/d3d_common/d3d_adapter.h"
 #include "rhi/d3d_common/dxgi_helper.h"
@@ -13,7 +14,9 @@
 SEEK_NAMESPACE_BEGIN
 
 static uint32_t const NUM_BACK_BUFFERS = 3;
-
+/******************************************************************************
+* D3D12RHIContext
+*******************************************************************************/
 class D3D12RHIContext : public RHIContext, public DxgiHelper
 {
 public:
@@ -21,8 +24,27 @@ public:
     ~D3D12RHIContext();
 
     ID3D12Device* GetD3D12Device() { return m_pDevice.Get(); }
-    ID3D12CommandQueue* GetD3D12CommandQueue() { return m_pCommandQueueGraphics.Get(); }
-    ID3D12GraphicsCommandList* GetD3D12CommandList() { return m_pCmdListGraphics[m_iCurBufferIndex].Get(); }
+    ID3D12CommandQueue* GetD3D12CommandQueue() { return m_pCmdQueue.Get(); }
+    ID3D12CommandAllocator* D3DRenderCmdAllocator() const;
+    ID3D12GraphicsCommandList* D3DRenderCmdList() const;
+
+    class PerThreadContext;
+    PerThreadContext& CurThreadContext(bool is_render_context) const;
+    void CommitRenderCmd(PerThreadContext& context);
+    void SyncRenderCmd(PerThreadContext& context);
+    void ResetRenderCmd(PerThreadContext& context);
+
+    ID3D12CommandAllocator* D3DLoadCmdAllocator() const;
+    ID3D12GraphicsCommandList* D3DLoadCmdList() const;
+    void CommitLoadCmd();
+    void SyncLoadCmd();
+    void ResetLoadCmd();
+
+    void ForceFlush();
+    void ForceFinish();
+
+    void RestoreRenderCmdStates(ID3D12GraphicsCommandList* cmd_list) {}
+
 
     D3D12GpuDescriptorBlock AllocRtvDescBlock(uint32_t size);
     void DeallocRtvDescBlock(D3D12GpuDescriptorBlock&& desc_block);
@@ -51,6 +73,8 @@ public:
     void FlushResourceBarriers(ID3D12GraphicsCommandList* cmd_list);
     void AddResourceBarrier(ID3D12GraphicsCommandList* cmd_list, std::span<D3D12_RESOURCE_BARRIER> barriers);
     void AddStallResource(ID3D12ResourcePtr const& resource);
+
+    
 
 
 
@@ -128,18 +152,66 @@ private:
     uint32_t                        m_iBackBufferCount = 2;
     uint32_t                        m_iCurBufferIndex = 0;
     ID3D12DebugPtr                  m_pDebugCtrl = nullptr;
+
     ID3D12DevicePtr                 m_pDevice = nullptr;
+    ID3D12CommandQueuePtr           m_pCmdQueue = nullptr;
 
-    ID3D12CommandQueuePtr           m_pCommandQueueGraphics = nullptr;
-    ID3D12CommandAllocatorPtr       m_pCmdAllocGraphics[MAX_BACK_BUFFER_COUNT][2];
-    ID3D12GraphicsCommandListPtr    m_pCmdListGraphics[2] = { nullptr };
-    
+/******************************************************************************
+* D3D12RHIContext::PerThreadContext
+*******************************************************************************/
+    class PerThreadContext
+    {
+    public:
+        PerThreadContext(ID3D12Device* d3d_device, RHIFencePtr const& frame_fence);
+        ~PerThreadContext();
 
-    ID3D12CommandQueuePtr           m_pCommandQueueCompute = nullptr;
-    ID3D12CommandAllocatorPtr       m_pCmdAllocCompute[MAX_BACK_BUFFER_COUNT];
-    ID3D12GraphicsCommandListPtr    m_pCmdListCompute = nullptr;
-    RHIFencePtr                     m_pFenceCompute;
+        void CommitCmd(ID3D12CommandQueue* d3d_cmd_queue, uint32_t frame_index);
+        void SyncCmd(uint32_t frame_index);
+        void ResetCmd(uint32_t frame_index);
+        void Reset(uint32_t frame_index);
+
+        std::thread::id ThreadID() const { return m_ThreadId; }
+        ID3D12CommandAllocator* D3DCmdAllocator(uint32_t frame_index) const;
+        ID3D12GraphicsCommandList* D3DCmdList() const;
+
+        uint64_t FrameFenceValue(uint32_t frame_index) const;
+
+    private:
+        struct PerThreadPerFrameContext
+        {
+            ID3D12CommandAllocatorPtr d3d_cmd_allocator = nullptr;
+            uint64_t fence_value = 0;
+        };
+
+    private:
+        std::thread::id m_ThreadId;
+        std::array<PerThreadPerFrameContext, NUM_BACK_BUFFERS> m_vPerFrameContexts;
+        ID3D12GraphicsCommandListPtr m_pD3dCmdList;
+        std::weak_ptr<RHIFence> m_pFrameFence;
+    };
+    mutable std::vector<std::unique_ptr<PerThreadContext>> m_vRenderThreadCmdContexts;
+    mutable std::vector<std::unique_ptr<PerThreadContext>> m_vLoadThreadCmdContexts;
+
+    struct PerFrameContext
+    {
+    public:
+        PerFrameContext() = default;
+        ~PerFrameContext();
+
+        void AddStallResource(ID3D12ResourcePtr const& resource);
+        void ClearStallResources();
+
+    private:
+        std::vector<ID3D12ResourcePtr> m_vStallResources;
+        std::mutex m_Mutex;
+    };
+    std::array<PerFrameContext, NUM_BACK_BUFFERS> m_vPerFrameContexts;
+    uint32_t m_iCurFrameIndex = 0;
+
+    RHIFencePtr m_pFrameFence = nullptr;
+    uint64_t m_iFrameFenceValue = 0;
     
+        
     ID3D12CommandSignaturePtr       m_pDrawIndirectSign = nullptr;
     ID3D12CommandSignaturePtr       m_pDrawIndexedIndirectSign = nullptr;
     ID3D12CommandSignaturePtr       m_pDispatchIndirectSign = nullptr;
@@ -158,16 +230,12 @@ private:
     D3D12_CPU_DESCRIPTOR_HANDLE m_hNullSrvHandle;
     D3D12_CPU_DESCRIPTOR_HANDLE m_hNullUavHandle;
 
+    char const* shader_profiles_[(uint32_t)ShaderType::Num];
+
     D3D12GpuMemoryAllocatorPtr m_pUploadMemoryAllocator = nullptr;
     D3D12GpuMemoryAllocatorPtr m_pReadbackMemoryAllocator = nullptr;
 
-    RHIFencePtr m_pFrameFence;
-    uint64_t m_iFrameFenceValue = 0;
-
-    char const* shader_profiles_[(uint32_t)ShaderType::Num];
-
     
-
 };
 
 SEEK_NAMESPACE_END

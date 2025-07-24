@@ -4,6 +4,7 @@
 #include "rhi/d3d11/d3d11_render_buffer.h"
 #include "rhi/d3d11/d3d11_translate.h"
 #include "rhi/d3d11/d3d11_shader.h"
+#include "rhi/d3d_common/d3d_common_translate.h"
 
 #include "rhi/base/rhi_program.h"
 
@@ -65,7 +66,7 @@ SResult D3D11Mesh::Active(RHIProgram* program)
                 D3D11_INPUT_ELEMENT_DESC desc;
                 desc.SemanticName = D3D11Translate::TranslateVertexElementUsageSemantic(layout.usage);
                 desc.SemanticIndex = layout.usage_index;
-                desc.Format = D3D11Translate::TranslateToPlatformFormat(layout.format);
+                desc.Format = D3DCommonTranslate::TranslateToPlatformFormat(layout.format);
 
                 desc.InputSlot = vertexStreamIndex;
                 desc.AlignedByteOffset = layout.buffer_offset;
