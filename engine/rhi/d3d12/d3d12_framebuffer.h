@@ -5,11 +5,11 @@
 
 SEEK_NAMESPACE_BEGIN
 
-class D3D12RHIFrameBuffer : public RHIFrameBuffer
+class D3D12FrameBuffer : public RHIFrameBuffer
 {
 public:
-    D3D12RHIFrameBuffer(Context* context);
-    virtual ~D3D12RHIFrameBuffer() override;
+    D3D12FrameBuffer(Context* context);
+    virtual ~D3D12FrameBuffer() override;
 
     SResult OnBind() override;
     SResult OnUnbind() override;

@@ -6,7 +6,7 @@
 SEEK_NAMESPACE_BEGIN
 
 D3D12Window::D3D12Window(Context* context)
-    :D3D12RHIFrameBuffer(context)
+    :D3D12FrameBuffer(context)
 {
 
 }

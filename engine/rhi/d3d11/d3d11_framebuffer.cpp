@@ -9,18 +9,18 @@
 
 SEEK_NAMESPACE_BEGIN
 
-D3D11RHIFrameBuffer::D3D11RHIFrameBuffer(Context* context)
+D3D11FrameBuffer::D3D11FrameBuffer(Context* context)
     : RHIFrameBuffer(context)
 {
     seek_memset_s(&m_stD3dViewport, sizeof(m_stD3dViewport), 0, sizeof(m_stD3dViewport));
 }
 
-D3D11RHIFrameBuffer::~D3D11RHIFrameBuffer()
+D3D11FrameBuffer::~D3D11FrameBuffer()
 {
     m_vD3dRednerTargets.clear();
 }
 
-SResult D3D11RHIFrameBuffer::OnBind()
+SResult D3D11FrameBuffer::OnBind()
 {
     SResult res = S_Success;
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
@@ -78,7 +78,7 @@ SResult D3D11RHIFrameBuffer::OnBind()
     return res;
 }
 
-SResult D3D11RHIFrameBuffer::OnUnbind()
+SResult D3D11FrameBuffer::OnUnbind()
 {
     SResult res = S_Success;
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
@@ -90,7 +90,7 @@ SResult D3D11RHIFrameBuffer::OnUnbind()
     return res;
 }
 
-SResult D3D11RHIFrameBuffer::Resolve()
+SResult D3D11FrameBuffer::Resolve()
 {
     if (m_resolveFlag == RESOLVE_NONE)
         return S_Success;
@@ -117,7 +117,7 @@ SResult D3D11RHIFrameBuffer::Resolve()
     m_resolveFlag = RESOLVE_NONE;
     return S_Success;
 }
-void D3D11RHIFrameBuffer::Clear(uint32_t flags, float4 const& clr, float depth, int32_t stencil)
+void D3D11FrameBuffer::Clear(uint32_t flags, float4 const& clr, float depth, int32_t stencil)
 {
     if (flags & CBM_Color)
     {
@@ -147,7 +147,7 @@ void D3D11RHIFrameBuffer::Clear(uint32_t flags, float4 const& clr, float depth, 
         }
     }
 }
-void D3D11RHIFrameBuffer::ClearRenderTarget(Attachment att, float4 const& clr)
+void D3D11FrameBuffer::ClearRenderTarget(Attachment att, float4 const& clr)
 {
     if (att < Attachment::Color7)
     {

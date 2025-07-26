@@ -4,18 +4,18 @@
 
 SEEK_NAMESPACE_BEGIN
 
-D3D11RHITimeQuery::D3D11RHITimeQuery(Context* context)
+D3D11TimeQuery::D3D11TimeQuery(Context* context)
     : RHITimeQuery(context)
 {
 
 }
 
-D3D11RHITimeQuery::~D3D11RHITimeQuery()
+D3D11TimeQuery::~D3D11TimeQuery()
 {
 
 }
 
-void D3D11RHITimeQuery::Begin()
+void D3D11TimeQuery::Begin()
 {
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
@@ -25,7 +25,7 @@ void D3D11RHITimeQuery::Begin()
     pDeviceContext->End(m_begin.Get());
 }
 
-void D3D11RHITimeQuery::End()
+void D3D11TimeQuery::End()
 {
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
@@ -33,7 +33,7 @@ void D3D11RHITimeQuery::End()
     pDeviceContext->End(m_end.Get());
     pDeviceContext->End(m_disjoint.Get());
 }
-double D3D11RHITimeQuery::TimeElapsedInMS()
+double D3D11TimeQuery::TimeElapsedInMS()
 {
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
@@ -47,7 +47,7 @@ double D3D11RHITimeQuery::TimeElapsedInMS()
 
     return disjoint.Disjoint ? -1 : static_cast<double>((end - begin) * 1000) / disjoint.Frequency;
 }
-void D3D11RHITimeQuery::Create()
+void D3D11TimeQuery::Create()
 {
     if (!m_begin || !m_end || !m_disjoint)
     {

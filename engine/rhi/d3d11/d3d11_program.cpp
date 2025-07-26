@@ -6,7 +6,7 @@
 
 SEEK_NAMESPACE_BEGIN
 
-SResult D3D11RHIProgram::Active()
+SResult D3D11Program::Active()
 {
     D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
 
@@ -26,7 +26,7 @@ SResult D3D11RHIProgram::Active()
     return S_Success;
 }
 
-void D3D11RHIProgram::Deactive()
+void D3D11Program::Deactive()
 {
     for (size_t i = 0; i < m_vShaders.size(); i++)
     {

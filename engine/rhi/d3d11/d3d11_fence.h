@@ -9,13 +9,13 @@
 SEEK_NAMESPACE_BEGIN
 
 
-class D3D11RHIFence : public RHIFence
+class D3D11Fence : public RHIFence
 {
 public:
-	D3D11RHIFence(Context* context)
+	D3D11Fence(Context* context)
 		:RHIFence(context)
 	{}
-	virtual ~D3D11RHIFence() {}
+	virtual ~D3D11Fence() {}
 
 	virtual uint64_t Signal() override;
 	virtual void Wait(uint64_t value) override;

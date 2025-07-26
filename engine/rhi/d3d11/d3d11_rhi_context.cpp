@@ -415,7 +415,7 @@ SResult D3D11RHIContext::BeginRenderPass(const RenderPassInfo& renderPassInfo)
         LOG_ERROR("bind RHIFrameBuffer fail, ret:%x", ret);
         return ret;
     }
-    m_pCurrentRHIFrameBuffer = static_cast<D3D11RHIFrameBuffer*>(renderPassInfo.fb);
+    m_pCurrentRHIFrameBuffer = static_cast<D3D11FrameBuffer*>(renderPassInfo.fb);
 
     D3D11_VIEWPORT d3dViewport;
     d3dViewport.TopLeftX = (FLOAT)m_pCurrentRHIFrameBuffer->GetViewport().left;
@@ -441,7 +441,7 @@ SResult D3D11RHIContext::Render(RHIProgram* program, RHIMeshPtr const& mesh)
     RHIRenderState* rs = mesh->GetRenderState().get();
 
     SEEK_RETIF_FAIL(((D3D11RenderState*)(rs))->Active());
-    SEEK_RETIF_FAIL(((D3D11RHIProgram*)(program))->Active());
+    SEEK_RETIF_FAIL(((D3D11Program*)(program))->Active());
 
     D3D11Mesh& d3d_mesh = static_cast<D3D11Mesh&>(*mesh);
     SEEK_RETIF_FAIL(d3d_mesh.Active(program));
@@ -475,7 +475,7 @@ SResult D3D11RHIContext::Render(RHIProgram* program, RHIMeshPtr const& mesh)
     }
 
     SEEK_RETIF_FAIL(d3d_mesh.Deactive());
-    ((D3D11RHIProgram*)program)->Deactive();
+    ((D3D11Program*)program)->Deactive();
 
     //std::vector<ID3D11ShaderResourceView*> null_srvs(16);
     //m_pDeviceContext->PSSetShaderResources(0, 16, null_srvs.data());
@@ -500,42 +500,42 @@ void D3D11RHIContext::BeginComputePass(const ComputePassInfo& computePassInfo)
 SResult D3D11RHIContext::Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z)
 {
     SResult res = S_Success;
-    SEEK_RETIF_FAIL(((D3D11RHIProgram*)(program))->Active());
+    SEEK_RETIF_FAIL(((D3D11Program*)(program))->Active());
     x = x <= D3D11_CS_DISPATCH_MAX_THREAD_GROUPS_PER_DIMENSION ? x : D3D11_CS_DISPATCH_MAX_THREAD_GROUPS_PER_DIMENSION;
     y = y <= D3D11_CS_DISPATCH_MAX_THREAD_GROUPS_PER_DIMENSION ? y : D3D11_CS_DISPATCH_MAX_THREAD_GROUPS_PER_DIMENSION;
     z = z <= D3D11_CS_DISPATCH_MAX_THREAD_GROUPS_PER_DIMENSION ? z : D3D11_CS_DISPATCH_MAX_THREAD_GROUPS_PER_DIMENSION;
     m_pDeviceContext->Dispatch(x, y, z);
-    ((D3D11RHIProgram*)program)->Deactive();
+    ((D3D11Program*)program)->Deactive();
     return res;
 }
 SResult D3D11RHIContext::DispatchIndirect(RHIProgram* program, RHIRenderBufferPtr indirectBuf)
 {
     SResult res = S_Success;
-    SEEK_RETIF_FAIL(((D3D11RHIProgram*)(program))->Active());
-    D3D11RHIRenderBuffer* pD3DBuf = (D3D11RHIRenderBuffer*)indirectBuf.get();
+    SEEK_RETIF_FAIL(((D3D11Program*)(program))->Active());
+    D3D11RenderBuffer* pD3DBuf = (D3D11RenderBuffer*)indirectBuf.get();
     m_pDeviceContext->DispatchIndirect(pD3DBuf->GetD3DBuffer(), 0);
-    ((D3D11RHIProgram*)program)->Deactive();
+    ((D3D11Program*)program)->Deactive();
     return res;
 }
 SResult D3D11RHIContext::DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIRenderBufferPtr indirectBuf, MeshTopologyType type)
 {
     SResult res = S_Success;
     SEEK_RETIF_FAIL(((D3D11RenderState*)(rs.get()))->Active());
-    SEEK_RETIF_FAIL(((D3D11RHIProgram*)(program))->Active());
-    D3D11RHIRenderBuffer* pD3DBuf = (D3D11RHIRenderBuffer*)indirectBuf.get();
+    SEEK_RETIF_FAIL(((D3D11Program*)(program))->Active());
+    D3D11RenderBuffer* pD3DBuf = (D3D11RenderBuffer*)indirectBuf.get();
     m_pDeviceContext->IASetPrimitiveTopology(D3D11Translate::TranslatePrimitiveTopology(type));
     m_pDeviceContext->DrawInstancedIndirect(pD3DBuf->GetD3DBuffer(), 0);
-    ((D3D11RHIProgram*)program)->Deactive();
+    ((D3D11Program*)program)->Deactive();
     return res;
 }
 SResult D3D11RHIContext::DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, MeshTopologyType type, uint32_t vertexCountPerInstance, uint32_t instanceCount, uint32_t startVertexLocation, uint32_t startInstanceLocation)
 {
     SResult res = S_Success;
     SEEK_RETIF_FAIL(((D3D11RenderState*)(rs.get()))->Active());
-    SEEK_RETIF_FAIL(((D3D11RHIProgram*)(program))->Active());
+    SEEK_RETIF_FAIL(((D3D11Program*)(program))->Active());
     m_pDeviceContext->IASetPrimitiveTopology(D3D11Translate::TranslatePrimitiveTopology(type));
     m_pDeviceContext->DrawInstanced(vertexCountPerInstance, instanceCount, startVertexLocation, startInstanceLocation);
-    ((D3D11RHIProgram*)program)->Deactive();
+    ((D3D11Program*)program)->Deactive();
     return res;
 }
 void D3D11RHIContext::EndComputePass()
@@ -623,19 +623,19 @@ void D3D11RHIContext::EndCapture()
 
 void D3D11RHIContext::BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* cbuffer, const char* name)
 {
-    ID3D11Buffer* d3d_buffer = cbuffer == nullptr ? nullptr : ((D3D11RHIRenderBuffer*)cbuffer)->GetD3DBuffer();
+    ID3D11Buffer* d3d_buffer = cbuffer == nullptr ? nullptr : ((D3D11RenderBuffer*)cbuffer)->GetD3DBuffer();
     SetD3DConstantBuffers(stage, binding, 1, &d3d_buffer);
 }
 
 void D3D11RHIContext::BindRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* buffer, const char* name)
 {
-    ID3D11ShaderResourceView* srv = buffer == nullptr ? nullptr : ((D3D11RHIRenderBuffer*)buffer)->GetD3DSrv();
+    ID3D11ShaderResourceView* srv = buffer == nullptr ? nullptr : ((D3D11RenderBuffer*)buffer)->GetD3DSrv();
     SetD3DShaderResourceViews(stage, binding, 1, &srv);
 }
 
 void D3D11RHIContext::BindRWRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* rw_buffer, const char* name)
 {
-    ID3D11UnorderedAccessView* uav = rw_buffer == nullptr ? nullptr : ((D3D11RHIRenderBuffer*)rw_buffer)->GetD3DUav();
+    ID3D11UnorderedAccessView* uav = rw_buffer == nullptr ? nullptr : ((D3D11RenderBuffer*)rw_buffer)->GetD3DUav();
     SetD3DUnorderedAccessViews(stage, binding, 1, &uav);
 }
 

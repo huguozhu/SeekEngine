@@ -6,12 +6,12 @@
 
 SEEK_NAMESPACE_BEGIN
 
-class D3D11RHITimeQuery : public RHITimeQuery
+class D3D11TimeQuery : public RHITimeQuery
 {
   
 public:
-    D3D11RHITimeQuery(Context* context);
-    virtual ~D3D11RHITimeQuery() override;
+    D3D11TimeQuery(Context* context);
+    virtual ~D3D11TimeQuery() override;
 
     bool Valid() const
     {

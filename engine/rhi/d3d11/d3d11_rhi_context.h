@@ -40,7 +40,7 @@ protected:
     ID3D11DevicePtr m_pDevice = nullptr;
     ID3D11DeviceContextPtr m_pDeviceContext = nullptr;
     DXGI_SAMPLE_DESC m_msaa[CAP_MAX_TEXTURE_SAMPLE_COUNT + 1] = { {0, 0} };
-    D3D11RHIFrameBuffer* m_pCurrentRHIFrameBuffer = nullptr;
+    D3D11FrameBuffer* m_pCurrentRHIFrameBuffer = nullptr;
 
 // Rendering Object Factory
 public:

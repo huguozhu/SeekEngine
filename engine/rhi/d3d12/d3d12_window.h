@@ -6,7 +6,7 @@
 
 SEEK_NAMESPACE_BEGIN
 class D3DAdapter;
-class D3D12Window : public D3D12RHIFrameBuffer
+class D3D12Window : public D3D12FrameBuffer
 {
 public:
     D3D12Window(Context* context);

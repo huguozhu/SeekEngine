@@ -2,7 +2,7 @@
 #include "rhi/d3d11/d3d11_rhi_context.h"
 SEEK_NAMESPACE_BEGIN
 
-uint64_t D3D11RHIFence::Signal()
+uint64_t D3D11Fence::Signal()
 {
 	D3D11RHIContext* pD3D11RHIContext = static_cast<D3D11RHIContext*>(&m_pContext->RHIContextInstance());
 	ID3D11Device* d3d_device = pD3D11RHIContext->GetD3D11Device();
@@ -24,7 +24,7 @@ uint64_t D3D11RHIFence::Signal()
 
 	return value;
 }
-void D3D11RHIFence::Wait(uint64_t value)
+void D3D11Fence::Wait(uint64_t value)
 {
 	auto iter = m_mFences.find(value);
 	if (iter != m_mFences.end())
@@ -37,7 +37,7 @@ void D3D11RHIFence::Wait(uint64_t value)
 		m_mFences.erase(iter);
 	}
 }
-bool D3D11RHIFence::IsCompleted(uint64_t value)
+bool D3D11Fence::IsCompleted(uint64_t value)
 {
 	auto iter = m_mFences.find(value);
 	if (iter == m_mFences.end())

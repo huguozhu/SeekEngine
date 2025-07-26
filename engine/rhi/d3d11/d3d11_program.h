@@ -3,13 +3,13 @@
 
 SEEK_NAMESPACE_BEGIN
 
-class D3D11RHIProgram : public RHIProgram
+class D3D11Program : public RHIProgram
 {
 public:
-    D3D11RHIProgram(Context* context)
+    D3D11Program(Context* context)
         : RHIProgram(context)
     { }
-    ~D3D11RHIProgram() = default;
+    ~D3D11Program() = default;
 
     SResult Active();
     void Deactive();

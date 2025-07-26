@@ -130,20 +130,20 @@ RHIDepthStencilViewPtr D3D11RHIContext::Create2DDepthStencilView(RHITexturePtr c
 }
 RHIFrameBufferPtr D3D11RHIContext::CreateRHIFrameBuffer()
 {
-    RHIFrameBufferPtr fb = MakeSharedPtr<D3D11RHIFrameBuffer>(m_pContext);
+    RHIFrameBufferPtr fb = MakeSharedPtr<D3D11FrameBuffer>(m_pContext);
     return fb;
 }
 RHIProgramPtr D3D11RHIContext::CreateRHIProgram()
 { 
-    return MakeSharedPtr<D3D11RHIProgram>(m_pContext);
+    return MakeSharedPtr<D3D11Program>(m_pContext);
 }
 RHITimeQueryPtr D3D11RHIContext::CreateRHITimeQuery()
 {
-    return MakeSharedPtr<D3D11RHITimeQuery>(m_pContext);
+    return MakeSharedPtr<D3D11TimeQuery>(m_pContext);
 }
 RHIFencePtr D3D11RHIContext::CreateFence()
 {
-    return MakeSharedPtr<D3D11RHIFence>(m_pContext);
+    return MakeSharedPtr<D3D11Fence>(m_pContext);
 }
 SEEK_NAMESPACE_END
 

@@ -5,7 +5,7 @@
 
 
 SEEK_NAMESPACE_BEGIN
-class D3D11Window : public D3D11RHIFrameBuffer
+class D3D11Window : public D3D11FrameBuffer
 {
 public:
     D3D11Window(Context* context);
