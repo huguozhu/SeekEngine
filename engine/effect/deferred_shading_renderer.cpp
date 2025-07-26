@@ -57,7 +57,7 @@ SResult DeferredShadingRenderer::Init()
     RHIContext& rc = m_pContext->RHIContextInstance();
 	SEEK_RETIF_FAIL(SceneRenderer::Init());
 
-    // Step1: RHIMesh & RHIRenderBuffers
+    // Step1: RHIMesh & RHIGpuBuffers
 	RHITexture::Desc target_desc = rc.GetScreenRHIFrameBuffer()->GetRenderTargetDesc(RHIFrameBuffer::Attachment::Color0);
     uint32_t w = m_iRenderWidth = target_desc.width;
     uint32_t h = m_iRenderHeight = target_desc.height;

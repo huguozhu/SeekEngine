@@ -375,7 +375,7 @@ void SceneManager::SortMeshList(CameraComponent* camera, std::vector<MeshPair>& 
     }
 }
 
-RHIRenderBufferPtr& SceneManager::GetLightInfoCBuffer()
+RHIGpuBufferPtr& SceneManager::GetLightInfoCBuffer()
 {
     if (!m_LightInfoCBuffer)
     {
@@ -437,7 +437,7 @@ RHIRenderBufferPtr& SceneManager::GetLightInfoCBuffer()
     return m_LightInfoCBuffer;
 }
 
-RHIRenderBufferPtr& SceneManager::GetViewInfoCBuffer()
+RHIGpuBufferPtr& SceneManager::GetViewInfoCBuffer()
 {
     if (!m_ViewInfoCBuffer)
     {

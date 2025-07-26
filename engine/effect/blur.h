@@ -15,8 +15,8 @@ public:
 
 public:
     RHITexturePtr           m_pTemp = nullptr;
-	RHIRenderBufferPtr      m_pBlurXCBuffer = nullptr;
-    RHIRenderBufferPtr      m_pBlurYCBuffer = nullptr;
+	RHIGpuBufferPtr      m_pBlurXCBuffer = nullptr;
+    RHIGpuBufferPtr      m_pBlurYCBuffer = nullptr;
     
 };
 

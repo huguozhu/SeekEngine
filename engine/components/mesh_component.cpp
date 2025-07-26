@@ -221,7 +221,7 @@ SResult MeshComponent::RenderMesh(uint32_t i)
 void MeshComponent::FillMaterialParam(Technique* tech, RHIMeshPtr& pMesh)
 {
     MaterialPtr pMaterial = pMesh->GetMaterial();
-    RHIRenderBufferPtr pMaterialCBuffer = pMesh->GetMaterialInfoCBuffer();
+    RHIGpuBufferPtr pMaterialCBuffer = pMesh->GetMaterialInfoCBuffer();
 
     SceneManager& sm = m_pContext->SceneManagerInstance();
 

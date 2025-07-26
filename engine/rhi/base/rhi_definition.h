@@ -22,10 +22,10 @@ using ResourceFlags = uint64_t;
 #define RESOURCE_FLAG_APPEND                UINT64_C(0x0000000000002000)
 #define RESOURCE_FLAG_COUNTER               UINT64_C(0x0000000000004000)
 
-struct RHIRenderBufferData
+struct RHIGpuBufferData
 {
-    RHIRenderBufferData(uint32_t size, const void* data) :m_iDataSize(size), m_pData(data) { }
-    RHIRenderBufferData(size_t size, const void* data) :m_iDataSize((uint32_t)size), m_pData(data) { }
+    RHIGpuBufferData(uint32_t size, const void* data) :m_iDataSize(size), m_pData(data) { }
+    RHIGpuBufferData(size_t size, const void* data) :m_iDataSize((uint32_t)size), m_pData(data) { }
     const void*                 m_pData = nullptr;
     uint32_t                    m_iDataSize = 0;
 };
@@ -75,7 +75,7 @@ struct VertexStreamLayout
 
 struct VertexStream
 {
-    RHIRenderBufferPtr              render_buffer = nullptr;
+    RHIGpuBufferPtr              render_buffer = nullptr;
     uint32_t                        offset = 0;
     uint32_t                        stride = 0;
     std::vector<VertexStreamLayout> layouts;
@@ -112,7 +112,7 @@ enum class MorphTargetType
 struct MorphInfo
 {
     MorphTargetType             morph_target_type = MorphTargetType::None;
-    RHIRenderBufferPtr          render_buffer = nullptr;
+    RHIGpuBufferPtr          render_buffer = nullptr;
     std::vector<float>          morph_target_weights;
     std::vector<float>          prev_morph_target_weights;
     std::vector<std::string>    morph_target_names;

@@ -198,7 +198,7 @@ void Technique::CreateEffectVariable(Param& param)
         case EffectDataType::Buffer:
         case EffectDataType::RWBuffer:
         {
-            param.variable = MakeUniquePtr<EffectVariableRHIRenderBuffer>();
+            param.variable = MakeUniquePtr<EffectVariableRHIGpuBuffer>();
             break;
         }
         case EffectDataType::Texture:
@@ -402,13 +402,13 @@ void Technique::Dispatch(uint32_t x, uint32_t y, uint32_t z)
     m_pContext->RHIContextInstance().Dispatch(m_pProgram.get(), x, y, z);
     Uncommit();
 }
-void Technique::DispatchIndirect(RHIRenderBufferPtr indirectBuf)
+void Technique::DispatchIndirect(RHIGpuBufferPtr indirectBuf)
 {
     Commit();
     m_pContext->RHIContextInstance().DispatchIndirect(m_pProgram.get(), indirectBuf);
     Uncommit();
 }
-void Technique::DrawIndirect(RHIRenderBufferPtr indirectBuf, MeshTopologyType type)
+void Technique::DrawIndirect(RHIGpuBufferPtr indirectBuf, MeshTopologyType type)
 {
     RHIContext& rc = m_pContext->RHIContextInstance();
     RHIRenderStatePtr rs = this->GetRenderState();
@@ -442,7 +442,7 @@ SResult Technique::Commit()
             {
             case EffectDataType::ConstantBuffer:
             {
-                RHIRenderBufferPtr rb;
+                RHIGpuBufferPtr rb;
                 param.variable->Value(rb);
                 if (rb)
                     rc.BindConstantBuffer((ShaderType)stage, param.bindings[stage], rb.get(), param.fallbackName.c_str());
@@ -452,20 +452,20 @@ SResult Technique::Commit()
             }
             case EffectDataType::Buffer:
             {
-                RHIRenderBufferPtr rb;
+                RHIGpuBufferPtr rb;
                 param.variable->Value(rb);
                 if (rb)
-                    rc.BindRHIRenderBuffer((ShaderType)stage, param.bindings[stage], rb.get(), param.name.c_str());
+                    rc.BindRHIGpuBuffer((ShaderType)stage, param.bindings[stage], rb.get(), param.name.c_str());
                 else
                     LOG_WARNING("param %s has no resource binding", param.name.c_str());
                 break;
             }
             case EffectDataType::RWBuffer:
             {
-                RHIRenderBufferPtr rb;
+                RHIGpuBufferPtr rb;
                 param.variable->Value(rb);
                 if (rb)
-                    rc.BindRWRHIRenderBuffer((ShaderType)stage, param.bindings[stage], rb.get(), param.name.c_str());
+                    rc.BindRWRHIGpuBuffer((ShaderType)stage, param.bindings[stage], rb.get(), param.name.c_str());
                 else
                     LOG_WARNING("param %s has no resource binding", param.name.c_str());
                 break;
@@ -555,12 +555,12 @@ void Technique::Uncommit()
             }
             case EffectDataType::Buffer:
             {
-                rc.BindRHIRenderBuffer((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
+                rc.BindRHIGpuBuffer((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
                 break;
             }
             case EffectDataType::RWBuffer:
             {
-                rc.BindRWRHIRenderBuffer((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
+                rc.BindRWRHIGpuBuffer((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
                 break;
             }
             default:

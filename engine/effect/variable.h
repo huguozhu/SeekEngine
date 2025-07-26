@@ -26,7 +26,7 @@ public:
 
     EffectVariable_Declare(RHITexturePtr)
     EffectVariable_Declare(RHISamplerPtr)
-    EffectVariable_Declare(RHIRenderBufferPtr)
+    EffectVariable_Declare(RHIGpuBufferPtr)
 #undef EffectVariable_Declare
 
 protected:
@@ -103,7 +103,7 @@ private:
 
 EFFECT_VARIABLE_CONCRETE(RHISampler,        RHISamplerPtr)
 EFFECT_VARIABLE_CONCRETE(RHITexture,        RHITexturePtr)
-EFFECT_VARIABLE_CONCRETE(RHIRenderBuffer,   RHIRenderBufferPtr)
+EFFECT_VARIABLE_CONCRETE(RHIGpuBuffer,   RHIGpuBufferPtr)
 
 #undef EFFECT_VARIABLE_CONCRETE
 

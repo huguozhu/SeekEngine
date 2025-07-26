@@ -126,26 +126,26 @@ private:
     void GpuSyncFence();
     
 protected:
-    RHIRenderBufferPtr m_pParticleAliveIndicesParam = nullptr;
-    RHIRenderBufferPtr m_pParticleInitParam = nullptr;
-    RHIRenderBufferPtr m_pParticleTickBeginParam = nullptr;
-    RHIRenderBufferPtr m_pParticleEmitParam = nullptr;
-    RHIRenderBufferPtr m_pParticleSimulateParam = nullptr;
-    RHIRenderBufferPtr m_pParticleCullingParam = nullptr;
-    RHIRenderBufferPtr m_pParticleSortParam = nullptr;
-    RHIRenderBufferPtr m_pParticleRenderParam = nullptr;
-    RHIRenderBufferPtr m_pParticleVertices = nullptr;
-    RHIRenderBufferPtr m_pRandomFloats = nullptr;
+    RHIGpuBufferPtr m_pParticleAliveIndicesParam = nullptr;
+    RHIGpuBufferPtr m_pParticleInitParam = nullptr;
+    RHIGpuBufferPtr m_pParticleTickBeginParam = nullptr;
+    RHIGpuBufferPtr m_pParticleEmitParam = nullptr;
+    RHIGpuBufferPtr m_pParticleSimulateParam = nullptr;
+    RHIGpuBufferPtr m_pParticleCullingParam = nullptr;
+    RHIGpuBufferPtr m_pParticleSortParam = nullptr;
+    RHIGpuBufferPtr m_pParticleRenderParam = nullptr;
+    RHIGpuBufferPtr m_pParticleVertices = nullptr;
+    RHIGpuBufferPtr m_pRandomFloats = nullptr;
 
-    RHIRenderBufferPtr m_pParticleCounters = nullptr;
-    RHIRenderBufferPtr m_pParticleDeadIndices = nullptr;
-    RHIRenderBufferPtr m_pParticleAliveIndices[2] = { nullptr };
-    RHIRenderBufferPtr m_pParticleSortIndices = nullptr;
-    RHIRenderBufferPtr m_pParticleSortTempIndices = nullptr;
-    RHIRenderBufferPtr m_pParticleDatas = nullptr;    
-    RHIRenderBufferPtr m_pParticleDrawIndirectArgs = nullptr;
-    RHIRenderBufferPtr m_pParticleDispatchEmitIndirectArgs = nullptr;
-    RHIRenderBufferPtr m_pParticleDispatchSimulateIndirectArgs = nullptr;
+    RHIGpuBufferPtr m_pParticleCounters = nullptr;
+    RHIGpuBufferPtr m_pParticleDeadIndices = nullptr;
+    RHIGpuBufferPtr m_pParticleAliveIndices[2] = { nullptr };
+    RHIGpuBufferPtr m_pParticleSortIndices = nullptr;
+    RHIGpuBufferPtr m_pParticleSortTempIndices = nullptr;
+    RHIGpuBufferPtr m_pParticleDatas = nullptr;    
+    RHIGpuBufferPtr m_pParticleDrawIndirectArgs = nullptr;
+    RHIGpuBufferPtr m_pParticleDispatchEmitIndirectArgs = nullptr;
+    RHIGpuBufferPtr m_pParticleDispatchSimulateIndirectArgs = nullptr;
 
     Technique*      m_pTechParticleInit = nullptr;
     Technique*      m_pTechParticleTickBegin = nullptr;

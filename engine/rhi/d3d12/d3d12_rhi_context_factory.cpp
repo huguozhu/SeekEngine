@@ -42,31 +42,31 @@ RHITexturePtr D3D12Context::CreateTextureCube(const RHITexture::Desc& tex_desc, 
     SResult ret = tex->Create(init_data);
     return SEEK_CHECKFAILED(ret) ? nullptr : tex;
 }
-RHIRenderBufferPtr D3D12Context::CreateConstantBuffer(uint32_t size, ResourceFlags flags)
+RHIGpuBufferPtr D3D12Context::CreateConstantBuffer(uint32_t size, ResourceFlags flags)
 { 
     return nullptr; 
 }
-RHIRenderBufferPtr D3D12Context::CreateStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIRenderBufferData* pData)
+RHIGpuBufferPtr D3D12Context::CreateStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData)
 { 
     return nullptr; 
 }
-RHIRenderBufferPtr D3D12Context::CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIRenderBufferData* pData)
+RHIGpuBufferPtr D3D12Context::CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData)
 { 
     return nullptr; 
 }
-RHIRenderBufferPtr D3D12Context::CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData)
+RHIGpuBufferPtr D3D12Context::CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData)
 { 
     return nullptr;
 }
-RHIRenderBufferPtr D3D12Context::CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData)
+RHIGpuBufferPtr D3D12Context::CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData)
 {
     return nullptr; 
 }
-RHIRenderBufferPtr D3D12Context::CreateVertexBuffer(uint32_t size, RHIRenderBufferData* pData)
+RHIGpuBufferPtr D3D12Context::CreateVertexBuffer(uint32_t size, RHIGpuBufferData* pData)
 { 
     return nullptr;
 }
-RHIRenderBufferPtr D3D12Context::CreateIndexBuffer(uint32_t size, RHIRenderBufferData* pData)
+RHIGpuBufferPtr D3D12Context::CreateIndexBuffer(uint32_t size, RHIGpuBufferData* pData)
 { 
     return nullptr;
 }

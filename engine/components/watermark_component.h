@@ -26,8 +26,8 @@ private:
     Technique*          m_pTechWaterMarkGenerate = nullptr;
 
     WaterMarkDesc       m_sDesc = { 0 };
-    RHIRenderBufferPtr  m_pWaterMarkDescCBuffer = nullptr;
-    RHIRenderBufferPtr  m_pWaterMarkTargetSizeCBuffer = nullptr;
+    RHIGpuBufferPtr  m_pWaterMarkDescCBuffer = nullptr;
+    RHIGpuBufferPtr  m_pWaterMarkTargetSizeCBuffer = nullptr;
     RHITexturePtr       m_pWaterMarkTex = nullptr;
     bool                m_bDirty = true;
     RHITexturePtr       m_pRepeatWaterMark = nullptr;

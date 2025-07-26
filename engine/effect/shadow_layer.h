@@ -115,9 +115,9 @@ private:
     //EffectParam*            m_pParamCsmLightVPMatrices = nullptr;
     //EffectParam*            m_pParamLightViewMatrices = nullptr;
 
-    RHIRenderBufferPtr      m_pCameraInfoCBuffer = nullptr;
-    RHIRenderBufferPtr      m_pLightInfoCBuffer = nullptr;
-	RHIRenderBufferPtr      m_pDeferredLightingInfoCBuffer = nullptr;
+    RHIGpuBufferPtr      m_pCameraInfoCBuffer = nullptr;
+    RHIGpuBufferPtr      m_pLightInfoCBuffer = nullptr;
+	RHIGpuBufferPtr      m_pDeferredLightingInfoCBuffer = nullptr;
 public:
     DeferredShadowLayer(Context* context);
     ~DeferredShadowLayer() {}

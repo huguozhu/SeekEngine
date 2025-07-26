@@ -16,7 +16,7 @@ public:
     void SetDstTexture(RHITexturePtr const& tex_cube);
 
 private:
-	RHIRenderBufferPtr  m_pMVPCBuffer = nullptr;
+	RHIGpuBufferPtr  m_pMVPCBuffer = nullptr;
 };
 CLASS_DECLARE(EquirectangularToCubeMapPostProcess);
 
@@ -34,7 +34,7 @@ public:
 
 private:
     RHITexturePtr m_pIrradianceConvolutionTex = nullptr;
-    RHIRenderBufferPtr  m_pMVPCBuffer = nullptr;
+    RHIGpuBufferPtr  m_pMVPCBuffer = nullptr;
 };
 CLASS_DECLARE(IrradianceConvolutionPostProcess);
 
@@ -54,8 +54,8 @@ public:
     static const uint32_t MAX_MIP_LEVELS = 5;
 private:
     RHIRenderTargetViewPtr m_vRenderViews[(uint32_t)CubeFaceType::Num][MAX_MIP_LEVELS] = { nullptr };
-    RHIRenderBufferPtr  m_pMVPCBuffer = nullptr;
-    RHIRenderBufferPtr  m_pRoughnessCBuffer[MAX_MIP_LEVELS] = { nullptr };
+    RHIGpuBufferPtr  m_pMVPCBuffer = nullptr;
+    RHIGpuBufferPtr  m_pRoughnessCBuffer[MAX_MIP_LEVELS] = { nullptr };
 };
 CLASS_DECLARE(PrefilterEnvPostProcess);
 

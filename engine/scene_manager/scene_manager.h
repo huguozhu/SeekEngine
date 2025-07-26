@@ -45,8 +45,8 @@ public:
 
     Rect<uint32_t>                      GetRenderRect() const { return m_RenderRect; }
 
-    RHIRenderBufferPtr&                 GetLightInfoCBuffer();
-    RHIRenderBufferPtr&                 GetViewInfoCBuffer();
+    RHIGpuBufferPtr&                 GetLightInfoCBuffer();
+    RHIGpuBufferPtr&                 GetViewInfoCBuffer();
 
     const std::vector<MeshPair>&        GetOpaqueMeshList() { return m_OpaqueMeshList; }
     const std::vector<MeshPair>&        GetTransparentMeshList() { return m_TransparentMeshList; }
@@ -114,8 +114,8 @@ protected:
     std::map<CameraComponent*, std::vector<MeshPair>>   m_mCachedVisibleMeshListByCamera;
     
     
-    RHIRenderBufferPtr m_LightInfoCBuffer;
-    RHIRenderBufferPtr m_ViewInfoCBuffer;
+    RHIGpuBufferPtr m_LightInfoCBuffer;
+    RHIGpuBufferPtr m_ViewInfoCBuffer;
 
     std::vector<MeshPair> m_OpaqueMeshList; // meshes need to draw in current rendering loop, invalid after rendering
     std::vector<MeshPair> m_TransparentMeshList;

@@ -10,21 +10,21 @@
 SEEK_NAMESPACE_BEGIN
 
 /******************************************************************************
- * D3D11RenderBuffer
+ * D3D11GpuBuffer
  *******************************************************************************/
-D3D11RenderBuffer::~D3D11RenderBuffer()
+D3D11GpuBuffer::~D3D11GpuBuffer()
 {
     m_pD3DBuffer.Reset();
     m_pD3DShaderResourceView.Reset();
     m_pD3DUnorderAccessView.Reset();
 }
 
-ID3D11Buffer* D3D11RenderBuffer::GetD3DBuffer()
+ID3D11Buffer* D3D11GpuBuffer::GetD3DBuffer()
 {
     return m_pD3DBuffer.Get();
 }
 
-SResult D3D11RenderBuffer::Create(RHIRenderBufferData* buffer_data)
+SResult D3D11GpuBuffer::Create(RHIGpuBufferData* buffer_data)
 {
     D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
@@ -52,7 +52,7 @@ SResult D3D11RenderBuffer::Create(RHIRenderBufferData* buffer_data)
     return S_Success;
 }
 
-SResult D3D11RenderBuffer::Update(RHIRenderBufferData* buffer_data)
+SResult D3D11GpuBuffer::Update(RHIGpuBufferData* buffer_data)
 {
     if (!(m_iFlags & RESOURCE_FLAG_CPU_WRITE))
         return ERR_INVALID_ARG;
@@ -70,7 +70,7 @@ SResult D3D11RenderBuffer::Update(RHIRenderBufferData* buffer_data)
     return S_Success;
 }
 
-SResult D3D11RenderBuffer::CopyBack(BufferPtr buffer, int start, int length)
+SResult D3D11GpuBuffer::CopyBack(BufferPtr buffer, int start, int length)
 {
     if (!m_pD3DBuffer)
         return ERR_INVALID_ARG;
@@ -89,7 +89,7 @@ SResult D3D11RenderBuffer::CopyBack(BufferPtr buffer, int start, int length)
 
     if (start < 0 || start >= m_iSize)
     {
-        LOG_ERROR("D3D11RenderBuffer::CopyBack() start(%d) >= m_iSize(%d) || start < 0", start, m_iSize);
+        LOG_ERROR("D3D11GpuBuffer::CopyBack() start(%d) >= m_iSize(%d) || start < 0", start, m_iSize);
         return ERR_INVALID_ARG;
     }
 
@@ -101,7 +101,7 @@ SResult D3D11RenderBuffer::CopyBack(BufferPtr buffer, int start, int length)
     pDeviceContext->Unmap(m_pD3DBuffer.Get(), 0);
     return S_Success;
 }
-ID3D11ShaderResourceView * D3D11RenderBuffer::GetD3DSrv()
+ID3D11ShaderResourceView * D3D11GpuBuffer::GetD3DSrv()
  {
     if (m_pD3DShaderResourceView)
         return m_pD3DShaderResourceView.Get();
@@ -121,7 +121,7 @@ ID3D11ShaderResourceView * D3D11RenderBuffer::GetD3DSrv()
     }
     return m_pD3DShaderResourceView.Get();
 }
-ID3D11UnorderedAccessView* D3D11RenderBuffer::GetD3DUav()
+ID3D11UnorderedAccessView* D3D11GpuBuffer::GetD3DUav()
 {
     if (m_pD3DUnorderAccessView)
         return m_pD3DUnorderAccessView.Get();
@@ -143,7 +143,7 @@ ID3D11UnorderedAccessView* D3D11RenderBuffer::GetD3DUav()
     return m_pD3DUnorderAccessView.Get();
 }
 
-SResult D3D11RenderBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
+SResult D3D11GpuBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
 {
     UINT cpu_access_flags = 0;
     D3D11_USAGE usage = D3D11_USAGE_DEFAULT;
@@ -160,7 +160,7 @@ SResult D3D11RenderBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
     return S_Success;
 }
 
-SResult D3D11RenderBuffer::FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
+SResult D3D11GpuBuffer::FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
 {
     desc.Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
     desc.ViewDimension = D3D11_SRV_DIMENSION_BUFFER;
@@ -168,7 +168,7 @@ SResult D3D11RenderBuffer::FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc)
     desc.Buffer.NumElements = m_iSize / 16;
     return S_Success;
 }
-SResult D3D11RenderBuffer::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc)
+SResult D3D11GpuBuffer::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc)
 {
     desc.Format = DXGI_FORMAT_UNKNOWN;
     desc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
@@ -184,12 +184,12 @@ SResult D3D11RenderBuffer::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc)
  * D3D11VertexBuffer
  *******************************************************************************/
 D3D11VertexBuffer::D3D11VertexBuffer(Context* context, uint32_t size)
-    :D3D11RenderBuffer(context, size, RESOURCE_FLAG_CPU_WRITE)
+    :D3D11GpuBuffer(context, size, RESOURCE_FLAG_CPU_WRITE)
 {
 }
 SResult D3D11VertexBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
 {
-    D3D11RenderBuffer::FillBufferDesc(desc);
+    D3D11GpuBuffer::FillBufferDesc(desc);
     desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
     return S_Success;
 }
@@ -198,12 +198,12 @@ SResult D3D11VertexBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
  * D3D11IndexBuffer
  *******************************************************************************/
 D3D11IndexBuffer::D3D11IndexBuffer(Context* context, uint32_t size)
-    :D3D11RenderBuffer(context, size, RESOURCE_FLAG_CPU_WRITE)
+    :D3D11GpuBuffer(context, size, RESOURCE_FLAG_CPU_WRITE)
 {
 }
 SResult D3D11IndexBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
 {
-    D3D11RenderBuffer::FillBufferDesc(desc);
+    D3D11GpuBuffer::FillBufferDesc(desc);
     desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
     return S_Success;
 }
@@ -212,12 +212,12 @@ SResult D3D11IndexBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
  * D3D11ConstantBuffer
  *******************************************************************************/
 D3D11ConstantBuffer::D3D11ConstantBuffer(Context* context, uint32_t size, ResourceFlags flags)
-    :D3D11RenderBuffer(context, size, flags)
+    :D3D11GpuBuffer(context, size, flags)
 {
 }
 SResult D3D11ConstantBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
 {
-    D3D11RenderBuffer::FillBufferDesc(desc);
+    D3D11GpuBuffer::FillBufferDesc(desc);
     desc.ByteWidth = seek_alignup(m_iSize, 16);
     desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     return S_Success;
@@ -228,12 +228,12 @@ SResult D3D11ConstantBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
  * D3D11StructuredBuffer
  *******************************************************************************/
 D3D11StructuredBuffer::D3D11StructuredBuffer(Context* context, uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride)
-    :D3D11RenderBuffer(context, size, flags), m_iStructureByteStride(structure_byte_stride)
+    :D3D11GpuBuffer(context, size, flags), m_iStructureByteStride(structure_byte_stride)
 {
 }
 SResult D3D11StructuredBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
 {
-    D3D11RenderBuffer::FillBufferDesc(desc);
+    D3D11GpuBuffer::FillBufferDesc(desc);
     desc.ByteWidth = seek_alignup(m_iSize, 16);
     desc.MiscFlags |= (m_iFlags & RESOURCE_FLAG_GPU_WRITE ?
         D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS : 
@@ -265,12 +265,12 @@ SResult D3D11StructuredBuffer::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& des
  * D3D11ByteAddressBuffer
  *******************************************************************************/
 D3D11ByteAddressBuffer::D3D11ByteAddressBuffer(Context* context, uint32_t size, ResourceFlags flags)
-    :D3D11RenderBuffer(context, size, flags)
+    :D3D11GpuBuffer(context, size, flags)
 {
 }
 SResult D3D11ByteAddressBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
 {
-    D3D11RenderBuffer::FillBufferDesc(desc);
+    D3D11GpuBuffer::FillBufferDesc(desc);
     desc.ByteWidth = seek_alignup(m_iSize, 16);
     desc.MiscFlags |= D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
     return S_Success;

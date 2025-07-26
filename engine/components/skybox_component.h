@@ -17,7 +17,7 @@ public:
 private:
     Technique*          m_pTechSkyBox = nullptr;
     RHITexturePtr       m_pTexSkyBox;
-    RHIRenderBufferPtr  m_GlobalParamsCBuffer;
+    RHIGpuBufferPtr  m_GlobalParamsCBuffer;
 };
 
 SEEK_NAMESPACE_END

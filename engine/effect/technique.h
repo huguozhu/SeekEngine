@@ -210,8 +210,8 @@ public:
 
     SResult Render(const RHIMeshPtr& mesh);
     void Dispatch(uint32_t x, uint32_t y, uint32_t z);
-    void DispatchIndirect(RHIRenderBufferPtr indirectBuf);
-    void DrawIndirect(RHIRenderBufferPtr indirectBuf, MeshTopologyType type);
+    void DispatchIndirect(RHIGpuBufferPtr indirectBuf);
+    void DrawIndirect(RHIGpuBufferPtr indirectBuf, MeshTopologyType type);
     void DrawInstanced(MeshTopologyType type, uint32_t vertexCountPerInstance, uint32_t instanceCount, uint32_t startVertexLocation, uint32_t startInstanceLocation);
 
     SResult Commit();

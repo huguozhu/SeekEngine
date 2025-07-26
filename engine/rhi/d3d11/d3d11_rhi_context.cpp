@@ -508,21 +508,21 @@ SResult D3D11Context::Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint
     ((D3D11Program*)program)->Deactive();
     return res;
 }
-SResult D3D11Context::DispatchIndirect(RHIProgram* program, RHIRenderBufferPtr indirectBuf)
+SResult D3D11Context::DispatchIndirect(RHIProgram* program, RHIGpuBufferPtr indirectBuf)
 {
     SResult res = S_Success;
     SEEK_RETIF_FAIL(((D3D11Program*)(program))->Active());
-    D3D11RenderBuffer* pD3DBuf = (D3D11RenderBuffer*)indirectBuf.get();
+    D3D11GpuBuffer* pD3DBuf = (D3D11GpuBuffer*)indirectBuf.get();
     m_pDeviceContext->DispatchIndirect(pD3DBuf->GetD3DBuffer(), 0);
     ((D3D11Program*)program)->Deactive();
     return res;
 }
-SResult D3D11Context::DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIRenderBufferPtr indirectBuf, MeshTopologyType type)
+SResult D3D11Context::DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIGpuBufferPtr indirectBuf, MeshTopologyType type)
 {
     SResult res = S_Success;
     SEEK_RETIF_FAIL(((D3D11RenderState*)(rs.get()))->Active());
     SEEK_RETIF_FAIL(((D3D11Program*)(program))->Active());
-    D3D11RenderBuffer* pD3DBuf = (D3D11RenderBuffer*)indirectBuf.get();
+    D3D11GpuBuffer* pD3DBuf = (D3D11GpuBuffer*)indirectBuf.get();
     m_pDeviceContext->IASetPrimitiveTopology(D3D11Translate::TranslatePrimitiveTopology(type));
     m_pDeviceContext->DrawInstancedIndirect(pD3DBuf->GetD3DBuffer(), 0);
     ((D3D11Program*)program)->Deactive();
@@ -621,21 +621,21 @@ void D3D11Context::EndCapture()
     }
 }
 
-void D3D11Context::BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* cbuffer, const char* name)
+void D3D11Context::BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* cbuffer, const char* name)
 {
-    ID3D11Buffer* d3d_buffer = cbuffer == nullptr ? nullptr : ((D3D11RenderBuffer*)cbuffer)->GetD3DBuffer();
+    ID3D11Buffer* d3d_buffer = cbuffer == nullptr ? nullptr : ((D3D11GpuBuffer*)cbuffer)->GetD3DBuffer();
     SetD3DConstantBuffers(stage, binding, 1, &d3d_buffer);
 }
 
-void D3D11Context::BindRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* buffer, const char* name)
+void D3D11Context::BindRHIGpuBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* buffer, const char* name)
 {
-    ID3D11ShaderResourceView* srv = buffer == nullptr ? nullptr : ((D3D11RenderBuffer*)buffer)->GetD3DSrv();
+    ID3D11ShaderResourceView* srv = buffer == nullptr ? nullptr : ((D3D11GpuBuffer*)buffer)->GetD3DSrv();
     SetD3DShaderResourceViews(stage, binding, 1, &srv);
 }
 
-void D3D11Context::BindRWRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* rw_buffer, const char* name)
+void D3D11Context::BindRWRHIGpuBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* rw_buffer, const char* name)
 {
-    ID3D11UnorderedAccessView* uav = rw_buffer == nullptr ? nullptr : ((D3D11RenderBuffer*)rw_buffer)->GetD3DUav();
+    ID3D11UnorderedAccessView* uav = rw_buffer == nullptr ? nullptr : ((D3D11GpuBuffer*)rw_buffer)->GetD3DUav();
     SetD3DUnorderedAccessViews(stage, binding, 1, &uav);
 }
 

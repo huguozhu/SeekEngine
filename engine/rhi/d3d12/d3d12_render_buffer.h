@@ -11,11 +11,11 @@ SEEK_NAMESPACE_BEGIN
 /******************************************************************************
  * D3D12RenderBuffer
  *******************************************************************************/
-//class D3D12RenderBuffer : public RHIRenderBuffer
+//class D3D12RenderBuffer : public RHIGpuBuffer
 //{
 //public:
 //    D3D12RenderBuffer(Context* context, uint32_t size, ResourceFlags flags)
-//        : RHIRenderBuffer(context, size, flags) {}
+//        : RHIGpuBuffer(context, size, flags) {}
 //    virtual ~D3D12RenderBuffer();
 //
 //    D3D12SrvPtr const& GetD3DSrv(uint32_t first_elem, uint32_t num_elems);
@@ -23,8 +23,8 @@ SEEK_NAMESPACE_BEGIN
 //    D3D12UavPtr const& GetD3DUav(uint32_t first_elem, uint32_t num_elems);
 //
 //
-//    virtual SResult Create(RHIRenderBufferData* buffer_data) override;
-//    virtual SResult Update(RHIRenderBufferData* buffer_data) override;
+//    virtual SResult Create(RHIGpuBufferData* buffer_data) override;
+//    virtual SResult Update(RHIGpuBufferData* buffer_data) override;
 //    virtual SResult CopyBack(BufferPtr buffer, int start=0, int length=-1) override;
 //
 //
@@ -43,7 +43,7 @@ SEEK_NAMESPACE_BEGIN
 /******************************************************************************
  * D3D11VertexBuffer
  *******************************************************************************/
-//class D3D12VertexBuffer : public D3D12RHIRenderBuffer
+//class D3D12VertexBuffer : public D3D12RHIGpuBuffer
 //{
 //public:
 //    D3D12VertexBuffer(Context* context, uint32_t size);
@@ -56,7 +56,7 @@ SEEK_NAMESPACE_BEGIN
 ///******************************************************************************
 // * D3D11IndexBuffer
 // *******************************************************************************/
-//class D3D12ndexBuffer : public D3D12RHIRenderBuffer
+//class D3D12ndexBuffer : public D3D12RHIGpuBuffer
 //{
 //public:
 //    D3D12ndexBuffer(Context* context, uint32_t size);
@@ -69,7 +69,7 @@ SEEK_NAMESPACE_BEGIN
 ///******************************************************************************
 // * D3D11ConstantBuffer
 // *******************************************************************************/
-//class D3D12ConstantBuffer : public D3D12RHIRenderBuffer
+//class D3D12ConstantBuffer : public D3D12RHIGpuBuffer
 //{
 //public:
 //    D3D12ConstantBuffer(Context* context, uint32_t size, ResourceFlags flags);
@@ -82,7 +82,7 @@ SEEK_NAMESPACE_BEGIN
 ///******************************************************************************
 // * D3D11StructuredBuffer
 // *******************************************************************************/
-//class D3D12StructuredBuffer : public D3D12RHIRenderBuffer
+//class D3D12StructuredBuffer : public D3D12RHIGpuBuffer
 //{
 //public:
 //    D3D12StructuredBuffer(Context* context, uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride);
@@ -101,7 +101,7 @@ SEEK_NAMESPACE_BEGIN
 ///******************************************************************************
 // * D3D11ByteAddressBuffer
 // *******************************************************************************/
-//class D3D12ByteAddressBuffer : public D3D12RHIRenderBuffer
+//class D3D12ByteAddressBuffer : public D3D12RHIGpuBuffer
 //{
 //public:
 //    D3D12ByteAddressBuffer(Context* context, uint32_t size, ResourceFlags flags);

@@ -625,14 +625,14 @@ MeshComponentPtr CreateCoordinateAxis(Context* ctx, float thickness)
         1, 2, 4, 2, 4, 5,
         0, 2, 3, 2, 3, 5,
     };
-    RHIRenderBufferData indics_data((uint32_t)indics.size() * sizeof(uint16_t), indics.data());
-    RHIRenderBufferPtr indics_buffer = ctx->RHIContextInstance().CreateIndexBuffer(indics_data.m_iDataSize, &indics_data);
+    RHIGpuBufferData indics_data((uint32_t)indics.size() * sizeof(uint16_t), indics.data());
+    RHIGpuBufferPtr indics_buffer = ctx->RHIContextInstance().CreateIndexBuffer(indics_data.m_iDataSize, &indics_data);
 
     MeshComponentPtr componet = MakeSharedPtr<MeshComponent>(ctx);
     for (int i = 0; i < 3; i++)
     {
-        RHIRenderBufferData vertex_data((uint32_t)vertex_xyz[i].size() * sizeof(float), vertex_xyz[i].data());
-        RHIRenderBufferPtr vertex_buffer = ctx->RHIContextInstance().CreateVertexBuffer(vertex_data.m_iDataSize, &vertex_data);
+        RHIGpuBufferData vertex_data((uint32_t)vertex_xyz[i].size() * sizeof(float), vertex_xyz[i].data());
+        RHIGpuBufferPtr vertex_buffer = ctx->RHIContextInstance().CreateVertexBuffer(vertex_data.m_iDataSize, &vertex_data);
 
         RHIMeshPtr mesh = ctx->RHIContextInstance().CreateMesh();
         mesh->SetIndexBuffer(indics_buffer, IndexBufferType::UInt16);

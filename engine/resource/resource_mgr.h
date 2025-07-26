@@ -124,7 +124,7 @@ struct MorphTargetResource : public IResource
     MorphInfo _morphInfo;
     void* _data = nullptr;
     size_t _size = 0;
-    bool _refreshRHIRenderBuffer = false;
+    bool _refreshRHIGpuBuffer = false;
 };
 
 struct MaterialResource : public IResource

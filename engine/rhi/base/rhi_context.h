@@ -54,13 +54,13 @@ public: // virutal factory
     virtual RHITexturePtr           CreateTexture3D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) { return nullptr; }
     virtual RHITexturePtr           CreateTextureCube(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_data = {}) { return nullptr; }
 
-    virtual RHIRenderBufferPtr      CreateConstantBuffer(uint32_t size, ResourceFlags flags) = 0;
-    virtual RHIRenderBufferPtr      CreateStructuredBuffer  (uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIRenderBufferData* pData = nullptr) = 0;
-    virtual RHIRenderBufferPtr      CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIRenderBufferData* pData = nullptr) = 0;
-    virtual RHIRenderBufferPtr      CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) { return nullptr; }
-    virtual RHIRenderBufferPtr      CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) { return nullptr; }
-    virtual RHIRenderBufferPtr      CreateVertexBuffer(uint32_t size, RHIRenderBufferData* pData) = 0;
-    virtual RHIRenderBufferPtr      CreateIndexBuffer(uint32_t size, RHIRenderBufferData* pData) = 0;
+    virtual RHIGpuBufferPtr      CreateConstantBuffer(uint32_t size, ResourceFlags flags) = 0;
+    virtual RHIGpuBufferPtr      CreateStructuredBuffer  (uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData = nullptr) = 0;
+    virtual RHIGpuBufferPtr      CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData = nullptr) = 0;
+    virtual RHIGpuBufferPtr      CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData) { return nullptr; }
+    virtual RHIGpuBufferPtr      CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData) { return nullptr; }
+    virtual RHIGpuBufferPtr      CreateVertexBuffer(uint32_t size, RHIGpuBufferData* pData) = 0;
+    virtual RHIGpuBufferPtr      CreateIndexBuffer(uint32_t size, RHIGpuBufferData* pData) = 0;
 
 
     virtual RHIRenderTargetViewPtr  Create2DRenderTargetView(RHITexturePtr const& tex_2d,   uint32_t first_array_index = 0, uint32_t array_size = 1, uint32_t mip_level = 0) = 0;
@@ -85,8 +85,8 @@ public: // virutal factory
     
     virtual void                    BeginComputePass(const ComputePassInfo& computePassInfo) = 0;
     virtual SResult                 Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z) = 0;
-    virtual SResult                 DispatchIndirect(RHIProgram* program, RHIRenderBufferPtr indirectBuf) { return 0; }
-    virtual SResult                 DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIRenderBufferPtr indirectBuf, MeshTopologyType type) { return 0; }
+    virtual SResult                 DispatchIndirect(RHIProgram* program, RHIGpuBufferPtr indirectBuf) { return 0; }
+    virtual SResult                 DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIGpuBufferPtr indirectBuf, MeshTopologyType type) { return 0; }
     virtual SResult                 DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, MeshTopologyType type, uint32_t vertexCountPerInstance, 
                                                     uint32_t instanceCount, uint32_t startVertexLocation, uint32_t startInstanceLocation) { return 0; }
     
@@ -109,9 +109,9 @@ public: // virutal factory
     RHISamplerPtr                   GetSampler(SamplerDesc const& desc);
     RHIRenderStatePtr               GetRenderState(RenderStateDesc const& desc);
     
-    virtual void                    BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* cbuffer, const char* name) = 0;
-    virtual void                    BindRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* buffer, const char* name) = 0;
-    virtual void                    BindRWRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* rw_buffer, const char* name) = 0;
+    virtual void                    BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* cbuffer, const char* name) = 0;
+    virtual void                    BindRHIGpuBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* buffer, const char* name) = 0;
+    virtual void                    BindRWRHIGpuBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* rw_buffer, const char* name) = 0;
     virtual void                    BindTexture(ShaderType stage, uint32_t binding, const RHITexture* texture, const char* name) = 0;
     virtual void                    BindRWTexture(ShaderType stage, uint32_t binding, const RHITexture* rw_texture, const char* name) = 0;
     virtual void                    BindSampler(ShaderType stage, uint32_t binding, const RHISampler* sampler, const char* name) = 0;

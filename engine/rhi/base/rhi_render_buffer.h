@@ -6,33 +6,33 @@
 
 SEEK_NAMESPACE_BEGIN
 
-class RHIRenderBuffer
+class RHIGpuBuffer
 {
 public:
     uint32_t            GetSize()          const { return m_iSize; }
     ResourceFlags       GetResourceFlags() const { return m_iFlags; }
 
-    virtual SResult   Create(RHIRenderBufferData* buffer_data) = 0;
-    virtual SResult   Update(RHIRenderBufferData* buffer_data) = 0;
+    virtual SResult   Create(RHIGpuBufferData* buffer_data) = 0;
+    virtual SResult   Update(RHIGpuBufferData* buffer_data) = 0;
     virtual SResult   CopyBack(BufferPtr buffer, int start=0, int length=-1) = 0;
 
     SResult Update(const void* data, uint32_t size)
     {
-        RHIRenderBufferData rbd{ size, data };
+        RHIGpuBufferData rbd{ size, data };
         return Update(&rbd);
     }
 
     SResult Create(const void* data, uint32_t size)
     {
-        RHIRenderBufferData rbd{ size, data };
+        RHIGpuBufferData rbd{ size, data };
         return Create(&rbd);
     }
 
 protected:
-    RHIRenderBuffer(Context* context, uint32_t size, ResourceFlags flags)
+    RHIGpuBuffer(Context* context, uint32_t size, ResourceFlags flags)
         : m_pContext(context), m_iSize(size), m_iFlags(flags)
     {}
-    virtual ~RHIRenderBuffer() {}
+    virtual ~RHIGpuBuffer() {}
 
     Context*            m_pContext = nullptr;
     uint32_t            m_iSize = 0;

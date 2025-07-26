@@ -37,15 +37,15 @@ protected:
     friend class Context;
     DeferredShadingRenderer(Context* context);
 
-    // RHIMesh & RHIRenderBuffers
+    // RHIMesh & RHIGpuBuffers
     RHIMeshPtr              m_pQuadMesh = nullptr;
-    RHIRenderBufferPtr      m_pCameraInfoCBuffer = nullptr;
-    RHIRenderBufferPtr      m_pSsaoSampleKernelCBuffer = nullptr;
-    RHIRenderBufferPtr      m_pSsaoParamCBuffer = nullptr;
-    RHIRenderBufferPtr      m_pLightInfoCBuffer = nullptr;
-    RHIRenderBufferPtr      m_pTileInfoBuffer = nullptr;
-	RHIRenderBufferPtr      m_pLightCullingInfoCBuffer = nullptr;
-	RHIRenderBufferPtr      m_pDeferredLightingInfoCBuffer = nullptr;
+    RHIGpuBufferPtr      m_pCameraInfoCBuffer = nullptr;
+    RHIGpuBufferPtr      m_pSsaoSampleKernelCBuffer = nullptr;
+    RHIGpuBufferPtr      m_pSsaoParamCBuffer = nullptr;
+    RHIGpuBufferPtr      m_pLightInfoCBuffer = nullptr;
+    RHIGpuBufferPtr      m_pTileInfoBuffer = nullptr;
+	RHIGpuBufferPtr      m_pLightCullingInfoCBuffer = nullptr;
+	RHIGpuBufferPtr      m_pDeferredLightingInfoCBuffer = nullptr;
 
 
     // Textures

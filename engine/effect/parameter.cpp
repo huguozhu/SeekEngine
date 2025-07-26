@@ -17,7 +17,7 @@ std::unique_ptr<EffectVariable> CreateEffectVariable(EffectDataType data_type)
         case EffectDataType::ConstantBuffer:
         case EffectDataType::Buffer:
         case EffectDataType::RWBuffer:
-            return MakeUniquePtr<EffectVariableRHIRenderBuffer>();
+            return MakeUniquePtr<EffectVariableRHIGpuBuffer>();
         case EffectDataType::Texture:
         case EffectDataType::RWTexture:
             return MakeUniquePtr<EffectVariableRHITexture>();
@@ -40,7 +40,7 @@ std::unique_ptr<EffectVariable> EffectParam::ReadRenderVariable(EffectDataType d
         case EffectDataType::Buffer:
         case EffectDataType::RWBuffer:
         {
-            *var = RHIRenderBufferPtr();
+            *var = RHIGpuBufferPtr();
             break;
         }
         case EffectDataType::Texture:
@@ -104,7 +104,7 @@ SResult EffectParam::UpdateConstantBuffer(const void* data, size_t size)
         return ERR_INVALID_ARG;
     }
 
-    RHIRenderBufferPtr rb;
+    RHIGpuBufferPtr rb;
     GetValue(rb);
     if (!rb)
     {

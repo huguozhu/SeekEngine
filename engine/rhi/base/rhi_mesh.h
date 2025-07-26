@@ -32,9 +32,9 @@ public:
     // Index Streams
     bool                                IsUseIndices() const;
     uint32_t                            GetNumIndices() const;
-    RHIRenderBufferPtr const&           GetIndexBuffer();
+    RHIGpuBufferPtr const&           GetIndexBuffer();
     IndexBufferType                     GetIndexBufferType() const { return m_eIndexBufferType; }
-    void                                SetIndexBuffer(RHIRenderBufferPtr buffer, IndexBufferType type);
+    void                                SetIndexBuffer(RHIGpuBufferPtr buffer, IndexBufferType type);
     void                                SetIndexBufferResource(std::shared_ptr<VertexIndicesResource>& indicesRes);
 
     // Vertex Streams
@@ -42,9 +42,9 @@ public:
     uint32_t                            NumVertexStream();
     VertexStream&                       GetVertexStreamByIndex(uint32_t i);
     std::vector<VertexStream>&          GetVertexStreams();
-    void                                AddVertexStream(RHIRenderBufferPtr render_buffer, uint32_t buffer_offset, uint32_t stride, VertexFormat format, VertexElementUsage usage, uint32_t usage_index);
+    void                                AddVertexStream(RHIGpuBufferPtr render_buffer, uint32_t buffer_offset, uint32_t stride, VertexFormat format, VertexElementUsage usage, uint32_t usage_index);
     void                                AddVertexStream(VertexStream& vs);
-    void                                AddInstanceVertexStream(RHIRenderBufferPtr render_buffer, uint32_t buffer_offset, uint32_t stride, VertexFormat format, VertexElementUsage usage, uint32_t usage_index, uint32_t instance_count, uint32_t divisor);
+    void                                AddInstanceVertexStream(RHIGpuBufferPtr render_buffer, uint32_t buffer_offset, uint32_t stride, VertexFormat format, VertexElementUsage usage, uint32_t usage_index, uint32_t instance_count, uint32_t divisor);
     VertexStream*                       GetInstanceVertexStream(VertexElementUsage instance_type, uint32_t usage_index);
     void                                SetVertexAttributeResource(VertexAttributeResource& res);
     VertexAttributeResource&            GetVertexAttributeResource();
@@ -63,10 +63,10 @@ public:
     // Morph targets
     MorphInfo&                          GetMorphInfo();
     bool                                HasMorphTarget();
-    const RHIRenderBufferPtr&           GetMorphWeightsCBuffer();
-    const RHIRenderBufferPtr&           GetMorphSizeCBuffer();
-    const RHIRenderBufferPtr&           GetPreMorphWeightsCBuffer();
-    RHIRenderBufferPtr&                 GetMaterialInfoCBuffer();
+    const RHIGpuBufferPtr&           GetMorphWeightsCBuffer();
+    const RHIGpuBufferPtr&           GetMorphSizeCBuffer();
+    const RHIGpuBufferPtr&           GetPreMorphWeightsCBuffer();
+    RHIGpuBufferPtr&                 GetMaterialInfoCBuffer();
 
     // Skin
     SkinningJointBindSize               GetSkinningJointBindSize() { return m_eJointBindSize; }
@@ -105,7 +105,7 @@ protected:
     mutable bool                m_bDataDirty = true;
 
     // index buffers
-    RHIRenderBufferPtr          m_pIndexBuffer = nullptr;
+    RHIGpuBufferPtr          m_pIndexBuffer = nullptr;
     IndexBufferType             m_eIndexBufferType = IndexBufferType::UInt16;
 
     // vertex buffers
@@ -121,10 +121,10 @@ protected:
     // Morph Targets
     MorphInfo                   m_stMorphInfo;
 
-    RHIRenderBufferPtr          m_morphWeightsCBuffer;
-    RHIRenderBufferPtr          m_prevMorphWeightsCBuffer;
-    RHIRenderBufferPtr          m_morphSizeCBuffer;
-    RHIRenderBufferPtr          m_MaterialInfoCBuffer;
+    RHIGpuBufferPtr          m_morphWeightsCBuffer;
+    RHIGpuBufferPtr          m_prevMorphWeightsCBuffer;
+    RHIGpuBufferPtr          m_morphSizeCBuffer;
+    RHIGpuBufferPtr          m_MaterialInfoCBuffer;
 
     // Skin
     SkinningJointBindSize       m_eJointBindSize = SkinningJointBindSize::None;

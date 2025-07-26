@@ -53,42 +53,42 @@ RHITexturePtr D3D11Context::CreateTextureCube(const RHITexture::Desc& tex_desc, 
     SResult ret = tex->Create(init_data);
     return SEEK_CHECKFAILED(ret) ? nullptr : tex;
 }
-RHIRenderBufferPtr D3D11Context::CreateVertexBuffer(uint32_t size, RHIRenderBufferData* pData)
+RHIGpuBufferPtr D3D11Context::CreateVertexBuffer(uint32_t size, RHIGpuBufferData* pData)
 {
-    RHIRenderBufferPtr buf = MakeSharedPtr<D3D11VertexBuffer>(m_pContext, size);
+    RHIGpuBufferPtr buf = MakeSharedPtr<D3D11VertexBuffer>(m_pContext, size);
     buf->Create(pData);
     return buf;
 }
-RHIRenderBufferPtr D3D11Context::CreateIndexBuffer(uint32_t size, RHIRenderBufferData* pData)
+RHIGpuBufferPtr D3D11Context::CreateIndexBuffer(uint32_t size, RHIGpuBufferData* pData)
 {
-    RHIRenderBufferPtr buf = MakeSharedPtr<D3D11IndexBuffer>(m_pContext, size);
+    RHIGpuBufferPtr buf = MakeSharedPtr<D3D11IndexBuffer>(m_pContext, size);
     buf->Create(pData);
     return buf;
 }
-RHIRenderBufferPtr D3D11Context::CreateConstantBuffer(uint32_t size, ResourceFlags flags)
+RHIGpuBufferPtr D3D11Context::CreateConstantBuffer(uint32_t size, ResourceFlags flags)
 {
-    RHIRenderBufferPtr buf = MakeSharedPtr<D3D11ConstantBuffer>(m_pContext, size, flags);
+    RHIGpuBufferPtr buf = MakeSharedPtr<D3D11ConstantBuffer>(m_pContext, size, flags);
     buf->Create(nullptr);
     return buf;
 }
-RHIRenderBufferPtr D3D11Context::CreateStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIRenderBufferData* pData)
+RHIGpuBufferPtr D3D11Context::CreateStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData)
 {
-    RHIRenderBufferPtr buf = MakeSharedPtr<D3D11StructuredBuffer>(m_pContext, size, flags, structure_byte_stride);
+    RHIGpuBufferPtr buf = MakeSharedPtr<D3D11StructuredBuffer>(m_pContext, size, flags, structure_byte_stride);
     buf->Create(pData);
     return buf;
 }
-RHIRenderBufferPtr D3D11Context::CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIRenderBufferData* pData)
+RHIGpuBufferPtr D3D11Context::CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData)
 {
     flags |= RESOURCE_FLAG_GPU_WRITE;
     return this->CreateStructuredBuffer(size, flags, structure_byte_stride, pData);
 }
-RHIRenderBufferPtr D3D11Context::CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData)
+RHIGpuBufferPtr D3D11Context::CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData)
 {
-    RHIRenderBufferPtr buf = MakeSharedPtr<D3D11ByteAddressBuffer>(m_pContext, size, flags);
+    RHIGpuBufferPtr buf = MakeSharedPtr<D3D11ByteAddressBuffer>(m_pContext, size, flags);
     buf->Create(pData);
     return buf;
 }
-RHIRenderBufferPtr D3D11Context::CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData)
+RHIGpuBufferPtr D3D11Context::CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData)
 {
     flags |= RESOURCE_FLAG_GPU_WRITE;
     return CreateByteAddressBuffer(size, flags, pData);

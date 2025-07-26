@@ -22,7 +22,7 @@ private:
 	float2 m_fScreenSize;
 	RHITexturePtr m_pHistoryTex = nullptr;
 
-	RHIRenderBufferPtr m_globalParamCBuffer = nullptr;
+	RHIGpuBufferPtr m_globalParamCBuffer = nullptr;
 	bool m_isFirstFrame = true;
 };
 

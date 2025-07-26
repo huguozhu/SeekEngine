@@ -55,10 +55,10 @@ protected:
    
 private:
     PostProcessPtr          m_pGiRsmPp = nullptr;
-	RHIRenderBufferPtr      m_pRsmParamCBuffer = nullptr;
-    RHIRenderBufferPtr      m_pRsmInvProjCBuffer = nullptr;
-    RHIRenderBufferPtr      m_pRsmCameraInfoCBuffer = nullptr;
-    RHIRenderBufferPtr      m_pVplCoordAndWeightsCBuffer = nullptr;
+	RHIGpuBufferPtr      m_pRsmParamCBuffer = nullptr;
+    RHIGpuBufferPtr      m_pRsmInvProjCBuffer = nullptr;
+    RHIGpuBufferPtr      m_pRsmCameraInfoCBuffer = nullptr;
+    RHIGpuBufferPtr      m_pVplCoordAndWeightsCBuffer = nullptr;
     float                   m_fSampleRadius = 200;
 
 private:
@@ -87,7 +87,7 @@ private:
     RHITexturePtr           m_pTexGreenSh   = nullptr;
     RHITexturePtr           m_pTexBlueSh    = nullptr;
     std::vector<RHIFrameBufferPtr>       m_pFbInject = {};
-    RHIRenderBufferPtr      m_pRTIndexCBuffer = nullptr;
+    RHIGpuBufferPtr      m_pRTIndexCBuffer = nullptr;
 
     RHITexturePtr           m_pTexRedSh_Src = nullptr;
     RHITexturePtr           m_pTexGreenSh_Src = nullptr;
@@ -102,12 +102,12 @@ private:
     std::vector<RHIFrameBufferPtr>       m_pFbPropagation = {};
 
     RenderStateDesc         m_PropagationRsDesc;
-    RHIRenderBufferPtr      m_pInjectVerticsCBuffer = nullptr;    
+    RHIGpuBufferPtr      m_pInjectVerticsCBuffer = nullptr;    
 
     PostProcessPtr          m_pGiLpvPp = nullptr;
-    RHIRenderBufferPtr      m_pLpvInvProjCBuffer = nullptr;
-    RHIRenderBufferPtr      m_pLpvParamCBuffer = nullptr;
-    RHIRenderBufferPtr      m_pLpvCameraInfoCBuffer = nullptr;
+    RHIGpuBufferPtr      m_pLpvInvProjCBuffer = nullptr;
+    RHIGpuBufferPtr      m_pLpvParamCBuffer = nullptr;
+    RHIGpuBufferPtr      m_pLpvCameraInfoCBuffer = nullptr;
 
     uint32_t                m_iPropagationSteps = 10;
     float                   m_fLpvAttenuation = 1.0;

@@ -58,7 +58,7 @@ protected:
     bool                            m_bMeshTransformFlag = false;
     Matrix4                         m_MeshTransformMatrix = Matrix4::Identity();
 
-    RHIRenderBufferPtr              m_JointsCBuffer;
+    RHIGpuBufferPtr              m_JointsCBuffer;
 };
 
 SEEK_NAMESPACE_END
