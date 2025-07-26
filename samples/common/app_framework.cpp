@@ -43,7 +43,7 @@ void AppFramework::IMGUI_Begin()
 void AppFramework::IMGUI_Rendering()
 {
     D3D11RHIContext* rc_d3d = static_cast<D3D11RHIContext*>(&m_pContext->RHIContextInstance());
-    D3D11RHIFrameBuffer* fb = static_cast<D3D11RHIFrameBuffer*>(rc_d3d->GetFinalRHIFrameBuffer().get());
+    D3D11FrameBuffer* fb = static_cast<D3D11FrameBuffer*>(rc_d3d->GetFinalRHIFrameBuffer().get());
     ID3D11RenderTargetView* view = fb->GetRenderTargetView();
 
     ImGui::Render();
