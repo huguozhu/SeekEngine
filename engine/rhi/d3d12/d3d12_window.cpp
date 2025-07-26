@@ -92,7 +92,7 @@ SResult D3D12Window::SwapBuffers()
     if (m_pSwapChain)
     {
         D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
-        ID3D12GraphicsCommandList* cmd_list = rc.GetD3D12CommandList();
+        ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
         D3D12Texture& rt_tex = static_cast<D3D12Texture&>(*m_vBackBufferTexes[m_iCurBackBufferIndex]);
         rt_tex.UpdateResourceBarrier(cmd_list, 0, D3D12_RESOURCE_STATE_PRESENT);

@@ -334,6 +334,7 @@ SResult D3D12RHIContext::Init()
         queue_desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
         m_pDevice->CreateCommandQueue(&queue_desc, IID_PPV_ARGS(m_pCmdQueue.ReleaseAndGetAddressOf()));
         
+        m_pFrameFence = this->CreateFence();
 
 
         {
@@ -375,13 +376,13 @@ SResult D3D12RHIContext::Init()
 
     return S_Success;
 }
-SResult D3D12RHIContext::CheckCapabilitySetSupport()
-{
-    return S_Success;
-}
 void D3D12RHIContext::Uninit()
 {
 
+}
+SResult D3D12RHIContext::CheckCapabilitySetSupport()
+{
+    return S_Success;
 }
 SResult D3D12RHIContext::AttachNativeWindow(std::string const& name, void* native_wnd)
 {
@@ -398,6 +399,9 @@ SResult D3D12RHIContext::AttachNativeWindow(std::string const& name, void* nativ
     }
     return res;
 }
+
+
+
 SResult D3D12RHIContext::BeginFrame()
 {
     return S_Success;
@@ -406,6 +410,10 @@ SResult D3D12RHIContext::EndFrame()
 {
     return S_Success;
 }
+
+
+
+
 
 /******************************************************************************
 * D3D12RHIContext::PerThreadContext

@@ -82,21 +82,21 @@ public:
     void                    Uninit() override;
     SResult                 CheckCapabilitySetSupport() override;    
     SResult                 AttachNativeWindow(std::string const& name, void* native_wnd = nullptr) override;
-    RHIMeshPtr              CreateMesh() override { return nullptr; }
-    RHIShaderPtr            CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) override { return nullptr; }
+    RHIMeshPtr              CreateMesh() override;
+    RHIShaderPtr            CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) override;
    
-    RHITexturePtr           CreateTexture2D(ID3D12ResourcePtr const& tex) { return nullptr; }
-    RHITexturePtr           CreateTexture2D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) override { return nullptr; }
-    RHITexturePtr           CreateTexture3D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) override { return nullptr; }
-    RHITexturePtr           CreateTextureCube(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_data = {}) override { return nullptr; }
+    RHITexturePtr           CreateTexture2D(ID3D12ResourcePtr const& tex);
+    RHITexturePtr           CreateTexture2D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) override;
+    RHITexturePtr           CreateTexture3D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) override;
+    RHITexturePtr           CreateTextureCube(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_data = {}) override;
 
-    RHIRenderBufferPtr      CreateConstantBuffer(uint32_t size, ResourceFlags flags) override { return nullptr; }
-    RHIRenderBufferPtr      CreateStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIRenderBufferData* pData = nullptr) override { return nullptr; }
-    RHIRenderBufferPtr      CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIRenderBufferData* pData = nullptr) override { return nullptr; }
-    RHIRenderBufferPtr      CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) { return nullptr; }
-    RHIRenderBufferPtr      CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData) { return nullptr; }
-    RHIRenderBufferPtr      CreateVertexBuffer(uint32_t size, RHIRenderBufferData* pData) override { return nullptr; }
-    RHIRenderBufferPtr      CreateIndexBuffer(uint32_t size, RHIRenderBufferData* pData) override { return nullptr; }
+    RHIRenderBufferPtr      CreateConstantBuffer(uint32_t size, ResourceFlags flags) override;
+    RHIRenderBufferPtr      CreateStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIRenderBufferData* pData = nullptr) override;
+    RHIRenderBufferPtr      CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIRenderBufferData* pData = nullptr) override;
+    RHIRenderBufferPtr      CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData);
+    RHIRenderBufferPtr      CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIRenderBufferData* pData);
+    RHIRenderBufferPtr      CreateVertexBuffer(uint32_t size, RHIRenderBufferData* pData) override;
+    RHIRenderBufferPtr      CreateIndexBuffer(uint32_t size, RHIRenderBufferData* pData) override;
 
     RHIRenderTargetViewPtr  Create2DRenderTargetView(RHITexturePtr const& tex_2d, uint32_t first_array_index = 0, uint32_t array_size = 1, uint32_t mip_level = 0) override { return nullptr; }
     RHIRenderTargetViewPtr  Create2DRenderTargetView(RHITexturePtr const& tex_cube, uint32_t array_index, CubeFaceType face, uint32_t mip_level) override { return nullptr; }

@@ -91,7 +91,7 @@ D3D12RenderTargetView::D3D12RenderTargetView(Context* context, D3D12ResourcePtr 
 void D3D12RenderTargetView::ClearColor(float4 const& color)
 {
     D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
-    ID3D12GraphicsCommandList* cmd_list = rc.GetD3D12CommandList();
+    ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
     for (uint32_t i = 0; i < m_iNumSubres; i++)
     {
         m_pRtvResource->UpdateResourceBarrier(cmd_list, m_iFirstSubres + i, D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -184,7 +184,7 @@ D3D12DepthStencilView::D3D12DepthStencilView(Context* context, D3D12ResourcePtr 
 void D3D12DepthStencilView::ClearDepth(float depth)
 {
     D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
-    ID3D12GraphicsCommandList* cmd_list = rc.GetD3D12CommandList();
+    ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
     for (uint32_t i = 0; i < m_iNumSubres; ++i)
     {
@@ -196,7 +196,7 @@ void D3D12DepthStencilView::ClearDepth(float depth)
 void D3D12DepthStencilView::ClearStencil(uint32_t stencil)
 {
     D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
-    ID3D12GraphicsCommandList* cmd_list = rc.GetD3D12CommandList();
+    ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
     for (uint32_t i = 0; i < m_iNumSubres; ++i)
     {
@@ -208,7 +208,7 @@ void D3D12DepthStencilView::ClearStencil(uint32_t stencil)
 void D3D12DepthStencilView::ClearDepthStencil(float depth, uint32_t stencil)
 {
     D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
-    ID3D12GraphicsCommandList* cmd_list = rc.GetD3D12CommandList();
+    ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
     for (uint32_t i = 0; i < m_iNumSubres; ++i)
     {
@@ -309,7 +309,7 @@ D3D12UnorderedAccessView::D3D12UnorderedAccessView(Context* context, D3D12Resour
 void D3D12UnorderedAccessView::Clear(float4 const& v)
 {
     D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
-    ID3D12GraphicsCommandList* cmd_list = rc.GetD3D12CommandList();
+    ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
     m_pUavSrc->UpdateResourceBarrier(cmd_list, 0, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
     rc.FlushResourceBarriers(cmd_list);
@@ -327,7 +327,7 @@ void D3D12UnorderedAccessView::Clear(float4 const& v)
 void D3D12UnorderedAccessView::Clear(uint4 const& v)
 {
     D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
-    ID3D12GraphicsCommandList* cmd_list = rc.GetD3D12CommandList();
+    ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
     m_pUavSrc->UpdateResourceBarrier(cmd_list, 0, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
     rc.FlushResourceBarriers(cmd_list);

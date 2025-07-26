@@ -14,7 +14,7 @@ class D3D12Texture : public RHITexture, public D3D12Resource
 {
 public:
     D3D12Texture(Context* context, const RHITexture::Desc& tex_desc);
-    virtual ~D3D12Texture() override;
+    ~D3D12Texture() {};
 
     virtual SResult Resolve() { return S_Success; }
     ID3D12Resource* GetD3DTexture() { return m_pD3dResource.Get(); }

@@ -75,7 +75,7 @@ public:
 protected:
     SResult FillBufferDesc(D3D11_BUFFER_DESC& desc) override;
 };
-using D3D11ShaderBufferPtr = std::shared_ptr<D3D11ConstantBuffer>;
+using D3D11ConstantBufferPtr = std::shared_ptr<D3D11ConstantBuffer>;
 
 
 /******************************************************************************

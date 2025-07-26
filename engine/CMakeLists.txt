@@ -178,6 +178,8 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_memory_allocator.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_memory_allocator.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_predeclare.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_buffer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_buffer.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_view.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_view.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_resource.h
