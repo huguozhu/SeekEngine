@@ -47,7 +47,7 @@ D3D11Texture::~D3D11Texture()
 SResult D3D11Texture::GenerateMipMap()
 {
     ID3D11ShaderResourceViewPtr const& pSrv = this->GetD3DSrv();
-    D3D11RHIContext* pRC = (D3D11RHIContext*)(&m_pContext->RHIContextInstance());
+    D3D11Context* pRC = (D3D11Context*)(&m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = pRC->GetD3D11DeviceContext();
     pDeviceContext->GenerateMips(pSrv.Get());
     return S_Success;
@@ -72,7 +72,7 @@ ID3D11ShaderResourceViewPtr const& D3D11Texture::GetD3DSrv(uint32_t first_array_
     }
     else
     {
-        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+        D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
         D3D11_SHADER_RESOURCE_VIEW_DESC desc = {};
         this->FillSrvDesc(desc, first_array_index, array_size, first_level, num_levels);
         ID3D11ShaderResourceViewPtr d3d_srv;
@@ -97,7 +97,7 @@ ID3D11ShaderResourceViewPtr const& D3D11Texture::GetD3DSrv(uint32_t array_index,
     }
     else
     {
-        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+        D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
         D3D11_SHADER_RESOURCE_VIEW_DESC desc = {};
         this->FillSrvDesc(desc, array_index, face, first_level, num_levels);
         ID3D11ShaderResourceViewPtr d3d_srv = {};
@@ -128,7 +128,7 @@ ID3D11RenderTargetViewPtr const& D3D11Texture::GetD3DRtv(uint32_t first_array_in
     }
     else
     {
-        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+        D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
         D3D11_RENDER_TARGET_VIEW_DESC desc = {};
         this->FillRtvDesc(desc, first_array_index, array_size, mip_level);
         ID3D11RenderTargetViewPtr d3d_rtv;
@@ -154,7 +154,7 @@ ID3D11RenderTargetViewPtr const& D3D11Texture::GetD3DRtv(uint32_t array_index, u
     }
     else
     {
-        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+        D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
         D3D11_RENDER_TARGET_VIEW_DESC desc = {};
         this->FillRtvDesc(desc, array_index, first_slice, num_slices, mip_level);
         ID3D11RenderTargetViewPtr d3d_rtv = {};
@@ -179,7 +179,7 @@ ID3D11RenderTargetViewPtr const& D3D11Texture::GetD3DRtv(uint32_t array_index, C
     }
     else
     {
-        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+        D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
         D3D11_RENDER_TARGET_VIEW_DESC desc = {};
         this->FillRtvDesc(desc, array_index, face, mip_level);
         ID3D11RenderTargetViewPtr d3d_rtv;
@@ -212,7 +212,7 @@ ID3D11DepthStencilViewPtr const& D3D11Texture::GetD3DDsv(uint32_t first_array_in
     }
     else
     {
-        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+        D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
         D3D11_DEPTH_STENCIL_VIEW_DESC desc = {};
         this->FillDsvDesc(desc, first_array_index, array_size, mip_level);
         ID3D11DepthStencilViewPtr d3d_dsv;
@@ -238,7 +238,7 @@ ID3D11DepthStencilViewPtr const& D3D11Texture::GetD3DDsv(uint32_t array_index, u
     }
     else
     {
-        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+        D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
         D3D11_DEPTH_STENCIL_VIEW_DESC desc = {};
         this->FillDsvDesc(desc, array_index, first_slice, num_slices, mip_level);
         ID3D11DepthStencilViewPtr d3d_dsv;
@@ -263,7 +263,7 @@ ID3D11DepthStencilViewPtr const& D3D11Texture::GetD3DDsv(uint32_t array_index, C
     }
     else
     {
-        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+        D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
         D3D11_DEPTH_STENCIL_VIEW_DESC desc = {};
         this->FillDsvDesc(desc, array_index, face, mip_level);
         ID3D11DepthStencilViewPtr d3d_dsv;
@@ -292,7 +292,7 @@ ID3D11UnorderedAccessViewPtr const& D3D11Texture::GetD3DUav(uint32_t first_array
     }
     else
     {
-        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+        D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
         D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
         this->FillUavDesc(desc, first_array_index, array_size, mip_level);
         ID3D11UnorderedAccessViewPtr d3d_ua_view;
@@ -317,7 +317,7 @@ ID3D11UnorderedAccessViewPtr const& D3D11Texture::GetD3DUav(uint32_t array_index
     }
     else
     {
-        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+        D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
         D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
         this->FillUavDesc(desc, array_index, first_slice, num_slices, mip_level);
         ID3D11UnorderedAccessViewPtr d3d_ua_view;
@@ -342,7 +342,7 @@ ID3D11UnorderedAccessViewPtr const& D3D11Texture::GetD3DUav(uint32_t first_array
     }
     else
     {
-        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+        D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
         D3D11_UNORDERED_ACCESS_VIEW_DESC desc = {};
         this->FillUavDesc(desc, first_array_index, array_size, first_face, num_faces, mip_level);
         ID3D11UnorderedAccessViewPtr d3d_ua_view;
@@ -433,7 +433,7 @@ void D3D11Texture::FillD3DTextureFlags(D3D11_USAGE& usage, UINT& bind_flags, UIN
 }
 void D3D11Texture::FillTextureDesc(D3D11_TEXTURE2D_DESC& desc)
 {
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     D3D11_USAGE usage = D3D11_USAGE_DEFAULT;
     UINT bind_flags = 0;
     UINT cpu_access_flags = 0;
@@ -653,7 +653,7 @@ void D3D11Texture2D::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_
 
 SResult D3D11Texture2D::Create(std::span<BitmapBufferPtr> const& bitmap_datas)
 {
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
     D3D11_TEXTURE2D_DESC desc = { 0 };
@@ -695,7 +695,7 @@ SResult D3D11Texture2D::Update(std::span<BitmapBufferPtr> const& bitmap_datas)
     if (!m_pTexture)
         return ERR_INVALID_ARG;
 
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
@@ -746,7 +746,7 @@ void D3D11Texture2D::FillStageTexture2DDesc(D3D11_TEXTURE2D_DESC& desc)
 
 SResult D3D11Texture2D::Resolve()
 {
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
@@ -799,7 +799,7 @@ SResult D3D11Texture2D::DumpSubResource2D(BitmapBufferPtr bitmap_data, uint32_t 
         return ERR_INVALID_ARG;
     }
 
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
@@ -1014,7 +1014,7 @@ SResult D3D11TextureCube::Create(std::span<BitmapBufferPtr> const& bitmap_datas)
         bitmap_datas.size() != 0)
         return ERR_INVALID_ARG;
 
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
 
@@ -1058,7 +1058,7 @@ D3D11Texture3D::D3D11Texture3D(Context* context, const RHITexture::Desc& tex_des
 }
 SResult D3D11Texture3D::Create(std::span<BitmapBufferPtr> const& bitmap_datas)
 {
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
     D3D11_TEXTURE3D_DESC desc = { 0 };
@@ -1108,7 +1108,7 @@ SResult D3D11Texture3D::DumpSubResource3D(BitmapBufferPtr bitmap_data, uint32_t 
         return ERR_INVALID_ARG;
     }
 
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
@@ -1237,7 +1237,7 @@ void D3D11Texture3D::FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_
 }
 void D3D11Texture3D::FillTexture3DDesc(D3D11_TEXTURE3D_DESC& desc)
 {
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     D3D11_USAGE usage = D3D11_USAGE_DEFAULT;
     UINT bind_flags = 0;
     UINT cpu_access_flags = 0;

@@ -22,7 +22,7 @@ void D3D11RenderTargetView::ClearColor(float4 const& color)
 {
     if (m_pD3DRtv)
     {
-        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+        D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
         rc.GetD3D11DeviceContext()->ClearRenderTargetView(m_pD3DRtv.Get(), &color[0]);
     }
     else
@@ -114,7 +114,7 @@ void D3D11DepthStencilView::ClearDepth(float depth)
 {
     if (m_pD3D11Dsv)
     {
-        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+        D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
         rc.GetD3D11DeviceContext()->ClearDepthStencilView(m_pD3D11Dsv.Get(), D3D11_CLEAR_DEPTH, depth, 0);
     }
     else
@@ -124,7 +124,7 @@ void D3D11DepthStencilView::ClearStencil(uint32_t stencil)
 {
     if (m_pD3D11Dsv)
     {
-        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+        D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
         rc.GetD3D11DeviceContext()->ClearDepthStencilView(m_pD3D11Dsv.Get(), D3D11_CLEAR_STENCIL, 0, (UINT8)stencil);
     }
     else
@@ -134,7 +134,7 @@ void D3D11DepthStencilView::ClearDepthStencil(float depth, uint32_t stencil)
 {
     if (m_pD3D11Dsv)
     {
-        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+        D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
         rc.GetD3D11DeviceContext()->ClearDepthStencilView(m_pD3D11Dsv.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, depth, (UINT8)stencil);
     }
     else

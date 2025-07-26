@@ -15,7 +15,7 @@ SEEK_NAMESPACE_BEGIN
 * D3D12Texture
 *******************************************************************************/
 D3D12Texture::D3D12Texture(Context* context, const RHITexture::Desc& tex_desc)
-    :RHITexture(context, tex_desc), D3D12Resource((D3D12RHIContext*)&(context->RHIContextInstance()))
+    :RHITexture(context, tex_desc), D3D12Resource((D3D12Context*)&(context->RHIContextInstance()))
 {
     m_eDxgiFormat = D3DCommonTranslate::TranslateToPlatformFormat(tex_desc.format);
 }
@@ -40,7 +40,7 @@ D3D12SrvPtr const& D3D12Texture::GetD3DSrv(uint32_t first_array_index, uint32_t 
     }
     else
     {
-        D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+        D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
         D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
         this->FillSrvDesc(desc, first_array_index, array_size, first_level, num_levels);
         D3D12SrvPtr pSrv = MakeSharedPtr<D3D12Srv>(m_pContext, this, desc);
@@ -64,7 +64,7 @@ D3D12SrvPtr const& D3D12Texture::GetD3DSrv(uint32_t array_index, CubeFaceType fa
     }
     else
     {
-        D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+        D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
         D3D12_SHADER_RESOURCE_VIEW_DESC desc = {};
         this->FillSrvDesc(desc, array_index, face, first_level, num_levels);
         D3D12SrvPtr pSrv = MakeSharedPtr<D3D12Srv>(m_pContext, this, desc);
@@ -96,7 +96,7 @@ D3D12RtvPtr const& D3D12Texture::GetD3DRtv(uint32_t first_array_index, uint32_t 
     }
     else
     {
-        D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+        D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
         D3D12_RENDER_TARGET_VIEW_DESC desc = {};
         this->FillRtvDesc(desc, first_array_index, array_size, mip_level);
         D3D12RtvPtr pRtv = MakeSharedPtr<D3D12Rtv>(m_pContext, this, desc);
@@ -121,7 +121,7 @@ D3D12RtvPtr const& D3D12Texture::GetD3DRtv(uint32_t array_index, uint32_t first_
     }
     else
     {
-        D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+        D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
         D3D12_RENDER_TARGET_VIEW_DESC desc = {};
         this->FillRtvDesc(desc, array_index, first_slice, num_slices, mip_level);
         D3D12RtvPtr pRtv = MakeSharedPtr<D3D12Rtv>(m_pContext, this, desc);
@@ -145,7 +145,7 @@ D3D12RtvPtr const& D3D12Texture::GetD3DRtv(uint32_t array_index, CubeFaceType fa
     }
     else
     {
-        D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+        D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
         D3D12_RENDER_TARGET_VIEW_DESC desc = {};
         this->FillRtvDesc(desc, array_index, face, mip_level);
         D3D12RtvPtr pRtv = MakeSharedPtr<D3D12Rtv>(m_pContext, this, desc);
@@ -176,7 +176,7 @@ D3D12DsvPtr const& D3D12Texture::GetD3DDsv(uint32_t first_array_index, uint32_t 
     }
     else
     {
-        D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+        D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
         D3D12_DEPTH_STENCIL_VIEW_DESC desc = {};
         this->FillDsvDesc(desc, first_array_index, array_size, mip_level);
         D3D12DsvPtr pDsv = MakeSharedPtr<D3D12Dsv>(m_pContext, this, desc);
@@ -201,7 +201,7 @@ D3D12DsvPtr const& D3D12Texture::GetD3DDsv(uint32_t array_index, uint32_t first_
     }
     else
     {
-        D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+        D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
         D3D12_DEPTH_STENCIL_VIEW_DESC desc = {};
         this->FillDsvDesc(desc, array_index, first_slice, num_slices, mip_level);
         D3D12DsvPtr pDsv = MakeSharedPtr<D3D12Dsv>(m_pContext, this, desc);
@@ -225,7 +225,7 @@ D3D12DsvPtr const& D3D12Texture::GetD3DDsv(uint32_t array_index, CubeFaceType fa
     }
     else
     {
-        D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+        D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
         D3D12_DEPTH_STENCIL_VIEW_DESC desc = {};
         this->FillDsvDesc(desc, array_index, face, mip_level);
         D3D12DsvPtr pDsv = MakeSharedPtr<D3D12Dsv>(m_pContext, this, desc);
@@ -254,7 +254,7 @@ D3D12UavPtr const& D3D12Texture::GetD3DUav(uint32_t first_array_index, uint32_t 
     }
     else
     {
-        D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+        D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
         D3D12_UNORDERED_ACCESS_VIEW_DESC desc = {};
         this->FillUavDesc(desc, first_array_index, array_size, mip_level);
         D3D12UavPtr pUav = MakeSharedPtr<D3D12Uav>(m_pContext, this, desc);
@@ -278,7 +278,7 @@ D3D12UavPtr const& D3D12Texture::GetD3DUav(uint32_t array_index, uint32_t first_
     }
     else
     {
-        D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+        D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
         D3D12_UNORDERED_ACCESS_VIEW_DESC desc = {};
         this->FillUavDesc(desc, array_index, first_slice, num_slices, mip_level);
         D3D12UavPtr pUav = MakeSharedPtr<D3D12Uav>(m_pContext, this, desc);
@@ -302,7 +302,7 @@ D3D12UavPtr const& D3D12Texture::GetD3DUav(uint32_t first_array_index, uint32_t 
     }
     else
     {
-        D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+        D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
         D3D12_UNORDERED_ACCESS_VIEW_DESC desc = {};
         this->FillUavDesc(desc, first_array_index, array_size, first_face, num_faces, mip_level);
         D3D12UavPtr pUav = MakeSharedPtr<D3D12Uav>(m_pContext, this, desc);
@@ -313,7 +313,7 @@ D3D12UavPtr const& D3D12Texture::GetD3DUav(uint32_t first_array_index, uint32_t 
 SResult D3D12Texture::DoCreate(D3D12_RESOURCE_DIMENSION dim, uint32_t width, uint32_t height, uint32_t depth, 
     uint32_t array_size, std::span<BitmapBufferPtr> const& bitmap_datas)
 {
-    D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+    D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
     ID3D12Device* pDevice = rc.GetD3D12Device();
 
     D3D12_RESOURCE_DESC tex_desc;

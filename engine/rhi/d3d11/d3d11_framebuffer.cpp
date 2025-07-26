@@ -23,7 +23,7 @@ D3D11FrameBuffer::~D3D11FrameBuffer()
 SResult D3D11FrameBuffer::OnBind()
 {
     SResult res = S_Success;
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
     if (m_bViewDirty)
     {
@@ -81,7 +81,7 @@ SResult D3D11FrameBuffer::OnBind()
 SResult D3D11FrameBuffer::OnUnbind()
 {
     SResult res = S_Success;
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
 
     Resolve();
@@ -95,7 +95,7 @@ SResult D3D11FrameBuffer::Resolve()
     if (m_resolveFlag == RESOLVE_NONE)
         return S_Success;
 
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     for (uint8_t idx = 0; idx != MAX_COLOR_ATTACHMENTS; idx++)
     {
         if (NeedResolve(m_resolveFlag, (Attachment)idx))

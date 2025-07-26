@@ -4,9 +4,9 @@ SEEK_NAMESPACE_BEGIN
 
 uint64_t D3D11Fence::Signal()
 {
-	D3D11RHIContext* pD3D11RHIContext = static_cast<D3D11RHIContext*>(&m_pContext->RHIContextInstance());
-	ID3D11Device* d3d_device = pD3D11RHIContext->GetD3D11Device();
-	ID3D11DeviceContext* d3d_imm_ctx = pD3D11RHIContext->GetD3D11DeviceContext();
+	D3D11Context* pD3D11Context = static_cast<D3D11Context*>(&m_pContext->RHIContextInstance());
+	ID3D11Device* d3d_device = pD3D11Context->GetD3D11Device();
+	ID3D11DeviceContext* d3d_imm_ctx = pD3D11Context->GetD3D11DeviceContext();
 
 	D3D11_QUERY_DESC desc;
 	desc.Query = D3D11_QUERY_EVENT;
@@ -29,8 +29,8 @@ void D3D11Fence::Wait(uint64_t value)
 	auto iter = m_mFences.find(value);
 	if (iter != m_mFences.end())
 	{
-		D3D11RHIContext* pD3D11RHIContext = static_cast<D3D11RHIContext*>(&m_pContext->RHIContextInstance());
-		ID3D11DeviceContext* d3d_imm_ctx = pD3D11RHIContext->GetD3D11DeviceContext();
+		D3D11Context* pD3D11Context = static_cast<D3D11Context*>(&m_pContext->RHIContextInstance());
+		ID3D11DeviceContext* d3d_imm_ctx = pD3D11Context->GetD3D11DeviceContext();
 
 		uint32_t ret;
 		while (S_OK != d3d_imm_ctx->GetData(iter->second.Get(), &ret, sizeof(ret), 0));
@@ -46,8 +46,8 @@ bool D3D11Fence::IsCompleted(uint64_t value)
 	}
 	else
 	{
-		D3D11RHIContext* pD3D11RHIContext = static_cast<D3D11RHIContext*>(&m_pContext->RHIContextInstance());
-		ID3D11DeviceContext* d3d_imm_ctx = pD3D11RHIContext->GetD3D11DeviceContext();
+		D3D11Context* pD3D11Context = static_cast<D3D11Context*>(&m_pContext->RHIContextInstance());
+		ID3D11DeviceContext* d3d_imm_ctx = pD3D11Context->GetD3D11DeviceContext();
 
 		uint32_t ret;
 		HRESULT hr = d3d_imm_ctx->GetData(iter->second.Get(), &ret, sizeof(ret), 0);

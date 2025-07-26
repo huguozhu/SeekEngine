@@ -26,7 +26,7 @@ ID3D11Buffer* D3D11RenderBuffer::GetD3DBuffer()
 
 SResult D3D11RenderBuffer::Create(RHIRenderBufferData* buffer_data)
 {
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
     D3D11_BUFFER_DESC desc;
@@ -57,7 +57,7 @@ SResult D3D11RenderBuffer::Update(RHIRenderBufferData* buffer_data)
     if (!(m_iFlags & RESOURCE_FLAG_CPU_WRITE))
         return ERR_INVALID_ARG;
 
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
@@ -79,7 +79,7 @@ SResult D3D11RenderBuffer::CopyBack(BufferPtr buffer, int start, int length)
     if (!bCPUReadAccess)
         return ERR_INVALID_ARG;
 
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
@@ -109,7 +109,7 @@ ID3D11ShaderResourceView * D3D11RenderBuffer::GetD3DSrv()
     if (!m_pD3DBuffer)
         return nullptr;
 
-    D3D11RHIContext & rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context & rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
 
     D3D11_SHADER_RESOURCE_VIEW_DESC desc;
     this->FillSrvDesc(desc);
@@ -129,7 +129,7 @@ ID3D11UnorderedAccessView* D3D11RenderBuffer::GetD3DUav()
     if (!m_pD3DBuffer)
         return nullptr;
 
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
     D3D11_UNORDERED_ACCESS_VIEW_DESC desc;
 

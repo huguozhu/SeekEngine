@@ -4,7 +4,7 @@
 #include <algorithm>
 SEEK_NAMESPACE_BEGIN
 
-D3D12Resource::D3D12Resource(D3D12RHIContext* rhi_context)
+D3D12Resource::D3D12Resource(D3D12Context* rhi_context)
 	:m_pRHIContext(rhi_context)
 {
 }
@@ -19,7 +19,7 @@ void D3D12Resource::UpdateResourceBarrier(ID3D12GraphicsCommandList* cmd_list, u
 	if (!m_pD3dResource)
 		return;
 
-	D3D12RHIContext& rc = *m_pRHIContext;
+	D3D12Context& rc = *m_pRHIContext;
 
 	D3D12_RESOURCE_BARRIER barrier;
 	barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;

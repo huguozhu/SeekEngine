@@ -42,7 +42,7 @@ void AppFramework::IMGUI_Begin()
 
 void AppFramework::IMGUI_Rendering()
 {
-    D3D11RHIContext* rc_d3d = static_cast<D3D11RHIContext*>(&m_pContext->RHIContextInstance());
+    D3D11Context* rc_d3d = static_cast<D3D11Context*>(&m_pContext->RHIContextInstance());
     D3D11FrameBuffer* fb = static_cast<D3D11FrameBuffer*>(rc_d3d->GetFinalRHIFrameBuffer().get());
     ID3D11RenderTargetView* view = fb->GetRenderTargetView();
 
@@ -126,7 +126,7 @@ SResult AppFramework::Run()
         m_bInit = true;
     }
 
-    D3D11RHIContext* rc_d3d = static_cast<D3D11RHIContext*>(&m_pContext->RHIContextInstance());
+    D3D11Context* rc_d3d = static_cast<D3D11Context*>(&m_pContext->RHIContextInstance());
     ImGui_ImplWin32_Init(wnd);
     ImGui_ImplDX11_Init(rc_d3d->GetD3D11Device(), rc_d3d->GetD3D11DeviceContext());
 

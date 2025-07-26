@@ -9,14 +9,14 @@ SEEK_NAMESPACE_BEGIN
 D3D12Fence::D3D12Fence(Context* context)
     :RHIFence(context)
 {
-    ID3D12Device* pDevice = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance()).GetD3D12Device();
+    ID3D12Device* pDevice = static_cast<D3D12Context&>(m_pContext->RHIContextInstance()).GetD3D12Device();
     pDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(m_pFence.ReleaseAndGetAddressOf()));
 
     m_hFenceEvent = ::CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
 }
 uint64_t D3D12Fence::Signal()
 {
-    ID3D12CommandQueue* pCmdQueue = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance()).GetD3D12CommandQueue();
+    ID3D12CommandQueue* pCmdQueue = static_cast<D3D12Context&>(m_pContext->RHIContextInstance()).GetD3D12CommandQueue();
     return this->Signal(pCmdQueue);
 }
 void D3D12Fence::Wait(uint64_t value)

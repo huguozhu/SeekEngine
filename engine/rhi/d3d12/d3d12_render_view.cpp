@@ -18,14 +18,14 @@ UINT D3D12CalcSubresource(UINT MipSlice, UINT ArraySlice, UINT MipLevels)
 D3D12Rtv::D3D12Rtv(Context* context, D3D12Resource* res, D3D12_RENDER_TARGET_VIEW_DESC const& rtv_desc)
     :m_pContext(context), m_pResource(res)
 {
-    D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+    D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
     ID3D12Device* pDevice = rc.GetD3D12Device();
     m_Desc = rc.AllocRtvDescBlock(1);
     pDevice->CreateRenderTargetView(res->GetD3DResource(), &rtv_desc, m_Desc.CpuHandle());
 }
 D3D12Rtv::~D3D12Rtv()
 {
-    D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+    D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
     rc.DeallocRtvDescBlock(std::move(m_Desc));
 }
 
@@ -33,28 +33,28 @@ D3D12Rtv::~D3D12Rtv()
 D3D12Dsv::D3D12Dsv(Context* context, D3D12Resource* res, D3D12_DEPTH_STENCIL_VIEW_DESC const& dsv_desc)
     :m_pContext(context), m_pResource(res)
 {
-    D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+    D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
     ID3D12Device* pDevice = rc.GetD3D12Device();
     m_Desc = rc.AllocDsvDescBlock(1);
     pDevice->CreateDepthStencilView(res->GetD3DResource(), &dsv_desc, m_Desc.CpuHandle());
 }
 D3D12Dsv::~D3D12Dsv()
 {
-    D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+    D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
     rc.DeallocDsvDescBlock(std::move(m_Desc));
 }
 
 D3D12Srv::D3D12Srv(Context* context, D3D12Resource* res, D3D12_SHADER_RESOURCE_VIEW_DESC const& srv_desc)
     :m_pContext(context), m_pResource(res)
 {
-    D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+    D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
     ID3D12Device* pDevice = rc.GetD3D12Device();
     m_Desc = rc.AllocCbvSrvUavDescBlock(1);
     pDevice->CreateShaderResourceView(res->GetD3DResource(), &srv_desc, m_Desc.CpuHandle());
 }
 D3D12Srv::~D3D12Srv()
 {
-    D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+    D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
     rc.DeallocCbvSrvUavDescBlock(std::move(m_Desc));
 }
 
@@ -62,7 +62,7 @@ D3D12Srv::~D3D12Srv()
 D3D12Uav::D3D12Uav(Context* context, D3D12Resource* res, D3D12_UNORDERED_ACCESS_VIEW_DESC const& uav_desc)
     :m_pContext(context), m_pResource(res)
 {
-    D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+    D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
     ID3D12Device* pDevice = rc.GetD3D12Device();
     m_Desc = rc.AllocCbvSrvUavDescBlock(1);
 
@@ -90,7 +90,7 @@ D3D12RenderTargetView::D3D12RenderTargetView(Context* context, D3D12ResourcePtr 
 }
 void D3D12RenderTargetView::ClearColor(float4 const& color)
 {
-    D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+    D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
     ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
     for (uint32_t i = 0; i < m_iNumSubres; i++)
     {
@@ -183,7 +183,7 @@ D3D12DepthStencilView::D3D12DepthStencilView(Context* context, D3D12ResourcePtr 
 }
 void D3D12DepthStencilView::ClearDepth(float depth)
 {
-    D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+    D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
     ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
     for (uint32_t i = 0; i < m_iNumSubres; ++i)
@@ -195,7 +195,7 @@ void D3D12DepthStencilView::ClearDepth(float depth)
 }
 void D3D12DepthStencilView::ClearStencil(uint32_t stencil)
 {
-    D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+    D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
     ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
     for (uint32_t i = 0; i < m_iNumSubres; ++i)
@@ -207,7 +207,7 @@ void D3D12DepthStencilView::ClearStencil(uint32_t stencil)
 }
 void D3D12DepthStencilView::ClearDepthStencil(float depth, uint32_t stencil)
 {
-    D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+    D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
     ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
     for (uint32_t i = 0; i < m_iNumSubres; ++i)
@@ -308,7 +308,7 @@ D3D12UnorderedAccessView::D3D12UnorderedAccessView(Context* context, D3D12Resour
 }
 void D3D12UnorderedAccessView::Clear(float4 const& v)
 {
-    D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+    D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
     ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
     m_pUavSrc->UpdateResourceBarrier(cmd_list, 0, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
@@ -326,7 +326,7 @@ void D3D12UnorderedAccessView::Clear(float4 const& v)
 }
 void D3D12UnorderedAccessView::Clear(uint4 const& v)
 {
-    D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+    D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
     ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
     m_pUavSrc->UpdateResourceBarrier(cmd_list, 0, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);

@@ -8,7 +8,7 @@ SEEK_NAMESPACE_BEGIN
 
 SResult D3D11Program::Active()
 {
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
 
     for (size_t i = 0; i < m_vShaders.size(); i++)
     {

@@ -13,7 +13,7 @@ void UpdateDescriptorSize(Context* context,  D3D12_DESCRIPTOR_HEAP_TYPE type)
 	static bool has_update = false;
 	if (s_DescriptorSize[type] == 0)
 	{
-		D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(context->RHIContextInstance());
+		D3D12Context& rc = static_cast<D3D12Context&>(context->RHIContextInstance());
 		ID3D12Device* pDevice = rc.GetD3D12Device();
 		s_DescriptorSize[type] = pDevice->GetDescriptorHandleIncrementSize(type);
 	}
@@ -24,7 +24,7 @@ void UpdateDescriptorSize(Context* context,  D3D12_DESCRIPTOR_HEAP_TYPE type)
 *******************************************************************************/
 D3D12GpuDescriptorPage::D3D12GpuDescriptorPage(Context* context, int32_t size, D3D12_DESCRIPTOR_HEAP_TYPE type, D3D12_DESCRIPTOR_HEAP_FLAGS flags)
 {
-    D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(context->RHIContextInstance());
+    D3D12Context& rc = static_cast<D3D12Context&>(context->RHIContextInstance());
     ID3D12Device* pDevice = rc.GetD3D12Device();
 
 	D3D12_DESCRIPTOR_HEAP_DESC cbv_srv_heap_desc;

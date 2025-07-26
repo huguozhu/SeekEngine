@@ -47,7 +47,7 @@ SResult D3D11Mesh::Active(RHIProgram* program)
 
     if (m_bDataDirty)
     {
-        D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+        D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
 
         m_vD3DInputElementDescs.clear();
         m_vD3DInputElementDescs.reserve(vertex_stream_count);
@@ -91,7 +91,7 @@ SResult D3D11Mesh::Active(RHIProgram* program)
         m_bDataDirty = false;
     }
 
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
 
     // Step2: Set Mesh Topology
@@ -122,7 +122,7 @@ SResult D3D11Mesh::Active(RHIProgram* program)
 }
 SResult D3D11Mesh::Deactive() const
 {
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
     pDeviceContext->IASetIndexBuffer(nullptr, DXGI_FORMAT_R16_UINT, 0);
     std::vector<ID3D11Buffer*> null_buffers(D3D11_IA_VERTEX_INPUT_RESOURCE_SLOT_COUNT);
@@ -142,7 +142,7 @@ ID3D11InputLayout* D3D11Mesh::GetInputLayout(RHIProgram* program) const
             return layout.second.Get();
     }
 
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
     D3D11Shader* vs_shader = (D3D11Shader*)(program->GetShader(ShaderType::Vertex));
     if (!vs_shader)

@@ -14,7 +14,7 @@ uint32_t constexpr SegmentMask = SegmentSize - 1;
 D3D12GpuMemoryPage::D3D12GpuMemoryPage(Context* context, bool is_upload, uint32_t size_in_bytes)
     :m_pContext(context), m_bIsUpLoad(is_upload)
 {
-	D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(context->RHIContextInstance());
+	D3D12Context& rc = static_cast<D3D12Context&>(context->RHIContextInstance());
 	ID3D12Device* pDevice = rc.GetD3D12Device();
 
 	D3D12_RESOURCE_STATES init_state;

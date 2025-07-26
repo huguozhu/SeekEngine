@@ -21,7 +21,7 @@ SResult D3D12Window::Create(D3DAdapter* adapter, std::string const& name, void* 
     m_hWnd = (HWND)native_wnd;
     do
     {
-        D3D12RHIContext& d3d12_rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+        D3D12Context& d3d12_rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
         RECT rc; GetClientRect(m_hWnd, &rc);
         m_iLeft = rc.left;
         m_iTop = rc.top;
@@ -91,7 +91,7 @@ SResult D3D12Window::SwapBuffers()
 {
     if (m_pSwapChain)
     {
-        D3D12RHIContext& rc = static_cast<D3D12RHIContext&>(m_pContext->RHIContextInstance());
+        D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
         ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
         D3D12Texture& rt_tex = static_cast<D3D12Texture&>(*m_vBackBufferTexes[m_iCurBackBufferIndex]);

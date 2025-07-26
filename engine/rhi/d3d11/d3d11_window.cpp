@@ -31,7 +31,7 @@ SResult D3D11Window::Create(D3DAdapter* adapter, std::string const& name, void* 
     m_szName = name;
     m_hWnd = (HWND)native_wnd;
     do {
-        D3D11RHIContext& d3d11_rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+        D3D11Context& d3d11_rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
         RECT rc;
         GetClientRect(m_hWnd, &rc);
         m_iLeft = rc.left;

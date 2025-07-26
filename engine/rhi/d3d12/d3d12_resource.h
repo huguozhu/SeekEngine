@@ -10,7 +10,7 @@ SEEK_NAMESPACE_BEGIN
 class D3D12Resource
 {
 public:
-    D3D12Resource(D3D12RHIContext* rhi_context);
+    D3D12Resource(D3D12Context* rhi_context);
     ~D3D12Resource();
 
     ID3D12Resource* GetD3DResource() const { return m_pD3dResource.Get(); }
@@ -18,7 +18,7 @@ public:
     void UpdateResourceBarrier(ID3D12GraphicsCommandList* cmd_list, uint32_t sub_res, D3D12_RESOURCE_STATES target_state);
 
 protected:
-    D3D12RHIContext* m_pRHIContext = nullptr;
+    D3D12Context* m_pRHIContext = nullptr;
     ID3D12ResourcePtr m_pD3dResource;
     uint32_t m_iResourceOffset;
 

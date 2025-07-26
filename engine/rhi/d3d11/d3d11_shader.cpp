@@ -45,7 +45,7 @@ SResult D3D11Shader::Active()
         m_bCompileReady = true;
     }
 
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
     rc.SetD3DShader(m_eShaderType, (ID3D11DeviceChild*)m_pShader.Get());
 
@@ -65,7 +65,7 @@ SResult D3D11Shader::OnCompile()
     TIMER_BEG(t1);
     LOG_INFO("D3D11Shader::OnCompile() %s Macro(%s)", m_szEntryFuncName.c_str(), macroStr.c_str());
 
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
     ID3DBlob* pError = nullptr;

@@ -21,8 +21,8 @@ SEEK_NAMESPACE_BEGIN
 
 extern "C" 
 {
-    void MakeD3D11RHIContext(Context* context, RHIContextPtrUnique& out);
-    void MakeD3D12RHIContext(Context* context, RHIContextPtrUnique& out);
+    void MakeD3D11Context(Context* context, RHIContextPtrUnique& out);
+    void MakeD3D12Context(Context* context, RHIContextPtrUnique& out);
     void MakeVulkanRHIContext(Context* context, RHIContextPtrUnique& out);
 }
 
@@ -201,9 +201,9 @@ void Context::SetFpsLimitType(FPSLimitType b)
 SResult Context::InitRHIContext()
 {
     if (m_InitInfo.rhi_type == RHIType::D3D11)
-        MakeD3D11RHIContext(this, m_pRHIContext);
+        MakeD3D11Context(this, m_pRHIContext);
     else if (m_InitInfo.rhi_type == RHIType::D3D12)
-        MakeD3D12RHIContext(this, m_pRHIContext);
+        MakeD3D12Context(this, m_pRHIContext);
     else  if (m_InitInfo.rhi_type == RHIType::Vulkan)
         ;//MakeVulkanRHIContext(this, m_pRHIContext);
     SResult ret = m_pRHIContext->Init();

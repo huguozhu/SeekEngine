@@ -13,11 +13,11 @@
 
 SEEK_NAMESPACE_BEGIN
 class D3D11Adapter;
-class D3D11RHIContext : public RHIContext, public DxgiHelper
+class D3D11Context : public RHIContext, public DxgiHelper
 {
 public:
-    D3D11RHIContext(Context* context);
-    virtual ~D3D11RHIContext();
+    D3D11Context(Context* context);
+    virtual ~D3D11Context();
 
     void SetD3D11Device(ID3D11Device* p);
     ID3D11Device* GetD3D11Device() { return m_pDevice.Get(); }

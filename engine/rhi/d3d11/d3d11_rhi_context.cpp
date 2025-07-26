@@ -41,17 +41,17 @@ const char* GetD3D11FeatureLevelStr(D3D_FEATURE_LEVEL feature_level)
     }
 }
 
-D3D11RHIContext::D3D11RHIContext(Context* context)
+D3D11Context::D3D11Context(Context* context)
     : RHIContext(context), m_pDevice(nullptr), m_pDeviceContext(nullptr)
 {    
 }
 
-D3D11RHIContext::~D3D11RHIContext()
+D3D11Context::~D3D11Context()
 {
     Uninit();
 }
 
-SResult D3D11RHIContext::Init()
+SResult D3D11Context::Init()
 {
     SEEK_RETIF_FAIL(DxgiHelper::Init(m_pContext->GetPreferredAdapter(), m_pContext->EnableDebug()));
     do {        
@@ -177,7 +177,7 @@ SResult D3D11RHIContext::Init()
     return ERR_NOT_SUPPORT;
 }
 
-void D3D11RHIContext::Uninit()
+void D3D11Context::Uninit()
 {
     if (m_pDeviceContext)
     {
@@ -189,7 +189,7 @@ void D3D11RHIContext::Uninit()
     DxgiHelper::Uninit();
 }
 
-SResult D3D11RHIContext::CheckCapabilitySetSupport()
+SResult D3D11Context::CheckCapabilitySetSupport()
 {
     seek_memset_s(m_CapabilitySet.TextureSampleCountSupport, sizeof(m_CapabilitySet.TextureSampleCountSupport), false, sizeof(m_CapabilitySet.TextureSampleCountSupport));
     static_assert((1 << 4) == CAP_MAX_TEXTURE_SAMPLE_COUNT, "msaa sample count mismatch");
@@ -233,17 +233,17 @@ SResult D3D11RHIContext::CheckCapabilitySetSupport()
     return S_Success;
 }
 
-void D3D11RHIContext::SetD3D11Device(ID3D11Device* p)
+void D3D11Context::SetD3D11Device(ID3D11Device* p)
 {
     m_pDevice = p;
 }
 
-void D3D11RHIContext::SetD3D11DeviceContext(ID3D11DeviceContext* p)
+void D3D11Context::SetD3D11DeviceContext(ID3D11DeviceContext* p)
 {
     m_pDeviceContext = p;
 }
 
-SResult D3D11RHIContext::AttachNativeWindow(std::string const& name, void* native_wnd)
+SResult D3D11Context::AttachNativeWindow(std::string const& name, void* native_wnd)
 {
     SResult res = S_Success;
     D3DAdapterPtr pAdapter = this->ActiveAdapter();
@@ -259,22 +259,22 @@ SResult D3D11RHIContext::AttachNativeWindow(std::string const& name, void* nativ
     return res;
 }
 
-void D3D11RHIContext::SetD3DRasterizerState(ID3D11RasterizerState* state)
+void D3D11Context::SetD3DRasterizerState(ID3D11RasterizerState* state)
 {
     m_pDeviceContext->RSSetState(state);
 }
 
-void D3D11RHIContext::SetD3DDepthStencilState(ID3D11DepthStencilState* state, uint16_t stencil_ref)
+void D3D11Context::SetD3DDepthStencilState(ID3D11DepthStencilState* state, uint16_t stencil_ref)
 {
     m_pDeviceContext->OMSetDepthStencilState(state, stencil_ref);
 }
 
-void D3D11RHIContext::SetD3DBlendState(ID3D11BlendState* state, float4 blend_factor, uint32_t sample_mask)
+void D3D11Context::SetD3DBlendState(ID3D11BlendState* state, float4 blend_factor, uint32_t sample_mask)
 {
     m_pDeviceContext->OMSetBlendState(state, &(blend_factor[0]), sample_mask);
 }
 
-void D3D11RHIContext::SetD3DShader(ShaderType type, ID3D11DeviceChild* shader)
+void D3D11Context::SetD3DShader(ShaderType type, ID3D11DeviceChild* shader)
 {
     switch (type)
     {
@@ -301,7 +301,7 @@ void D3D11RHIContext::SetD3DShader(ShaderType type, ID3D11DeviceChild* shader)
     }
 }
 
-void D3D11RHIContext::SetD3DShaderResourceViews(ShaderType type, uint32_t start_slot, uint32_t num_srvs, ID3D11ShaderResourceView* const* ppShaderResourceViews)
+void D3D11Context::SetD3DShaderResourceViews(ShaderType type, uint32_t start_slot, uint32_t num_srvs, ID3D11ShaderResourceView* const* ppShaderResourceViews)
 {
     switch (type)
     {
@@ -328,7 +328,7 @@ void D3D11RHIContext::SetD3DShaderResourceViews(ShaderType type, uint32_t start_
     }
 }
 
-void D3D11RHIContext::SetD3DSamplers(ShaderType type, uint32_t start_slot, uint32_t num_samplers, ID3D11SamplerState* const* ppSampleers)
+void D3D11Context::SetD3DSamplers(ShaderType type, uint32_t start_slot, uint32_t num_samplers, ID3D11SamplerState* const* ppSampleers)
 {
     switch (type)
     {
@@ -355,7 +355,7 @@ void D3D11RHIContext::SetD3DSamplers(ShaderType type, uint32_t start_slot, uint3
     }
 }
 
-void D3D11RHIContext::SetD3DUnorderedAccessViews(ShaderType type, uint32_t start_slot, uint32_t num_uavs, ID3D11UnorderedAccessView* const* ppUAV)
+void D3D11Context::SetD3DUnorderedAccessViews(ShaderType type, uint32_t start_slot, uint32_t num_uavs, ID3D11UnorderedAccessView* const* ppUAV)
 {
     switch (type)
     {
@@ -367,7 +367,7 @@ void D3D11RHIContext::SetD3DUnorderedAccessViews(ShaderType type, uint32_t start
     }
 }
 
-void D3D11RHIContext::SetD3DConstantBuffers(ShaderType type, uint32_t start_slot, uint32_t num_cbuffers, ID3D11Buffer* const* ppCBuffers)
+void D3D11Context::SetD3DConstantBuffers(ShaderType type, uint32_t start_slot, uint32_t num_cbuffers, ID3D11Buffer* const* ppCBuffers)
 {
     switch (type)
     {
@@ -394,17 +394,17 @@ void D3D11RHIContext::SetD3DConstantBuffers(ShaderType type, uint32_t start_slot
     }
 }
 
-SResult D3D11RHIContext::BeginFrame()
+SResult D3D11Context::BeginFrame()
 {
     return S_Success;
 }
 
-SResult D3D11RHIContext::EndFrame()
+SResult D3D11Context::EndFrame()
 {
     return S_Success;
 }
 
-SResult D3D11RHIContext::BeginRenderPass(const RenderPassInfo& renderPassInfo)
+SResult D3D11Context::BeginRenderPass(const RenderPassInfo& renderPassInfo)
 {
     if (!renderPassInfo.fb)
         return ERR_INVALID_DATA;
@@ -428,7 +428,7 @@ SResult D3D11RHIContext::BeginRenderPass(const RenderPassInfo& renderPassInfo)
     return S_Success;
 }
 
-SResult D3D11RHIContext::Render(RHIProgram* program, RHIMeshPtr const& mesh)
+SResult D3D11Context::Render(RHIProgram* program, RHIMeshPtr const& mesh)
 {
     if (!m_pCurrentRHIFrameBuffer)
     {
@@ -482,7 +482,7 @@ SResult D3D11RHIContext::Render(RHIProgram* program, RHIMeshPtr const& mesh)
     return ret;
 }
 
-SResult D3D11RHIContext::EndRenderPass()
+SResult D3D11Context::EndRenderPass()
 {
     if (m_pCurrentRHIFrameBuffer)
     {
@@ -492,12 +492,12 @@ SResult D3D11RHIContext::EndRenderPass()
     return S_Success;
 }
 
-void D3D11RHIContext::BeginComputePass(const ComputePassInfo& computePassInfo)
+void D3D11Context::BeginComputePass(const ComputePassInfo& computePassInfo)
 {
 
 }
 
-SResult D3D11RHIContext::Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z)
+SResult D3D11Context::Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z)
 {
     SResult res = S_Success;
     SEEK_RETIF_FAIL(((D3D11Program*)(program))->Active());
@@ -508,7 +508,7 @@ SResult D3D11RHIContext::Dispatch(RHIProgram* program, uint32_t x, uint32_t y, u
     ((D3D11Program*)program)->Deactive();
     return res;
 }
-SResult D3D11RHIContext::DispatchIndirect(RHIProgram* program, RHIRenderBufferPtr indirectBuf)
+SResult D3D11Context::DispatchIndirect(RHIProgram* program, RHIRenderBufferPtr indirectBuf)
 {
     SResult res = S_Success;
     SEEK_RETIF_FAIL(((D3D11Program*)(program))->Active());
@@ -517,7 +517,7 @@ SResult D3D11RHIContext::DispatchIndirect(RHIProgram* program, RHIRenderBufferPt
     ((D3D11Program*)program)->Deactive();
     return res;
 }
-SResult D3D11RHIContext::DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIRenderBufferPtr indirectBuf, MeshTopologyType type)
+SResult D3D11Context::DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIRenderBufferPtr indirectBuf, MeshTopologyType type)
 {
     SResult res = S_Success;
     SEEK_RETIF_FAIL(((D3D11RenderState*)(rs.get()))->Active());
@@ -528,7 +528,7 @@ SResult D3D11RHIContext::DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs,
     ((D3D11Program*)program)->Deactive();
     return res;
 }
-SResult D3D11RHIContext::DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, MeshTopologyType type, uint32_t vertexCountPerInstance, uint32_t instanceCount, uint32_t startVertexLocation, uint32_t startInstanceLocation)
+SResult D3D11Context::DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, MeshTopologyType type, uint32_t vertexCountPerInstance, uint32_t instanceCount, uint32_t startVertexLocation, uint32_t startInstanceLocation)
 {
     SResult res = S_Success;
     SEEK_RETIF_FAIL(((D3D11RenderState*)(rs.get()))->Active());
@@ -538,12 +538,12 @@ SResult D3D11RHIContext::DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs
     ((D3D11Program*)program)->Deactive();
     return res;
 }
-void D3D11RHIContext::EndComputePass()
+void D3D11Context::EndComputePass()
 {
 
 }
 
-SResult D3D11RHIContext::CopyTexture(RHITexturePtr tex_src, RHITexturePtr tex_dst)
+SResult D3D11Context::CopyTexture(RHITexturePtr tex_src, RHITexturePtr tex_dst)
 {
     D3D11Texture* src = dynamic_cast<D3D11Texture*>(tex_src.get());
     D3D11Texture* dst = dynamic_cast<D3D11Texture*>(tex_dst.get());
@@ -551,7 +551,7 @@ SResult D3D11RHIContext::CopyTexture(RHITexturePtr tex_src, RHITexturePtr tex_ds
 
     return S_Success;
 }
-SResult D3D11RHIContext::CopyTextureRegion(RHITexturePtr tex_src, RHITexturePtr tex_dst, int32_t dst_x, int32_t dst_y, int32_t dst_z)
+SResult D3D11Context::CopyTextureRegion(RHITexturePtr tex_src, RHITexturePtr tex_dst, int32_t dst_x, int32_t dst_y, int32_t dst_z)
 {
     D3D11Texture* src = dynamic_cast<D3D11Texture*>(tex_src.get());
     D3D11Texture* dst = dynamic_cast<D3D11Texture*>(tex_dst.get());
@@ -605,7 +605,7 @@ SResult D3D11RHIContext::CopyTextureRegion(RHITexturePtr tex_src, RHITexturePtr 
 
     return S_Success;
 }
-void D3D11RHIContext::BeginCapture()
+void D3D11Context::BeginCapture()
 {
     if (m_pGraphicsAnalysis)
     {
@@ -613,7 +613,7 @@ void D3D11RHIContext::BeginCapture()
     }
 }
 
-void D3D11RHIContext::EndCapture()
+void D3D11Context::EndCapture()
 {
     if (m_pGraphicsAnalysis)
     {
@@ -621,37 +621,37 @@ void D3D11RHIContext::EndCapture()
     }
 }
 
-void D3D11RHIContext::BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* cbuffer, const char* name)
+void D3D11Context::BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* cbuffer, const char* name)
 {
     ID3D11Buffer* d3d_buffer = cbuffer == nullptr ? nullptr : ((D3D11RenderBuffer*)cbuffer)->GetD3DBuffer();
     SetD3DConstantBuffers(stage, binding, 1, &d3d_buffer);
 }
 
-void D3D11RHIContext::BindRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* buffer, const char* name)
+void D3D11Context::BindRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* buffer, const char* name)
 {
     ID3D11ShaderResourceView* srv = buffer == nullptr ? nullptr : ((D3D11RenderBuffer*)buffer)->GetD3DSrv();
     SetD3DShaderResourceViews(stage, binding, 1, &srv);
 }
 
-void D3D11RHIContext::BindRWRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* rw_buffer, const char* name)
+void D3D11Context::BindRWRHIRenderBuffer(ShaderType stage, uint32_t binding, const RHIRenderBuffer* rw_buffer, const char* name)
 {
     ID3D11UnorderedAccessView* uav = rw_buffer == nullptr ? nullptr : ((D3D11RenderBuffer*)rw_buffer)->GetD3DUav();
     SetD3DUnorderedAccessViews(stage, binding, 1, &uav);
 }
 
-void D3D11RHIContext::BindTexture(ShaderType stage, uint32_t binding, const RHITexture* texture, const char* name)
+void D3D11Context::BindTexture(ShaderType stage, uint32_t binding, const RHITexture* texture, const char* name)
 {
     ID3D11ShaderResourceView* srv = texture == nullptr ? nullptr : ((D3D11Texture*)texture)->GetD3DSrv().Get();
     SetD3DShaderResourceViews(stage, binding, 1, &srv);
 }
 
-void D3D11RHIContext::BindRWTexture(ShaderType stage, uint32_t binding, const RHITexture* rw_texture, const char* name)
+void D3D11Context::BindRWTexture(ShaderType stage, uint32_t binding, const RHITexture* rw_texture, const char* name)
 {
     ID3D11UnorderedAccessView* uav = rw_texture == nullptr ? nullptr : ((D3D11Texture*)rw_texture)->GetD3DUav().Get();
     SetD3DUnorderedAccessViews(stage, binding, 1, &uav);
 }
 
-void D3D11RHIContext::BindSampler(ShaderType stage, uint32_t binding, const RHISampler* sampler, const char* name)
+void D3D11Context::BindSampler(ShaderType stage, uint32_t binding, const RHISampler* sampler, const char* name)
 {
     ID3D11SamplerState* d3d_sampler = sampler == nullptr ? nullptr : ((D3D11Sampler*)sampler)->GetD3D11SamplerState();
     SetD3DSamplers(stage, binding, 1, &d3d_sampler);
@@ -659,9 +659,9 @@ void D3D11RHIContext::BindSampler(ShaderType stage, uint32_t binding, const RHIS
 
 extern "C"
 {
-    void MakeD3D11RHIContext(Context* context, RHIContextPtrUnique& out)
+    void MakeD3D11Context(Context* context, RHIContextPtrUnique& out)
     {
-        out = MakeUniquePtr<D3D11RHIContext>(context);
+        out = MakeUniquePtr<D3D11Context>(context);
     }
 }
 

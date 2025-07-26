@@ -15,13 +15,13 @@ SEEK_NAMESPACE_BEGIN
 
 static uint32_t const NUM_BACK_BUFFERS = 3;
 /******************************************************************************
-* D3D12RHIContext
+* D3D12Context
 *******************************************************************************/
-class D3D12RHIContext : public RHIContext, public DxgiHelper
+class D3D12Context : public RHIContext, public DxgiHelper
 {
 public:
-    D3D12RHIContext(Context* context);
-    ~D3D12RHIContext();
+    D3D12Context(Context* context);
+    ~D3D12Context();
 
     ID3D12Device* GetD3D12Device() { return m_pDevice.Get(); }
     ID3D12CommandQueue* GetD3D12CommandQueue() { return m_pCmdQueue.Get(); }
@@ -157,7 +157,7 @@ private:
     ID3D12CommandQueuePtr           m_pCmdQueue = nullptr;
 
 /******************************************************************************
-* D3D12RHIContext::PerThreadContext
+* D3D12Context::PerThreadContext
 *******************************************************************************/
     class PerThreadContext
     {

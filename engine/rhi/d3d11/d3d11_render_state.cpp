@@ -13,7 +13,7 @@ D3D11RenderState::D3D11RenderState(Context* context, RasterizerStateDesc const& 
     DepthStencilStateDesc const& ds_desc, BlendStateDesc const& bs_desc)
     : RHIRenderState(context, rs_desc, ds_desc, bs_desc)
 {
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
     // Step1 : RasterizerState
@@ -106,7 +106,7 @@ D3D11RenderState::~D3D11RenderState()
 
 SResult D3D11RenderState::Active()
 {
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     if (m_pD3D11RasterizerState && m_pD3D11DepthStencilState && m_pD3D11BlendState)
     {
         rc.SetD3DRasterizerState(m_pD3D11RasterizerState.Get());
@@ -125,7 +125,7 @@ SResult D3D11RenderState::Active()
 D3D11Sampler::D3D11Sampler(Context* context, SamplerDesc const& desc)
     : RHISampler(context, desc)
 {
-    D3D11RHIContext& rc = static_cast<D3D11RHIContext&>(m_pContext->RHIContextInstance());
+    D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11Device* pDevice = rc.GetD3D11Device();
 
     D3D11_SAMPLER_DESC d3d_sampler_desc;
