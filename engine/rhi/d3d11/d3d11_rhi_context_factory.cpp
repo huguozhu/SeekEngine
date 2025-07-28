@@ -2,7 +2,7 @@
 #include "rhi/d3d11/d3d11_rhi_context.h"
 #include "rhi/d3d11/d3d11_window.h"
 #include "rhi/d3d11/d3d11_texture.h"
-#include "rhi/d3d11/d3d11_render_buffer.h"
+#include "rhi/d3d11/d3d11_gpu_buffer.h"
 #include "rhi/d3d11/d3d11_render_state.h"
 #include "rhi/d3d11/d3d11_program.h"
 #include "rhi/d3d11/d3d11_shader.h"
@@ -65,6 +65,12 @@ RHIGpuBufferPtr D3D11Context::CreateIndexBuffer(uint32_t size, RHIGpuBufferData*
     buf->Create(pData);
     return buf;
 }
+RHIGpuBufferPtr D3D11Context::CreateGpuBuffer(uint32_t size, ResourceFlags flags)
+{
+    RHIGpuBufferPtr buf = MakeSharedPtr<D3D11GpuBuffer>(m_pContext, size, flags, GpuBufferType::COMMON_BUFFER);
+    buf->Create(nullptr);
+    return buf;
+}
 RHIGpuBufferPtr D3D11Context::CreateConstantBuffer(uint32_t size, ResourceFlags flags)
 {
     RHIGpuBufferPtr buf = MakeSharedPtr<D3D11ConstantBuffer>(m_pContext, size, flags);
@@ -73,24 +79,26 @@ RHIGpuBufferPtr D3D11Context::CreateConstantBuffer(uint32_t size, ResourceFlags 
 }
 RHIGpuBufferPtr D3D11Context::CreateStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData)
 {
+    flags |= RESOURCE_FLAG_GPU_STRUCTURED;
     RHIGpuBufferPtr buf = MakeSharedPtr<D3D11StructuredBuffer>(m_pContext, size, flags, structure_byte_stride);
     buf->Create(pData);
     return buf;
 }
 RHIGpuBufferPtr D3D11Context::CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData)
 {
-    flags |= RESOURCE_FLAG_GPU_WRITE;
+    flags |= RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_GPU_STRUCTURED;
     return this->CreateStructuredBuffer(size, flags, structure_byte_stride, pData);
 }
 RHIGpuBufferPtr D3D11Context::CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData)
 {
+    flags |= RESOURCE_FLAG_RAW;
     RHIGpuBufferPtr buf = MakeSharedPtr<D3D11ByteAddressBuffer>(m_pContext, size, flags);
     buf->Create(pData);
     return buf;
 }
 RHIGpuBufferPtr D3D11Context::CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData)
 {
-    flags |= RESOURCE_FLAG_GPU_WRITE;
+    flags |= RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_RAW;
     return CreateByteAddressBuffer(size, flags, pData);
 }
 RHIRenderStatePtr D3D11Context::CreateRenderState(RenderStateDesc const& desc)

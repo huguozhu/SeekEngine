@@ -2,7 +2,7 @@
 #include "effect/effect.h"
 #include "effect/parameter.h"
 #include "rhi/base/rhi_texture.h"
-#include "rhi/base/rhi_render_buffer.h"
+#include "rhi/base/rhi_gpu_buffer.h"
 #include "rhi/base/rhi_context.h"
 #include "rhi/base/rhi_framebuffer.h"
 #include "math/math_utility.h"

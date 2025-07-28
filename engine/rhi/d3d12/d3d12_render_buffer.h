@@ -1,5 +1,5 @@
 ﻿#pragma once
-#include "rhi/base/rhi_render_buffer.h"
+#include "rhi/base/rhi_gpu_buffer.h"
 #include "rhi/base/rhi_definition.h"
 #include "rhi/d3d12/d3d12_predeclare.h"
 #include "rhi/d3d12/d3d12_gpu_descriptor_allocator.h"

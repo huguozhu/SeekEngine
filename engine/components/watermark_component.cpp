@@ -3,7 +3,7 @@
 #include "scene_manager/scene_manager.h"
 #include "rhi/base/rhi_mesh.h"
 #include "rhi/base/rhi_texture.h"
-#include "rhi/base/rhi_render_buffer.h"
+#include "rhi/base/rhi_gpu_buffer.h"
 #include "effect/scene_renderer.h"
 #include "effect/effect.h"
 #include "effect/technique.h"

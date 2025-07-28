@@ -6,7 +6,7 @@
 #include "rhi/base/rhi_shader.h"
 #include "rhi/base/rhi_framebuffer.h"
 #include "rhi/base/rhi_render_view.h"
-#include "rhi/base/rhi_render_buffer.h"
+#include "rhi/base/rhi_gpu_buffer.h"
 #include "rhi/base/rhi_context.h"
 #include "math/math_utility.h"
 #include "math/quad_mesh_process.h"

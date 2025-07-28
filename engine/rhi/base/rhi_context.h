@@ -54,13 +54,14 @@ public: // virutal factory
     virtual RHITexturePtr           CreateTexture3D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) { return nullptr; }
     virtual RHITexturePtr           CreateTextureCube(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_data = {}) { return nullptr; }
 
-    virtual RHIGpuBufferPtr      CreateConstantBuffer(uint32_t size, ResourceFlags flags) = 0;
-    virtual RHIGpuBufferPtr      CreateStructuredBuffer  (uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData = nullptr) = 0;
-    virtual RHIGpuBufferPtr      CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData = nullptr) = 0;
-    virtual RHIGpuBufferPtr      CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData) { return nullptr; }
-    virtual RHIGpuBufferPtr      CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData) { return nullptr; }
-    virtual RHIGpuBufferPtr      CreateVertexBuffer(uint32_t size, RHIGpuBufferData* pData) = 0;
-    virtual RHIGpuBufferPtr      CreateIndexBuffer(uint32_t size, RHIGpuBufferData* pData) = 0;
+    virtual RHIGpuBufferPtr         CreateGpuBuffer(uint32_t size, ResourceFlags usage) = 0;
+    virtual RHIGpuBufferPtr         CreateConstantBuffer(uint32_t size, ResourceFlags flags) = 0;
+    virtual RHIGpuBufferPtr         CreateStructuredBuffer  (uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData = nullptr) = 0;
+    virtual RHIGpuBufferPtr         CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData = nullptr) = 0;
+    virtual RHIGpuBufferPtr         CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData) { return nullptr; }
+    virtual RHIGpuBufferPtr         CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData) { return nullptr; }
+    virtual RHIGpuBufferPtr         CreateVertexBuffer(uint32_t size, RHIGpuBufferData* pData) = 0;
+    virtual RHIGpuBufferPtr         CreateIndexBuffer(uint32_t size, RHIGpuBufferData* pData) = 0;
 
 
     virtual RHIRenderTargetViewPtr  Create2DRenderTargetView(RHITexturePtr const& tex_2d,   uint32_t first_array_index = 0, uint32_t array_size = 1, uint32_t mip_level = 0) = 0;

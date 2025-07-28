@@ -3,7 +3,7 @@
 #include "kernel/kernel.h"
 #include "rhi/base/rhi_context.h"
 #include "rhi/base/rhi_definition.h"
-#include "rhi/base/rhi_render_buffer.h"
+#include "rhi/base/rhi_gpu_buffer.h"
 #include "rhi/d3d_common/d3d_adapter.h"
 #include "rhi/d3d_common/dxgi_helper.h"
 #include "rhi/d3d11/d3d11_query.h"
@@ -56,6 +56,7 @@ public:
     RHITexturePtr       CreateTexture3D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) override;
     RHITexturePtr       CreateTextureCube(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_data = {}) override;
 
+    RHIGpuBufferPtr  CreateGpuBuffer(uint32_t size, ResourceFlags usage) override;
     RHIGpuBufferPtr  CreateConstantBuffer(uint32_t size, ResourceFlags usage) override;
     RHIGpuBufferPtr  CreateStructuredBuffer  (uint32_t size, ResourceFlags usage, uint32_t structure_byte_stride, RHIGpuBufferData* pData) override;
     RHIGpuBufferPtr  CreateRWStructuredBuffer(uint32_t size, ResourceFlags usage, uint32_t structure_byte_stride, RHIGpuBufferData* pData) override;

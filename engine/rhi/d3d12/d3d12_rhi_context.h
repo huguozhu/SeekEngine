@@ -90,13 +90,14 @@ public:
     RHITexturePtr           CreateTexture3D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) override;
     RHITexturePtr           CreateTextureCube(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_data = {}) override;
 
-    RHIGpuBufferPtr      CreateConstantBuffer(uint32_t size, ResourceFlags flags) override;
-    RHIGpuBufferPtr      CreateStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData = nullptr) override;
-    RHIGpuBufferPtr      CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData = nullptr) override;
-    RHIGpuBufferPtr      CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData);
-    RHIGpuBufferPtr      CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData);
-    RHIGpuBufferPtr      CreateVertexBuffer(uint32_t size, RHIGpuBufferData* pData) override;
-    RHIGpuBufferPtr      CreateIndexBuffer(uint32_t size, RHIGpuBufferData* pData) override;
+    RHIGpuBufferPtr         CreateGpuBuffer(uint32_t size, ResourceFlags usage) override;
+    RHIGpuBufferPtr         CreateConstantBuffer(uint32_t size, ResourceFlags flags) override;
+    RHIGpuBufferPtr         CreateStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData = nullptr) override;
+    RHIGpuBufferPtr         CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData = nullptr) override;
+    RHIGpuBufferPtr         CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData);
+    RHIGpuBufferPtr         CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData);
+    RHIGpuBufferPtr         CreateVertexBuffer(uint32_t size, RHIGpuBufferData* pData) override;
+    RHIGpuBufferPtr         CreateIndexBuffer(uint32_t size, RHIGpuBufferData* pData) override;
 
     RHIRenderTargetViewPtr  Create2DRenderTargetView(RHITexturePtr const& tex_2d, uint32_t first_array_index = 0, uint32_t array_size = 1, uint32_t mip_level = 0) override { return nullptr; }
     RHIRenderTargetViewPtr  Create2DRenderTargetView(RHITexturePtr const& tex_cube, uint32_t array_index, CubeFaceType face, uint32_t mip_level) override { return nullptr; }

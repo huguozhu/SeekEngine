@@ -4,7 +4,7 @@
 #include "rhi/base/rhi_mesh.h"
 #include "rhi/base/rhi_context.h"
 #include "rhi/base/rhi_definition.h"
-#include "rhi/base/rhi_render_buffer.h"
+#include "rhi/base/rhi_gpu_buffer.h"
 
 //#include "effect/effect.h"
 //#include "effect/technique.h"

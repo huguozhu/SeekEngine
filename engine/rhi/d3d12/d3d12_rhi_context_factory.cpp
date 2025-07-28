@@ -42,6 +42,10 @@ RHITexturePtr D3D12Context::CreateTextureCube(const RHITexture::Desc& tex_desc, 
     SResult ret = tex->Create(init_data);
     return SEEK_CHECKFAILED(ret) ? nullptr : tex;
 }
+RHIGpuBufferPtr D3D12Context::CreateGpuBuffer(uint32_t size, ResourceFlags usage)
+{
+    return nullptr;
+}
 RHIGpuBufferPtr D3D12Context::CreateConstantBuffer(uint32_t size, ResourceFlags flags)
 { 
     return nullptr; 

@@ -1614,7 +1614,6 @@ void glTF2_Loader::ConverterToMorphStreamUnitFromTargets(RHIMeshPtr& m_pMesh, Va
                 float* targetData = (float*)((char*)(bv->binaryData) + accessor->byteOffset);
                 for (int32_t j = 0; j < targetCount; j++)
                 {
-                    //int32_t addr = (j * targetSize + i) * 4;
                     int32_t addr = (j * targetSize + i) * 4;
                     allTargetDataPtr[addr] = targetData[0];
                     allTargetDataPtr[addr + 1] = targetData[1];
@@ -1624,15 +1623,6 @@ void glTF2_Loader::ConverterToMorphStreamUnitFromTargets(RHIMeshPtr& m_pMesh, Va
             }
         }
     }
-
-    // RenderContext* rc = &m_pContext->RenderContextInstance();
-    // RenderBufferData MorphTargetData(allTargetDataSize * sizeof(float), allTargetData.data());
-    // RenderBufferPtr MorphTargetBuffer = rc->CreateStructuredBuffer(allTargetDataSize * sizeof(float), 0, sizeof(float4), &MorphTargetData);
-    // MorphInfo& info = m_pMesh->GetMorphInfo();
-    // info.render_buffer = MorphTargetBuffer;
-    // info.morph_target_type = MorphTargetType::Position;
-    // info.morph_target_weights.resize(targetSize, 0.0f);
-    // info.morph_target_names = targetNames;
 
     morphTargetRes._morphInfo.morph_target_names = targetNames;
     morphTargetRes._morphInfo.morph_target_type = MorphTargetType::Position;

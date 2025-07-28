@@ -8,7 +8,7 @@
 #include "effect/effect.h"
 #include "effect/technique.h"
 #include "kernel/context.h"
-#include "rhi/base/rhi_render_buffer.h"
+#include "rhi/base/rhi_gpu_buffer.h"
 #include "kernel/kernel.h"
 
 #define SEEK_MACRO_FILE_UID 100    // this code is auto generated, don't touch it!!!

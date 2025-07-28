@@ -3,7 +3,7 @@
 #include "rhi/d3d11/d3d11_window.h"
 #include "rhi/d3d11/d3d11_program.h"
 #include "rhi/d3d11/d3d11_mesh.h"
-#include "rhi/d3d11/d3d11_render_buffer.h"
+#include "rhi/d3d11/d3d11_gpu_buffer.h"
 #include "rhi/d3d11/d3d11_render_state.h"
 #include "rhi/d3d11/d3d11_framebuffer.h"
 #include "rhi/d3d11/d3d11_translate.h"

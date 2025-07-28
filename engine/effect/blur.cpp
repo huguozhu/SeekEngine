@@ -1,7 +1,7 @@
 #include "effect/blur.h"
 #include "rhi/base/rhi_framebuffer.h"
 #include "rhi/base/rhi_texture.h"
-#include "rhi/base/rhi_render_buffer.h"
+#include "rhi/base/rhi_gpu_buffer.h"
 #include "effect/effect.h"
 #include "effect/postprocess.h"
 

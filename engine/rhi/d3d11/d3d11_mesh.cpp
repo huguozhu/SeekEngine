@@ -1,7 +1,7 @@
 #include "rhi/d3d11/d3d11_predeclare.h"
 #include "rhi/d3d11/d3d11_mesh.h"
 #include "rhi/d3d11/d3d11_rhi_context.h"
-#include "rhi/d3d11/d3d11_render_buffer.h"
+#include "rhi/d3d11/d3d11_gpu_buffer.h"
 #include "rhi/d3d11/d3d11_translate.h"
 #include "rhi/d3d11/d3d11_shader.h"
 #include "rhi/d3d_common/d3d_common_translate.h"

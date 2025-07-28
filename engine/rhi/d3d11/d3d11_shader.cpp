@@ -3,7 +3,7 @@
 #include "rhi/d3d11/d3d11_translate.h"
 #include "rhi/d3d11/d3d11_texture.h"
 #include "rhi/d3d11/d3d11_render_state.h"
-#include "rhi/d3d11/d3d11_render_buffer.h"
+#include "rhi/d3d11/d3d11_gpu_buffer.h"
 
 #include "math/math_utility.h"
 #include "kernel/context.h"

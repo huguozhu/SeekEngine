@@ -2,7 +2,7 @@
 #include "effect/taa.h"
 #include "effect/effect.h"
 #include "rhi/base/rhi_framebuffer.h"
-#include "rhi/base/rhi_render_buffer.h"
+#include "rhi/base/rhi_gpu_buffer.h"
 #include "rhi/base/rhi_render_view.h"
 
 SEEK_NAMESPACE_BEGIN

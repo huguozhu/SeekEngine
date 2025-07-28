@@ -1,10 +1,18 @@
 ﻿#pragma once
-#include "rhi/base/rhi_render_buffer.h"
+#include "rhi/base/rhi_gpu_buffer.h"
 #include "rhi/d3d11/d3d11_predeclare.h"
 
 #include "rhi/base/rhi_definition.h"
 
 SEEK_NAMESPACE_BEGIN
+
+enum class GpuBufferType : uint32_t
+{
+    COMMON_BUFFER,  
+    VERTEX_BUFFER,  
+    INDEX_BUFFER,   
+    CONSTANT_BUFFER,
+};
 
 /******************************************************************************
  * D3D11GpuBuffer
@@ -12,19 +20,20 @@ SEEK_NAMESPACE_BEGIN
 class D3D11GpuBuffer : public RHIGpuBuffer
 {
 public:
-    D3D11GpuBuffer(Context* context, uint32_t size, ResourceFlags flags)
-        : RHIGpuBuffer(context, size, flags), m_pD3DBuffer(nullptr) {}
-    D3D11GpuBuffer(Context* context, uint32_t size, ResourceFlags flags, ID3D11Buffer* resource)
-        : RHIGpuBuffer(context, size, flags), m_pD3DBuffer(resource) {}
+    D3D11GpuBuffer(Context* context, uint32_t size, ResourceFlags flags, GpuBufferType type, uint32_t structure_stride = 0)
+        : RHIGpuBuffer(context, size, flags, structure_stride), m_pD3DBuffer(nullptr), m_eType(type) {}
+    D3D11GpuBuffer(Context* context, uint32_t size, ResourceFlags flags, ID3D11Buffer* resource, uint32_t structure_stride = 0)
+        : RHIGpuBuffer(context, size, flags, structure_stride), m_pD3DBuffer(resource) {}
     virtual ~D3D11GpuBuffer();
 
     virtual SResult Create(RHIGpuBufferData* buffer_data) override;
     virtual SResult Update(RHIGpuBufferData* buffer_data) override;
     virtual SResult CopyBack(BufferPtr buffer, int start=0, int length=-1) override;
 
-    ID3D11Buffer* GetD3DBuffer();
-    ID3D11ShaderResourceView* GetD3DSrv();
-    ID3D11UnorderedAccessView* GetD3DUav();
+    ID3D11Buffer* GetD3DBuffer() { return m_pD3DBuffer.Get(); }
+
+    ID3D11ShaderResourceView* GetD3DSrv(uint32_t offset = 0, int32_t size = -1);
+    ID3D11UnorderedAccessView* GetD3DUav(uint32_t offset = 0, int32_t size = -1);
 
 protected:
     virtual SResult FillBufferDesc(D3D11_BUFFER_DESC& desc);
@@ -33,9 +42,11 @@ protected:
 
 protected:
     ID3D11BufferPtr m_pD3DBuffer = nullptr;
+    GpuBufferType m_eType = GpuBufferType::COMMON_BUFFER;
     D3D11_BUFFER_DESC m_d3dBufferDesc = {};
-    ID3D11ShaderResourceViewPtr m_pD3DShaderResourceView = nullptr;
-    ID3D11UnorderedAccessViewPtr m_pD3DUnorderAccessView = nullptr;
+    
+    std::unordered_map<size_t, ID3D11ShaderResourceViewPtr> m_vD3dSrvs;
+    std::unordered_map<size_t, ID3D11UnorderedAccessViewPtr> m_vD3dUavs;
 };
 using D3D11GpuBufferPtr = std::shared_ptr<D3D11GpuBuffer>;
 

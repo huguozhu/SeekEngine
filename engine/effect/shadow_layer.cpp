@@ -8,7 +8,7 @@
 #include "rhi/base/rhi_framebuffer.h"
 #include "rhi/base/rhi_texture.h"
 #include "rhi/base/rhi_mesh.h"
-#include "rhi/base/rhi_render_buffer.h"
+#include "rhi/base/rhi_gpu_buffer.h"
 
 #include "math/matrix.h"
 #include "math/transform.h"

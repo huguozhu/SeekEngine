@@ -11,7 +11,7 @@
 #include "rhi/base/rhi_context.h"
 #include "rhi/base/rhi_framebuffer.h"
 #include "rhi/base/rhi_mesh.h"
-#include "rhi/base/rhi_render_buffer.h"
+#include "rhi/base/rhi_gpu_buffer.h"
 #include "rhi/base/rhi_definition.h"
 #include "rhi/base/rhi_query.h"
 #include "components/mesh_component.h"
@@ -81,8 +81,8 @@ SResult DeferredShadingRenderer::Init()
     }
     m_pSsaoSampleKernelCBuffer  = rc.CreateConstantBuffer(sizeof(ssao_kernels[0]) * ssao_kernels.size(), RESOURCE_FLAG_CPU_WRITE);
     m_pSsaoParamCBuffer         = rc.CreateConstantBuffer(sizeof(SsaoParam), RESOURCE_FLAG_CPU_WRITE);
-    m_pLightInfoCBuffer         = rc.CreateByteAddressBuffer(sizeof(LightInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_CPU_WRITE, nullptr);
-    m_pLightCullingInfoCBuffer  = rc.CreateByteAddressBuffer(sizeof(LightCullingInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_CPU_WRITE, nullptr);
+    m_pLightInfoCBuffer         = rc.CreateStructuredBuffer(sizeof(LightInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_CPU_WRITE, sizeof(LightInfo), nullptr);
+    m_pLightCullingInfoCBuffer  = rc.CreateStructuredBuffer(sizeof(LightCullingInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_CPU_WRITE, sizeof(LightCullingInfo), nullptr);
     m_pDeferredLightingInfoCBuffer = rc.CreateConstantBuffer(sizeof(DeferredLightingInfo), RESOURCE_FLAG_CPU_WRITE);
 
     if (use_tile_culling)
