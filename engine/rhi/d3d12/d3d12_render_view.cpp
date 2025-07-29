@@ -278,22 +278,22 @@ D3D12Dsv* D3D12TextureCubeFaceDsv::GetD3DDsv()
 D3D12TextureSrv::D3D12TextureSrv(Context* context, RHITexturePtr const& texture, uint32_t first_array_index, uint32_t array_size, uint32_t first_level, uint32_t num_levels)
     :D3D12ShaderResourceView(context)
 {
+    m_Param.pixel_format = texture->Format();
     // for Texture
-    m_pTexture = texture;
-    m_ePixelFormat = texture->Format();
+    m_Param.texture = texture; 
 
-    m_iFirstArrayIndex = first_array_index;
-    m_iNumArrays = array_size;
-    m_iFirstMipLevel = first_level;
+    m_Param.first_array_index = first_array_index;
+    m_Param.num_arrays = array_size;
+    m_Param.mip_level = first_level;
     m_iNumMipLevels = num_levels;
 
     m_pSrvSrc = texture.get();
 }
 D3D12Srv* D3D12TextureSrv::GetD3DSrv()
 {
-    if (!m_pSrvHandle && m_pTexture)
+    if (!m_pSrvHandle && m_Param.texture)
     {
-        m_pSrvHandle = ((D3D12Texture*)m_pTexture.get())->GetD3DSrv(m_iFirstArrayIndex, m_iNumArrays, m_iFirstMipLevel, m_iNumMipLevels);
+        m_pSrvHandle = ((D3D12Texture*)m_Param.texture.get())->GetD3DSrv(m_Param.first_array_index, m_Param.num_arrays, m_Param.mip_level, m_iNumMipLevels);
     }
     return m_pSrvHandle.get();
 }

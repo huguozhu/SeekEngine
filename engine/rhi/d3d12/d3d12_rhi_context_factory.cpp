@@ -42,22 +42,15 @@ RHITexturePtr D3D12Context::CreateTextureCube(const RHITexture::Desc& tex_desc, 
     SResult ret = tex->Create(init_data);
     return SEEK_CHECKFAILED(ret) ? nullptr : tex;
 }
-RHIGpuBufferPtr D3D12Context::CreateGpuBuffer(uint32_t size, ResourceFlags usage)
+RHIGpuBufferPtr D3D12Context::CreateGpuBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_stride, RHIGpuBufferData* pData)
 {
     return nullptr;
 }
-RHIGpuBufferPtr D3D12Context::CreateConstantBuffer(uint32_t size, ResourceFlags flags)
+RHIGpuBufferPtr D3D12Context::CreateConstantBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData)
 { 
     return nullptr; 
 }
-RHIGpuBufferPtr D3D12Context::CreateStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData)
-{ 
-    return nullptr; 
-}
-RHIGpuBufferPtr D3D12Context::CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData)
-{ 
-    return nullptr;
-}
+
 RHIGpuBufferPtr D3D12Context::CreateVertexBuffer(uint32_t size, RHIGpuBufferData* pData)
 { 
     return nullptr;
