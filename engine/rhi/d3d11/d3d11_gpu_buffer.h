@@ -91,40 +91,5 @@ protected:
 using D3D11ConstantBufferPtr = std::shared_ptr<D3D11ConstantBuffer>;
 
 
-/******************************************************************************
- * D3D11StructuredBuffer
- *******************************************************************************/
-class D3D11StructuredBuffer : public D3D11GpuBuffer
-{
-public:
-    D3D11StructuredBuffer(Context* context, uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride);
-
-protected:
-    SResult FillBufferDesc(D3D11_BUFFER_DESC& desc) override;
-    SResult FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc) override;
-    SResult FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc) override;
-
-protected:
-    uint32_t m_iStructureByteStride = 0;
-};
-using D3D11StructuredBufferPtr = std::shared_ptr<D3D11StructuredBuffer>;
-
-
-/******************************************************************************
- * D3D11ByteAddressBuffer
- *******************************************************************************/
-class D3D11ByteAddressBuffer : public D3D11GpuBuffer
-{
-public:
-    D3D11ByteAddressBuffer(Context* context, uint32_t size, ResourceFlags flags);
-
-protected:
-    SResult FillBufferDesc(D3D11_BUFFER_DESC& desc) override;
-    SResult FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc) override;
-    SResult FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc) override;
-
-};
-using D3D11ByteAddressBufferPtr = std::shared_ptr<D3D11ByteAddressBuffer>;
-
 
 SEEK_NAMESPACE_END

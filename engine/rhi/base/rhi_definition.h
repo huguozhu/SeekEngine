@@ -13,7 +13,7 @@ using ResourceFlags = uint64_t;
 #define RESOURCE_FLAG_CPU_READ              UINT64_C(0x0000000000000001)        // Copy data from gpu-buffer --> cpu-buffer
 #define RESOURCE_FLAG_CPU_WRITE             UINT64_C(0x0000000000000002)        // Copy data from cpu-buffer --> gpu-buffer
 #define RESOURCE_FLAG_GPU_READ              UINT64_C(0x0000000000000004)        // Shader Resource View
-#define RESOURCE_FLAG_GPU_WRITE             UINT64_C(0x0000000000000008)        // Unordered Access View
+#define RESOURCE_FLAG_GPU_WRITE             UINT64_C(0x0000000000000008)        // RenderTarget or DepthStencil View
 
 #define RESOURCE_FLAG_UAV                   UINT64_C(0x0000000000000100)        // Unordered Access View
 #define RESOURCE_FLAG_GENERATE_MIPS         UINT64_C(0x0000000000000200)        // Generate Mips

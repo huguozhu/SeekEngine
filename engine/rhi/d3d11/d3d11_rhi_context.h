@@ -58,8 +58,6 @@ public:
 
     RHIGpuBufferPtr  CreateGpuBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_stride, RHIGpuBufferData* pData = nullptr) override;
     RHIGpuBufferPtr  CreateConstantBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData = nullptr) override;
-    RHIGpuBufferPtr  CreateStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData) override;
-    RHIGpuBufferPtr  CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData) override;
     RHIGpuBufferPtr  CreateVertexBuffer(uint32_t size, RHIGpuBufferData* pData) override;
     RHIGpuBufferPtr  CreateIndexBuffer(uint32_t size, RHIGpuBufferData* pData) override;    
 
