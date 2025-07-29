@@ -286,12 +286,6 @@ D3D11VertexBuffer::D3D11VertexBuffer(Context* context, uint32_t size)
     :D3D11GpuBuffer(context, size, RESOURCE_FLAG_CPU_WRITE, GpuBufferType::VERTEX_BUFFER)
 {
 }
-SResult D3D11VertexBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
-{
-    D3D11GpuBuffer::FillBufferDesc(desc);
-    desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    return S_Success;
-}
 
 /******************************************************************************
  * D3D11IndexBuffer
@@ -300,12 +294,6 @@ D3D11IndexBuffer::D3D11IndexBuffer(Context* context, uint32_t size)
     :D3D11GpuBuffer(context, size, RESOURCE_FLAG_CPU_WRITE, GpuBufferType::INDEX_BUFFER)
 {
 }
-SResult D3D11IndexBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
-{
-    D3D11GpuBuffer::FillBufferDesc(desc);
-    desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    return S_Success;
-}
 
 /******************************************************************************
  * D3D11ConstantBuffer
@@ -313,13 +301,6 @@ SResult D3D11IndexBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
 D3D11ConstantBuffer::D3D11ConstantBuffer(Context* context, uint32_t size, ResourceFlags flags)
     :D3D11GpuBuffer(context, size, flags, GpuBufferType::CONSTANT_BUFFER)
 {
-}
-SResult D3D11ConstantBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
-{
-    D3D11GpuBuffer::FillBufferDesc(desc);
-    desc.ByteWidth = seek_alignup(m_iSize, 16);
-    desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    return S_Success;
 }
 
 SEEK_NAMESPACE_END

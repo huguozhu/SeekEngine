@@ -37,9 +37,9 @@ public:
 
 protected:
     void FillStageBufferDesc(D3D11_BUFFER_DESC& desc);
-    virtual SResult FillBufferDesc(D3D11_BUFFER_DESC& desc);    
-    virtual SResult FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc);
-    virtual SResult FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc);
+    SResult FillBufferDesc(D3D11_BUFFER_DESC& desc);    
+    SResult FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc);
+    SResult FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc);
     
 
 protected:
@@ -59,8 +59,6 @@ class D3D11VertexBuffer : public D3D11GpuBuffer
 {
 public:
     D3D11VertexBuffer(Context* context, uint32_t size);
-protected:
-    SResult FillBufferDesc(D3D11_BUFFER_DESC& desc) override;
 };
 using D3D11VertexBufferPtr = std::shared_ptr<D3D11VertexBuffer>;
 
@@ -72,8 +70,6 @@ class D3D11IndexBuffer : public D3D11GpuBuffer
 {
 public:
     D3D11IndexBuffer(Context* context, uint32_t size);
-protected:
-    SResult FillBufferDesc(D3D11_BUFFER_DESC& desc) override;
 };
 using D3D11IndexBufferPtr = std::shared_ptr<D3D11IndexBuffer>;
 
@@ -85,8 +81,6 @@ class D3D11ConstantBuffer : public D3D11GpuBuffer
 {
 public:
     D3D11ConstantBuffer(Context* context, uint32_t size, ResourceFlags flags);
-protected:
-    SResult FillBufferDesc(D3D11_BUFFER_DESC& desc) override;
 };
 using D3D11ConstantBufferPtr = std::shared_ptr<D3D11ConstantBuffer>;
 

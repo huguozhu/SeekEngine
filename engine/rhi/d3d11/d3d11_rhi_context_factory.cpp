@@ -69,7 +69,7 @@ RHIGpuBufferPtr D3D11Context::CreateGpuBuffer(uint32_t size, ResourceFlags flags
 }
 RHIGpuBufferPtr D3D11Context::CreateConstantBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData)
 {
-    RHIGpuBufferPtr buf = MakeSharedPtr<D3D11ConstantBuffer>(m_pContext, size, flags);
+    RHIGpuBufferPtr buf = MakeSharedPtr<D3D11ConstantBuffer>(m_pContext, seek_alignup(size, 16), flags);
     buf->Create(pData);
     return buf;
 }
