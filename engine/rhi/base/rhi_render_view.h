@@ -4,26 +4,6 @@
 #include "rhi/base/rhi_texture.h"
 
 SEEK_NAMESPACE_BEGIN
-
-class RHIShaderResourceView  // Srv
-{
-public:
-    RHIShaderResourceView(Context* context)
-        :m_pContext(context){}
-
-protected:
-    Context*    m_pContext = nullptr;
-    PixelFormat m_ePixelFormat = PixelFormat::Unknown;
-
-    // for Texture
-    RHITexturePtr   m_pTexture = nullptr;
-    uint32_t        m_iFirstArrayIndex = 0;
-    uint32_t        m_iNumArrays = 1;
-    uint32_t        m_iFirstMipLevel = 0;
-    uint32_t        m_iNumMipLevels = 1;
-};
-using RHIShaderResourceViewPtr = std::shared_ptr<RHIShaderResourceView>;
-
 struct ViewParam
 {
     PixelFormat     pixel_format = PixelFormat::Unknown;
@@ -41,7 +21,27 @@ struct ViewParam
     // for TextureCube
     CubeFaceType    first_face = CubeFaceType::Num;
     uint32_t        num_faces = 1;
+
+    // for gpu buffer
+    RHIGpuBufferPtr buffer;
+    uint32_t first_elem;
+    uint32_t num_elem;
 };
+
+
+class RHIShaderResourceView  // Srv
+{
+public:
+    RHIShaderResourceView(Context* context)
+        :m_pContext(context){}
+
+protected:
+    Context*    m_pContext = nullptr;
+    ViewParam   m_Param;
+    uint32_t    m_iNumMipLevels = 1;
+
+};
+using RHIShaderResourceViewPtr = std::shared_ptr<RHIShaderResourceView>;
 
 class RHIRenderTargetView
 {
@@ -91,8 +91,8 @@ public:
     RHIUnorderedAccessView(Context* context)
         : m_pContext(context) {}
 
-    virtual void Clear(float4 const& v) = 0;
-    virtual void Clear(uint4 const& v) = 0;
+    virtual void Clear(float4 const& v) {};
+    virtual void Clear(uint4 const& v) {};
 
 protected:
     Context*    m_pContext = nullptr;

@@ -15,9 +15,11 @@ std::unique_ptr<EffectVariable> CreateEffectVariable(EffectDataType data_type)
     switch (data_type)
     {
         case EffectDataType::ConstantBuffer:
-        case EffectDataType::Buffer:
-        case EffectDataType::RWBuffer:
             return MakeUniquePtr<EffectVariableRHIGpuBuffer>();
+        case EffectDataType::Buffer:
+            return MakeUniquePtr<EffectVariableRHIShaderResourceView>();
+        case EffectDataType::RWBuffer:
+            return MakeUniquePtr<EffectVariableRHIUnorderedAccessView>();
         case EffectDataType::Texture:
         case EffectDataType::RWTexture:
             return MakeUniquePtr<EffectVariableRHITexture>();
@@ -37,10 +39,18 @@ std::unique_ptr<EffectVariable> EffectParam::ReadRenderVariable(EffectDataType d
     switch (data_type)
     {
         case EffectDataType::ConstantBuffer:
-        case EffectDataType::Buffer:
-        case EffectDataType::RWBuffer:
         {
             *var = RHIGpuBufferPtr();
+            break;
+        }
+        case EffectDataType::Buffer:
+        {
+            *var = RHIShaderResourceViewPtr();
+            break;
+        }
+        case EffectDataType::RWBuffer:
+        {
+            *var = RHIUnorderedAccessViewPtr();
             break;
         }
         case EffectDataType::Texture:

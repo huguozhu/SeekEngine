@@ -51,7 +51,7 @@ SResult D3D11Window::Create(D3DAdapter* adapter, std::string const& name, void* 
         desc.BufferDesc.Scaling = DXGI_MODE_SCALING_UNSPECIFIED;
         desc.SampleDesc.Count = 1;
         desc.SampleDesc.Quality = 0;
-        if (1/*d3d11_rc.GetDxgiSubVerion() < 4 || m_pContext->GetNumSamples() > 1*/)
+        if (0/*d3d11_rc.GetDxgiSubVerion() < 4 || m_pContext->GetNumSamples() > 1*/)
         {
             desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
             desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;

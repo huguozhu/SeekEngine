@@ -42,8 +42,14 @@ protected:
     RHIGpuBufferPtr      m_pCameraInfoCBuffer = nullptr;
     RHIGpuBufferPtr      m_pSsaoSampleKernelCBuffer = nullptr;
     RHIGpuBufferPtr      m_pSsaoParamCBuffer = nullptr;
-    RHIGpuBufferPtr      m_pLightInfoCBuffer = nullptr;
-    RHIGpuBufferPtr      m_pTileInfoBuffer = nullptr;
+
+    RHIGpuBufferPtr             m_pLightInfoCBuffer = nullptr;
+    RHIShaderResourceViewPtr    m_pLightInfoSrv = nullptr;
+
+    RHIGpuBufferPtr             m_pTileInfoBuffer = nullptr;
+    RHIShaderResourceViewPtr    m_pTileInfoSrv = nullptr;
+    RHIUnorderedAccessViewPtr   m_pTileInfoUav = nullptr;
+
 	RHIGpuBufferPtr      m_pLightCullingInfoCBuffer = nullptr;
 	RHIGpuBufferPtr      m_pDeferredLightingInfoCBuffer = nullptr;
 

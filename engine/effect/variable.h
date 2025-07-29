@@ -27,6 +27,8 @@ public:
     EffectVariable_Declare(RHITexturePtr)
     EffectVariable_Declare(RHISamplerPtr)
     EffectVariable_Declare(RHIGpuBufferPtr)
+    EffectVariable_Declare(RHIShaderResourceViewPtr)
+    EffectVariable_Declare(RHIUnorderedAccessViewPtr)
 #undef EffectVariable_Declare
 
 protected:
@@ -101,9 +103,11 @@ private:
 #define EFFECT_VARIABLE_CONCRETE(name, type) \
     using EffectVariable##name          = EffectVariableConcrete<type>;
 
-EFFECT_VARIABLE_CONCRETE(RHISampler,        RHISamplerPtr)
-EFFECT_VARIABLE_CONCRETE(RHITexture,        RHITexturePtr)
-EFFECT_VARIABLE_CONCRETE(RHIGpuBuffer,   RHIGpuBufferPtr)
+EFFECT_VARIABLE_CONCRETE(RHISampler,                RHISamplerPtr)
+EFFECT_VARIABLE_CONCRETE(RHITexture,                RHITexturePtr)
+EFFECT_VARIABLE_CONCRETE(RHIGpuBuffer,              RHIGpuBufferPtr)
+EFFECT_VARIABLE_CONCRETE(RHIShaderResourceView,     RHIShaderResourceViewPtr)
+EFFECT_VARIABLE_CONCRETE(RHIUnorderedAccessView,    RHIUnorderedAccessViewPtr)
 
 #undef EFFECT_VARIABLE_CONCRETE
 

@@ -195,10 +195,18 @@ void Technique::CreateEffectVariable(Param& param)
     switch (param.dataType)
     {
         case EffectDataType::ConstantBuffer:
-        case EffectDataType::Buffer:
-        case EffectDataType::RWBuffer:
         {
             param.variable = MakeUniquePtr<EffectVariableRHIGpuBuffer>();
+            break;
+        }
+        case EffectDataType::Buffer:
+        {
+            param.variable = MakeUniquePtr<EffectVariableRHIShaderResourceView>();
+            break;
+        }
+        case EffectDataType::RWBuffer:
+        {
+            param.variable = MakeUniquePtr<EffectVariableRHIUnorderedAccessView>();
             break;
         }
         case EffectDataType::Texture:
@@ -452,20 +460,20 @@ SResult Technique::Commit()
             }
             case EffectDataType::Buffer:
             {
-                RHIGpuBufferPtr rb;
-                param.variable->Value(rb);
-                if (rb)
-                    rc.BindRHIGpuBuffer((ShaderType)stage, param.bindings[stage], rb.get(), param.name.c_str());
+                RHIShaderResourceViewPtr v;
+                param.variable->Value(v);
+                if (v)
+                    rc.BindRHISrv((ShaderType)stage, param.bindings[stage], v.get(), param.name.c_str());
                 else
                     LOG_WARNING("param %s has no resource binding", param.name.c_str());
                 break;
             }
             case EffectDataType::RWBuffer:
             {
-                RHIGpuBufferPtr rb;
-                param.variable->Value(rb);
-                if (rb)
-                    rc.BindRWRHIGpuBuffer((ShaderType)stage, param.bindings[stage], rb.get(), param.name.c_str());
+                RHIUnorderedAccessViewPtr v;
+                param.variable->Value(v);
+                if (v)
+                    rc.BindRHIUav((ShaderType)stage, param.bindings[stage], v.get(), param.name.c_str());
                 else
                     LOG_WARNING("param %s has no resource binding", param.name.c_str());
                 break;
@@ -554,13 +562,13 @@ void Technique::Uncommit()
                 break;
             }
             case EffectDataType::Buffer:
-            {
-                rc.BindRHIGpuBuffer((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
+            {                
+                rc.BindRHISrv((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
                 break;
             }
             case EffectDataType::RWBuffer:
             {
-                rc.BindRWRHIGpuBuffer((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
+                rc.BindRHIUav((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
                 break;
             }
             default:

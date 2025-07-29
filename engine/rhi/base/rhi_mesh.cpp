@@ -70,7 +70,7 @@ MorphInfo& RHIMesh::GetMorphInfo()
     {
         RHIContext& rc = m_pContext->RHIContextInstance();
         RHIGpuBufferData MorphTargetData(m_morphTargetRes._size, m_morphTargetRes._data);
-        RHIGpuBufferPtr MorphTargetBuffer = rc.CreateByteAddressBuffer((uint32_t)m_morphTargetRes._size, RESOURCE_FLAG_GPU_READ, &MorphTargetData);
+        RHIGpuBufferPtr MorphTargetBuffer = rc.CreateGpuBuffer((uint32_t)m_morphTargetRes._size, RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_RAW, 0, &MorphTargetData);
         m_morphTargetRes._morphInfo.render_buffer = MorphTargetBuffer;
         m_stMorphInfo = m_morphTargetRes._morphInfo;
     }
@@ -78,7 +78,7 @@ MorphInfo& RHIMesh::GetMorphInfo()
     {
         RHIContext& rc = m_pContext->RHIContextInstance();
         RHIGpuBufferData MorphTargetData(m_morphTargetRes._size, m_morphTargetRes._data);
-        RHIGpuBufferPtr MorphTargetBuffer = rc.CreateByteAddressBuffer((uint32_t)m_morphTargetRes._size, RESOURCE_FLAG_GPU_READ, &MorphTargetData);
+        RHIGpuBufferPtr MorphTargetBuffer = rc.CreateGpuBuffer((uint32_t)m_morphTargetRes._size, RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_RAW, 0, &MorphTargetData);
         m_morphTargetRes._morphInfo.render_buffer = MorphTargetBuffer;
         m_stMorphInfo.render_buffer = m_morphTargetRes._morphInfo.render_buffer;
         m_morphTargetRes._refreshRHIGpuBuffer = false;

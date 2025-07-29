@@ -138,14 +138,34 @@ protected:
     RHIGpuBufferPtr m_pRandomFloats = nullptr;
 
     RHIGpuBufferPtr m_pParticleCounters = nullptr;
+    RHIUnorderedAccessViewPtr m_pParticleCountersUav = nullptr;
+
     RHIGpuBufferPtr m_pParticleDeadIndices = nullptr;
+    RHIUnorderedAccessViewPtr m_pParticleDeadIndicesUav = nullptr;
+
     RHIGpuBufferPtr m_pParticleAliveIndices[2] = { nullptr };
+    RHIUnorderedAccessViewPtr m_pParticleAliveIndicesUav[2] = { nullptr };
+
     RHIGpuBufferPtr m_pParticleSortIndices = nullptr;
+    RHIShaderResourceViewPtr m_pParticleSortIndicesSrv = nullptr;
+    RHIUnorderedAccessViewPtr m_pParticleSortIndicesUav = nullptr;
+
     RHIGpuBufferPtr m_pParticleSortTempIndices = nullptr;
-    RHIGpuBufferPtr m_pParticleDatas = nullptr;    
+    RHIUnorderedAccessViewPtr m_pParticleSortTempIndicesUav = nullptr;
+
+    RHIGpuBufferPtr m_pParticleDatas = nullptr;
+    RHIShaderResourceViewPtr m_pParticleDatasSrv = nullptr;
+    RHIUnorderedAccessViewPtr m_pParticleDatasUav = nullptr;
+    
+
     RHIGpuBufferPtr m_pParticleDrawIndirectArgs = nullptr;
+    RHIUnorderedAccessViewPtr m_pParticleDrawIndirectArgsUav = nullptr;
+
     RHIGpuBufferPtr m_pParticleDispatchEmitIndirectArgs = nullptr;
+    RHIUnorderedAccessViewPtr m_pParticleDispatchEmitIndirectArgsUav = nullptr;
+
     RHIGpuBufferPtr m_pParticleDispatchSimulateIndirectArgs = nullptr;
+    RHIUnorderedAccessViewPtr m_pParticleDispatchSimulateIndirectArgsUav = nullptr;
 
     Technique*      m_pTechParticleInit = nullptr;
     Technique*      m_pTechParticleTickBegin = nullptr;

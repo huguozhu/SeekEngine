@@ -10,19 +10,18 @@ using ResourceFlags = uint64_t;
 
 #define RESOURCE_FLAG_NONE                  UINT64_C(0)
 
-#define RESOURCE_FLAG_CPU_READ              UINT64_C(0x0000000000000001)
-#define RESOURCE_FLAG_CPU_WRITE             UINT64_C(0x0000000000000002)
-#define RESOURCE_FLAG_GPU_READ              UINT64_C(0x0000000000000004)
-#define RESOURCE_FLAG_GPU_WRITE             UINT64_C(0x0000000000000008)
+#define RESOURCE_FLAG_CPU_READ              UINT64_C(0x0000000000000001)        // Copy data from gpu-buffer --> cpu-buffer
+#define RESOURCE_FLAG_CPU_WRITE             UINT64_C(0x0000000000000002)        // Copy data from cpu-buffer --> gpu-buffer
+#define RESOURCE_FLAG_GPU_READ              UINT64_C(0x0000000000000004)        // Shader Resource View
+#define RESOURCE_FLAG_GPU_WRITE             UINT64_C(0x0000000000000008)        // Unordered Access View
 
 #define RESOURCE_FLAG_UAV                   UINT64_C(0x0000000000000100)        // Unordered Access View
-#define RESOURCE_FLAG_GENERATE_MIPS         UINT64_C(0x0000000000000200)
-#define RESOURCE_FLAG_GPU_STRUCTURED        UINT64_C(0x0000000000000400)
-#define RESOURCE_FLAG_IMMUTABLE             UINT64_C(0x0000000000000800)
-#define RESOURCE_FLAG_DRAW_INDIRECT_ARGS    UINT64_C(0x0000000000001000)
-#define RESOURCE_FLAG_RAW                   UINT64_C(0x0000000000002000)
-#define RESOURCE_FLAG_APPEND                UINT64_C(0x0000000000004000)
-#define RESOURCE_FLAG_COUNTER               UINT64_C(0x0000000000008000)
+#define RESOURCE_FLAG_GENERATE_MIPS         UINT64_C(0x0000000000000200)        // Generate Mips
+#define RESOURCE_FLAG_GPU_STRUCTURED        UINT64_C(0x0000000000000400)        // HLSL: StructuredBuffer<xxx>
+#define RESOURCE_FLAG_DRAW_INDIRECT_ARGS    UINT64_C(0x0000000000001000)        // Used in Indirect Draw's
+#define RESOURCE_FLAG_RAW                   UINT64_C(0x0000000000002000)        // HLSL: RWByteAddressBuffer
+#define RESOURCE_FLAG_APPEND                UINT64_C(0x0000000000004000)        // HLSL: AppendStructuredBuffer<xxx> 
+#define RESOURCE_FLAG_COUNTER               UINT64_C(0x0000000000008000)        // HLSL: ConsumeStructuredBuffer<xxx> 
 
 struct RHIGpuBufferData
 {

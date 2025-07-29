@@ -7,6 +7,7 @@
 #include "rhi/base/rhi_texture.h"
 #include "rhi/base/rhi_program.h"
 #include "rhi/base/rhi_framebuffer.h"
+#include "rhi/base/rhi_render_view.h"
 
 #define SEEK_MACRO_FILE_UID 67     // this code is auto generated, don't touch it!!!
 
@@ -54,14 +55,15 @@ public: // virutal factory
     virtual RHITexturePtr           CreateTexture3D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) { return nullptr; }
     virtual RHITexturePtr           CreateTextureCube(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_data = {}) { return nullptr; }
 
-    virtual RHIGpuBufferPtr         CreateGpuBuffer(uint32_t size, ResourceFlags usage) = 0;
-    virtual RHIGpuBufferPtr         CreateConstantBuffer(uint32_t size, ResourceFlags flags) = 0;
+    virtual RHIGpuBufferPtr         CreateGpuBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_stride, RHIGpuBufferData* pData = nullptr) = 0;
+    virtual RHIGpuBufferPtr         CreateConstantBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData = nullptr) = 0;
     virtual RHIGpuBufferPtr         CreateStructuredBuffer  (uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData = nullptr) = 0;
-    virtual RHIGpuBufferPtr         CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData = nullptr) = 0;
     virtual RHIGpuBufferPtr         CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData) { return nullptr; }
-    virtual RHIGpuBufferPtr         CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData) { return nullptr; }
     virtual RHIGpuBufferPtr         CreateVertexBuffer(uint32_t size, RHIGpuBufferData* pData) = 0;
     virtual RHIGpuBufferPtr         CreateIndexBuffer(uint32_t size, RHIGpuBufferData* pData) = 0;
+
+    virtual RHIShaderResourceViewPtr CreateBufferSrv(RHIGpuBufferPtr const& buffer, PixelFormat format, uint32_t first_elem, uint32_t num_elems) = 0;
+    virtual RHIUnorderedAccessViewPtr CreateBufferUav(RHIGpuBufferPtr const& buffer, PixelFormat format, uint32_t first_elem, uint32_t num_elems) = 0;
 
 
     virtual RHIRenderTargetViewPtr  Create2DRenderTargetView(RHITexturePtr const& tex_2d,   uint32_t first_array_index = 0, uint32_t array_size = 1, uint32_t mip_level = 0) = 0;
@@ -111,8 +113,8 @@ public: // virutal factory
     RHIRenderStatePtr               GetRenderState(RenderStateDesc const& desc);
     
     virtual void                    BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* cbuffer, const char* name) = 0;
-    virtual void                    BindRHIGpuBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* buffer, const char* name) = 0;
-    virtual void                    BindRWRHIGpuBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* rw_buffer, const char* name) = 0;
+    virtual void                    BindRHISrv(ShaderType stage, uint32_t binding, const RHIShaderResourceView* srv, const char* name) = 0;
+    virtual void                    BindRHIUav(ShaderType stage, uint32_t binding, const RHIUnorderedAccessView* uav, const char* name) = 0;
     virtual void                    BindTexture(ShaderType stage, uint32_t binding, const RHITexture* texture, const char* name) = 0;
     virtual void                    BindRWTexture(ShaderType stage, uint32_t binding, const RHITexture* rw_texture, const char* name) = 0;
     virtual void                    BindSampler(ShaderType stage, uint32_t binding, const RHISampler* sampler, const char* name) = 0;

@@ -131,12 +131,12 @@ SResult ParticleComponent::InitShaders()
 SResult ParticleComponent::InitTextures()
 {
     RHITexture::Desc desc_color{ TextureType::Tex2D, GRADIENT_SAMPLES, 1, 1, 1, 1, 1,
-        PixelFormat::R8G8B8A8_UNORM, RESOURCE_FLAG_CPU_WRITE };
+        PixelFormat::R8G8B8A8_UNORM, RESOURCE_FLAG_CPU_WRITE| RESOURCE_FLAG_GPU_READ };
     m_pTexParticleColorOverLife = m_pContext->RHIContextInstance().CreateTexture2D(desc_color);
     this->UpdateTexture_ColorOverLife();
 
     RHITexture::Desc desc_size{ TextureType::Tex2D, GRADIENT_SAMPLES, 1, 1, 1, 1, 1,
-        PixelFormat::R32G32F, RESOURCE_FLAG_CPU_WRITE };
+        PixelFormat::R32G32F, RESOURCE_FLAG_CPU_WRITE | RESOURCE_FLAG_GPU_READ };
     m_pTexParticleSizeOverLife = m_pContext->RHIContextInstance().CreateTexture2D(desc_size);
     this->UpdateTexture_SizeOverLife();
     return S_Success;
@@ -223,7 +223,7 @@ SResult ParticleComponent::InitResource()
 {
     RHIContext& rc = m_pContext->RHIContextInstance();
 
-    m_pParticleInitParam            = rc.CreateConstantBuffer(sizeof(uint), RESOURCE_FLAG_CPU_WRITE);
+    m_pParticleInitParam            = rc.CreateConstantBuffer(sizeof(uint),                 RESOURCE_FLAG_CPU_WRITE);
     m_pParticleTickBeginParam       = rc.CreateConstantBuffer(sizeof(uint32_t),             RESOURCE_FLAG_CPU_WRITE);
     m_pParticleEmitParam            = rc.CreateConstantBuffer(sizeof(GpuEmitParam),         RESOURCE_FLAG_CPU_WRITE);    
     m_pParticleSimulateParam        = rc.CreateConstantBuffer(sizeof(GpuSimulateParam),     RESOURCE_FLAG_CPU_WRITE);
@@ -245,91 +245,115 @@ SResult ParticleComponent::InitResource()
     m_pParticleVertices->Update(&particle_vertices, sizeof(float4) * 6);
    
     uint32_t max_count = m_iMaxParticles;
-    m_pParticleDeadIndices = rc.CreateRWStructuredBuffer(max_count * sizeof(uint),
-        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE,
-        sizeof(uint));
-    m_pParticleAliveIndices[0] = rc.CreateRWStructuredBuffer(max_count * sizeof(uint),
-        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE,
-        sizeof(uint));
-    m_pParticleAliveIndices[1] = rc.CreateRWStructuredBuffer(max_count * sizeof(uint),
-        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE,
-        sizeof(uint));
-    uint32_t sort_capacity = to2power(max_count);
-    m_pParticleSortIndices = rc.CreateRWStructuredBuffer(sort_capacity * sizeof(SortInfo),
-        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE,
-        sizeof(SortInfo));
-    m_pParticleSortTempIndices = rc.CreateRWStructuredBuffer(sort_capacity * sizeof(SortInfo),
-        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE,
-        sizeof(SortInfo));
-    m_pParticleDatas = rc.CreateRWStructuredBuffer(max_count * sizeof(Particle),
-        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE,
-        sizeof(Particle));
-    m_pParticleCounters = rc.CreateRWStructuredBuffer(sizeof(ParticleCounters),
-        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE,
+    m_pParticleCounters = rc.CreateGpuBuffer(sizeof(ParticleCounters),
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_RAW,
         sizeof(ParticleCounters));
+    m_pParticleCountersUav = rc.CreateBufferUav(m_pParticleCounters, PixelFormat::Unknown, 0, sizeof(ParticleCounters) / 4);
 
-    m_pParticleDrawIndirectArgs = rc.CreateRWStructuredBuffer(sizeof(ParticleDrawArgs),
-        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS,
+    m_pParticleDeadIndices = rc.CreateGpuBuffer(max_count * sizeof(uint),
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_RAW,
+        sizeof(uint));
+    m_pParticleDeadIndicesUav = rc.CreateBufferUav(m_pParticleDeadIndices, PixelFormat::Unknown, 0, max_count);
+
+
+    m_pParticleAliveIndices[0] = rc.CreateGpuBuffer(max_count * sizeof(uint),
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_RAW,
+        sizeof(uint));
+    m_pParticleAliveIndices[1] = rc.CreateGpuBuffer(max_count * sizeof(uint),
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_RAW,
+        sizeof(uint));
+    m_pParticleAliveIndicesUav[0] = rc.CreateBufferUav(m_pParticleAliveIndices[0], PixelFormat::Unknown, 0, max_count);
+    m_pParticleAliveIndicesUav[1] = rc.CreateBufferUav(m_pParticleAliveIndices[1], PixelFormat::Unknown, 0, max_count);
+    
+    
+    uint32_t sort_capacity = to2power(max_count);
+    m_pParticleSortIndices = rc.CreateGpuBuffer(sort_capacity * sizeof(SortInfo),
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_RAW,
+        sizeof(SortInfo));
+    m_pParticleSortIndicesSrv = rc.CreateBufferSrv(m_pParticleSortIndices, PixelFormat::Unknown, 0, sort_capacity * sizeof(SortInfo) / 4);
+    m_pParticleSortIndicesUav = rc.CreateBufferUav(m_pParticleSortIndices, PixelFormat::Unknown, 0, sort_capacity * sizeof(SortInfo) / 4);
+    
+    
+    m_pParticleSortTempIndices = rc.CreateGpuBuffer(sort_capacity * sizeof(SortInfo),
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_RAW,
+        sizeof(SortInfo));
+    m_pParticleSortTempIndicesUav = rc.CreateBufferUav(m_pParticleSortTempIndices, PixelFormat::Unknown, 0, sort_capacity * sizeof(SortInfo) / 4);
+    
+    
+    m_pParticleDatas = rc.CreateGpuBuffer(max_count * sizeof(Particle),
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_RAW,
+        sizeof(Particle));
+    m_pParticleDatasSrv = rc.CreateBufferSrv(m_pParticleDatas, PixelFormat::Unknown, 0, max_count * sizeof(Particle) / 4);
+    m_pParticleDatasUav = rc.CreateBufferUav(m_pParticleDatas, PixelFormat::Unknown, 0, max_count * sizeof(Particle) / 4);
+
+
+    m_pParticleDrawIndirectArgs = rc.CreateGpuBuffer(sizeof(ParticleDrawArgs),
+        RESOURCE_FLAG_RAW | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS | RESOURCE_FLAG_UAV,
         sizeof(ParticleDrawArgs));
-    m_pParticleDispatchEmitIndirectArgs = rc.CreateRWStructuredBuffer(sizeof(DispatchArgs),
-        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS,
+    m_pParticleDrawIndirectArgsUav = rc.CreateBufferUav(m_pParticleDrawIndirectArgs, PixelFormat::Unknown, 0, sizeof(ParticleDrawArgs)/4);
+    
+    m_pParticleDispatchEmitIndirectArgs = rc.CreateGpuBuffer(sizeof(DispatchArgs),
+        RESOURCE_FLAG_RAW | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS | RESOURCE_FLAG_UAV,
         sizeof(DispatchArgs));
-    m_pParticleDispatchSimulateIndirectArgs = rc.CreateRWStructuredBuffer(sizeof(DispatchArgs),
-        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS,
+    m_pParticleDispatchEmitIndirectArgsUav = rc.CreateBufferUav(m_pParticleDispatchEmitIndirectArgs, PixelFormat::Unknown, 0, sizeof(DispatchArgs)/4);
+    
+    m_pParticleDispatchSimulateIndirectArgs = rc.CreateGpuBuffer(sizeof(DispatchArgs),
+        RESOURCE_FLAG_RAW | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS | RESOURCE_FLAG_UAV,
         sizeof(DispatchArgs));
+    m_pParticleDispatchSimulateIndirectArgsUav = rc.CreateBufferUav(m_pParticleDispatchSimulateIndirectArgs, PixelFormat::Unknown, 0, sizeof(DispatchArgs)/4);
 
     // Techs set Params
     m_pTechParticleInit->SetParam("CInitParam", m_pParticleInitParam);
-    m_pTechParticleInit->SetParam("dead_indices", m_pParticleDeadIndices);
-    m_pTechParticleInit->SetParam("particle_counters", m_pParticleCounters);
+    m_pTechParticleInit->SetParam("dead_indices", m_pParticleDeadIndicesUav);
+    m_pTechParticleInit->SetParam("particle_counters", m_pParticleCountersUav);
 
     m_pTechParticleTickBegin->SetParam("CAliveIndices", m_pParticleAliveIndicesParam);
     m_pTechParticleTickBegin->SetParam("CTickBeginParam", m_pParticleTickBeginParam);
-    m_pTechParticleTickBegin->SetParam("particle_counters", m_pParticleCounters);
-    m_pTechParticleTickBegin->SetParam("draw_args", m_pParticleDrawIndirectArgs);
-    m_pTechParticleTickBegin->SetParam("emit_dispatch_args", m_pParticleDispatchEmitIndirectArgs);
-    m_pTechParticleTickBegin->SetParam("simulate_dispatch_args", m_pParticleDispatchSimulateIndirectArgs);
+    m_pTechParticleTickBegin->SetParam("particle_counters", m_pParticleCountersUav);
+    m_pTechParticleTickBegin->SetParam("draw_args", m_pParticleDrawIndirectArgsUav);
+    m_pTechParticleTickBegin->SetParam("emit_dispatch_args", m_pParticleDispatchEmitIndirectArgsUav);
+    m_pTechParticleTickBegin->SetParam("simulate_dispatch_args", m_pParticleDispatchSimulateIndirectArgsUav);
 
     m_pTechParticleEmit->SetParam("CAliveIndices", m_pParticleAliveIndicesParam);
-    m_pTechParticleEmit->SetParam("particle_counters", m_pParticleCounters);
-    m_pTechParticleEmit->SetParam("dead_indices", m_pParticleDeadIndices);
+    m_pTechParticleEmit->SetParam("particle_counters", m_pParticleCountersUav);
+    m_pTechParticleEmit->SetParam("dead_indices", m_pParticleDeadIndicesUav);
     m_pTechParticleEmit->SetParam("CRandom_Floats", m_pRandomFloats);
-    m_pTechParticleEmit->SetParam("particle_datas", m_pParticleDatas);
+    m_pTechParticleEmit->SetParam("particle_datas", m_pParticleDatasUav);
     m_pTechParticleEmit->SetParam("CEmitParam", m_pParticleEmitParam);
 
-    m_pTechParticleSimulate->SetParam("particle_counters", m_pParticleCounters);
-    m_pTechParticleSimulate->SetParam("dead_indices", m_pParticleDeadIndices);
+    m_pTechParticleSimulate->SetParam("particle_counters", m_pParticleCountersUav);
+    m_pTechParticleSimulate->SetParam("dead_indices", m_pParticleDeadIndicesUav);
     m_pTechParticleSimulate->SetParam("CAliveIndices", m_pParticleAliveIndicesParam);
     m_pTechParticleSimulate->SetParam("CSimulateParam", m_pParticleSimulateParam);
-    m_pTechParticleSimulate->SetParam("particle_datas", m_pParticleDatas);
+    m_pTechParticleSimulate->SetParam("particle_datas", m_pParticleDatasUav);
     m_pTechParticleSimulate->SetParam("CRandom_Floats", m_pRandomFloats);
 
     m_pTechParticleCulling->SetParam("CCullingParam", m_pParticleCullingParam);
-    m_pTechParticleCulling->SetParam("sort_indices", m_pParticleSortIndices);
-    m_pTechParticleCulling->SetParam("particle_datas", m_pParticleDatas);
-    m_pTechParticleCulling->SetParam("particle_counters", m_pParticleCounters);
-    m_pTechParticleCulling->SetParam("draw_args", m_pParticleDrawIndirectArgs);
+    m_pTechParticleCulling->SetParam("sort_indices", m_pParticleSortIndicesUav);
+    m_pTechParticleCulling->SetParam("particle_datas", m_pParticleDatasSrv);
+    m_pTechParticleCulling->SetParam("particle_counters", m_pParticleCountersUav);
+    m_pTechParticleCulling->SetParam("draw_args", m_pParticleDrawIndirectArgsUav);
     m_pTechParticleCulling->SetParam("size_over_life_tex", m_pTexParticleSizeOverLife);
 
-    m_pTechParticlePreSort->SetParam("particle_counters", m_pParticleCounters);
-    m_pTechParticlePreSort->SetParam("sort_indices", m_pParticleSortIndices);
+    m_pTechParticlePreSort->SetParam("particle_counters", m_pParticleCountersUav);
+    m_pTechParticlePreSort->SetParam("sort_indices", m_pParticleSortIndicesUav);
 
-    m_pTechParticleBitonicSort->SetParam("particle_counters", m_pParticleCounters);
-    m_pTechParticleBitonicSort->SetParam("sort_indices", m_pParticleSortIndices);
+    m_pTechParticleBitonicSort->SetParam("particle_counters", m_pParticleCountersUav);
+    m_pTechParticleBitonicSort->SetParam("sort_indices", m_pParticleSortIndicesUav);
     m_pTechParticleBitonicSort->SetParam("CSortParam", m_pParticleSortParam);
 
     m_pTechParticleSortMatrixTranspose->SetParam("CSortParam", m_pParticleSortParam);
 
     m_pTechParticleRenderNoTex->SetParam("CParticleRenderParam", m_pParticleRenderParam);
-    m_pTechParticleRenderNoTex->SetParam("particle_datas", m_pParticleDatas);
-    m_pTechParticleRenderNoTex->SetParam("sort_indices", m_pParticleSortIndices);
+    m_pTechParticleRenderNoTex->SetParam("particle_datas", m_pParticleDatasSrv);
+    m_pTechParticleRenderNoTex->SetParam("sort_indices", m_pParticleSortIndicesSrv);
     m_pTechParticleRenderNoTex->SetParam("CParticleVertices", m_pParticleVertices);
     m_pTechParticleRenderNoTex->SetParam("color_over_life_tex", m_pTexParticleColorOverLife);
     m_pTechParticleRenderNoTex->SetParam("size_over_life_tex", m_pTexParticleSizeOverLife);
 
     m_pTechParticleRender->SetParam("CParticleRenderParam", m_pParticleRenderParam);
-    m_pTechParticleRender->SetParam("particle_datas", m_pParticleDatas);
-    m_pTechParticleRender->SetParam("sort_indices", m_pParticleSortIndices);
+    m_pTechParticleRender->SetParam("particle_datas", m_pParticleDatasSrv);
+    m_pTechParticleRender->SetParam("sort_indices", m_pParticleSortIndicesSrv);
     m_pTechParticleRender->SetParam("CParticleVertices", m_pParticleVertices);
     m_pTechParticleRender->SetParam("particle_tex", m_Param.particle_tex);
     m_pTechParticleRender->SetParam("color_over_life_tex", m_pTexParticleColorOverLife);
@@ -357,6 +381,7 @@ SResult ParticleComponent::TickBegin(float delta_time)
     rc.BeginComputePass({ "ParticleTickBegin" });
     m_pTechParticleTickBegin->Dispatch(1, 1, 1);
     rc.EndComputePass();
+    //SelectDebugInfo();
     return S_Success;
 }
 SResult ParticleComponent::EmitParticles()
@@ -364,7 +389,7 @@ SResult ParticleComponent::EmitParticles()
     GpuEmitParam param;
     this->FillGpuEmitParam(&param);
     m_pParticleEmitParam->Update(&param, sizeof(GpuEmitParam));   
-    m_pTechParticleEmit->SetParam("alive_pre_simulate_indices", m_pParticleAliveIndices[m_iPreSimIndex]);
+    m_pTechParticleEmit->SetParam("alive_pre_simulate_indices", m_pParticleAliveIndicesUav[m_iPreSimIndex]);
 
     RHIContext& rc = m_pContext->RHIContextInstance();
     rc.BeginComputePass({"ParticleEmit"});
@@ -377,8 +402,8 @@ SResult ParticleComponent::SimulateParticles(float delta_time)
     GpuSimulateParam param = { 0 };
     this->FillSimulateParam(&param, delta_time);
     m_pParticleSimulateParam->Update(&param, sizeof(GpuSimulateParam));    
-    m_pTechParticleSimulate->SetParam("alive_pre_simulate_indices", m_pParticleAliveIndices[m_iPreSimIndex]);
-    m_pTechParticleSimulate->SetParam("alive_post_simulate_indices", m_pParticleAliveIndices[m_iPostSimIndex]);    
+    m_pTechParticleSimulate->SetParam("alive_pre_simulate_indices", m_pParticleAliveIndicesUav[m_iPreSimIndex]);
+    m_pTechParticleSimulate->SetParam("alive_post_simulate_indices", m_pParticleAliveIndicesUav[m_iPostSimIndex]);
 
     RHIContext& rc = m_pContext->RHIContextInstance();
     rc.BeginComputePass({"ParticleSimulate"});
@@ -395,7 +420,7 @@ SResult ParticleComponent::CullingParticles()
     float4x4 const& proj = pCam->GetProjMatrix().Transpose();
     GpuCullingParam param{ view, proj };
     m_pParticleCullingParam->Update(&param, sizeof(GpuCullingParam));
-    m_pTechParticleCulling->SetParam("alive_post_simulate_indices", m_pParticleAliveIndices[m_iPostSimIndex]);
+    m_pTechParticleCulling->SetParam("alive_post_simulate_indices", m_pParticleAliveIndicesUav[m_iPostSimIndex]);
 
     RHIContext& rc = m_pContext->RHIContextInstance();
     rc.BeginComputePass({"ParticleCulling"});
@@ -445,13 +470,13 @@ SResult ParticleComponent::SortParticles()
         m_pParticleSortParam->Update(&param, sizeof(GpuSortParam));
 
         // Step1:        
-        m_pTechParticleSortMatrixTranspose->SetParam("sort_data_input", m_pParticleSortIndices);
-        m_pTechParticleSortMatrixTranspose->SetParam("sort_data_output", m_pParticleSortTempIndices);
+        m_pTechParticleSortMatrixTranspose->SetParam("sort_data_input", m_pParticleSortIndicesUav);
+        m_pTechParticleSortMatrixTranspose->SetParam("sort_data_output", m_pParticleSortTempIndicesUav);
         m_pTechParticleSortMatrixTranspose->Dispatch(matrix_width / TRANSPOSE_BLOCK_SIZE,
             matrix_height / TRANSPOSE_BLOCK_SIZE, 1);
         
         // Step2: sort temp datas
-        m_pTechParticleBitonicSort->SetParam("sort_indices", m_pParticleSortTempIndices);
+        m_pTechParticleBitonicSort->SetParam("sort_indices", m_pParticleSortTempIndicesUav);
         rc.BeginComputePass({ "ParticleBitonicSort" });
         m_pTechParticleBitonicSort->Dispatch(size / BITONIC_BLOCK_SIZE, 1, 1);
         rc.EndComputePass();
@@ -459,8 +484,8 @@ SResult ParticleComponent::SortParticles()
         // Step3: transpose datas to SortIndices
         param = { matrix_width, level, matrix_width, matrix_height };
         m_pParticleSortParam->Update(&param, sizeof(GpuSortParam));
-        m_pTechParticleSortMatrixTranspose->SetParam("sort_data_input", m_pParticleSortTempIndices);
-        m_pTechParticleSortMatrixTranspose->SetParam("sort_data_output", m_pParticleSortIndices);
+        m_pTechParticleSortMatrixTranspose->SetParam("sort_data_input", m_pParticleSortTempIndicesUav);
+        m_pTechParticleSortMatrixTranspose->SetParam("sort_data_output", m_pParticleSortIndicesUav);
 
         rc.BeginComputePass({ "ParticleSortMatrixTranspose" });
         m_pTechParticleSortMatrixTranspose->Dispatch(matrix_width / TRANSPOSE_BLOCK_SIZE,
@@ -468,7 +493,7 @@ SResult ParticleComponent::SortParticles()
         rc.EndComputePass();
 
         // Step4: sort 
-        m_pTechParticleBitonicSort->SetParam("sort_indices", m_pParticleSortIndices);
+        m_pTechParticleBitonicSort->SetParam("sort_indices", m_pParticleSortIndicesUav);
         rc.BeginComputePass({ "ParticleBitonicSort" });
         m_pTechParticleBitonicSort->Dispatch(size / BITONIC_BLOCK_SIZE, 1, 1); 
         rc.EndComputePass();
@@ -683,7 +708,7 @@ void ParticleComponent::RegisterParticleCallback(ParticleCallback cb, void* user
 }
 void ParticleComponent::SelectDebugInfo()
 {
-    ParticleCounters counters = { 0 };
+    ParticleCounters counters = { 1 };
     BufferPtr buf1 = MakeSharedPtr<Buffer>(m_pParticleCounters->GetSize(), (uint8_t*)&counters);
     m_pParticleCounters->CopyBack(buf1);
 
@@ -703,9 +728,9 @@ void ParticleComponent::SelectDebugInfo()
     BufferPtr buf5 = MakeSharedPtr<Buffer>(m_pParticleDeadIndices->GetSize(), (uint8_t*)dead_indices);
     m_pParticleDeadIndices->CopyBack(buf5);
 
-    //ParticleDrawArgs arg = { 0 };
-    //BufferPtr buf6 = MakeSharedPtr<Buffer>(m_pParticleDrawIndirectArgs->GetSize(), (uint8_t*)&arg);
-    //m_pParticleDrawIndirectArgs->CopyBack(buf6);
+    ParticleDrawArgs arg = { 0 };
+    BufferPtr buf6 = MakeSharedPtr<Buffer>(m_pParticleDrawIndirectArgs->GetSize(), (uint8_t*)&arg);
+    m_pParticleDrawIndirectArgs->CopyBack(buf6);
 
     //DispatchArgs dis0 = { 0 };
     //BufferPtr buf7 = MakeSharedPtr<Buffer>(m_pParticleDispatchEmitIndirectArgs->GetSize(), (uint8_t*)&dis0);

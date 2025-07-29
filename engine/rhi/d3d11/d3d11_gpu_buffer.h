@@ -8,10 +8,10 @@ SEEK_NAMESPACE_BEGIN
 
 enum class GpuBufferType : uint32_t
 {
-    COMMON_BUFFER,  
-    VERTEX_BUFFER,  
-    INDEX_BUFFER,   
-    CONSTANT_BUFFER,
+    COMMON_BUFFER   = 0,  
+    VERTEX_BUFFER   = D3D11_BIND_VERTEX_BUFFER,
+    INDEX_BUFFER    = D3D11_BIND_INDEX_BUFFER,
+    CONSTANT_BUFFER = D3D11_BIND_CONSTANT_BUFFER,
 };
 
 /******************************************************************************
@@ -32,13 +32,15 @@ public:
 
     ID3D11Buffer* GetD3DBuffer() { return m_pD3DBuffer.Get(); }
 
-    ID3D11ShaderResourceView* GetD3DSrv(uint32_t offset = 0, int32_t size = -1);
-    ID3D11UnorderedAccessView* GetD3DUav(uint32_t offset = 0, int32_t size = -1);
+    ID3D11ShaderResourceView* GetD3DSrv(PixelFormat format, uint32_t elem_offset, uint32_t num_elems);
+    ID3D11UnorderedAccessView* GetD3DUav(PixelFormat format, uint32_t elem_offset, uint32_t num_elems);
 
 protected:
-    virtual SResult FillBufferDesc(D3D11_BUFFER_DESC& desc);
+    void FillStageBufferDesc(D3D11_BUFFER_DESC& desc);
+    virtual SResult FillBufferDesc(D3D11_BUFFER_DESC& desc);    
     virtual SResult FillSrvDesc(D3D11_SHADER_RESOURCE_VIEW_DESC& desc);
     virtual SResult FillUavDesc(D3D11_UNORDERED_ACCESS_VIEW_DESC& desc);
+    
 
 protected:
     ID3D11BufferPtr m_pD3DBuffer = nullptr;

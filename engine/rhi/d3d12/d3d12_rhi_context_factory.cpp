@@ -54,17 +54,9 @@ RHIGpuBufferPtr D3D12Context::CreateStructuredBuffer(uint32_t size, ResourceFlag
 { 
     return nullptr; 
 }
-RHIGpuBufferPtr D3D12Context::CreateRWStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData)
-{ 
-    return nullptr; 
-}
 RHIGpuBufferPtr D3D12Context::CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData)
 { 
     return nullptr;
-}
-RHIGpuBufferPtr D3D12Context::CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData)
-{
-    return nullptr; 
 }
 RHIGpuBufferPtr D3D12Context::CreateVertexBuffer(uint32_t size, RHIGpuBufferData* pData)
 { 

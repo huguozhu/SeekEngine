@@ -81,15 +81,18 @@ SResult DeferredShadingRenderer::Init()
     }
     m_pSsaoSampleKernelCBuffer  = rc.CreateConstantBuffer(sizeof(ssao_kernels[0]) * ssao_kernels.size(), RESOURCE_FLAG_CPU_WRITE);
     m_pSsaoParamCBuffer         = rc.CreateConstantBuffer(sizeof(SsaoParam), RESOURCE_FLAG_CPU_WRITE);
-    m_pLightInfoCBuffer         = rc.CreateStructuredBuffer(sizeof(LightInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_CPU_WRITE, sizeof(LightInfo), nullptr);
-    m_pLightCullingInfoCBuffer  = rc.CreateStructuredBuffer(sizeof(LightCullingInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_CPU_WRITE, sizeof(LightCullingInfo), nullptr);
+    m_pLightInfoCBuffer         = rc.CreateGpuBuffer(sizeof(LightInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_CPU_WRITE | RESOURCE_FLAG_RAW, sizeof(LightInfo), nullptr);
+    m_pLightInfoSrv             = rc.CreateBufferSrv(m_pLightInfoCBuffer,PixelFormat::Unknown,0, sizeof(LightInfo) * MAX_DEFERRED_LIGHTS_NUM /4);
+    m_pLightCullingInfoCBuffer  = rc.CreateConstantBuffer(sizeof(LightCullingInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_CPU_WRITE, nullptr);
     m_pDeferredLightingInfoCBuffer = rc.CreateConstantBuffer(sizeof(DeferredLightingInfo), RESOURCE_FLAG_CPU_WRITE);
 
     if (use_tile_culling)
     {
         uint32_t tile_width = (w + TILE_SIZE - 1) / TILE_SIZE;
         uint32_t tile_height = (h + TILE_SIZE - 1) / TILE_SIZE;
-        m_pTileInfoBuffer = rc.CreateRWByteAddressBuffer(sizeof(TileInfo) * tile_width * tile_height, RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV, nullptr);
+        m_pTileInfoBuffer = rc.CreateGpuBuffer(sizeof(TileInfo) * tile_width * tile_height, RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_RAW, sizeof(TileInfo),  nullptr);
+        m_pTileInfoSrv = rc.CreateBufferSrv(m_pTileInfoBuffer, PixelFormat::Unknown, 0, sizeof(TileInfo) * tile_width * tile_height / 4);
+        m_pTileInfoUav = rc.CreateBufferUav(m_pTileInfoBuffer, PixelFormat::Unknown, 0, sizeof(TileInfo) * tile_width * tile_height / 4);
     }
 
     // Step2: Textures
@@ -213,15 +216,15 @@ SResult DeferredShadingRenderer::Init()
         m_pTileCullingTech->SetParam("cb_CameraInfo", m_pCameraInfoCBuffer);
         m_pTileCullingTech->SetParam("cb_LightCullingCSParam", m_pLightCullingInfoCBuffer);
 		m_pTileCullingTech->SetParam("depth", m_pSceneDepthCopy);
-        m_pTileCullingTech->SetParam("light_infos", m_pLightInfoCBuffer);
-        m_pTileCullingTech->SetParam("tile_infos_rw", m_pTileInfoBuffer);
+        m_pTileCullingTech->SetParam("light_infos", m_pLightInfoSrv);
+        m_pTileCullingTech->SetParam("tile_infos_rw", m_pTileInfoUav);
 
         m_pLightingTech_HasShadow_TileCulling = effect.GetTechnique(szTechName_DeferredLighting, { {"HAS_SHADOW" , "1"}, {"TILE_CULLING", "1"} });
         m_pLightingTech_HasShadow_TileCulling->SetParam("cb_DeferredLightingVSInfo", m_pDeferredLightingInfoCBuffer);
         m_pLightingTech_HasShadow_TileCulling->SetParam("cb_DeferredLightingPSInfo", m_pDeferredLightingInfoCBuffer);
         m_pLightingTech_HasShadow_TileCulling->SetParam("cb_CameraInfo", m_pCameraInfoCBuffer);
-        m_pLightingTech_HasShadow_TileCulling->SetParam("tile_infos", m_pTileInfoBuffer);
-        m_pLightingTech_HasShadow_TileCulling->SetParam("light_infos", m_pLightInfoCBuffer);
+        m_pLightingTech_HasShadow_TileCulling->SetParam("tile_infos", m_pTileInfoSrv);
+        m_pLightingTech_HasShadow_TileCulling->SetParam("light_infos", m_pLightInfoSrv);
 
         m_pLightingTech_HasShadow_TileCulling->SetParam("gbuffer0", m_pGBufferColor0);
         m_pLightingTech_HasShadow_TileCulling->SetParam("gbuffer1", m_pGBufferColor1);
@@ -234,7 +237,7 @@ SResult DeferredShadingRenderer::Init()
         m_pLightingTech_HasShadow->SetParam("cb_DeferredLightingVSInfo", m_pDeferredLightingInfoCBuffer);
         m_pLightingTech_HasShadow->SetParam("cb_DeferredLightingPSInfo", m_pDeferredLightingInfoCBuffer);
         m_pLightingTech_HasShadow->SetParam("cb_CameraInfo", m_pCameraInfoCBuffer);
-        m_pLightingTech_HasShadow->SetParam("light_infos", m_pLightInfoCBuffer);
+        m_pLightingTech_HasShadow->SetParam("light_infos", m_pLightInfoSrv);
         m_pLightingTech_HasShadow->SetParam("gbuffer0", m_pGBufferColor0);
         m_pLightingTech_HasShadow->SetParam("gbuffer1", m_pGBufferColor1);
         m_pLightingTech_HasShadow->SetParam("depth_tex", m_pSceneDepthCopy);
@@ -245,7 +248,7 @@ SResult DeferredShadingRenderer::Init()
         m_pLightingTech_NoShadow->SetParam("cb_DeferredLightingVSInfo", m_pDeferredLightingInfoCBuffer);
         m_pLightingTech_NoShadow->SetParam("cb_DeferredLightingPSInfo", m_pDeferredLightingInfoCBuffer);
         m_pLightingTech_NoShadow->SetParam("cb_CameraInfo", m_pCameraInfoCBuffer);
-        m_pLightingTech_NoShadow->SetParam("light_infos", m_pLightInfoCBuffer);
+        m_pLightingTech_NoShadow->SetParam("light_infos", m_pLightInfoSrv);
         m_pLightingTech_NoShadow->SetParam("gbuffer0", m_pGBufferColor0);
         m_pLightingTech_NoShadow->SetParam("gbuffer1", m_pGBufferColor1);
         m_pLightingTech_NoShadow->SetParam("depth_tex", m_pSceneDepthCopy);

@@ -56,14 +56,15 @@ public:
     RHITexturePtr       CreateTexture3D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) override;
     RHITexturePtr       CreateTextureCube(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_data = {}) override;
 
-    RHIGpuBufferPtr  CreateGpuBuffer(uint32_t size, ResourceFlags usage) override;
-    RHIGpuBufferPtr  CreateConstantBuffer(uint32_t size, ResourceFlags usage) override;
-    RHIGpuBufferPtr  CreateStructuredBuffer  (uint32_t size, ResourceFlags usage, uint32_t structure_byte_stride, RHIGpuBufferData* pData) override;
-    RHIGpuBufferPtr  CreateRWStructuredBuffer(uint32_t size, ResourceFlags usage, uint32_t structure_byte_stride, RHIGpuBufferData* pData) override;
+    RHIGpuBufferPtr  CreateGpuBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_stride, RHIGpuBufferData* pData = nullptr) override;
+    RHIGpuBufferPtr  CreateConstantBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData = nullptr) override;
+    RHIGpuBufferPtr  CreateStructuredBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_byte_stride, RHIGpuBufferData* pData) override;
     RHIGpuBufferPtr  CreateByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData) override;
-    RHIGpuBufferPtr  CreateRWByteAddressBuffer(uint32_t size, ResourceFlags flags, RHIGpuBufferData* pData) override;
     RHIGpuBufferPtr  CreateVertexBuffer(uint32_t size, RHIGpuBufferData* pData) override;
     RHIGpuBufferPtr  CreateIndexBuffer(uint32_t size, RHIGpuBufferData* pData) override;    
+
+    RHIShaderResourceViewPtr CreateBufferSrv(RHIGpuBufferPtr const& buffer, PixelFormat format, uint32_t first_elem, uint32_t num_elems) override;
+    RHIUnorderedAccessViewPtr CreateBufferUav(RHIGpuBufferPtr const& buffer, PixelFormat format, uint32_t first_elem, uint32_t num_elems) override;
 
     RHIRenderTargetViewPtr Create2DRenderTargetView(RHITexturePtr const& tex_2d, uint32_t first_array_index = 0, uint32_t array_size = 1, uint32_t mip_level = 0) override;
     RHIRenderTargetViewPtr Create2DRenderTargetView(RHITexturePtr const& tex_cube, uint32_t array_index, CubeFaceType face, uint32_t mip_level) override;
@@ -98,8 +99,8 @@ public:
     void                EndCapture() override;
 
     void                BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* cbuffer, const char* name) override;
-    void                BindRHIGpuBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* buffer, const char* name) override;
-    void                BindRWRHIGpuBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* rw_buffer, const char* name) override;
+    void                BindRHISrv(ShaderType stage, uint32_t binding, const RHIShaderResourceView* srv, const char* name) override;
+    void                BindRHIUav(ShaderType stage, uint32_t binding, const RHIUnorderedAccessView* uav, const char* name) override;
     void                BindTexture(ShaderType stage, uint32_t binding, const  RHITexture* texture, const char* name) override;
     void                BindRWTexture(ShaderType stage, uint32_t binding, const  RHITexture* rw_texture, const char* name) override;
     void                BindSampler(ShaderType stage, uint32_t binding, const RHISampler* sampler, const char* name) override;

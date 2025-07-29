@@ -8,6 +8,7 @@
 #include "rhi/d3d11/d3d11_framebuffer.h"
 #include "rhi/d3d11/d3d11_translate.h"
 #include "rhi/d3d11/d3d11_texture.h"
+#include "rhi/d3d11/d3d11_render_view.h"
 #include "rhi/d3d_common/d3d_adapter.h"
 #include "rhi/d3d_common/d3d_common_translate.h"
 
@@ -626,19 +627,16 @@ void D3D11Context::BindConstantBuffer(ShaderType stage, uint32_t binding, const 
     ID3D11Buffer* d3d_buffer = cbuffer == nullptr ? nullptr : ((D3D11GpuBuffer*)cbuffer)->GetD3DBuffer();
     SetD3DConstantBuffers(stage, binding, 1, &d3d_buffer);
 }
-
-void D3D11Context::BindRHIGpuBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* buffer, const char* name)
+void D3D11Context::BindRHISrv(ShaderType stage, uint32_t binding, const RHIShaderResourceView* srv, const char* name)
 {
-    ID3D11ShaderResourceView* srv = buffer == nullptr ? nullptr : ((D3D11GpuBuffer*)buffer)->GetD3DSrv();
-    SetD3DShaderResourceViews(stage, binding, 1, &srv);
+    ID3D11ShaderResourceView* v = srv == nullptr ? nullptr : ((D3D11ShaderResourceView*)srv)->GetD3DSrv();
+    SetD3DShaderResourceViews(stage, binding, 1, &v);
 }
-
-void D3D11Context::BindRWRHIGpuBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* rw_buffer, const char* name)
+void D3D11Context::BindRHIUav(ShaderType stage, uint32_t binding, const RHIUnorderedAccessView* uav, const char* name)
 {
-    ID3D11UnorderedAccessView* uav = rw_buffer == nullptr ? nullptr : ((D3D11GpuBuffer*)rw_buffer)->GetD3DUav();
-    SetD3DUnorderedAccessViews(stage, binding, 1, &uav);
+    ID3D11UnorderedAccessView* v = uav == nullptr ? nullptr : ((D3D11UnorderedAccessView*)uav)->GetD3DUav();
+    SetD3DUnorderedAccessViews(stage, binding, 1, &v);
 }
-
 void D3D11Context::BindTexture(ShaderType stage, uint32_t binding, const RHITexture* texture, const char* name)
 {
     ID3D11ShaderResourceView* srv = texture == nullptr ? nullptr : ((D3D11Texture*)texture)->GetD3DSrv().Get();
