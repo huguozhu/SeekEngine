@@ -3,6 +3,7 @@
 #include "rhi/d3d12/d3d12_rhi_context.h"
 #include "rhi/d3d12/d3d12_resource.h"
 #include "rhi/d3d12/d3d12_texture.h"
+#include "rhi/d3d12/d3d12_gpu_buffer.h"
 #include "kernel/context.h"
 
 SEEK_NAMESPACE_BEGIN
@@ -286,8 +287,7 @@ D3D12TextureSrv::D3D12TextureSrv(Context* context, RHITexturePtr const& texture,
     m_Param.num_arrays = array_size;
     m_Param.mip_level = first_level;
     m_iNumMipLevels = num_levels;
-
-    m_pSrvSrc = texture.get();
+    this->GetD3DSrv();
 }
 D3D12Srv* D3D12TextureSrv::GetD3DSrv()
 {
@@ -298,7 +298,25 @@ D3D12Srv* D3D12TextureSrv::GetD3DSrv()
     return m_pSrvHandle.get();
 }
 
+D3D12BufferSrv::D3D12BufferSrv(Context* context, RHIGpuBufferPtr const& gbuffer, PixelFormat format, uint32_t first_elem, uint32_t num_elems)
+    :D3D12ShaderResourceView(context)
+{
+    m_Param.pixel_format = format;
 
+    // for buffer
+    m_Param.buffer = gbuffer;
+    m_Param.first_elem = first_elem;
+    m_Param.num_elem = num_elems;
+    this->GetD3DSrv();
+}
+D3D12Srv* D3D12BufferSrv::GetD3DSrv()
+{
+    if (!m_pSrvHandle && m_Param.buffer)
+    {
+        m_pSrvHandle = ((D3D12GpuBuffer*)m_Param.buffer.get())->GetD3DSrv(m_Param.pixel_format, m_Param.first_elem, m_Param.num_elem);
+    }
+    return m_pSrvHandle.get();
+}
 /******************************************************************************
 * D3D12 Uav
 *******************************************************************************/
@@ -343,5 +361,24 @@ void D3D12UnorderedAccessView::Clear(uint4 const& v)
     rc.DeallocDynamicCbvSrvUavDescBlock(std::move(cbv_srv_uav_desc_block));
 }
 
+
+D3D12BufferUav::D3D12BufferUav(Context* context, RHIGpuBufferPtr const& buf, PixelFormat format, uint32_t first_elem, uint32_t num_elems)
+    :D3D12UnorderedAccessView(context, std::static_pointer_cast<D3D12Resource>(std::static_pointer_cast<D3D12GpuBuffer>(buf)), 0, 1)
+{
+    m_Param.pixel_format = format;
+    // for buffer
+    m_Param.buffer = buf;
+    m_Param.first_elem = first_elem;
+    m_Param.num_elem = num_elems;
+    this->GetD3DUav();
+}
+D3D12Uav* D3D12BufferUav::GetD3DUav()
+{
+    if(!m_pUavHandle && m_Param.buffer)
+    {
+        m_pUavHandle = ((D3D12GpuBuffer*)m_Param.buffer.get())->GetD3DUav(m_Param.pixel_format, m_Param.first_elem, m_Param.num_elem);
+    }
+    return m_pUavHandle.get();
+}
 
 SEEK_NAMESPACE_END

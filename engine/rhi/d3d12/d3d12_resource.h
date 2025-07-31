@@ -14,13 +14,13 @@ public:
     ~D3D12Resource();
 
     ID3D12Resource* GetD3DResource() const { return m_pD3dResource.Get(); }
-    uint32_t GetD3DResourceOffset() const { return m_iResourceOffset; }
+    uint32_t GetD3DResourceOffset() const { return m_iD3dResourceOffset; }
     void UpdateResourceBarrier(ID3D12GraphicsCommandList* cmd_list, uint32_t sub_res, D3D12_RESOURCE_STATES target_state);
 
 protected:
     D3D12Context* m_pRHIContext = nullptr;
     ID3D12ResourcePtr m_pD3dResource;
-    uint32_t m_iResourceOffset;
+    uint32_t m_iD3dResourceOffset;
 
     std::vector<D3D12_RESOURCE_STATES> m_vCurrStates;
 };

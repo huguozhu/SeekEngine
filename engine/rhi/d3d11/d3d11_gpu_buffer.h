@@ -26,9 +26,9 @@ public:
         : RHIGpuBuffer(context, size, flags, structure_stride), m_pD3DBuffer(resource) {}
     virtual ~D3D11GpuBuffer();
 
-    virtual SResult Create(RHIGpuBufferData* buffer_data) override;
-    virtual SResult Update(RHIGpuBufferData* buffer_data) override;
-    virtual SResult CopyBack(BufferPtr buffer, int start=0, int length=-1) override;
+    SResult Create(RHIGpuBufferData* buffer_data) override;
+    SResult Update(RHIGpuBufferData* buffer_data) override;
+    SResult CopyBack(BufferPtr buffer, int start=0, int length=-1) override;
 
     ID3D11Buffer* GetD3DBuffer() { return m_pD3DBuffer.Get(); }
 

@@ -161,7 +161,6 @@ public:
 
 protected:
     mutable D3D12SrvPtr m_pSrvHandle;
-    void* m_pSrvSrc;
 };
 using D3D12ShaderResourceViewPtr = std::shared_ptr<D3D12ShaderResourceView>;
 
@@ -172,6 +171,14 @@ public:
     D3D12Srv* GetD3DSrv() override;
 };
 
+class D3D12BufferSrv final : public D3D12ShaderResourceView
+{
+public:
+    D3D12BufferSrv(Context* context, RHIGpuBufferPtr const& gbuffer, PixelFormat format, uint32_t first_elem, uint32_t num_elems);
+    D3D12Srv* GetD3DSrv() override;
+};
+
+
 /******************************************************************************
 * D3D12 Uav
 *******************************************************************************/
@@ -179,7 +186,7 @@ class D3D12UnorderedAccessView : public RHIUnorderedAccessView
 {
 public:
     D3D12UnorderedAccessView(Context* context, D3D12ResourcePtr const& src, uint32_t first_subres, uint32_t num_subres);
-    virtual D3D12Uav* GetD3DUav() const = 0;
+    virtual D3D12Uav* GetD3DUav() = 0;
 
     void Clear(float4 const& v) override;
     void Clear(uint4 const& v) override;
@@ -194,4 +201,11 @@ protected:
 };
 using D3D12UnorderedAccessViewPtr = std::shared_ptr<D3D12UnorderedAccessView>;
 
+
+class D3D12BufferUav final : public D3D12UnorderedAccessView
+{
+public:
+    D3D12BufferUav(Context* context, RHIGpuBufferPtr const& buf, PixelFormat format, uint32_t first_elem, uint32_t num_elems);
+    D3D12Uav* GetD3DUav() override;
+};
 SEEK_NAMESPACE_END

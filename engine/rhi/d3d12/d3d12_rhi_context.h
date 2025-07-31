@@ -82,9 +82,11 @@ public:
     void                    Uninit() override;
     SResult                 CheckCapabilitySetSupport() override;    
     SResult                 AttachNativeWindow(std::string const& name, void* native_wnd = nullptr) override;
+
+
+
     RHIMeshPtr              CreateMesh() override;
-    RHIShaderPtr            CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) override;
-   
+    RHIShaderPtr            CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) override;   
     RHITexturePtr           CreateTexture2D(ID3D12ResourcePtr const& tex);
     RHITexturePtr           CreateTexture2D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) override;
     RHITexturePtr           CreateTexture3D(const RHITexture::Desc& tex_desc, std::span<BitmapBufferPtr> init_datas = {}) override;
@@ -95,18 +97,18 @@ public:
     RHIGpuBufferPtr         CreateVertexBuffer(uint32_t size, RHIGpuBufferData* pData) override;
     RHIGpuBufferPtr         CreateIndexBuffer(uint32_t size, RHIGpuBufferData* pData) override;
 
-    RHIShaderResourceViewPtr CreateBufferSrv(RHIGpuBufferPtr const& buffer, PixelFormat format, uint32_t first_elem, uint32_t num_elems) override { return nullptr; }
-    RHIUnorderedAccessViewPtr CreateBufferUav(RHIGpuBufferPtr const& buffer, PixelFormat format, uint32_t first_elem, uint32_t num_elems) override { return nullptr; }
+    RHIShaderResourceViewPtr CreateBufferSrv(RHIGpuBufferPtr const& buffer, PixelFormat format, uint32_t first_elem, uint32_t num_elems) override;
+    RHIUnorderedAccessViewPtr CreateBufferUav(RHIGpuBufferPtr const& buffer, PixelFormat format, uint32_t first_elem, uint32_t num_elems) override;
 
-    RHIRenderTargetViewPtr  Create2DRenderTargetView(RHITexturePtr const& tex_2d, uint32_t first_array_index = 0, uint32_t array_size = 1, uint32_t mip_level = 0) override { return nullptr; }
-    RHIRenderTargetViewPtr  Create2DRenderTargetView(RHITexturePtr const& tex_cube, uint32_t array_index, CubeFaceType face, uint32_t mip_level) override { return nullptr; }
-    RHIRenderTargetViewPtr  Create3DRenderTargetView(RHITexturePtr const& tex_3d, uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level) override { return nullptr; }
-    RHIDepthStencilViewPtr  Create2DDepthStencilView(RHITexturePtr const& tex_2d, uint32_t first_array_index = 0, uint32_t array_size = 1, uint32_t mip_level = 0) override { return nullptr; }
-    RHIDepthStencilViewPtr  Create2DDepthStencilView(RHITexturePtr const& tex_2d, uint32_t array_index, CubeFaceType face, uint32_t mip_level) override { return nullptr; }
+    RHIRenderTargetViewPtr  Create2DRenderTargetView(RHITexturePtr const& tex_2d, uint32_t first_array_index = 0, uint32_t array_size = 1, uint32_t mip_level = 0) override;
+    RHIRenderTargetViewPtr  Create2DRenderTargetView(RHITexturePtr const& tex_cube, uint32_t array_index, CubeFaceType face, uint32_t mip_level) override;
+    RHIRenderTargetViewPtr  Create3DRenderTargetView(RHITexturePtr const& tex_3d, uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip_level) override;
+    RHIDepthStencilViewPtr  Create2DDepthStencilView(RHITexturePtr const& tex_2d, uint32_t first_array_index = 0, uint32_t array_size = 1, uint32_t mip_level = 0) override;
+    RHIDepthStencilViewPtr  Create2DDepthStencilView(RHITexturePtr const& tex_2d, uint32_t array_index, CubeFaceType face, uint32_t mip_level) override;
 
-    RHIFrameBufferPtr       CreateRHIFrameBuffer() override { return nullptr; }
-    RHIProgramPtr           CreateRHIProgram() override { return nullptr; }
-    RHITimeQueryPtr         CreateRHITimeQuery() override { return nullptr; }
+    RHIFrameBufferPtr       CreateRHIFrameBuffer() override;
+    RHIProgramPtr           CreateRHIProgram() override;
+    RHITimeQueryPtr         CreateRHITimeQuery() override;
     RHIFencePtr             CreateFence() override;
 
     SResult                 BeginFrame() override;
@@ -132,7 +134,7 @@ public:
 
     void                    BeginCapture() override {}
     void                    EndCapture() override {}
-
+    
     void                    BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* cbuffer, const char* name) override { return ; }
     void                    BindRHISrv(ShaderType stage, uint32_t binding, const RHIShaderResourceView* srv, const char* name) override { return ; }
     void                    BindRHIUav(ShaderType stage, uint32_t binding, const RHIUnorderedAccessView* uav, const char* name) override { return ; }

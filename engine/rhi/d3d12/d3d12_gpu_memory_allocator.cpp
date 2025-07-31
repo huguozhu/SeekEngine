@@ -69,7 +69,7 @@ D3D12GpuMemoryPage::D3D12GpuMemoryPage(D3D12GpuMemoryPage&& rhs)
 {
 
 }
-
+D3D12GpuMemoryBlock& D3D12GpuMemoryBlock::operator=(D3D12GpuMemoryBlock&& rhs) = default;
 
 
 /******************************************************************************

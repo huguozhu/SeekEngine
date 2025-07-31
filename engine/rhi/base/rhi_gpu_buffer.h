@@ -13,7 +13,7 @@ public:
     uint32_t            GetStructureStride()const { return m_iStructureStride; }
     ResourceFlags       GetResourceFlags()  const { return m_iFlags; }
 
-    virtual SResult   Create(RHIGpuBufferData* buffer_data) = 0;
+    virtual SResult   Create(RHIGpuBufferData* buffer_data) = 0;    
     virtual SResult   Update(RHIGpuBufferData* buffer_data) = 0;
     virtual SResult   CopyBack(BufferPtr buffer, int start=0, int length=-1) = 0;
 

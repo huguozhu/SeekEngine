@@ -40,6 +40,7 @@ class D3D12GpuMemoryBlock
 public:
 	D3D12GpuMemoryBlock();
 	D3D12GpuMemoryBlock(D3D12GpuMemoryBlock&& rhs);
+	D3D12GpuMemoryBlock& operator=(D3D12GpuMemoryBlock&& other);
 
 	void Reset();
 	void Reset(D3D12GpuMemoryPage const& page, uint32_t offset, uint32_t size);

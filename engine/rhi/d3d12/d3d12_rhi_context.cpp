@@ -3,6 +3,7 @@
 #include "rhi/d3d_common/d3d_adapter.h"
 #include "rhi/d3d12/d3d12_window.h"
 #include "rhi/d3d12/d3d12_fence.h"
+#include "rhi/d3d12/d3d12_render_view.h"
 #include "kernel/context.h"
 
 #include "utils/dll_loader.h"
@@ -399,6 +400,10 @@ SResult D3D12Context::AttachNativeWindow(std::string const& name, void* native_w
     }
     return res;
 }
+
+
+
+
 
 
 
