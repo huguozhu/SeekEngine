@@ -2,7 +2,7 @@
 
 #include "kernel/kernel.h"
 #include "rhi/d3d12/d3d12_predeclare.h"
-#include "rhi/d3d12/d3d12_rhi_context.h"
+#include "rhi/d3d12/d3d12_context.h"
 
 
 SEEK_NAMESPACE_BEGIN

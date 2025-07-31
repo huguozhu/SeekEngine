@@ -1,6 +1,6 @@
 #include "rhi/d3d12/d3d12_predeclare.h"
 #include "rhi/d3d12/d3d12_render_view.h"
-#include "rhi/d3d12/d3d12_rhi_context.h"
+#include "rhi/d3d12/d3d12_context.h"
 #include "rhi/d3d12/d3d12_resource.h"
 #include "rhi/d3d12/d3d12_texture.h"
 #include "rhi/d3d12/d3d12_gpu_buffer.h"

@@ -1,6 +1,6 @@
 #include "rhi/d3d11/d3d11_program.h"
 #include "rhi/d3d11/d3d11_shader.h"
-#include "rhi/d3d11/d3d11_rhi_context.h"
+#include "rhi/d3d11/d3d11_context.h"
 
 #define SEEK_MACRO_FILE_UID 7     // this code is auto generated, don't touch it!!!
 

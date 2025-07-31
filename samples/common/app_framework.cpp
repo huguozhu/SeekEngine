@@ -6,7 +6,7 @@
 
 #include <d3d11.h>
 #include "rhi/d3d11/d3d11_predeclare.h"
-#include "rhi/d3d11/d3d11_rhi_context.h"
+#include "rhi/d3d11/d3d11_context.h"
 #include "rhi/d3d11/d3d11_framebuffer.h"
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"

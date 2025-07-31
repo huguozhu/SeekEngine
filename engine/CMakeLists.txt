@@ -135,6 +135,9 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_common/dxgi_helper.cpp
 
     # d3d11_rhi
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_context.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_context.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_context_factory.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_fence.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_fence.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_framebuffer.h
@@ -144,7 +147,6 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_mesh.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_mesh.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_predeclare.h
-
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_program.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_program.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_query.h
@@ -152,10 +154,7 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_render_state.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_render_state.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_render_view.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_render_view.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_rhi_context.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_rhi_context.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_rhi_context_factory.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_render_view.cpp    
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_shader.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_shader.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_shader_param_assign_helper.h
@@ -168,6 +167,9 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_window.cpp
 
     # d3d12 rhi
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_context.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_context.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_context_factory.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_fence.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_fence.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_framebuffer.h
@@ -186,10 +188,7 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_view.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_view.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_resource.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_resource.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_rhi_context.h
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_rhi_context.cpp
-    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_rhi_context_factory.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_resource.cpp    
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_texture.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_texture.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_translate.h

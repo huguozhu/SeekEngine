@@ -1,5 +1,5 @@
 #include "d3d11_fence.h"
-#include "rhi/d3d11/d3d11_rhi_context.h"
+#include "rhi/d3d11/d3d11_context.h"
 SEEK_NAMESPACE_BEGIN
 
 uint64_t D3D11Fence::Signal()

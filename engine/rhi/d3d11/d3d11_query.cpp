@@ -1,5 +1,5 @@
 #include "d3d11_query.h"
-#include "rhi/d3d11/d3d11_rhi_context.h"
+#include "rhi/d3d11/d3d11_context.h"
 #include "kernel/context.h"
 
 SEEK_NAMESPACE_BEGIN
