@@ -146,6 +146,7 @@ struct BlendStateDesc
     struct TargetBlendDesc
     {
         bool            bBlendEnable    = false;
+        bool            bLogicOpEnable  = false;
         BlendFactor     eSrcBlendColor  = BlendFactor::One;
         BlendFactor     eDstBlendColor  = BlendFactor::Zero;
         BlendOperation  eBlendOpColor   = BlendOperation::Add;

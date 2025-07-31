@@ -32,7 +32,7 @@ public:
     // Index Streams
     bool                                IsUseIndices() const;
     uint32_t                            GetNumIndices() const;
-    RHIGpuBufferPtr const&           GetIndexBuffer();
+    RHIGpuBufferPtr const&              GetIndexBuffer();
     IndexBufferType                     GetIndexBufferType() const { return m_eIndexBufferType; }
     void                                SetIndexBuffer(RHIGpuBufferPtr buffer, IndexBufferType type);
     void                                SetIndexBufferResource(std::shared_ptr<VertexIndicesResource>& indicesRes);
@@ -63,10 +63,10 @@ public:
     // Morph targets
     MorphInfo&                          GetMorphInfo();
     bool                                HasMorphTarget();
-    const RHIGpuBufferPtr&           GetMorphWeightsCBuffer();
-    const RHIGpuBufferPtr&           GetMorphSizeCBuffer();
-    const RHIGpuBufferPtr&           GetPreMorphWeightsCBuffer();
-    RHIGpuBufferPtr&                 GetMaterialInfoCBuffer();
+    const RHIGpuBufferPtr&              GetMorphWeightsCBuffer();
+    const RHIGpuBufferPtr&              GetMorphSizeCBuffer();
+    const RHIGpuBufferPtr&              GetPreMorphWeightsCBuffer();
+    RHIGpuBufferPtr&                    GetMaterialInfoCBuffer();
 
     // Skin
     SkinningJointBindSize               GetSkinningJointBindSize() { return m_eJointBindSize; }

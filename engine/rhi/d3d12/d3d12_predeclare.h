@@ -21,7 +21,6 @@ using ID3D12GraphicsCommandListPtr  = ComPtr<ID3D12GraphicsCommandList>;
 using ID3D12FencePtr                = ComPtr<ID3D12Fence>;
 using ID3D12DescriptorHeapPtr       = ComPtr<ID3D12DescriptorHeap>;
 using ID3D12ResourcePtr             = ComPtr<ID3D12Resource>;
-
-
+using ID3D12PipelineStatePtr        = ComPtr<ID3D12PipelineState>;
 
 SEEK_NAMESPACE_END

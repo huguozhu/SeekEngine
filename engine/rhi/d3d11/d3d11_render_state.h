@@ -13,8 +13,8 @@ public:
     D3D11RenderState(Context* context, RenderStateDesc const& desc)
         : D3D11RenderState(context, desc.rasterizer, desc.depthStencil, desc.blend)
     {}
-    virtual ~D3D11RenderState() override;
-    SResult               Active();
+    virtual ~D3D11RenderState();
+    SResult Active();
 
     ID3D11RasterizerState* GetD3D11RasterizerState() const { return m_pD3D11RasterizerState.Get(); }
     ID3D11DepthStencilState* GetD3D11DepthStencilState() const { return m_pD3D11DepthStencilState.Get(); }
@@ -30,7 +30,7 @@ class D3D11Sampler : public RHISampler
 {
 public:
     D3D11Sampler(Context* context, SamplerDesc const& desc);
-    virtual ~D3D11Sampler() override;
+    virtual ~D3D11Sampler();
     ID3D11SamplerState* GetD3D11SamplerState() const { return m_pD3D11SamplerState.Get(); }
 
 private:

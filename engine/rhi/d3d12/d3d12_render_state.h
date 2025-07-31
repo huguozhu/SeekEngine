@@ -1,19 +1,36 @@
 #pragma once
 
-#include "kernel/kernel.h"
+#include "rhi/base/rhi_render_state.h"
+#include "rhi/d3d12/d3d12_predeclare.h"
 
+#include <variant>
 
 
 SEEK_NAMESPACE_BEGIN
 
-class D3D12Texture : public RHITexture
+class D3D12RenderState : public RHIRenderState
+{
+    D3D12RenderState(Context* context, RasterizerStateDesc const& rs_desc,
+        DepthStencilStateDesc const& ds_desc, BlendStateDesc const& bs_desc);
+    D3D12RenderState(Context* context, RenderStateDesc const& desc)
+        : D3D12RenderState(context, desc.rasterizer, desc.depthStencil, desc.blend)
+    {}
+    SResult Active();
+
+
+private:
+    std::variant<D3D12_GRAPHICS_PIPELINE_STATE_DESC, D3D12_COMPUTE_PIPELINE_STATE_DESC> m_vPipelineStateDesc;
+    mutable std::unordered_map<size_t, ID3D12PipelineStatePtr> m_vPss;
+};
+
+class D3D12Sampler : public RHISampler
 {
 public:
+    D3D12Sampler(Context* context, SamplerDesc const& desc);
+    D3D12_SAMPLER_DESC const& GetD3DSampleDesc() const { return m_SampleDesc; }
 
-
-protected:
-
-
+private:
+    D3D12_SAMPLER_DESC m_SampleDesc;
 };
 
 SEEK_NAMESPACE_END

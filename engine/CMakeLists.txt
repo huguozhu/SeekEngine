@@ -176,9 +176,13 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_descriptor_allocator.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_memory_allocator.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_memory_allocator.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_mesh.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_mesh.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_predeclare.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_buffer.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_buffer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_state.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_state.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_view.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_view.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_resource.h
@@ -186,9 +190,10 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_rhi_context.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_rhi_context.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_rhi_context_factory.cpp
-    
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_texture.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_texture.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_translate.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_translate.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_window.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_window.cpp
     

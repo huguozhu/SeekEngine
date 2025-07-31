@@ -10,7 +10,7 @@ class D3D11Mesh : public RHIMesh
 {
 public:
     D3D11Mesh(Context* context);
-    virtual ~D3D11Mesh() override;
+    virtual ~D3D11Mesh();
 
     SResult Active(RHIProgram* program);
     SResult Deactive() const;

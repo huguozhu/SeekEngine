@@ -144,17 +144,17 @@ const Color Color::Gainsboro = float3(0.862745f, 0.862745f, 0.862745f);
 const Color Color::WhiteSmoke = float3(0.960784f, 0.960784f, 0.960784f);
 const Color Color::White = float3(1.0f, 1.0f, 1.0f);
 
-float3 Color::ToFloat3()
+float3 Color::ToFloat3() const
 {
     return float3(float(m_r) / 255.0f, float(m_g) / 255.0f, float(m_b) / 255.0f);
 }
 
-float4 Color::ToFloat4()
+float4 Color::ToFloat4() const
 {
     return float4(float(m_r) / 255.0f, float(m_g) / 255.0f, float(m_b) / 255.0f, float(m_a) / 255.0f);
 }
 
-float4 Color::ToFloat4WithoutAlpha()
+float4 Color::ToFloat4WithoutAlpha() const
 {
     return float4(float(m_r) / 255.0f, float(m_g) / 255.0f, float(m_b) / 255.0f, 1.0f);
 }

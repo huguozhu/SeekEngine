@@ -21,9 +21,9 @@ public:
     uint8_t     const& B() const { return m_b; }
     uint8_t     const& A() const { return m_a; }
 
-    float3 ToFloat3();
-    float4 ToFloat4();
-    float4 ToFloat4WithoutAlpha();
+    float3 ToFloat3() const;
+    float4 ToFloat4() const;
+    float4 ToFloat4WithoutAlpha() const;
 
     static const Color White;
     static const Color Black;

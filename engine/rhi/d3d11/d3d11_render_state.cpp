@@ -75,8 +75,6 @@ D3D11RenderState::D3D11RenderState(Context* context, RasterizerStateDesc const& 
         BlendStateDesc::TargetBlendDesc const& src = bs_desc.stTargetBlend[i];
         D3D11_RENDER_TARGET_BLEND_DESC& dst = d3d_blend_desc.RenderTarget[i];
         dst.BlendEnable = src.bBlendEnable;
-            //src.eBlendOpColor != BlendOperation::Add || src.eSrcBlendColor != BlendFactor::One || src.eDstBlendColor != BlendFactor::Zero ||
-            //src.eBlendOpAlpha != BlendOperation::Add || src.eSrcBlendAlpha != BlendFactor::One || src.eDstBlendAlpha != BlendFactor::Zero;
         dst.BlendOp = D3D11Translate::TranslateBlendOp(src.eBlendOpColor);
         dst.SrcBlend = D3D11Translate::TranslateBlendFactor(src.eSrcBlendColor);
         dst.DestBlend = D3D11Translate::TranslateBlendFactor(src.eDstBlendColor);
