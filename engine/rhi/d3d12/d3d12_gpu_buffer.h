@@ -26,6 +26,8 @@ public:
     virtual SResult Update(RHIGpuBufferData* buffer_data) override;
     virtual SResult CopyBack(BufferPtr buffer, int start=0, int length=-1) override;
 
+    D3D12_GPU_VIRTUAL_ADDRESS GpuVirtualAddress() const { return m_GpuVAddr; }
+
 protected:
     D3D12GpuMemoryBlock m_GpuMemoryBlock;
     uint32_t m_iCounterOffset = 0;

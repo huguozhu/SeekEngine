@@ -1,5 +1,5 @@
 #include "rhi/d3d12/d3d12_translate.h"
-
+#include "rhi/d3d_common/d3d_common_translate.h"
 #include "utils/log.h"
 
 SEEK_NAMESPACE_BEGIN
@@ -45,6 +45,19 @@ D3D12_PRIMITIVE_TOPOLOGY D3D12Translate::TranslatePrimitiveTopology(MeshTopology
     case MeshTopologyType::Line_Strip:    res = D3D_PRIMITIVE_TOPOLOGY_LINESTRIP;       break;
     case MeshTopologyType::Triangles:     res = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;    break;
     case MeshTopologyType::Triangle_Strip:res = D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP;   break;
+    }
+    return res;
+}
+D3D12_PRIMITIVE_TOPOLOGY_TYPE D3D12Translate::TranslatePrimitiveTopologyType(MeshTopologyType type)
+{
+    D3D12_PRIMITIVE_TOPOLOGY_TYPE res = D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH;
+    switch (type)
+    {
+    case MeshTopologyType::Points:          res = D3D12_PRIMITIVE_TOPOLOGY_TYPE_POINT;      break;
+    case MeshTopologyType::Lines:           res = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;       break;
+    case MeshTopologyType::Line_Strip:      res = D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE;       break;
+    case MeshTopologyType::Triangles:       res = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;   break;
+    case MeshTopologyType::Triangle_Strip:  res = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;   break;
     }
     return res;
 }
@@ -175,5 +188,52 @@ D3D12_TEXTURE_ADDRESS_MODE D3D12Translate::TranslateAddressMode(TexAddressMode A
     };
     return res;
 }
+void D3D12Translate::TranslateVertexStream(std::vector<D3D12_INPUT_ELEMENT_DESC>& elements, size_t stream_index,
+    uint32_t buf_offset, bool is_instance, std::span<VertexStreamLayout const> vet)
+{
+    elements.resize(vet.size());
 
+    uint16_t elem_offset = buf_offset;
+    for (uint32_t i = 0; i < elements.size(); ++i)
+    {
+        VertexStreamLayout const& vs_elem = vet[i];
+
+        D3D12_INPUT_ELEMENT_DESC& element = elements[i];
+        element.SemanticIndex = vs_elem.usage_index;
+        element.Format = D3DCommonTranslate::TranslateToPlatformFormat(vs_elem.format);
+        element.InputSlot = static_cast<WORD>(stream_index);
+        element.AlignedByteOffset = elem_offset;
+        element.InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+        element.InstanceDataStepRate = 0;
+
+        switch (vs_elem.usage)
+        {
+        case VertexElementUsage::Position:
+            element.SemanticName = "POSITION";
+            break;
+        case VertexElementUsage::TexCoord:
+            element.SemanticName = "TEXCOORD";
+            break;
+        case VertexElementUsage::Normal:
+            element.SemanticName = "NORMAL";
+            break;
+        case VertexElementUsage::Color:
+            element.SemanticName = "COLOR";
+            break;
+        case VertexElementUsage::BlendWeight:
+            element.SemanticName = "BLENDWEIGHT";
+            break;
+        case VertexElementUsage::BlendIndex:
+            element.SemanticName = "BLENDINDICES";
+            break;
+        case VertexElementUsage::Tangent:
+            element.SemanticName = "TANGENT";
+            break;
+        case VertexElementUsage::Binormal:
+            element.SemanticName = "BINORMAL";
+            break;
+        }
+        elem_offset = static_cast<uint16_t>(elem_offset + Formatutil::NumComponentBytes(vs_elem.format));
+    }
+}
 SEEK_NAMESPACE_END

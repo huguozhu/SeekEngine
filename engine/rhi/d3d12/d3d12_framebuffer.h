@@ -21,8 +21,11 @@ public:
     void BindBarrier(ID3D12GraphicsCommandList* cmd_list);
     void SetRenderTargets(ID3D12GraphicsCommandList* cmd_list);
 
+    size_t GetPsoHashValue();
+    void UpdatePsoDesc(D3D12_GRAPHICS_PIPELINE_STATE_DESC& pso_desc);
+
 private:
-    void UpdateAllViews();
+    void UpdateHashValue();
 
 protected: 
     /*Buffer-first_subres-num_subres*/
@@ -31,7 +34,16 @@ protected:
 
     std::vector<D3D12_CPU_DESCRIPTOR_HANDLE> m_vD3dRtvCpuHandles;
     D3D12_CPU_DESCRIPTOR_HANDLE m_D3dSdvHandle;
+    D3D12_CPU_DESCRIPTOR_HANDLE* m_D3dSdvHandlePtr = nullptr;
     D3D12_VIEWPORT m_stD3dViewport;
+
+    // for Pipeline State Object
+    size_t m_iPsoHashValue;
+    uint32_t m_iNumRtvs;
+    std::array<DXGI_FORMAT, MAX_COLOR_ATTACHMENTS> m_vRtvFormats;
+    DXGI_FORMAT m_eDsvFormat;
+    uint32_t m_iNumSamples;
+
 };
 
 SEEK_NAMESPACE_END

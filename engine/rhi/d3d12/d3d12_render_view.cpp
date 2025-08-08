@@ -321,7 +321,7 @@ D3D12Srv* D3D12BufferSrv::GetD3DSrv()
 * D3D12 Uav
 *******************************************************************************/
 D3D12UnorderedAccessView::D3D12UnorderedAccessView(Context* context, D3D12ResourcePtr const& src, uint32_t first_subres, uint32_t num_subres)
-    :RHIUnorderedAccessView(context), m_pUavSrc(src), m_iFirstSubres(first_subres), m_iNumSubres(num_subres)
+    :RHIUnorderedAccessView(context), m_pUavResource(src), m_iFirstSubres(first_subres), m_iNumSubres(num_subres)
 {
 }
 void D3D12UnorderedAccessView::Clear(float4 const& v)
@@ -329,7 +329,7 @@ void D3D12UnorderedAccessView::Clear(float4 const& v)
     D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
     ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
-    m_pUavSrc->UpdateResourceBarrier(cmd_list, 0, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+    m_pUavResource->UpdateResourceBarrier(cmd_list, 0, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
     rc.FlushResourceBarriers(cmd_list);
 
     auto cbv_srv_uav_desc_block = rc.AllocDynamicCbvSrvUavDescBlock(1);
@@ -338,7 +338,7 @@ void D3D12UnorderedAccessView::Clear(float4 const& v)
     d3d_device_->CopyDescriptorsSimple(1, cpu_handle, m_pUavHandle->Handle(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     cmd_list->ClearUnorderedAccessViewFloat(gpu_handle, m_pUavHandle->Handle(),
-        m_pUavSrc->GetD3DResource(), &v.x(), 0, nullptr);
+        m_pUavResource->GetD3DResource(), &v.x(), 0, nullptr);
 
     rc.DeallocDynamicCbvSrvUavDescBlock(std::move(cbv_srv_uav_desc_block));
 }
@@ -347,7 +347,7 @@ void D3D12UnorderedAccessView::Clear(uint4 const& v)
     D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
     ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
-    m_pUavSrc->UpdateResourceBarrier(cmd_list, 0, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+    m_pUavResource->UpdateResourceBarrier(cmd_list, 0, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
     rc.FlushResourceBarriers(cmd_list);
 
     auto cbv_srv_uav_desc_block = rc.AllocDynamicCbvSrvUavDescBlock(1);
@@ -356,7 +356,7 @@ void D3D12UnorderedAccessView::Clear(uint4 const& v)
     d3d_device_->CopyDescriptorsSimple(1, cpu_handle, m_pUavHandle->Handle(), D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     cmd_list->ClearUnorderedAccessViewUint(gpu_handle, m_pUavHandle->Handle(),
-        m_pUavSrc->GetD3DResource(), &v.x(), 0, nullptr);
+        m_pUavResource->GetD3DResource(), &v.x(), 0, nullptr);
 
     rc.DeallocDynamicCbvSrvUavDescBlock(std::move(cbv_srv_uav_desc_block));
 }

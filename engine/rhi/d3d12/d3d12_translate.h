@@ -2,6 +2,7 @@
 
 #include "rhi/base/rhi_render_state.h"
 #include "rhi/base/rhi_definition.h"
+#include "rhi/base/rhi_mesh.h"
 #include "rhi/d3d12/d3d12_predeclare.h"
 
 SEEK_NAMESPACE_BEGIN
@@ -11,6 +12,7 @@ class D3D12Translate
 public:
     static const char* TranslateVertexElementUsageSemantic(VertexElementUsage usage);
     static D3D12_PRIMITIVE_TOPOLOGY TranslatePrimitiveTopology(MeshTopologyType type);
+    static D3D12_PRIMITIVE_TOPOLOGY_TYPE TranslatePrimitiveTopologyType(MeshTopologyType type);
     static D3D12_CULL_MODE TranslateCullMode(CullMode CullMode);
     static D3D12_FILL_MODE TranslateFillMode(FillMode FillMode);
     static D3D12_COMPARISON_FUNC TranslateCompareFunction(CompareFunction CompareFunction);
@@ -19,6 +21,8 @@ public:
     static D3D12_BLEND TranslateBlendFactor(BlendFactor BlendFactor);
     static D3D12_FILTER TranslateTexFilterOp(TexFilterOp filter);
     static D3D12_TEXTURE_ADDRESS_MODE TranslateAddressMode(TexAddressMode AddressMode);
+    static void TranslateVertexStream(std::vector<D3D12_INPUT_ELEMENT_DESC>& elements, size_t stream_index,
+        uint32_t buf_offset, bool is_instance, std::span<VertexStreamLayout const> vet);
 };
 
 SEEK_NAMESPACE_END

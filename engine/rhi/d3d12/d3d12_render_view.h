@@ -80,6 +80,9 @@ class D3D12RenderTargetView : public RHIRenderTargetView
 {
 public:
     D3D12RenderTargetView(Context* context, D3D12ResourcePtr const& src, uint32_t first_subres, uint32_t num_subres);
+    D3D12ResourcePtr const& GetResource() const { return m_pRtvResource; }
+    uint32_t GetFirstSubRes() { return m_iFirstSubres; }
+    uint32_t GetNumSubRes() { return m_iNumSubres; }
     void ClearColor(float4 const& color);
     virtual D3D12Rtv* GetD3DRtv() = 0;
 
@@ -124,7 +127,9 @@ public:
     void ClearDepth(float depth = 1.0);
     void ClearStencil(uint32_t stencil = 0);
     void ClearDepthStencil(float depth, uint32_t stencil);
-
+    D3D12ResourcePtr const& GetResource() const { return m_pDsvResource; }
+    uint32_t GetFirstSubRes() { return m_iFirstSubres; }
+    uint32_t GetNumSubRes() { return m_iNumSubres; }
     virtual D3D12Dsv* GetD3DDsv() = 0;
 
 protected:
@@ -191,11 +196,15 @@ public:
     void Clear(float4 const& v) override;
     void Clear(uint4 const& v) override;
 
+    D3D12ResourcePtr const& GetResource() const { return m_pUavResource; }
+    uint32_t GetFirstSubRes() { return m_iFirstSubres; }
+    uint32_t GetNumSubRes() { return m_iNumSubres; }
+
 protected:
     ID3D12Device* d3d_device_;
 
     mutable D3D12UavPtr m_pUavHandle;
-    D3D12ResourcePtr m_pUavSrc;
+    D3D12ResourcePtr m_pUavResource;
     uint32_t m_iFirstSubres;
     uint32_t m_iNumSubres;
 };

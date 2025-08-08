@@ -49,10 +49,11 @@ public:
     RHIRenderTargetView(Context* context)
         :m_pContext(context) {}
 
-    uint32_t        Width()     const { return m_iWidth; }
-    uint32_t        Height()    const { return m_iHeight; }
-    PixelFormat     Format()    const { return m_Param.pixel_format; }
-    RHITexturePtr&  Texture()         { return m_Param.texture; }
+    uint32_t        Width()     const   { return m_iWidth; }
+    uint32_t        Height()    const   { return m_iHeight; }
+    PixelFormat     Format()    const   { return m_Param.pixel_format; }
+    RHITexturePtr&  Texture()           { return m_Param.texture; }
+    uint32_t        NumSamples() const { return m_iNumSamples; }
 
 protected:
     Context*    m_pContext = nullptr;

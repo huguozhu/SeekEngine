@@ -43,6 +43,10 @@ public:
     void ForceFlush();
     void ForceFinish();
 
+    void IASetVertexBuffers(ID3D12GraphicsCommandList* cmd_list, uint32_t start_slot, std::span<D3D12_VERTEX_BUFFER_VIEW const> views);
+    void IASetIndexBuffer(ID3D12GraphicsCommandList* cmd_list, D3D12_INDEX_BUFFER_VIEW const& view);
+
+
     void RestoreRenderCmdStates(ID3D12GraphicsCommandList* cmd_list) {}
 
 
@@ -221,6 +225,10 @@ private:
     std::vector<std::pair<ID3D12GraphicsCommandList*, std::vector<D3D12_RESOURCE_BARRIER>>> m_vResBarriers;
     std::vector<ID3D12ResourcePtr> m_vStallResources;
     std::mutex m_Mutex;
+
+
+    std::vector<D3D12_VERTEX_BUFFER_VIEW> m_vCurrVbvs;
+    D3D12_INDEX_BUFFER_VIEW m_CurrIbv;
 
     D3D12GpuDescriptorAllocatorPtr m_pRtvDescAllocator = nullptr;
     D3D12GpuDescriptorAllocatorPtr m_pDsvDescAllocator = nullptr;

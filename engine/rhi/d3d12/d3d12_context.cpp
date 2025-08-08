@@ -85,9 +85,44 @@ void D3D12Context::ForceFlush()
 }
 void D3D12Context::ForceFinish()
 {
+    //m_curvbsv curr_vbvs_.clear();
+    //curr_ibv_ = { 0, 0, DXGI_FORMAT_UNKNOWN };
 
+    //this->ForceFlush();
+    //this->SyncRenderCmd();
+    //this->SyncLoadCmd();
+
+    //rtv_desc_allocator_.ClearStallPages(frame_fence_value_);
+    //dsv_desc_allocator_.ClearStallPages(frame_fence_value_);
+    //cbv_srv_uav_desc_allocator_.ClearStallPages(frame_fence_value_);
+    //dynamic_cbv_srv_uav_desc_allocator_.ClearStallPages(frame_fence_value_);
+    //sampler_desc_allocator_.ClearStallPages(frame_fence_value_);
+
+    //upload_mem_allocator_.ClearStallPages(frame_fence_value_);
+    //readback_mem_allocator_.ClearStallPages(frame_fence_value_);
+    //per_frame_contexts_[curr_frame_index_].ClearStallResources();
 }
 
+void D3D12Context::IASetVertexBuffers(ID3D12GraphicsCommandList* cmd_list, uint32_t start_slot, std::span<D3D12_VERTEX_BUFFER_VIEW const> views)
+{
+    if ((start_slot + static_cast<size_t>(views.size()) > m_vCurrVbvs.size())
+        || (memcmp(&m_vCurrVbvs[start_slot], views.data(), views.size() * sizeof(views[0])) != 0))
+    {
+        m_vCurrVbvs.resize(std::max(m_vCurrVbvs.size(), static_cast<size_t>(start_slot + views.size())));
+        memcpy(&m_vCurrVbvs[start_slot], views.data(), views.size() * sizeof(views[0]));
+        cmd_list->IASetVertexBuffers(start_slot, static_cast<uint32_t>(views.size()), views.data());
+    }
+}
+void D3D12Context::IASetIndexBuffer(ID3D12GraphicsCommandList* cmd_list, D3D12_INDEX_BUFFER_VIEW const& view)
+{
+    if ((m_CurrIbv.BufferLocation != view.BufferLocation)
+        || (m_CurrIbv.SizeInBytes != view.SizeInBytes)
+        || (m_CurrIbv.Format != view.Format))
+    {
+        cmd_list->IASetIndexBuffer(&view);
+        m_CurrIbv = view;
+    }
+}
 
 
 
