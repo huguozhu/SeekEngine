@@ -183,12 +183,16 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_predeclare.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_buffer.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_buffer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_program.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_program.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_state.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_state.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_view.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_view.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_resource.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_resource.cpp    
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_shader.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_shader.cpp    
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_texture.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_texture.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_translate.h

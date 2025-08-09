@@ -144,7 +144,6 @@ SResult DeferredShadingRenderer::Init()
     desc.format = PixelFormat::R8_UNORM;
     m_pSsaoColor = rc.CreateTexture2D(desc);
 
-
     std::vector<float2> ssao_noise;
     for (uint32_t i = 0; i < 16; i++)
     {
@@ -156,7 +155,7 @@ SResult DeferredShadingRenderer::Init()
     desc.type = TextureType::Tex2D;
     desc.width = desc.height = 4;
     desc.format = PixelFormat::R32G32F;
-    desc.flags = RESOURCE_FLAG_GPU_READ;
+    desc.flags = RESOURCE_FLAG_CPU_WRITE | RESOURCE_FLAG_GPU_READ;
     m_pSsaoNoise = rc.CreateTexture2D(desc, ssao_noise_bitmap);
 
 

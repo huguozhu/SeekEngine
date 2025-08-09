@@ -1,6 +1,7 @@
 #include "rhi/base/rhi_context.h"
 #include "rhi/base/rhi_framebuffer.h"
 #include "rhi/base/rhi_mesh.h"
+#include "rhi/base/rhi_gpu_buffer.h"
 #include "math/quad_mesh_process.h"
 #include "math/math_utility.h"
 #include <cmath>
@@ -195,6 +196,10 @@ RHITexturePtr RHIContext::CreateTexture2D(const RHITexture::Desc& tex_desc, cons
 {
     std::vector<BitmapBufferPtr> data = { init_data };
     return this->CreateTexture2D(tex_desc, data);
+}
+RHIShaderResourceViewPtr RHIContext::CreateBufferSrv(RHIGpuBufferPtr const& buffer, PixelFormat format)
+{
+    return this->CreateBufferSrv(buffer, format, 0, buffer->GetSize() / Formatutil::NumComponentBytes(format));
 }
 RHISamplerPtr RHIContext::GetSampler(SamplerDesc const& desc)
 {

@@ -15,11 +15,10 @@ public:
         m_pShader.Reset();
         m_pD3DVsCode.Reset();
     }
-    SResult               Active();
+    SResult                 Active();
     void                    Deactive();
-    virtual SResult       OnCompile() override;
+    virtual SResult         OnCompile() override;
 
-    //ID3DBlobPtr GetD3DVSCode() { return m_pD3DVsCode; }
     const void* GetBufferPointer()
     {
         if (m_bCodePrecompiled)

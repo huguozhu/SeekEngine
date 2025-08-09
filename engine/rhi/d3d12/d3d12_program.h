@@ -1,19 +1,20 @@
 #pragma once
 
-#include "kernel/kernel.h"
-
-
+#include "rhi/base/rhi_program.h"
 
 SEEK_NAMESPACE_BEGIN
 
-class D3D12Texture : public RHITexture
+class D3D12Program : public RHIProgram
 {
 public:
+    D3D12Program(Context* context)
+        : RHIProgram(context)
+    {
+    }
+    ~D3D12Program() = default;
 
-
-protected:
-
-
+    SResult Active();
+    void Deactive();
 };
 
 SEEK_NAMESPACE_END

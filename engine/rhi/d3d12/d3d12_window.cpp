@@ -75,7 +75,9 @@ SResult D3D12Window::Create(D3DAdapter* adapter, std::string const& name, void* 
         RHITexture::Desc desc = {};
         desc.width = m_iWidth;
         desc.height = m_iHeight;
+        desc.type = TextureType::Tex2D; 
         desc.format = PixelFormat::D24S8;
+        desc.flags = RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE;
         RHITexturePtr tex_ds = d3d12_rc.CreateTexture2D(desc);
         this->AttachDepthStencilView(d3d12_rc.Create2DDepthStencilView(tex_ds));
 

@@ -2,14 +2,15 @@
 #include "rhi/d3d12/d3d12_predeclare.h"
 #include "rhi/d3d12/d3d12_fence.h"
 #include "rhi/d3d12/d3d12_texture.h"
+#include "rhi/d3d12/d3d12_mesh.h"
 #include "rhi/d3d12/d3d12_gpu_buffer.h"
 
 SEEK_NAMESPACE_BEGIN
 
 
-RHIMeshPtr    D3D12Context::CreateMesh()
+RHIMeshPtr D3D12Context::CreateMesh()
 {
-    return nullptr;
+    return MakeSharedPtr<D3D12Mesh>(m_pContext);
 }
 RHIShaderPtr  D3D12Context::CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code)
 {

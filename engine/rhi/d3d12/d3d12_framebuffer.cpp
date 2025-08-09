@@ -17,13 +17,7 @@ D3D12FrameBuffer::D3D12FrameBuffer(Context* context)
 }
 SResult D3D12FrameBuffer::OnBind()
 {
-    D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
-	this->SetRenderTargets(rc.D3DRenderCmdList());
-    for (uint32_t i = 0; i < m_vRenderTargets.size(); ++i)
-    {
-		// nothing to do 
-    }
-    return S_Success;
+	return S_Success;
 }
 SResult D3D12FrameBuffer::OnUnbind()
 {

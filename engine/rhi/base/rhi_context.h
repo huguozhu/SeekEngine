@@ -60,6 +60,7 @@ public: // virutal factory
     virtual RHIGpuBufferPtr         CreateVertexBuffer(uint32_t size, RHIGpuBufferData* pData) = 0;
     virtual RHIGpuBufferPtr         CreateIndexBuffer(uint32_t size, RHIGpuBufferData* pData) = 0;
 
+            RHIShaderResourceViewPtr CreateBufferSrv(RHIGpuBufferPtr const& buffer, PixelFormat format);
     virtual RHIShaderResourceViewPtr CreateBufferSrv(RHIGpuBufferPtr const& buffer, PixelFormat format, uint32_t first_elem, uint32_t num_elems) = 0;
     virtual RHIUnorderedAccessViewPtr CreateBufferUav(RHIGpuBufferPtr const& buffer, PixelFormat format, uint32_t first_elem, uint32_t num_elems) = 0;
 
@@ -102,9 +103,6 @@ public: // virutal factory
 
     virtual void                    BeginCapture() {}
     virtual void                    EndCapture() {}
-
-    //virtual void                    BeginRHITimeQuery(RHITimeQueryPtr&) = 0;
-    //virtual void                    EndRHITimeQuery(RHITimeQueryPtr&) = 0;
 
     // Global common reused variable
     RHISamplerPtr                   GetSampler(SamplerDesc const& desc);

@@ -78,7 +78,6 @@ D3D12RtvPtr const& D3D12Texture::GetD3DRtv()
 }
 D3D12RtvPtr const& D3D12Texture::GetD3DRtv(uint32_t first_array_index, uint32_t array_size, uint32_t mip_level)
 {
-
     SEEK_ASSERT(m_desc.flags & RESOURCE_FLAG_GPU_WRITE);
     SEEK_ASSERT(first_array_index < m_desc.num_array);
     SEEK_ASSERT(first_array_index + array_size <= m_desc.num_array);
