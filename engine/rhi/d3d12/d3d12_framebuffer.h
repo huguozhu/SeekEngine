@@ -2,10 +2,10 @@
 
 #include "kernel/kernel.h"
 #include "rhi/base/rhi_framebuffer.h"
-#include "rhi/d3d12/d3d12_resource.h"
 
 SEEK_NAMESPACE_BEGIN
 
+class D3D12Resource;
 class D3D12FrameBuffer : public RHIFrameBuffer
 {
 public:
@@ -21,7 +21,7 @@ public:
     void BindBarrier(ID3D12GraphicsCommandList* cmd_list);
     void SetRenderTargets(ID3D12GraphicsCommandList* cmd_list);
 
-    size_t GetPsoHashValue();
+    size_t PsoHashValue();
     void UpdatePsoDesc(D3D12_GRAPHICS_PIPELINE_STATE_DESC& pso_desc);
 
 private:

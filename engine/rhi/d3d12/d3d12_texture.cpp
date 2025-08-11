@@ -18,6 +18,21 @@ D3D12Texture::D3D12Texture(Context* context, const RHITexture::Desc& tex_desc)
     :RHITexture(context, tex_desc), D3D12Resource((D3D12Context*)&(context->RHIContextInstance()))
 {
     m_eDxgiFormat = D3DCommonTranslate::TranslateToPlatformFormat(tex_desc.format);
+    uint32_t num_mips = tex_desc.num_mips;
+    if (0 == num_mips)
+    {
+        num_mips = 1;
+        uint32_t w = m_desc.width;
+        uint32_t h = m_desc.height;
+        while ((w != 1) || (h != 1))
+        {
+            ++num_mips;
+
+            w = std::max(1U, w / 2);
+            h = std::max(1U, h / 2);
+        }
+    }
+    m_desc.num_mips = num_mips;
 }
 
 D3D12SrvPtr const& D3D12Texture::GetD3DSrv()
@@ -441,6 +456,7 @@ SResult D3D12Texture::DoCreate(D3D12_RESOURCE_DIMENSION dim, uint32_t width, uin
 D3D12Texture2D::D3D12Texture2D(Context* context, const RHITexture::Desc& tex_desc)
     :D3D12Texture(context, tex_desc)
 {
+    m_vCurrStates.assign(m_desc.num_array * m_desc.num_mips, D3D12_RESOURCE_STATE_COMMON);
 }
 D3D12Texture2D::D3D12Texture2D(Context* context, ID3D12ResourcePtr const& d3d_tex)
     :D3D12Texture(context, RHITexture::Desc{})
@@ -655,6 +671,7 @@ void D3D12Texture2D::FillUavDesc(D3D12_UNORDERED_ACCESS_VIEW_DESC& desc, uint32_
 D3D12TextureCube::D3D12TextureCube(Context* context, const RHITexture::Desc& tex_desc)
     :D3D12Texture(context, tex_desc)
 {
+    m_vCurrStates.assign(6 * m_desc.num_array * m_desc.num_mips, D3D12_RESOURCE_STATE_COMMON);
 }
 
 SResult D3D12TextureCube::Create(std::span<BitmapBufferPtr> const& bitmap_datas)
@@ -821,7 +838,7 @@ void D3D12TextureCube::FillUavDesc(D3D12_UNORDERED_ACCESS_VIEW_DESC& desc, uint3
 D3D12Texture3D::D3D12Texture3D(Context* context, const RHITexture::Desc& tex_desc)
     :D3D12Texture(context, tex_desc)
 {
-
+    m_vCurrStates.assign(m_desc.num_array * m_desc.num_mips, D3D12_RESOURCE_STATE_COMMON);
 }
 SResult D3D12Texture3D::Create(std::span<BitmapBufferPtr> const& bitmap_datas)
 {

@@ -74,7 +74,7 @@ void D3D12FrameBuffer::SetRenderTargets(ID3D12GraphicsCommandList* cmd_list)
     m_vD3dRtvResources.clear();
     m_vD3dRtvCpuHandles.resize(m_vRenderTargets.size());
 }
-size_t D3D12FrameBuffer::GetPsoHashValue()
+size_t D3D12FrameBuffer::PsoHashValue()
 {
 	if (m_bViewDirty)
 	{

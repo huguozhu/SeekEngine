@@ -1,6 +1,5 @@
 #pragma once
 
-#include "kernel/kernel.h"
 #include "rhi/d3d12/d3d12_predeclare.h"
 #include "rhi/d3d12/d3d12_context.h"
 

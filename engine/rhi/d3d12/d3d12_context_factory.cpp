@@ -4,6 +4,10 @@
 #include "rhi/d3d12/d3d12_texture.h"
 #include "rhi/d3d12/d3d12_mesh.h"
 #include "rhi/d3d12/d3d12_gpu_buffer.h"
+#include "rhi/d3d12/d3d12_framebuffer.h"
+#include "rhi/d3d12/d3d12_render_state.h"
+#include "rhi/d3d12/d3d12_program.h"
+#include "rhi/d3d12/d3d12_shader.h"
 
 SEEK_NAMESPACE_BEGIN
 
@@ -14,7 +18,7 @@ RHIMeshPtr D3D12Context::CreateMesh()
 }
 RHIShaderPtr  D3D12Context::CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code)
 {
-    return nullptr;
+    return MakeSharedPtr<D3D12Shader>(m_pContext, type, name, entry_func_name, code);
 }
 RHITexturePtr D3D12Context::CreateTexture2D(ID3D12ResourcePtr const& tex)
 {
@@ -100,11 +104,11 @@ RHIDepthStencilViewPtr D3D12Context::Create2DDepthStencilView(RHITexturePtr cons
 }
 RHIFrameBufferPtr D3D12Context::CreateRHIFrameBuffer()
 {
-    return nullptr;
+    return MakeSharedPtr<D3D12FrameBuffer>(m_pContext);
 }
 RHIProgramPtr D3D12Context::CreateRHIProgram()
 {
-    return nullptr; 
+    return MakeSharedPtr<D3D12Program>(m_pContext); 
 }
 RHITimeQueryPtr D3D12Context::CreateRHITimeQuery()
 {
@@ -113,6 +117,15 @@ RHITimeQueryPtr D3D12Context::CreateRHITimeQuery()
 RHIFencePtr D3D12Context::CreateFence()
 {
     return MakeSharedPtr<D3D12Fence>(m_pContext);
+}
+
+RHISamplerPtr D3D12Context::CreateSampler(SamplerDesc const& desc) 
+{ 
+    return MakeSharedPtr<D3D12Sampler>(m_pContext, desc);
+}
+RHIRenderStatePtr D3D12Context::CreateRenderState(RenderStateDesc const& desc) 
+{ 
+    return MakeSharedPtr<D3D12RenderState>(m_pContext, desc);
 }
 
 SEEK_NAMESPACE_END

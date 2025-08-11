@@ -2,6 +2,7 @@
 
 #include <d3d12.h>
 #include <d3d12shader.h>
+#include <dxcapi.h>
 #include "rhi/d3d_common/d3d_common_predeclare.h"
 
 
@@ -22,5 +23,6 @@ using ID3D12FencePtr                = ComPtr<ID3D12Fence>;
 using ID3D12DescriptorHeapPtr       = ComPtr<ID3D12DescriptorHeap>;
 using ID3D12ResourcePtr             = ComPtr<ID3D12Resource>;
 using ID3D12PipelineStatePtr        = ComPtr<ID3D12PipelineState>;
+using IDxcCompilerPtr               = ComPtr<IDxcCompiler>;
 
 SEEK_NAMESPACE_END

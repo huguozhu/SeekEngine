@@ -7,6 +7,7 @@
 #include "rhi/d3d_common/dxgi_helper.h"
 #include "rhi/d3d12/d3d12_gpu_descriptor_allocator.h"
 #include "rhi/d3d12/d3d12_gpu_memory_allocator.h"
+#include "rhi/d3d12/d3d12_framebuffer.h"
 
 #include <thread>
 #include <mutex>
@@ -45,6 +46,7 @@ public:
 
     void IASetVertexBuffers(ID3D12GraphicsCommandList* cmd_list, uint32_t start_slot, std::span<D3D12_VERTEX_BUFFER_VIEW const> views);
     void IASetIndexBuffer(ID3D12GraphicsCommandList* cmd_list, D3D12_INDEX_BUFFER_VIEW const& view);
+    void RSSetViewports(ID3D12GraphicsCommandList* cmd_list, std::span<D3D12_VIEWPORT const> viewports);
 
 
     void RestoreRenderCmdStates(ID3D12GraphicsCommandList* cmd_list) {}
@@ -87,8 +89,6 @@ public:
     SResult                 CheckCapabilitySetSupport() override;    
     SResult                 AttachNativeWindow(std::string const& name, void* native_wnd = nullptr) override;
 
-
-
     RHIMeshPtr              CreateMesh() override;
     RHIShaderPtr            CreateShader(ShaderType type, std::string const& name, std::string const& entry_func_name, std::string const& code) override;   
     RHITexturePtr           CreateTexture2D(ID3D12ResourcePtr const& tex);
@@ -118,9 +118,9 @@ public:
     SResult                 BeginFrame() override;
     SResult                 EndFrame() override;
 
-    SResult                 BeginRenderPass(const RenderPassInfo& renderPassInfo) override { return 0; }
-    SResult                 Render(RHIProgram* program, RHIMeshPtr const& mesh) override { return 0; }
-    SResult                 EndRenderPass() override { return 0; }
+    SResult                 BeginRenderPass(const RenderPassInfo& renderPassInfo) override;
+    SResult                 Render(RHIProgram* program, RHIMeshPtr const& mesh) override;
+    SResult                 EndRenderPass() override;
 
     void                    BeginComputePass(const ComputePassInfo& computePassInfo) override { return ; }
     SResult                 Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z) override { return 0; }
@@ -149,8 +149,8 @@ public:
 protected:
     // Functions that only can been called by Context
     friend class Context;
-    RHISamplerPtr           CreateSampler(SamplerDesc const& desc) override { return nullptr; }
-    RHIRenderStatePtr       CreateRenderState(RenderStateDesc const& desc) override { return nullptr; }
+    RHISamplerPtr           CreateSampler(SamplerDesc const& desc) override;
+    RHIRenderStatePtr       CreateRenderState(RenderStateDesc const& desc) override;
 
     static const size_t         MAX_BACK_BUFFER_COUNT = 3;
 
@@ -161,6 +161,8 @@ private:
 
     ID3D12DevicePtr                 m_pDevice = nullptr;
     ID3D12CommandQueuePtr           m_pCmdQueue = nullptr;
+
+    D3D12FrameBuffer*               m_pCurrentRHIFrameBuffer = nullptr;
 
 /******************************************************************************
 * D3D12Context::PerThreadContext
@@ -226,6 +228,12 @@ private:
     std::vector<ID3D12ResourcePtr> m_vStallResources;
     std::mutex m_Mutex;
 
+
+    D3D12_VIEWPORT m_CurViewport;
+    ID3D12PipelineState* m_pCurPso;
+    ID3D12RootSignature* m_pCurrGraphicsRootSignature;
+    ID3D12RootSignature* m_CurComputeRootSignature;
+    D3D12_PRIMITIVE_TOPOLOGY m_eCurTopology;
 
     std::vector<D3D12_VERTEX_BUFFER_VIEW> m_vCurrVbvs;
     D3D12_INDEX_BUFFER_VIEW m_CurrIbv;

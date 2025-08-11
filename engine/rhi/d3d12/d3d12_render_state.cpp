@@ -1,8 +1,12 @@
 #include "rhi/d3d12/d3d12_render_state.h"
 #include "rhi/d3d12/d3d12_context.h"
 #include "rhi/d3d12/d3d12_translate.h"
+#include "rhi/d3d12/d3d12_framebuffer.h"
+#include "rhi/d3d12/d3d12_mesh.h"
+#include "rhi/d3d12/d3d12_shader.h"
 #include "kernel/context.h"
 #include "math/color.h"
+#include "math/hash.h"
 
 SEEK_NAMESPACE_BEGIN
 
@@ -11,7 +15,7 @@ D3D12RenderState::D3D12RenderState(Context* context, RasterizerStateDesc const& 
 	: RHIRenderState(context, rs_desc, ds_desc, bs_desc)
 {
 	// Step1 : RasterizerState
-	D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc = std::get<D3D12_GRAPHICS_PIPELINE_STATE_DESC>(m_vPipelineStateDesc);
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC& desc = std::get<D3D12_GRAPHICS_PIPELINE_STATE_DESC>(m_PsoDesc);
 	desc.RasterizerState.FillMode = D3D12Translate::TranslateFillMode(rs_desc.eFillMode);
 	desc.RasterizerState.CullMode = D3D12Translate::TranslateCullMode(rs_desc.eCullMode);
 	desc.RasterizerState.FrontCounterClockwise = rs_desc.bFrontFaceCCW;
@@ -81,7 +85,36 @@ SResult D3D12RenderState::Active()
 	cmd_list->OMSetBlendFactor(&m_stRenderStateDesc.blend.fBlendFactor.x());	
 	return S_Success;
 }
+ID3D12PipelineState* D3D12RenderState::GetGraphicPso(RHIMesh& mesh, RHIShader& shader, RHIFrameBuffer& fb)
+{
+	D3D12Mesh& d3d_mesh = (D3D12Mesh&)(mesh);
+	D3D12Shader& d3d_shader = (D3D12Shader&)(shader);	
+	D3D12FrameBuffer& d3d12_fb = (D3D12FrameBuffer&)(fb);
 
+	size_t hash_val = 0;
+	HashCombine(hash_val, d3d_mesh.PsoHashValue());
+	HashCombine(hash_val, d3d_shader.PsoHashValue());
+	HashCombine(hash_val, d3d12_fb.PsoHashValue());
+
+	auto iter = m_vPsos.find(hash_val);
+	if (iter == m_vPsos.end())
+	{
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC pso_desc = std::get<D3D12_GRAPHICS_PIPELINE_STATE_DESC>(m_PsoDesc);
+
+		d3d_mesh.UpdatePsoDesc(pso_desc);
+		d3d_shader.UpdatePsoDesc(pso_desc);
+		d3d12_fb.UpdatePsoDesc(pso_desc);
+
+		D3D12Context& rc = (D3D12Context&)m_pContext->RHIContextInstance();
+		ID3D12Device* d3d_device = rc.GetD3D12Device();
+
+		ID3D12PipelineStatePtr d3d_pso;
+		SEEK_THROW_IFFAIL(d3d_device->CreateGraphicsPipelineState(&pso_desc, IID_PPV_ARGS(d3d_pso.ReleaseAndGetAddressOf())));
+		iter = m_vPsos.emplace(hash_val, std::move(d3d_pso)).first;
+	}
+
+	return iter->second.Get();
+}
 
 D3D12Sampler::D3D12Sampler(Context* context, SamplerDesc const& desc)
     :RHISampler(context, desc)

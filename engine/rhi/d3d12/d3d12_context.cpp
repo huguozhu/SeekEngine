@@ -1,12 +1,18 @@
 #include "rhi/d3d12/d3d12_context.h"
 #include "rhi/d3d12/d3d12_predeclare.h"
-#include "rhi/d3d_common/d3d_adapter.h"
 #include "rhi/d3d12/d3d12_window.h"
 #include "rhi/d3d12/d3d12_fence.h"
 #include "rhi/d3d12/d3d12_render_view.h"
+#include "rhi/d3d12/d3d12_mesh.h"
+#include "rhi/d3d12/d3d12_render_state.h"
+#include "rhi/d3d12/d3d12_program.h"
+#include "rhi/d3d12/d3d12_shader.h"
+#include "rhi/d3d_common/d3d_adapter.h"
+
 #include "kernel/context.h"
 
 #include "utils/dll_loader.h"
+#include "utils/error.h"
 
 #define SEEK_MACRO_FILE_UID 68     // this code is auto generated, don't touch it!!!
 
@@ -123,7 +129,22 @@ void D3D12Context::IASetIndexBuffer(ID3D12GraphicsCommandList* cmd_list, D3D12_I
         m_CurrIbv = view;
     }
 }
-
+void D3D12Context::RSSetViewports(ID3D12GraphicsCommandList* cmd_list, std::span<D3D12_VIEWPORT const> viewports)
+{
+    if (viewports.size() == 1)
+    {
+        if (memcmp(&m_CurViewport, viewports.data(), sizeof(viewports[0])) != 0)
+        {
+            cmd_list->RSSetViewports(1, viewports.data());
+            m_CurViewport = viewports[0];
+        }
+    }
+    else
+    {
+        cmd_list->RSSetViewports(static_cast<uint32_t>(viewports.size()), viewports.data());
+        m_CurViewport = viewports[0];
+    }
+}
 
 
 
@@ -249,7 +270,7 @@ void D3D12Context::FlushResourceBarriers(ID3D12GraphicsCommandList* cmd_list)
 }
 void D3D12Context::AddResourceBarrier(ID3D12GraphicsCommandList* cmd_list, std::span<D3D12_RESOURCE_BARRIER> barriers)
 {
-    std::vector<D3D12_RESOURCE_BARRIER>* res_barriers = this->FindResourceBarriers(cmd_list, false);
+    std::vector<D3D12_RESOURCE_BARRIER>* res_barriers = this->FindResourceBarriers(cmd_list, true);
     res_barriers->insert(res_barriers->end(), barriers.begin(), barriers.end());
 }
 void D3D12Context::AddStallResource(ID3D12ResourcePtr const& resource)
@@ -450,7 +471,70 @@ SResult D3D12Context::EndFrame()
 {
     return S_Success;
 }
+SResult D3D12Context::BeginRenderPass(const RenderPassInfo& renderPassInfo)
+{
+    if (!renderPassInfo.fb)
+        return ERR_INVALID_DATA;
 
+    SResult ret = renderPassInfo.fb->Bind();
+    if (SEEK_CHECKFAILED(ret))
+    {
+        LOG_ERROR("bind RHIFrameBuffer fail, ret:%x", ret);
+        return ret;
+    }
+    m_pCurrentRHIFrameBuffer = static_cast<D3D12FrameBuffer*>(renderPassInfo.fb);
+
+    D3D12_VIEWPORT d3dViewport;
+    d3dViewport.TopLeftX = (FLOAT)m_pCurrentRHIFrameBuffer->GetViewport().left;
+    d3dViewport.TopLeftY = (FLOAT)m_pCurrentRHIFrameBuffer->GetViewport().top;
+    d3dViewport.Width = (FLOAT)m_pCurrentRHIFrameBuffer->GetViewport().width;
+    d3dViewport.Height = (FLOAT)m_pCurrentRHIFrameBuffer->GetViewport().height;
+    d3dViewport.MinDepth = 0.0;
+    d3dViewport.MaxDepth = 1.0;
+    ID3D12GraphicsCommandList* cmd_list = this->D3DRenderCmdList();
+    cmd_list->RSSetViewports(1, &d3dViewport);
+    return S_Success;
+}
+SResult D3D12Context::Render(RHIProgram* program, RHIMeshPtr const& mesh)
+{
+    if (!m_pCurrentRHIFrameBuffer)
+    {
+        LOG_ERROR("no RHIFrameBuffer is bound, call Render between BeginRenderPass/EndRenderPass");
+        return ERR_INVALID_INVOKE_FLOW;
+    }
+
+    SResult ret = S_Success;
+
+    RHIRenderState* rs = mesh->GetRenderState().get();
+
+    SEEK_RETIF_FAIL(((D3D12RenderState*)(rs))->Active());
+    SEEK_RETIF_FAIL(((D3D12Program*)(program))->Active());
+
+    D3D12Mesh& d3d_mesh = static_cast<D3D12Mesh&>(*mesh);
+    SEEK_RETIF_FAIL(d3d_mesh.Active(program));
+
+    if (mesh->IsInstanceRendering())
+    {
+
+    }
+    else
+    {
+        if (mesh->IsUseIndices())
+        {
+
+        }
+        else
+        {
+
+        }
+    }
+
+    return S_Success;
+}
+SResult D3D12Context::EndRenderPass()
+{
+    return S_Success;
+}
 
 
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "rhi/base/rhi_shader.h"
+#include "rhi/d3d12/d3d12_predeclare.h"
 #include "kernel/kernel.h"
 
 
@@ -18,6 +19,10 @@ public:
     SResult                 Active();
     void                    Deactive();
     virtual SResult         OnCompile() override;
+
+    size_t PsoHashValue() { return 0; }
+    void UpdatePsoDesc(D3D12_GRAPHICS_PIPELINE_STATE_DESC& pso_desc) const;
+    void UpdatePsoDesc(D3D12_COMPUTE_PIPELINE_STATE_DESC& pso_desc) const;
 
 };
 

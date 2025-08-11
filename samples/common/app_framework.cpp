@@ -8,8 +8,14 @@
 #include "rhi/d3d11/d3d11_predeclare.h"
 #include "rhi/d3d11/d3d11_context.h"
 #include "rhi/d3d11/d3d11_framebuffer.h"
+
+#include "rhi/d3d12/d3d12_predeclare.h"
+#include "rhi/d3d12/d3d12_context.h"
+#include "rhi/d3d12/d3d12_framebuffer.h"
+
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
+#include "imgui_impl_dx12.h"
 
 #define SEEK_MACRO_FILE_UID 46     // this code is auto generated, don't touch it!!!
 
@@ -125,10 +131,19 @@ SResult AppFramework::Run()
         SEEK_RETIF_FAIL(this->OnCreate());
         m_bInit = true;
     }
-
-    D3D11Context* rc_d3d = static_cast<D3D11Context*>(&m_pContext->RHIContextInstance());
+        
     ImGui_ImplWin32_Init(wnd);
-    ImGui_ImplDX11_Init(rc_d3d->GetD3D11Device(), rc_d3d->GetD3D11DeviceContext());
+
+    if (m_pContext->GetRHIType() == RHIType::D3D11)
+    {
+        D3D11Context* rc_d3d = static_cast<D3D11Context*>(&m_pContext->RHIContextInstance());
+        ImGui_ImplDX11_Init(rc_d3d->GetD3D11Device(), rc_d3d->GetD3D11DeviceContext());
+    }
+    /*else
+    {
+        D3D12Context* rc_d3d = static_cast<D3D12Context*>(&m_pContext->RHIContextInstance());
+        ImGui_ImplDX12_Init(rc_d3d->GetD3D12Device(), )
+    }*/
 
     bool get_msg = false;
     MSG  msg;
