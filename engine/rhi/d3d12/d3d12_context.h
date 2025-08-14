@@ -29,6 +29,10 @@ public:
     ID3D12CommandAllocator* D3DRenderCmdAllocator() const;
     ID3D12GraphicsCommandList* D3DRenderCmdList() const;
 
+    void UpdateRenderPso(ID3D12GraphicsCommandList* cmd_list, RHIProgram* program, RHIMeshPtr const& mesh);
+    void UpdateComputePso(ID3D12GraphicsCommandList* cmd_list, RHIProgram* program, RHIMeshPtr const& mesh);
+
+
     class PerThreadContext;
     PerThreadContext& CurThreadContext(bool is_render_context) const;
     void CommitRenderCmd(PerThreadContext& context);

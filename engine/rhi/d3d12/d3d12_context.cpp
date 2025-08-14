@@ -61,6 +61,13 @@ ID3D12GraphicsCommandList* D3D12Context::D3DRenderCmdList() const
 {
     return this->CurThreadContext(true).D3DCmdList();
 }
+void D3D12Context::UpdateRenderPso(ID3D12GraphicsCommandList* cmd_list, RHIProgram* program, RHIMeshPtr const& mesh)
+{
+
+}
+void D3D12Context::UpdateComputePso(ID3D12GraphicsCommandList* cmd_list, RHIProgram* program, RHIMeshPtr const& mesh)
+{
+}
 
 ID3D12CommandAllocator* D3D12Context::D3DLoadCmdAllocator() const
 {
@@ -513,19 +520,20 @@ SResult D3D12Context::Render(RHIProgram* program, RHIMeshPtr const& mesh)
     D3D12Mesh& d3d_mesh = static_cast<D3D12Mesh&>(*mesh);
     SEEK_RETIF_FAIL(d3d_mesh.Active(program));
 
-    if (mesh->IsInstanceRendering())
-    {
+    ID3D12GraphicsCommandList* cmd_list = this->D3DRenderCmdList();
 
-    }
-    else
     {
+        uint32_t instance_count = mesh->IsInstanceRendering() ? 1 : mesh->GetInstanceCount();
+        this->UpdateRenderPso(cmd_list, program, mesh);
         if (mesh->IsUseIndices())
-        {
-
+        {            
+            uint32_t index_count = mesh->GetNumIndices();
+            cmd_list->DrawIndexedInstanced(index_count, instance_count, 0, 0, 0);
         }
         else
-        {
-
+        {            
+            uint32_t vertex_count = mesh->GetNumVertex();
+            cmd_list->DrawInstanced(vertex_count, instance_count, 0, 0);
         }
     }
 

@@ -96,6 +96,8 @@ std::string ResourceManager::GetShaderCodePath(const std::string& shaderName)
     {
         case RHIType::D3D11:
             return std::string{ SEEK_GENERATED_SHADER_DIR } + "/hlsl" + debug_dir_suffix + "/" + shaderName + ".hlsl";
+        case RHIType::D3D12:
+            return std::string{ SEEK_GENERATED_SHADER_DIR } + "/dxil" + debug_dir_suffix + "/" + shaderName + ".dxil";
         case RHIType::Metal:
 #if defined(SEEK_PLATFORM_MAC)
             return std::string{ SEEK_GENERATED_SHADER_DIR } + "/msl_macos" + debug_dir_suffix + "/" + shaderName + ".msl";
@@ -143,6 +145,7 @@ std::string ResourceManager::GetShaderReflectPath(const std::string& shaderName)
 const std::string& ResourceManager::GetShaderLanguageStr()
 {
     static const std::string d3d11_shaderlanguage       = "hlsl";
+    static const std::string d3d12_shaderlanguage       = "dxil";
     static const std::string metal_mac_shaderlanguage   = "msl_macos";
     static const std::string metal_ios_shaderlanguage   = "msl_ios";
     static const std::string opengles_shaderlanguage    = "essl";
@@ -152,6 +155,8 @@ const std::string& ResourceManager::GetShaderLanguageStr()
     {
         case RHIType::D3D11:
             return d3d11_shaderlanguage;
+        case RHIType::D3D12:
+            return d3d12_shaderlanguage;
         case RHIType::Metal:
     #if defined(SEEK_PLATFORM_MAC)
             return metal_mac_shaderlanguage;
