@@ -77,7 +77,6 @@ SResult D3D11Shader::OnCompile()
     LPCVOID code_data = nullptr;
     SIZE_T code_size = 0;
     HRESULT hr = S_OK;
-    m_bCodePrecompiled = true;
     if (m_bCodePrecompiled)
     {
         code_data = m_szCode.data();
