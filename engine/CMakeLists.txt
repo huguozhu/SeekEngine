@@ -220,7 +220,6 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/utils/dll_loader.h
     ${SEEK_ENGINE_SOURCE_DIR}/utils/dll_loader.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/utils/error.h
-    ${SEEK_ENGINE_SOURCE_DIR}/utils/error.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/utils/exposure.h
     ${SEEK_ENGINE_SOURCE_DIR}/utils/exposure.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/utils/image_decode.h
