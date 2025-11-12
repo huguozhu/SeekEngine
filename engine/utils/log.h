@@ -6,8 +6,6 @@
 SEEK_NAMESPACE_BEGIN
 
 #define LOG_MAX_LEN 900
-
-//#define SEEK_ANDROID_SAMPLE
 #if defined(SEEK_PLATFORM_WINDOWS)
 #define PATH_SLASH '\\'
 #else
@@ -54,8 +52,7 @@ public:
 #define LOG_DEBUG(fmt, ...)
 #define LOG_INFO(fmt, ...)
 #define LOG_WARNING(fmt, ...)
-#define LOG_ERROR(fmt, ...)
-#define LOG_ERROR_RET(ret, fmt, ...)
+#define LOG_ERROR(fmt, ...)\
 #define LOG_ERROR_PRIERR(ret, fmt, ...)
 
 #elif defined(SEEK_ANDROID_SAMPLE)
