@@ -42,7 +42,6 @@ SResult LiquidGlassComponent::OnRenderBegin(Technique* tech, RHIMeshPtr mesh)
 
     if (m_pLiquildTech)
     {
-        m_Param.shape_power = 1.01;
 		m_pParamCbBuffer->Update(&m_Param, sizeof(LiquidGlassParam));
         m_pLiquildTech->SetParam("src_tex", m_pBgTex);
     }

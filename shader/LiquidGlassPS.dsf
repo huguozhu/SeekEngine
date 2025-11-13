@@ -2,7 +2,7 @@
 #include "Common.dsh"
 #include "shared/LiquidGlass.h"
 
-const float M_E = 2.718281828459045;
+static const float M_E = 2.718281828459045;
 
 Texture2D src_tex;
 
@@ -61,8 +61,7 @@ float4 main(
 	
 	if (max(coord.x, coord.y) > 1.0 || min(coord.x, coord.y) < 0.0)
 		return float4(1.0, 0.0, 1.0, 1.0);
-	
 
-	float4 color = src_tex.Sample(linear_sampler, coord);// * float4(1, 0, 0, 1);
+	float4 color = src_tex.Sample(linear_sampler, coord);
 	return color;
 }
