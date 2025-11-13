@@ -76,6 +76,7 @@ CLASS_DECLARE(GaussianBlur);
 CLASS_DECLARE(GlobalIllumination);
 CLASS_DECLARE(ImageComponent);
 CLASS_DECLARE(LightComponent);
+CLASS_DECLARE(LiquidGlassComponent);
 CLASS_DECLARE(MeshComponent);
 CLASS_DECLARE(SpotLightComponent);
 CLASS_DECLARE(ParticleComponent);

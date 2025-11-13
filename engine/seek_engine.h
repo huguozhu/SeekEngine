@@ -7,6 +7,7 @@
 #include "components/component.h"
 #include "components/camera_component.h"
 #include "components/light_component.h"
+#include "components/liquid_glass_component.h"
 #include "components/mesh_component.h"
 #include "components/particle_component.h"
 #include "components/scene_component.h"

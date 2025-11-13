@@ -15,6 +15,8 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/components/camera_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/light_component.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/light_component.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/components/liquid_glass_component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/liquid_glass_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/mesh_component.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/mesh_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/particle_component.h
@@ -228,6 +230,8 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/utils/log.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/utils/safe_c.h
     ${SEEK_ENGINE_SOURCE_DIR}/utils/safe_c.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/shape_mesh.h
+    ${SEEK_ENGINE_SOURCE_DIR}/utils/shape_mesh.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/utils/timer.h
     ${SEEK_ENGINE_SOURCE_DIR}/utils/timer.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/utils/zbase64.h

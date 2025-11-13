@@ -16,6 +16,7 @@ enum class ComponentType : uint8_t
     SkeletalMesh,
     SkyBox,
     WaterMark,
+    LiquidGlass,
     Image,
     Animation,
     ParticleSystem,

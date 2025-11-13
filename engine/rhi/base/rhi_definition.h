@@ -113,7 +113,7 @@ enum class MorphTargetType
 struct MorphInfo
 {
     MorphTargetType             morph_target_type = MorphTargetType::None;
-    RHIGpuBufferPtr          render_buffer = nullptr;
+    RHIGpuBufferPtr             render_buffer = nullptr;
     std::vector<float>          morph_target_weights;
     std::vector<float>          prev_morph_target_weights;
     std::vector<std::string>    morph_target_names;

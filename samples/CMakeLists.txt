@@ -77,3 +77,5 @@ add_sample_project(03.MeshLoader)
 add_sample_project(04.Lighting)
 add_sample_project(05.DeferredShading)
 add_sample_project(06.GlobalIllumination)
+add_sample_project(07.LiquidGlass)
+

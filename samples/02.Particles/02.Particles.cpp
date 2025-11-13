@@ -254,18 +254,24 @@ SResult Particles::OnCreate()
     m_CameraController.SetCamera(pCam.get());
 
     CreateParticleEntities();
-    //CreateWaterMarkEntity();
+    CreateWaterMarkEntity();
     return S_Success;
 }
 
 SResult Particles::OnUpdate()
 {
+    //m_CameraController.Update(m_pContext->GetDeltaTime());
+    //return m_pContext->Update();
+
     m_CameraController.Update(m_pContext->GetDeltaTime());
-    return m_pContext->Update();
+    SEEK_RETIF_FAIL(m_pContext->Tick());
+    SEEK_RETIF_FAIL(m_pContext->BeginRender());
+    SEEK_RETIF_FAIL(m_pContext->RenderFrame());
+    IMGUI_Begin();
+    IMGUI_Rendering();
+    SEEK_RETIF_FAIL(m_pContext->EndRender());
+    return S_Success;
 }
-
-
-
 
 
 #ifndef DVF_PLATFORM_ANDROID

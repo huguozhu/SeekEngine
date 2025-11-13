@@ -1,0 +1,20 @@
+//STAGE:vs
+#include "Common.dsh"
+struct VSOutput
+{
+	float2 texCoord	: TEXCOORD;
+	float4 pos		: SV_POSITION;
+};
+
+struct VSInput
+{
+	float3 posNDC	: POSITION;
+};
+
+VSOutput main(VSInput input)
+{
+	VSOutput output;
+	output.texCoord = TexCoordFromPosNDC(input.posNDC);
+	output.pos = float4(input.posNDC, 1.0);
+	return output;
+}

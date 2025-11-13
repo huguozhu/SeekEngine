@@ -3,20 +3,9 @@
 #include "components/mesh_component.h"
 #include "rhi/base/rhi_definition.h"
 #include "math/matrix.h"
+#include "utils/shape_mesh.h"
 
 SEEK_NAMESPACE_BEGIN
-
-struct MeshData
-{
-    std::vector<float3> positions;
-    std::vector<float2> texcoords;
-    std::vector<float3> normals;
-    std::vector<float4> tangent;        // optional
-    std::vector<uint16_t> indices;      // optional
-
-    MeshTopologyType eTopoType;
-    AABBox aabb;
-};
 
 class ShapeMeshComponent : public MeshComponent
 {

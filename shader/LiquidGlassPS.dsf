@@ -1,0 +1,68 @@
+//STAGE:ps
+#include "Common.dsh"
+#include "shared/LiquidGlass.h"
+
+const float M_E = 2.718281828459045;
+
+Texture2D src_tex;
+
+cbuffer cb_LiquidGlassParam
+{
+	LiquidGlassParam param;
+}
+
+float sdSuperellipse(float2 p, float n, float r) {
+    // Take the absolute value of the coordinates, as the formula uses |x| and |y|.
+    // This makes the shape symmetrical in all quadrants.
+    float2 p_abs = abs(p);
+
+    // Numerator of the distance formula: |x|^n + |y|^n - r^n
+    // This is the implicit equation of the superellipse. Its value is 0 on the
+    // boundary, negative inside, and positive outside.
+    float numerator = pow(p_abs.x, n) + pow(p_abs.y, n) - pow(r, n);
+
+    // Denominator: n * sqrt(|x|^(2n-2) + |y|^(2n-2))
+    // This is the magnitude of the gradient of the implicit function. Dividing by it
+    // normalizes the result, making it a better approximation of true Euclidean distance.
+    // Note: The pow() function can be computationally expensive. For a fixed, integer 'n'
+    // (like n=4), you would get better performance by using direct multiplication.
+    float den_x = pow(p_abs.x, 2.0 * n - 2.0);
+    float den_y = pow(p_abs.y, 2.0 * n - 2.0);
+
+    // Add a small epsilon to prevent division by zero at the origin (0,0).
+    float denominator = n * sqrt(den_x + den_y) + 0.00001;
+
+    // The final signed distance
+    return numerator / denominator;
+}
+
+float f(float x)
+{
+	return 1.0 - param.refraction_b * pow(param.refraction_c * M_E, -param.refraction_d * x - param.refraction_a);
+}
+
+float4 main(
+	in float2 iTc : TEXCOORD) : SV_Target
+{
+	float2 center = float2(0.5, 0.5);
+	float2 p = (iTc - center) * 2.0;
+	float r = 1.0;
+	float d = sdSuperellipse(p, param.shape_power, r);
+	if (d > 0)
+		discard;
+	
+	float dist = -d;
+	float2 sampleP = p * pow(f(dist), param.refraction_power);
+	
+	float2 quadNDC2ScreenNDCScale = float2(1.0, 1.0);
+	float2 mid_point = float2(0.0, 0.0);
+	float2 targetNDC = sampleP * quadNDC2ScreenNDCScale + mid_point;
+	float2 coord = targetNDC * 0.5 + float2(0.5, 0.5);
+	
+	if (max(coord.x, coord.y) > 1.0 || min(coord.x, coord.y) < 0.0)
+		return float4(1.0, 0.0, 1.0, 1.0);
+	
+
+	float4 color = src_tex.Sample(linear_sampler, coord);// * float4(1, 0, 0, 1);
+	return color;
+}

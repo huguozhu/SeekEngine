@@ -39,6 +39,7 @@ public:
     SkyBoxComponent*                    GetSkyBoxComponent() { return m_pSkyBoxComponent;}
     std::vector<ParticleComponent*>&    GetParticleComponents() { return m_vParticleComponents; }
     std::vector<WaterMarkComponent*>&   GetWaterMarkComponents() { return m_vWaterMarkComponents; }
+    std::vector<LiquidGlassComponent*>& GetLiquidGlassComponents() { return m_vLiquidGlassComponents; }
 
     virtual SResult                     Tick(float delta_time);
     
@@ -106,6 +107,7 @@ protected:
     SkyBoxComponent*                                    m_pSkyBoxComponent = nullptr;
     std::vector<ParticleComponent*>                     m_vParticleComponents;
     std::vector<WaterMarkComponent*>                    m_vWaterMarkComponents;
+    std::vector<LiquidGlassComponent*>                  m_vLiquidGlassComponents;
     CameraComponent*                                    m_pActiveCamera = nullptr;
     int32_t                                             m_iActiveLightIndex = -1;
 

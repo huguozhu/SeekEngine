@@ -17,6 +17,7 @@
 #include "components/skybox_component.h"
 #include "components/particle_component.h"
 #include "components/watermark_component.h"
+#include "components/liquid_glass_component.h"
 #include "scene_manager/scene_manager.h"
 #include <algorithm>
 
@@ -83,7 +84,8 @@ SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tech
             lightModePredefine.name = "LIGHT_MODE";
             lightModePredefine.value = std::to_string((int)m_pContext->GetLightingMode());
 
-            uint32_t has_tex_normal = mesh->GetMaterial()->normal_tex ? 1 : 0;
+			MaterialPtr pMaterial = mesh->GetMaterial();
+            uint32_t has_tex_normal = pMaterial && pMaterial->normal_tex ? 1 : 0;
             EffectPredefine hasNormalTexPredefine;
             hasNormalTexPredefine.name = "HAS_MATERIAL_NORMAL";
             hasNormalTexPredefine.value = std::to_string(has_tex_normal);
@@ -93,21 +95,21 @@ SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tech
             predefines.push_back(lightModePredefine);
             predefines.push_back(hasNormalTexPredefine);
 
-            if (mesh->GetMaterial()->albedo_tex)
+            if (pMaterial && pMaterial->albedo_tex)
                 predefines.push_back({ "HAS_MATERIAL_ALBEDO", "1" });
             else
                 predefines.push_back({ "HAS_MATERIAL_ALBEDO", "0" });
 
-            if (mesh->GetMaterial()->metallic_roughness_tex)
+            if (pMaterial && pMaterial->metallic_roughness_tex)
                 predefines.push_back({ "HAS_MATERIAL_METALLIC_ROUGHNESS", "1" });
             else
                 predefines.push_back({ "HAS_MATERIAL_METALLIC_ROUGHNESS", "0" });
 
-            if (mesh->GetMaterial()->normal_mask_tex)
+            if (pMaterial && pMaterial->normal_mask_tex)
                 predefines.push_back({ "HAS_MATERIAL_NORMAL_MASK", "1" });
             else
                 predefines.push_back({ "HAS_MATERIAL_NORMAL_MASK", "0" });
-            /*if (mesh->GetMaterial()->occlusion_tex)
+            /*if (pMaterial && pMaterial->occlusion_tex)
                 predefines.push_back({ "HAS_MATERIAL_OCCLUSION", "1" });
             else
                 predefines.push_back({ "HAS_MATERIAL_OCCLUSION", "0" });
@@ -163,7 +165,7 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
     if (m_renderableMeshes.empty() &&
         m_pContext->SceneManagerInstance().GetSkyBoxComponent() == nullptr &&
         m_pContext->SceneManagerInstance().GetParticleComponents().size() == 0)
-        return S_Success;
+        ;// return S_Success;
 
     // analyze the whole pipeline by the configuration, and prepare the framebuffer for each render pass
     // in furture, need a framegraph to do this
@@ -195,6 +197,8 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
     
     if (m_pContext->SceneManagerInstance().GetWaterMarkComponents().size() > 0)
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::WatermarkJob, this)));
+    if (m_pContext->SceneManagerInstance().GetLiquidGlassComponents().size() > 0)
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::LiquidGlassJob, this)));
     if (m_pContext->IsHDR())
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::ToneMappingJob, this)));    
 
@@ -239,6 +243,22 @@ RendererReturnValue ForwardShadingRenderer::WatermarkJob()
         if (watermark)
         {
             watermark->Render();
+        }
+    }
+    m_pContext->RHIContextInstance().EndRenderPass();
+    return RRV_NextJob;
+}
+RendererReturnValue ForwardShadingRenderer::LiquidGlassJob()
+{
+    m_eCurRenderStage = RenderStage::None;
+    m_pContext->RHIContextInstance().BeginRenderPass({ "LiquidGlass", m_pRenderSceneFB.get() });
+    std::vector<LiquidGlassComponent*>& glasses = m_pContext->SceneManagerInstance().GetLiquidGlassComponents();
+    for (uint32_t i = 0; i < glasses.size(); ++i)
+    {
+        LiquidGlassComponent* glass = glasses[i];
+        if (glass)
+        {
+            glass->Render();
         }
     }
     m_pContext->RHIContextInstance().EndRenderPass();

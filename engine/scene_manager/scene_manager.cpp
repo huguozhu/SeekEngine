@@ -289,6 +289,10 @@ void SceneManager::AddToEntityRecursion(SceneComponentPtr scene_component)
     {
         m_vWaterMarkComponents.push_back((WaterMarkComponent*)scene_component.get());
     }
+    if (scene_component->GetComponentType() == ComponentType::LiquidGlass)
+    {
+        m_vLiquidGlassComponents.push_back((LiquidGlassComponent*)scene_component.get());
+    }
 
     size_t child_num = scene_component->NumChildren();
     for (size_t i = 0; i < child_num; i++)

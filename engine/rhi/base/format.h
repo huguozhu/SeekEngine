@@ -105,17 +105,6 @@ enum class ColorSpace : uint32_t
     Num,
 };
 
-struct PixelFormatInfo
-{
-    const char* name;
-    uint32_t    block_size_x;
-    uint32_t    block_size_y;
-    uint32_t    block_size_z;
-
-    bool        supported;
-    PixelFormat pixel_format;
-};
-
 class Formatutil
 {
 public:
