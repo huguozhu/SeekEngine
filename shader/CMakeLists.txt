@@ -14,6 +14,7 @@ set(shader_shared_files
 
 set(shader_header_files
     ${SEEK_SHADER_SOURCE_DIR}/BRDF.dsh
+    ${SEEK_SHADER_SOURCE_DIR}/CalcSDF.dsh
     ${SEEK_SHADER_SOURCE_DIR}/Common.dsh
     ${SEEK_SHADER_SOURCE_DIR}/IBL.dsh
     ${SEEK_SHADER_SOURCE_DIR}/Lighting.dsh
