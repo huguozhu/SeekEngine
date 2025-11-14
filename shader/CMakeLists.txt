@@ -46,7 +46,6 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/GiVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/LightCullingCS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/LiquidGlassPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/LiquidGlassVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/IrradianceConvolutionPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/LPVInjectPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/LPVInjectVS.dsf

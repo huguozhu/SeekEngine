@@ -83,7 +83,7 @@ SResult LiquidGlassComponent::InitShaders()
         const char* pixel_shader_name;
         const char* compute_shader_name;
     } lg_techs[] = {
-       { "LiquildGlass",  "LiquidGlassVS",    "LiquidGlassPS",    nullptr},
+       { "LiquildGlass",  "PostProcessVS",    "LiquidGlassPS",    nullptr},
     };
     
     int tech_count = sizeof(lg_techs) / sizeof(LiquidGlassTechInfo);
