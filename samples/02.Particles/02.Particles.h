@@ -24,8 +24,6 @@ private:
     EntityPtr           m_pCameraEntity = nullptr;
     // Skybox
     EntityPtr           m_pSkyBoxEntity = nullptr;
-    // WaterMark
-    EntityPtr           m_pWaterMarkEntity = nullptr;
 
 
     double              m_dStartTime = 0;

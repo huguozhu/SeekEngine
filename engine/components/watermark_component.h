@@ -1,13 +1,15 @@
 #pragma once
 
-#include "components/mesh_component.h"
+#include "components/sprite2d_component.h"
+#include "math/vector.h"
+#include "math/matrix.h"
 
 SEEK_NAMESPACE_BEGIN
 
 #include "shader/shared/common.h"
 #include "shader/shared/WaterMark.h"
 
-class WaterMarkComponent : public MeshComponent
+class WaterMarkComponent : public Sprite2DComponent
 {
 public:
     WaterMarkComponent(Context* context);
@@ -15,7 +17,7 @@ public:
 
     SResult SetWaterMarkTex(RHITexturePtr watermark_tex);
     SResult SetWaterMarkDesc(WaterMarkDesc desc);
-    virtual SResult       OnRenderBegin(Technique* tech, RHIMeshPtr mesh) override;
+    virtual SResult       OnRenderBegin() override;
     virtual SResult       Render() override;
 
     SResult WaterMarkGenerate();
@@ -24,6 +26,8 @@ public:
 private:
     Technique*          m_pTechWaterMarkRender = nullptr;
     Technique*          m_pTechWaterMarkGenerate = nullptr;
+
+    RHIMeshPtr	        m_pDrawMesh = nullptr;
 
     WaterMarkDesc       m_sDesc = { 0 };
     RHIGpuBufferPtr     m_pWaterMarkDescCBuffer = nullptr;

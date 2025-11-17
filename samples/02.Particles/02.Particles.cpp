@@ -6,10 +6,8 @@
 
 void Particles::CreateWaterMarkEntity()
 {
-    m_pWaterMarkEntity = MakeSharedPtr<Entity>(m_pContext.get(), "WaterMarkEntity");
     WaterMarkComponentPtr pWatermark = MakeSharedPtr<WaterMarkComponent>(m_pContext.get());
-    m_pWaterMarkEntity->AddSceneComponent(pWatermark);
-    m_pWaterMarkEntity->AddToTopScene();
+    m_pContext->SceneManagerInstance().AddSprite2DComponent(pWatermark);
 
     RHITexturePtr watermark_tex = nullptr;
     std::string tex_path = FullPath("02.Particles/email_watermark.png");

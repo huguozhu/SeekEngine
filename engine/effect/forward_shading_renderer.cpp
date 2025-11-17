@@ -195,8 +195,6 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
     
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderSceneJob, this)));
     
-    if (m_pContext->SceneManagerInstance().GetWaterMarkComponents().size() > 0)
-        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::WatermarkJob, this)));
     if (m_pContext->IsHDR())
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::ToneMappingJob, this)));    
 
@@ -228,22 +226,6 @@ RendererReturnValue ForwardShadingRenderer::RenderSkyBoxJob()
 	m_pRenderSceneFB->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, RHIFrameBuffer::LoadAction::Load);
     m_pRenderSceneFB->SetDepthLoadOption(RHIFrameBuffer::LoadAction::Load);
 
-    return RRV_NextJob;
-}
-RendererReturnValue ForwardShadingRenderer::WatermarkJob()
-{
-    m_eCurRenderStage = RenderStage::None;
-    m_pContext->RHIContextInstance().BeginRenderPass({ "Watermark", m_pRenderSceneFB.get() });
-    std::vector<WaterMarkComponent*>& watermarks = m_pContext->SceneManagerInstance().GetWaterMarkComponents();
-    for (uint32_t i = 0; i < watermarks.size(); ++i)
-    {
-        WaterMarkComponent* watermark = watermarks[i];
-        if (watermark)
-        {
-            watermark->Render();
-        }
-    }
-    m_pContext->RHIContextInstance().EndRenderPass();
     return RRV_NextJob;
 }
 RendererReturnValue ForwardShadingRenderer::RenderParticlesJob()

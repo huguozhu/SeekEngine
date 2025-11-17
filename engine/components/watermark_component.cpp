@@ -16,14 +16,12 @@
 SEEK_NAMESPACE_BEGIN
 
 WaterMarkComponent::WaterMarkComponent(Context* context)
-    :MeshComponent(context)
+    :Sprite2DComponent(context)
 {
-    m_eComponentType = ComponentType::WaterMark;
     m_szName = "WaterMarkComponent";
 
     RHIContext& rc = m_pContext->RHIContextInstance();
-    RHIMeshPtr mesh = QuadMesh_GetMesh(rc);
-    m_vMeshes.push_back(mesh);
+    m_pDrawMesh = QuadMesh_GetMesh(rc);
 }
 
 WaterMarkComponent::~WaterMarkComponent()
@@ -43,7 +41,7 @@ SResult WaterMarkComponent::SetWaterMarkDesc(WaterMarkDesc desc)
     return S_Success;
 }
 
-SResult WaterMarkComponent::OnRenderBegin(Technique* tech, RHIMeshPtr mesh)
+SResult WaterMarkComponent::OnRenderBegin()
 {
     if (m_sDesc.watermark_type == WaterMarkType_Single)
     {        
@@ -156,9 +154,8 @@ SResult WaterMarkComponent::Render()
     m_bDirty = false;
 
     // Step4: Render WaterMark
-    RHIMeshPtr pMesh = m_vMeshes[0];
-    SEEK_RETIF_FAIL(this->OnRenderBegin(m_pTechWaterMarkRender, pMesh));
-    SEEK_RETIF_FAIL(m_pTechWaterMarkRender->Render(pMesh));
+    SEEK_RETIF_FAIL(this->OnRenderBegin());
+    SEEK_RETIF_FAIL(m_pTechWaterMarkRender->Render(m_pDrawMesh));
     SEEK_RETIF_FAIL(this->OnRenderEnd());
     return S_Success;
 }

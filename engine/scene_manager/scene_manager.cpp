@@ -286,10 +286,6 @@ void SceneManager::AddToEntityRecursion(SceneComponentPtr scene_component)
     {
         m_vParticleComponents.push_back((ParticleComponent*)scene_component.get());
     }
-    if (scene_component->GetComponentType() == ComponentType::WaterMark)
-    {
-        m_vWaterMarkComponents.push_back((WaterMarkComponent*)scene_component.get());
-    }
     size_t child_num = scene_component->NumChildren();
     for (size_t i = 0; i < child_num; i++)
     {
