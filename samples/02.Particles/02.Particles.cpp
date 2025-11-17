@@ -6,7 +6,12 @@
 
 void Particles::CreateWaterMarkEntity()
 {
-    WaterMarkComponentPtr pWatermark = MakeSharedPtr<WaterMarkComponent>(m_pContext.get());
+	RHIContext& rc = m_pContext->RHIContextInstance();
+    Viewport const& vp = rc.GetScreenRHIFrameBuffer()->GetViewport();
+    float w = vp.width;
+    float h = vp.height;
+
+    WaterMarkComponentPtr pWatermark = MakeSharedPtr<WaterMarkComponent>(m_pContext.get(), w, h);
     m_pContext->SceneManagerInstance().AddSprite2DComponent(pWatermark);
 
     RHITexturePtr watermark_tex = nullptr;

@@ -52,6 +52,7 @@ public:
 
 	SResult							    RenderSprite2DScene();
 	void                                AddSprite2DComponent(Sprite2DComponentPtr const& sprite2d_component);
+    CameraComponentPtr                  GetSprite2DCamera(uint32_t w, uint32_t h);
 
     // RHIQuery = std::function<bool(const MeshPair&)>
     template<typename Query>
@@ -117,6 +118,7 @@ protected:
 
 	// 2D Scene
 	std::vector<Sprite2DComponentPtr>                   m_vSprite2DComponentList;
+    std::map<uint32_t, CameraComponentPtr>              m_vSprite2DCameraList;
     
     
     RHIGpuBufferPtr m_LightInfoCBuffer;

@@ -291,6 +291,29 @@ void CreateTerrain(MeshData& mesh_data, float width, float height, uint32_t slic
     mesh_data.aabb = box;
 }
 
+void CreateSprite2D(MeshData& mesh_data, float w, float h)
+{
+    float half_w = w * 0.5f;
+	float half_h = h * 0.5f;
+    mesh_data.positions.push_back(float3(-half_w, -half_h, 0));
+    mesh_data.positions.push_back(float3(+half_w, -half_h, 0));
+    mesh_data.positions.push_back(float3(-half_w, +half_h, 0));
+    mesh_data.positions.push_back(float3(+half_w, +half_h, 0));
+
+    mesh_data.texcoords.push_back(float2(1, 1));
+    mesh_data.texcoords.push_back(float2(0, 1));
+    mesh_data.texcoords.push_back(float2(1, 0));
+    mesh_data.texcoords.push_back(float2(0, 0));
+
+    mesh_data.indices.push_back(0);
+    mesh_data.indices.push_back(1);
+    mesh_data.indices.push_back(2);
+    mesh_data.indices.push_back(3);
+
+    mesh_data.eTopoType = MeshTopologyType::Triangle_Strip;
+    mesh_data.aabb = AABBox(float3(0, 0, 0), float3(w, h, 0.0));
+}
+
 RHIMeshPtr CreateMeshFromMeshData(Context* context, MeshData& mesh_data)
 {
     RHIMeshPtr pMesh = context->RHIContextInstance().CreateMesh();

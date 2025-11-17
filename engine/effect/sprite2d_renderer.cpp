@@ -46,12 +46,18 @@ RendererReturnValue Sprite2DRenderer::RenderSprite2DJob()
     RHIFrameBuffer* finalFB = rc.GetFinalRHIFrameBuffer().get();
     rc.BeginRenderPass({ "RenderSprite", finalFB });
 
-    SResult res = m_pContext->SceneManagerInstance().RenderSprite2DScene();
+    Viewport vp = m_pContext->GetViewport();
+    SceneManager& sm = m_pContext->SceneManagerInstance();
+   
+    CameraComponentPtr cam_2d = sm.GetSprite2DCamera(vp.width, vp.height);
+    sm.SetActiveCamera(cam_2d.get());
+    SResult res = sm.RenderSprite2DScene();
     if (res != S_Success)
     {
         LOG_ERROR_PRIERR(res, "Sprite2DRenderer::RenderSprite2DJob() failed.");
     }
     rc.EndRenderPass();
+	sm.SetActiveCamera(nullptr);
 
     return RRV_NextJob;
 }

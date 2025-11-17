@@ -64,6 +64,7 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/ToneMappingPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/SkyBoxVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/SkyBoxPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/Sprite2DVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/SsaoVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/SsaoPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/TaaPS.dsf

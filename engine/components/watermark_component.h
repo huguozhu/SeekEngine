@@ -12,7 +12,7 @@ SEEK_NAMESPACE_BEGIN
 class WaterMarkComponent : public Sprite2DComponent
 {
 public:
-    WaterMarkComponent(Context* context);
+    WaterMarkComponent(Context* context, uint32_t width, uint32_t height, uint32_t draw_index = 0);
     virtual ~WaterMarkComponent();
 
     SResult SetWaterMarkTex(RHITexturePtr watermark_tex);

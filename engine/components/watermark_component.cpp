@@ -15,8 +15,8 @@
 
 SEEK_NAMESPACE_BEGIN
 
-WaterMarkComponent::WaterMarkComponent(Context* context)
-    :Sprite2DComponent(context)
+WaterMarkComponent::WaterMarkComponent(Context* context, uint32_t width, uint32_t height, uint32_t draw_index)
+    :Sprite2DComponent(context, width, height, draw_index)
 {
     m_szName = "WaterMarkComponent";
 

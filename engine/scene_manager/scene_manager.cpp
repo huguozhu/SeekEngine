@@ -469,7 +469,20 @@ void SceneManager::AddSprite2DComponent(Sprite2DComponentPtr const& sprite2d_com
 {
 	m_vSprite2DComponentList.push_back(sprite2d_component);
 }
-
+CameraComponentPtr SceneManager::GetSprite2DCamera(uint32_t w, uint32_t h)
+{
+    uint32_t v = (w << 16) | (h & 0x0000ffff);
+    if (m_vSprite2DCameraList.find(v) != m_vSprite2DCameraList.end())
+        return m_vSprite2DCameraList[v];
+    else
+    {
+        CameraComponentPtr pCam = MakeSharedPtr<CameraComponent>(m_pContext, CameraProjectionType::Orthographic);
+        pCam->ProjOrthographicParams(w, h, 0.1f, 100.0f);
+        pCam->SetLookAt(float3(0.0f, 0.0f, 10.0f), float3(0.0, 0.0, 0.0f), float3(0.0f, 1.0f, 0.0f));
+        m_vSprite2DCameraList[v] = pCam;
+        return pCam;
+    }
+}
 SEEK_NAMESPACE_END
 
 #undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

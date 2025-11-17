@@ -16,11 +16,11 @@ SResult LiquidGlass::OnCreate()
     float w = vp.width;
     float h = vp.height;
 
-    LiquidGlassComponentPtr pLiquidGlass = MakeSharedPtr<LiquidGlassComponent>(m_pContext.get());
+    LiquidGlassComponentPtr pLiquidGlass = MakeSharedPtr<LiquidGlassComponent>(m_pContext.get(), w, h);
     m_pContext->SceneManagerInstance().AddSprite2DComponent(pLiquidGlass);
 
-    std::string bg_files = FullPath("asset/textures/Newspaper.png");
-    BitmapBufferPtr bit = ImageDecodeFromFile(bg_files, ImageType::PNG);
+    std::string bg_files = FullPath("asset/textures/the_one.jpg");
+    BitmapBufferPtr bit = ImageDecodeFromFile(bg_files, ImageType::JPEG);
     RHITexturePtr bg_tex = m_pContext->RHIContextInstance().CreateTexture2D(bit);
     pLiquidGlass->SetBgTex(bg_tex);
 
