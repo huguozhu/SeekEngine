@@ -127,6 +127,7 @@ public:
     RHIContext&         RHIContextInstance() { return *m_pRHIContext; }
     SceneManager&       SceneManagerInstance() { return *m_pSceneManager;}
     SceneRenderer&      SceneRendererInstance() { return *m_pSceneRenderer; }
+    SceneRenderer&      Sprite2DRendererInstance() { return *m_pSprite2DRenderer; }
     ResourceManager&    ResourceManagerInstance() { return *m_pResourceManager; }
     Effect&             EffectInstance() { return *(m_pEffect.get()); }
     
@@ -143,6 +144,7 @@ private:
 
     RHIContextPtrUnique         m_pRHIContext;
     SceneManagerPtrUnique       m_pSceneManager;
+    SceneRendererPtrUnique      m_pSprite2DRenderer;
     SceneRendererPtrUnique      m_pSceneRenderer;
     ResourceManagerPtrUnique    m_pResourceManager;
     EffectPtrUnique             m_pEffect;

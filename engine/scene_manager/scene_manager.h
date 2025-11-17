@@ -46,11 +46,13 @@ public:
 
     Rect<uint32_t>                      GetRenderRect() const { return m_RenderRect; }
 
-    RHIGpuBufferPtr&                 GetLightInfoCBuffer();
-    RHIGpuBufferPtr&                 GetViewInfoCBuffer();
+    RHIGpuBufferPtr&                    GetLightInfoCBuffer();
+    RHIGpuBufferPtr&                    GetViewInfoCBuffer();
 
     const std::vector<MeshPair>&        GetOpaqueMeshList() { return m_OpaqueMeshList; }
     const std::vector<MeshPair>&        GetTransparentMeshList() { return m_TransparentMeshList; }
+
+	SResult							    RenderSprite2DScene();
 
     // RHIQuery = std::function<bool(const MeshPair&)>
     template<typename Query>
@@ -101,6 +103,7 @@ protected:
     bool                                                m_bSceneDirty = false;
     SceneComponentPtr                                   m_pRootComponent = nullptr;
 
+    // 3D Scene
     std::vector<Entity*>                                m_vCurEntities;
     std::vector<CameraComponent*>                       m_vCameraList;
     std::vector<LightComponent*>                        m_vLightList;
@@ -114,6 +117,9 @@ protected:
     std::vector<MeshComponent*>                         m_vMeshComponentList;
     std::vector<MeshPair>                               m_vMeshList;
     std::map<CameraComponent*, std::vector<MeshPair>>   m_mCachedVisibleMeshListByCamera;
+
+	// 2D Scene
+	std::vector<Sprite2DComponentPtr>                  m_vSprite2DComponentList;
     
     
     RHIGpuBufferPtr m_LightInfoCBuffer;

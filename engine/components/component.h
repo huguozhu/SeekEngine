@@ -7,6 +7,11 @@ SEEK_NAMESPACE_BEGIN
 enum class ComponentType : uint8_t
 {
     Unknown,
+    // 2D
+    Sprite2D,
+
+
+	// 3D
     Scene,
     Camera,
     LightCamera,

@@ -29,6 +29,8 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/components/skybox_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/shape_mesh_component.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/shape_mesh_component.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/components/sprite2d_component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/sprite2d_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/watermark_component.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/watermark_component.cpp
 
@@ -57,6 +59,8 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/effect/scene_renderer.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/shadow_layer.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/shadow_layer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/sprite2d_renderer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/sprite2d_renderer.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/taa.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/taa.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/technique.h

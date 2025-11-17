@@ -7,6 +7,7 @@
 
 #include "effect/effect.h"
 #include "effect/scene_renderer.h"
+#include "effect/sprite2d_renderer.h"
 #include "effect/forward_shading_renderer.h"
 #include "effect/deferred_shading_renderer.h"
 
@@ -92,6 +93,13 @@ SResult Context::Init(void* device, void* native_wnd)
             if (SEEK_CHECKFAILED(ret))
                 break;
         }
+        if (!m_pSprite2DRenderer)
+        {
+            m_pSprite2DRenderer = MakeUniquePtrMacro(Sprite2DRenderer, this);
+            ret = m_pSprite2DRenderer->Init();
+            if (SEEK_CHECKFAILED(ret))
+                break;
+		}
         this->SetFpsLimitType(m_InitInfo.fps_limit_type);
         return S_Success;
     } while (0);
@@ -166,10 +174,10 @@ SResult Context::RenderFrame()
 {
     SResult ret = S_Success;
     RendererReturnValue rrv;
+
+    // Step2: 3D Scene
     SceneRenderer& sr_scene = this->SceneRendererInstance();
-
     sr_scene.BuildRenderJobList();
-
     if (sr_scene.HasRenderJob())
     {
         while (1)
@@ -179,6 +187,19 @@ SResult Context::RenderFrame()
                 break;
         }
     }
+
+    // Step1: 2D Back Scene
+	SceneRenderer& sr_2d = this->Sprite2DRendererInstance();
+    sr_2d.BuildRenderJobList();
+    if (sr_2d.HasRenderJob())
+    {
+        while (1)
+        {
+            rrv = sr_2d.DoRenderJob();
+            if (rrv & RRV_Finish)
+                break;
+        }
+	}
 
     m_FrameCount++;
     return S_Success;

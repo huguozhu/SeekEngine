@@ -26,6 +26,8 @@ enum RendererReturnValue : uint32_t
 enum class RenderStage : uint8_t
 {
     None,
+    Sprite2D,
+
     PreZ,
     GenerateShadowMap,
     GenerateCubeShadowMap,

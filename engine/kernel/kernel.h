@@ -85,6 +85,7 @@ CLASS_DECLARE(SkeletalMeshComponent);
 CLASS_DECLARE(SkyBoxComponent);
 CLASS_DECLARE(SpringSkeletonComponent);
 CLASS_DECLARE(SphereMeshComponent);
+CLASS_DECLARE(Sprite2DComponent);
 CLASS_DECLARE(TerrainMeshComponent);
 CLASS_DECLARE(PlaneMeshComponent);
 CLASS_DECLARE(WaterMarkComponent);

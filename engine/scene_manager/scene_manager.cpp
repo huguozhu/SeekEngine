@@ -4,6 +4,7 @@
 #include "components/camera_component.h"
 #include "components/light_component.h"
 #include "components/skeletal_mesh_component.h"
+#include "components/sprite2d_component.h"
 #include "components/entity.h"
 #include "effect/scene_renderer.h"
 #include "effect/shadow_layer.h"
@@ -464,6 +465,14 @@ RHIGpuBufferPtr& SceneManager::GetViewInfoCBuffer()
     }
 
     return m_ViewInfoCBuffer;
+}
+SResult SceneManager::RenderSprite2DScene()
+{
+    for (auto& component : m_vSprite2DComponentList)
+    {
+        SEEK_RETIF_FAIL(component->Render());
+    }
+    return S_Success;
 }
 
 SEEK_NAMESPACE_END
