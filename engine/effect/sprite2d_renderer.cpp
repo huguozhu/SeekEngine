@@ -7,7 +7,7 @@
 #include "rhi/base/rhi_texture.h"
 #include "rhi/base/format.h"
 #include "rhi/base/rhi_gpu_buffer.h"
-#include "rhi/base/rhi_definition.h"
+#include "rhi/base/rhi_definition.h"    
 #include "utils/error.h"
 //#include "components/image_component.h"
 
@@ -42,11 +42,17 @@ SResult Sprite2DRenderer::BuildRenderJobList()
 RendererReturnValue Sprite2DRenderer::RenderSprite2DJob()
 {
     m_eCurRenderStage = RenderStage::Sprite2D;
+    RHIContext& rc = m_pContext->RHIContextInstance();
+    RHIFrameBuffer* finalFB = rc.GetFinalRHIFrameBuffer().get();
+    rc.BeginRenderPass({ "RenderSprite", finalFB });
+
     SResult res = m_pContext->SceneManagerInstance().RenderSprite2DScene();
     if (res != S_Success)
     {
         LOG_ERROR_PRIERR(res, "Sprite2DRenderer::RenderSprite2DJob() failed.");
     }
+    rc.EndRenderPass();
+
     return RRV_NextJob;
 }
 

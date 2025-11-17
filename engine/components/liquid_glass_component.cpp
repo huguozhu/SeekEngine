@@ -10,7 +10,6 @@
 #include "kernel/context.h"
 #include "utils/shape_mesh.h"
 
-
 #define SEEK_MACRO_FILE_UID 75     // this code is auto generated, don't touch it!!!
 
 SEEK_NAMESPACE_BEGIN
@@ -18,9 +17,8 @@ SEEK_NAMESPACE_BEGIN
 static const int TECH_INDEX = 0;
 
 LiquidGlassComponent::LiquidGlassComponent(Context* context)
-    :MeshComponent(context)
+    :Sprite2DComponent(context)
 {
-    m_eComponentType = ComponentType::LiquidGlass;
 	m_szName = "LiquidGlassComponent";
 
     RHIContext& rc = m_pContext->RHIContextInstance();
@@ -35,7 +33,7 @@ LiquidGlassComponent::~LiquidGlassComponent()
     m_pLiquildTech = nullptr;
     m_pBgTex = nullptr;
 }
-SResult LiquidGlassComponent::OnRenderBegin(Technique* tech, RHIMeshPtr mesh)
+SResult LiquidGlassComponent::OnRenderBegin()
 {
     if (m_pDrawBgTech)
         m_pDrawBgTech->SetParam("src_tex", m_pBgTex);
@@ -56,7 +54,7 @@ SResult LiquidGlassComponent::Render()
             return ERR_INVALID_INIT;
     }
 
-    SEEK_RETIF_FAIL(this->OnRenderBegin(nullptr, nullptr));
+    SEEK_RETIF_FAIL(this->OnRenderBegin());
     SEEK_RETIF_FAIL(m_pDrawBgTech->Render(m_pBgMesh));
     SEEK_RETIF_FAIL(m_pLiquildTech->Render(m_pBgMesh));
     SEEK_RETIF_FAIL(this->OnRenderEnd());

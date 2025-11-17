@@ -39,8 +39,7 @@ public:
     SkyBoxComponent*                    GetSkyBoxComponent() { return m_pSkyBoxComponent;}
     std::vector<ParticleComponent*>&    GetParticleComponents() { return m_vParticleComponents; }
     std::vector<WaterMarkComponent*>&   GetWaterMarkComponents() { return m_vWaterMarkComponents; }
-    std::vector<LiquidGlassComponent*>& GetLiquidGlassComponents() { return m_vLiquidGlassComponents; }
-
+    
     virtual SResult                     Tick(float delta_time);
     
 
@@ -53,6 +52,7 @@ public:
     const std::vector<MeshPair>&        GetTransparentMeshList() { return m_TransparentMeshList; }
 
 	SResult							    RenderSprite2DScene();
+	void                                AddSprite2DComponent(Sprite2DComponentPtr const& sprite2d_component);
 
     // RHIQuery = std::function<bool(const MeshPair&)>
     template<typename Query>
@@ -110,7 +110,6 @@ protected:
     SkyBoxComponent*                                    m_pSkyBoxComponent = nullptr;
     std::vector<ParticleComponent*>                     m_vParticleComponents;
     std::vector<WaterMarkComponent*>                    m_vWaterMarkComponents;
-    std::vector<LiquidGlassComponent*>                  m_vLiquidGlassComponents;
     CameraComponent*                                    m_pActiveCamera = nullptr;
     int32_t                                             m_iActiveLightIndex = -1;
 
@@ -119,7 +118,7 @@ protected:
     std::map<CameraComponent*, std::vector<MeshPair>>   m_mCachedVisibleMeshListByCamera;
 
 	// 2D Scene
-	std::vector<Sprite2DComponentPtr>                  m_vSprite2DComponentList;
+	std::vector<Sprite2DComponentPtr>                   m_vSprite2DComponentList;
     
     
     RHIGpuBufferPtr m_LightInfoCBuffer;

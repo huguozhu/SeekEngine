@@ -290,11 +290,6 @@ void SceneManager::AddToEntityRecursion(SceneComponentPtr scene_component)
     {
         m_vWaterMarkComponents.push_back((WaterMarkComponent*)scene_component.get());
     }
-    if (scene_component->GetComponentType() == ComponentType::LiquidGlass)
-    {
-        m_vLiquidGlassComponents.push_back((LiquidGlassComponent*)scene_component.get());
-    }
-
     size_t child_num = scene_component->NumChildren();
     for (size_t i = 0; i < child_num; i++)
     {
@@ -473,6 +468,10 @@ SResult SceneManager::RenderSprite2DScene()
         SEEK_RETIF_FAIL(component->Render());
     }
     return S_Success;
+}
+void SceneManager::AddSprite2DComponent(Sprite2DComponentPtr const& sprite2d_component)
+{
+	m_vSprite2DComponentList.push_back(sprite2d_component);
 }
 
 SEEK_NAMESPACE_END

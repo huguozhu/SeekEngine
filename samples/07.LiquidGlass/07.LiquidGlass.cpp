@@ -16,10 +16,8 @@ SResult LiquidGlass::OnCreate()
     float w = vp.width;
     float h = vp.height;
 
-    m_pLiquidGlassEntity = MakeSharedPtr<Entity>(m_pContext.get(), "LiquidGlassEntity");
     LiquidGlassComponentPtr pLiquidGlass = MakeSharedPtr<LiquidGlassComponent>(m_pContext.get());
-    m_pLiquidGlassEntity->AddSceneComponent(pLiquidGlass);
-    m_pLiquidGlassEntity->AddToTopScene();
+    m_pContext->SceneManagerInstance().AddSprite2DComponent(pLiquidGlass);
 
     std::string bg_files = FullPath("asset/textures/Newspaper.png");
     BitmapBufferPtr bit = ImageDecodeFromFile(bg_files, ImageType::PNG);

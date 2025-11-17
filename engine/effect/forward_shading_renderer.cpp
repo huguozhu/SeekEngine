@@ -197,8 +197,6 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
     
     if (m_pContext->SceneManagerInstance().GetWaterMarkComponents().size() > 0)
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::WatermarkJob, this)));
-    if (m_pContext->SceneManagerInstance().GetLiquidGlassComponents().size() > 0)
-        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::LiquidGlassJob, this)));
     if (m_pContext->IsHDR())
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::ToneMappingJob, this)));    
 
@@ -243,22 +241,6 @@ RendererReturnValue ForwardShadingRenderer::WatermarkJob()
         if (watermark)
         {
             watermark->Render();
-        }
-    }
-    m_pContext->RHIContextInstance().EndRenderPass();
-    return RRV_NextJob;
-}
-RendererReturnValue ForwardShadingRenderer::LiquidGlassJob()
-{
-    m_eCurRenderStage = RenderStage::None;
-    m_pContext->RHIContextInstance().BeginRenderPass({ "LiquidGlass", m_pRenderSceneFB.get() });
-    std::vector<LiquidGlassComponent*>& glasses = m_pContext->SceneManagerInstance().GetLiquidGlassComponents();
-    for (uint32_t i = 0; i < glasses.size(); ++i)
-    {
-        LiquidGlassComponent* glass = glasses[i];
-        if (glass)
-        {
-            glass->Render();
         }
     }
     m_pContext->RHIContextInstance().EndRenderPass();

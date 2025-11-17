@@ -19,7 +19,6 @@ public:
 
 private:
     EntityPtr       m_pCameraEntity = nullptr;
-    EntityPtr       m_pLiquidGlassEntity = nullptr;
     RHITexturePtr   m_pBgTexture;
 
 };

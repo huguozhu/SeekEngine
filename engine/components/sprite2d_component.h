@@ -16,7 +16,6 @@ public:
     virtual SResult             Render() { return S_Success; }
 
 private:
-	Context*        m_pContext = nullptr;
 	uint32_t	    m_iDrawIndex = 0;
     RHITexturePtr	m_pImage = nullptr;
 

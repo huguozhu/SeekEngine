@@ -1,17 +1,18 @@
 #pragma once
 
-#include "components/mesh_component.h"
+#include "components/sprite2d_component.h"
+#include "math/vector.h"
 
 SEEK_NAMESPACE_BEGIN
 #include "shader/shared/LiquidGlass.h"
 
-class LiquidGlassComponent : public MeshComponent
+class LiquidGlassComponent : public Sprite2DComponent
 {
 public:
     LiquidGlassComponent(Context* context);
     virtual ~LiquidGlassComponent();
 
-    virtual SResult     OnRenderBegin(Technique* tech, RHIMeshPtr mesh) override;
+    virtual SResult     OnRenderBegin() override;
     virtual SResult     Render() override;
     virtual SResult     Tick(float delta_time) override;
 
