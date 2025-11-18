@@ -170,21 +170,21 @@ float sdopSubtraction(float d1, float d2) {
 }
 
 // 4. Smooth Union
-// k:[0,1] smoothness, k=0 --> no smooth
+// k:[0,100] smoothness, k=0:no smooth  k=100:very smooth
 float sdopSmoothUnion(float d1, float d2, float k) {
     float h = clamp(0.5 + 0.5 * (d2 - d1) / k, 0.0, 1.0);
     return lerp(d2, d1, h) - k * h * (1.0 - h);
 }
 
 // 5. Smooth Intersection
-// k:[0,1] smoothness, k=0 --> no smooth
+// k:[0,100] smoothness, k=0:no smooth  k=100:very smooth
 float sdopSmoothIntersection(float d1, float d2, float k) {
     float h = clamp(0.5 - 0.5 * (d2 - d1) / k, 0.0, 1.0);
     return lerp(d2, d1, h) + k * h * (1.0 - h);
 }
 
 // 6. Smooth Subtraction
-// k:[0,1] smoothness, k=0 --> no smooth
+// k:[0,100] smoothness, k=0:no smooth  k=100:very smooth
 float sdopSmoothSubtraction(float d1, float d2, float k) {
     float h = clamp(0.5 - 0.5 * (d2 + d1) / k, 0.0, 1.0);
     return lerp(d2, -d1, h) + k * h * (1.0 - h);

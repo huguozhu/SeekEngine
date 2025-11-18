@@ -2,6 +2,7 @@
 
 #include "components/sprite2d_component.h"
 #include "math/vector.h"
+#include "math/spring_mass_damper.h"
 
 SEEK_NAMESPACE_BEGIN
 #include "shader/shared/LiquidGlass.h"
@@ -16,20 +17,25 @@ public:
     virtual SResult     Render() override;
     virtual SResult     Tick(float delta_time) override;
 
-    SResult InitShaders();
-
     void SetBgTex(RHITexturePtr bg) { m_pBgTex = bg; }
 
 private:
-    Technique*      m_pLiquildTech = nullptr;
-    RHITexturePtr   m_pBgTex = nullptr;
+    void Reset();
+    SResult InitShaders();
 
-	RHIGpuBufferPtr  m_pMvpCbBuffer = nullptr;
+private:
+    Technique*          m_pLiquildTech = nullptr;
+    RHITexturePtr       m_pBgTex = nullptr;
+	RHIMeshPtr	        m_pLiquidMesh = nullptr;
 
-	RHIMeshPtr	    m_pLiquidMesh = nullptr;
+    LiquidGlassParam    m_Param;
+    RHIGpuBufferPtr     m_pMvpCbBuffer = nullptr;
+    RHIGpuBufferPtr     m_pParamCbBuffer = nullptr;
 
-    LiquidGlassParam m_Param;
-    RHIGpuBufferPtr  m_pParamCbBuffer = nullptr;
+    SpringMassDamperPtr m_pSpringMassDamper_1 = nullptr;
+    SpringMassDamperPtr m_pSpringMassDamper_2 = nullptr;
+
+	float               m_fDuration = 0.0f;
 };
 
 SEEK_NAMESPACE_END

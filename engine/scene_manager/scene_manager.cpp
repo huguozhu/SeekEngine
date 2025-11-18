@@ -225,6 +225,11 @@ SResult SceneManager::Tick(float delta_time)
                 SEEK_RETIF_FAIL(component->Tick(delta_time));
         }
     }
+    // Sprite2D Tick
+    for (Sprite2DComponentPtr sprite : m_vSprite2DComponentList)
+    {
+        SEEK_RETIF_FAIL(sprite->Tick(delta_time));
+    }
     
     TIMER_FRAME_BEG("RenderScene UpdateSkeletonMatrics");
     UpdateSkeletonMatrics();

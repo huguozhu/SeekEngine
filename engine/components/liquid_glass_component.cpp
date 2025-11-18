@@ -15,6 +15,8 @@
 
 SEEK_NAMESPACE_BEGIN
 
+
+
 LiquidGlassComponent::LiquidGlassComponent(Context* context, uint32_t width, uint32_t height, uint32_t draw_index)
     :Sprite2DComponent(context, width, height, draw_index)
 {
@@ -24,6 +26,12 @@ LiquidGlassComponent::LiquidGlassComponent(Context* context, uint32_t width, uin
     MeshData bg_mesh_data;
     CreateSprite2D(bg_mesh_data, width, height);
     m_pLiquidMesh = CreateMeshFromMeshData(m_pContext, bg_mesh_data);
+
+    m_Param.width = static_cast<float>(m_iWidth);
+    m_Param.height = static_cast<float>(m_iHeight);
+
+	// init spring param
+	this->Reset();
 }
 LiquidGlassComponent::~LiquidGlassComponent()
 {
@@ -45,7 +53,6 @@ SResult LiquidGlassComponent::OnRenderBegin()
     {
         Matrix4 mvp = GetWorldMatrix() * vp;
 		m_pMvpCbBuffer->Update(&mvp, sizeof(Matrix4));
-
 		m_pParamCbBuffer->Update(&m_Param, sizeof(LiquidGlassParam));
         m_pLiquildTech->SetParam("src_tex", m_pBgTex);
     }
@@ -61,7 +68,41 @@ SResult LiquidGlassComponent::Render()
 }
 SResult LiquidGlassComponent::Tick(float delta_time)
 {
+    if (delta_time > 0.01f)
+		delta_time = 0.03f;
+    delta_time = 0.001f;
+	m_pSpringMassDamper_1->Tick(delta_time);
+    float3 v3_1 = m_pSpringMassDamper_1->GetPosition();
+    m_Param.circle_center = float2(v3_1.x(), v3_1.y()) + float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
+
+    m_pSpringMassDamper_2->Tick(delta_time);    
+    float3 v3_2 = m_pSpringMassDamper_2->GetPosition();
+	m_Param.ellipse_center = float2(v3_2.x(), v3_2.y()) + float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
+    
+    
+    m_fDuration += delta_time;
+
+    if (m_fDuration > 0.08f)
+    {
+        m_fDuration = 0.0;
+		this->Reset();
+    }
+    
     return S_Success;
+}
+
+void LiquidGlassComponent::Reset()
+{
+    m_Param.circle_radius = std::min(m_iWidth, m_iHeight) / 4.0f;    
+    m_Param.circle_center = float2(m_iWidth / 4.0f, m_iHeight / 4.0f);
+    m_Param.ellipse_radius = float2(m_iWidth / 6.0f, m_iHeight / 6.0f);
+    m_Param.ellipse_center = float2(m_iWidth / 4.0f * 3, m_iHeight / 2.0f);
+
+    // init spring param
+    float2 circle_x0 = m_Param.circle_center - float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
+    float2 ellipse_x0 = m_Param.ellipse_center - float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
+    m_pSpringMassDamper_1 = MakeSharedPtr<SpringMassDamper>(0.005f, 0.0f, 200.0f, float3(circle_x0.x(), circle_x0.y(), 0.0), 0.0f);
+    m_pSpringMassDamper_2 = MakeSharedPtr<SpringMassDamper>(0.005f, 0.0f, 200.0f, float3(ellipse_x0.x(), ellipse_x0.y(), 0.0), 0.0f);
 }
 SResult LiquidGlassComponent::InitShaders()
 {

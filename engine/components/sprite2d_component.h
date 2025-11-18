@@ -17,7 +17,7 @@ public:
     virtual SResult             OnRenderEnd() { return S_Success; }
     virtual SResult             Render() = 0;
 
-private:
+protected:
     uint32_t        m_iWidth;
     uint32_t        m_iHeight;
 	uint32_t	    m_iDrawIndex = 0;

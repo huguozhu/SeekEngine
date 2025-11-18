@@ -101,6 +101,8 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/math/ray.h
     ${SEEK_ENGINE_SOURCE_DIR}/math/ray.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/math/rect.h
+    ${SEEK_ENGINE_SOURCE_DIR}/math/spring_mass_damper.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/math/spring_mass_damper.h
     ${SEEK_ENGINE_SOURCE_DIR}/math/transform.h
     ${SEEK_ENGINE_SOURCE_DIR}/math/transform.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/math/vector.h
