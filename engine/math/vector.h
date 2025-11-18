@@ -340,5 +340,8 @@ using uint4     = Vector_T<uint32_t, 4>;
 using float2    = Vector_T<float, 2>;
 using float3    = Vector_T<float, 3>;
 using float4    = Vector_T<float, 4>;
+using double2   = Vector_T<double, 2>;
+using double3   = Vector_T<double, 3>;
+using double4   = Vector_T<double, 4>;
 
 SEEK_NAMESPACE_END

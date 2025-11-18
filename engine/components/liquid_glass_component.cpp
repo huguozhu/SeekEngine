@@ -68,9 +68,8 @@ SResult LiquidGlassComponent::Render()
 }
 SResult LiquidGlassComponent::Tick(float delta_time)
 {
-    if (delta_time > 0.01f)
-		delta_time = 0.03f;
-    delta_time = 0.001f;
+    //delta_time = m_pSpringMassDamper_1->CalculateAdaptiveTimeStep();
+
 	m_pSpringMassDamper_1->Tick(delta_time);
     float3 v3_1 = m_pSpringMassDamper_1->GetPosition();
     m_Param.circle_center = float2(v3_1.x(), v3_1.y()) + float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
@@ -79,10 +78,8 @@ SResult LiquidGlassComponent::Tick(float delta_time)
     float3 v3_2 = m_pSpringMassDamper_2->GetPosition();
 	m_Param.ellipse_center = float2(v3_2.x(), v3_2.y()) + float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
     
-    
     m_fDuration += delta_time;
-
-    if (m_fDuration > 0.08f)
+    if (m_fDuration > 3.0f)
     {
         m_fDuration = 0.0;
 		this->Reset();
@@ -101,8 +98,8 @@ void LiquidGlassComponent::Reset()
     // init spring param
     float2 circle_x0 = m_Param.circle_center - float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
     float2 ellipse_x0 = m_Param.ellipse_center - float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
-    m_pSpringMassDamper_1 = MakeSharedPtr<SpringMassDamper>(0.005f, 0.0f, 200.0f, float3(circle_x0.x(), circle_x0.y(), 0.0), 0.0f);
-    m_pSpringMassDamper_2 = MakeSharedPtr<SpringMassDamper>(0.005f, 0.0f, 200.0f, float3(ellipse_x0.x(), ellipse_x0.y(), 0.0), 0.0f);
+    m_pSpringMassDamper_1 = MakeSharedPtr<SpringMassDamper>(0.005f, 0.01f, 2.0f, float3(circle_x0.x(), circle_x0.y(), 0.0), 0.0f);
+    m_pSpringMassDamper_2 = MakeSharedPtr<SpringMassDamper>(0.005f, 0.01f, 2.0f, float3(ellipse_x0.x(), ellipse_x0.y(), 0.0), 0.0f);
 }
 SResult LiquidGlassComponent::InitShaders()
 {

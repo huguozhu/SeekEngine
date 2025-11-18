@@ -9,14 +9,15 @@ SEEK_NAMESPACE_BEGIN
 
 namespace Math {
 
-const float PI = 3.1415926f;
-const float PI2 = 6.2831852f;
-const float DEG2RAD = 0.01745329f;
-const float RAD2DEG = 57.29577f;
+constexpr float PI = 3.1415926f;
+constexpr float PI2 = 6.2831852f;
+constexpr float DEG2RAD = 0.01745329f;
+constexpr float RAD2DEG = 57.29577f;
 
-const float FOLAT_EPSILON = 1.192092896e-07f;
-const float FLOAT_MAX = 3.402823466e+38f;
-const float FLOAT_MIN = 1.175494351e-38f;
+constexpr float FOLAT_EPSILON = 1.192092896e-07f;
+constexpr float FLOAT_MAX = 3.402823466e+38f;
+constexpr float FLOAT_MIN = 1.175494351e-38f;
+constexpr double MIN_EXP_ARG = -700.0;
 
 
 /* *******************************************************************************
