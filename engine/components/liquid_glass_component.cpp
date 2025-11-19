@@ -15,8 +15,6 @@
 
 SEEK_NAMESPACE_BEGIN
 
-
-
 LiquidGlassComponent::LiquidGlassComponent(Context* context, uint32_t width, uint32_t height, uint32_t draw_index)
     :Sprite2DComponent(context, width, height, draw_index)
 {
@@ -105,30 +103,10 @@ SResult LiquidGlassComponent::InitShaders()
 {
     Effect& effect = m_pContext->EffectInstance();
 	RHIContext& rc = m_pContext->RHIContextInstance();
+    SEEK_RETIF_FAIL(effect.LoadTechnique("LiquildGlass", &RenderStateDesc::Default2D(),
+        "Sprite2DVS", "LiquidGlassPS", nullptr));
 
-    struct LiquidGlassTechInfo
-    {
-        const std::string tech_name;
-        const char* vertex_shader_name;
-        const char* pixel_shader_name;
-        const char* compute_shader_name;
-    } lg_techs[] = {
-       { "LiquildGlass",  "Sprite2DVS",    "LiquidGlassPS",    nullptr},
-    };
-    
-    int tech_count = sizeof(lg_techs) / sizeof(LiquidGlassTechInfo);
-    for (size_t i = 0; i < tech_count; ++i)
-    {
-        const std::string tech_name = lg_techs[i].tech_name;
-        if (!effect.GetTechnique(tech_name))
-        {
-            SEEK_RETIF_FAIL(effect.LoadTechnique(tech_name, &RenderStateDesc::Default2D(),
-                lg_techs[i].vertex_shader_name,
-                lg_techs[i].pixel_shader_name,
-                lg_techs[i].compute_shader_name));
-        }
-    }
-    m_pLiquildTech = effect.GetTechnique(lg_techs[0].tech_name);
+    m_pLiquildTech = effect.GetTechnique("LiquildGlass");
 	m_pParamCbBuffer = rc.CreateConstantBuffer(sizeof(LiquidGlassParam), RESOURCE_FLAG_CPU_WRITE | RESOURCE_FLAG_GPU_READ);
 	m_pLiquildTech->SetParam("cb_LiquidGlassParam", m_pParamCbBuffer);
 
