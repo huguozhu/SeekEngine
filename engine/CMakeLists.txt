@@ -19,6 +19,8 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/components/liquid_glass_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/mesh_component.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/mesh_component.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/components/metaball_component.h
+    ${SEEK_ENGINE_SOURCE_DIR}/components/metaball_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/particle_component.h
     ${SEEK_ENGINE_SOURCE_DIR}/components/particle_component.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/components/scene_component.h
@@ -108,6 +110,8 @@ set(ENGINE_CODE
     # physics
     ${SEEK_ENGINE_SOURCE_DIR}/physics/spring_mass_damper.h
     ${SEEK_ENGINE_SOURCE_DIR}/physics/spring_mass_damper.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/physics/metaball_water_simulator.h
+    ${SEEK_ENGINE_SOURCE_DIR}/physics/metaball_water_simulator.cpp
     
     # rhi
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_object.h

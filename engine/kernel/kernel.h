@@ -78,6 +78,8 @@ CLASS_DECLARE(ImageComponent);
 CLASS_DECLARE(LightComponent);
 CLASS_DECLARE(LiquidGlassComponent);
 CLASS_DECLARE(MeshComponent);
+CLASS_DECLARE(Metaball2DComponent);
+CLASS_DECLARE(Metaball3DComponent);
 CLASS_DECLARE(SpotLightComponent);
 CLASS_DECLARE(ParticleComponent);
 CLASS_DECLARE(PointLightComponent);

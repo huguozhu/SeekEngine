@@ -38,6 +38,7 @@ public:
 
     SkyBoxComponent*                    GetSkyBoxComponent() { return m_pSkyBoxComponent;}
     std::vector<ParticleComponent*>&    GetParticleComponents() { return m_vParticleComponents; }
+    std::vector<Metaball3DComponent*>& GetMetaball3DComponents() { return m_vMetaball3DComponents; }
     
     virtual SResult                     Tick(float delta_time);
     
@@ -109,6 +110,7 @@ protected:
     std::vector<LightComponent*>                        m_vLightList;
     SkyBoxComponent*                                    m_pSkyBoxComponent = nullptr;
     std::vector<ParticleComponent*>                     m_vParticleComponents;
+	std::vector<Metaball3DComponent*>                   m_vMetaball3DComponents;
     CameraComponent*                                    m_pActiveCamera = nullptr;
     int32_t                                             m_iActiveLightIndex = -1;
 

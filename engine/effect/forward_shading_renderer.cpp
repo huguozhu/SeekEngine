@@ -16,6 +16,7 @@
 #include "components/camera_component.h"
 #include "components/skybox_component.h"
 #include "components/particle_component.h"
+#include "components/metaball_component.h"
 #include "components/watermark_component.h"
 #include "components/liquid_glass_component.h"
 #include "scene_manager/scene_manager.h"
@@ -162,9 +163,11 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
         else
             return false;
     });
+	SceneManager& sm = m_pContext->SceneManagerInstance();
     if (m_renderableMeshes.empty() &&
-        m_pContext->SceneManagerInstance().GetSkyBoxComponent() == nullptr &&
-        m_pContext->SceneManagerInstance().GetParticleComponents().size() == 0)
+        sm.GetSkyBoxComponent() == nullptr &&
+        sm.GetParticleComponents().size() == 0 &&
+        sm.GetMetaball3DComponents().size() == 0)
         ;// return S_Success;
 
     // analyze the whole pipeline by the configuration, and prepare the framebuffer for each render pass
@@ -173,7 +176,6 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
 
 
     // Shadow Map jobs
-    SceneManager& sm = m_pContext->SceneManagerInstance();
     size_t light_count = sm.NumLightComponent();
 	if (light_count > 0)
 	{
@@ -188,10 +190,12 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
         }
 	}
 
-    if (m_pContext->SceneManagerInstance().GetSkyBoxComponent())
+    if (sm.GetSkyBoxComponent())
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderSkyBoxJob, this)));
-    if (m_pContext->SceneManagerInstance().GetParticleComponents().size() > 0)
+    if (sm.GetParticleComponents().size() > 0)
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderParticlesJob, this)));
+    if (sm.GetMetaball3DComponents().size() > 0)
+		m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderMetaballJob, this)));
     
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderSceneJob, this)));
     
@@ -231,13 +235,29 @@ RendererReturnValue ForwardShadingRenderer::RenderSkyBoxJob()
 RendererReturnValue ForwardShadingRenderer::RenderParticlesJob()
 {
     m_eCurRenderStage = RenderStage::None;
-    m_pContext->RHIContextInstance().BeginRenderPass({ "RenderParticles", m_pRenderSceneFB.get() });
+   	m_pContext->RHIContextInstance().BeginRenderPass({ "RenderParticles", m_pRenderSceneFB.get() });
     std::vector<ParticleComponent*>& particles = m_pContext->SceneManagerInstance().GetParticleComponents();
     for (uint32_t i = 0; i < particles.size(); ++i)
     {
         ParticleComponent* particle = particles[i];
         if (particle)
             particle->Render();
+    }
+    m_pContext->RHIContextInstance().EndRenderPass();
+    m_pRenderSceneFB->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, RHIFrameBuffer::LoadAction::Load);
+    m_pRenderSceneFB->SetDepthLoadOption(RHIFrameBuffer::LoadAction::Load);
+    return RRV_NextJob;
+}
+RendererReturnValue ForwardShadingRenderer::RenderMetaballJob()
+{
+    m_eCurRenderStage = RenderStage::None;
+    m_pContext->RHIContextInstance().BeginRenderPass({ "RenderParticles", m_pRenderSceneFB.get() });
+    std::vector<Metaball3DComponent*>& metaballs = m_pContext->SceneManagerInstance().GetMetaball3DComponents();
+    for (uint32_t i = 0; i < metaballs.size(); ++i)
+    {
+        Metaball3DComponent* metaball = metaballs[i];
+        if (metaball)
+            metaball->Render();
     }
     m_pContext->RHIContextInstance().EndRenderPass();
     m_pRenderSceneFB->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, RHIFrameBuffer::LoadAction::Load);

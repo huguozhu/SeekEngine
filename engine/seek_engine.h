@@ -9,6 +9,7 @@
 #include "components/light_component.h"
 #include "components/liquid_glass_component.h"
 #include "components/mesh_component.h"
+#include "components/metaball_component.h"
 #include "components/particle_component.h"
 #include "components/scene_component.h"
 #include "components/shape_mesh_component.h"

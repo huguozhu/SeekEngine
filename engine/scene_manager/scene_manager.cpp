@@ -180,6 +180,7 @@ SResult SceneManager::Tick(float delta_time)
         m_vLightList.clear();
         m_pSkyBoxComponent = nullptr;
         m_vParticleComponents.clear();
+		m_vParticleComponents.clear();
         m_vMeshComponentList.clear();
         m_vMeshList.clear();
         m_mCachedVisibleMeshListByCamera.clear();
@@ -291,6 +292,10 @@ void SceneManager::AddToEntityRecursion(SceneComponentPtr scene_component)
     {
         m_vParticleComponents.push_back((ParticleComponent*)scene_component.get());
     }
+    if (scene_component->GetComponentType() == ComponentType::Metaball)
+    {
+        m_vMetaballComponents.push_back((MetaballComponent*)scene_component.get());
+	}
     size_t child_num = scene_component->NumChildren();
     for (size_t i = 0; i < child_num; i++)
     {
