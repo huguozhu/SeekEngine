@@ -2,7 +2,7 @@
 
 #include "components/sprite2d_component.h"
 #include "math/vector.h"
-#include "math/spring_mass_damper.h"
+#include "physics/spring_mass_damper.h"
 
 SEEK_NAMESPACE_BEGIN
 #include "shader/shared/LiquidGlass.h"

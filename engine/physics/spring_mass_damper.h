@@ -2,8 +2,8 @@
 
 #include "kernel/kernel.h"
 #include "math/vector.h"
-#include "aabbox.h"
-#include "math_utility.h"
+#include "math/aabbox.h"
+#include "math/math_utility.h"
 
 SEEK_NAMESPACE_BEGIN
 

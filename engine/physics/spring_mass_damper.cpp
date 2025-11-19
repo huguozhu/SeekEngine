@@ -1,4 +1,4 @@
-﻿#include "math/spring_mass_damper.h"
+﻿#include "physics/spring_mass_damper.h"
 #include "math/math_utility.h"
 #include <cmath>
 
