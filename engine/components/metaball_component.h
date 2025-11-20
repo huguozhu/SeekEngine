@@ -19,14 +19,24 @@ public:
     void AddMetaball(Metaball ball);
     void RemoveMetaball(uint32_t index);
 
-    SResult             Render();
+	virtual SResult     OnRenderBegin() override;
+    virtual SResult     Render() override;
     virtual SResult     Tick(float delta_time) override;
 
 private:
-    std::vector<Metaball> m_vMetaballs;
+    void Reset();
+    SResult InitShaders();
 
+private:
+    std::vector<Metaball> m_vMetaballs;
     MetaballWaterSimulatorPtr m_pSimulator;
 
+    Technique*          m_pMetaballTech = nullptr;
+    RHIMeshPtr	        m_pMetaballMesh = nullptr;
+
+    MetaballParam       m_Param;
+    RHIGpuBufferPtr     m_pMvpCbBuffer = nullptr;
+    RHIGpuBufferPtr     m_pParamCbBuffer = nullptr;
 };
 
 /******************************************************************************

@@ -45,35 +45,38 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/GiRsmPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/GiLpvPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/GiVS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/LightCullingCS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/LiquidGlassPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/IrradianceConvolutionPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/LightCullingCS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/LiquidGlassPS.dsf    
     ${SEEK_SHADER_SOURCE_DIR}/LPVInjectPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/LPVInjectVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/LPVPropagationPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/LPVPropagationVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/MeshRenderingVS.dsf
+
     ${SEEK_SHADER_SOURCE_DIR}/PostProcessVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/PrefilterEnvPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/PreZMeshRenderingVS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/Sprite2DMetaballPS.dsf    
+   
     ${SEEK_SHADER_SOURCE_DIR}/ShadowCopyPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/ShadowingDirectionalPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/ShadowingPointPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/ShadowingSpotPS.dsf
-
-    ${SEEK_SHADER_SOURCE_DIR}/ToneMappingPS.dsf
+    
     ${SEEK_SHADER_SOURCE_DIR}/SkyBoxVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/SkyBoxPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/Sprite2DVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/SsaoVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/SsaoPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/TaaPS.dsf
-
+    ${SEEK_SHADER_SOURCE_DIR}/ToneMappingPS.dsf
 
     ${SEEK_SHADER_SOURCE_DIR}/WaterMarkPS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/WaterMarkVS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/WaterMarkGenerateCS.dsf
 
+    # Particle shaders
     ${SEEK_SHADER_SOURCE_DIR}/ParticleInitCS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/ParticleTickBeginCS.dsf
     ${SEEK_SHADER_SOURCE_DIR}/ParticleEmitCS.dsf

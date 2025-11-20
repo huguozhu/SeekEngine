@@ -34,7 +34,6 @@ LiquidGlassComponent::LiquidGlassComponent(Context* context, uint32_t width, uin
 LiquidGlassComponent::~LiquidGlassComponent()
 {
     m_pLiquildTech = nullptr;
-    m_pBgTex = nullptr;
 }
 SResult LiquidGlassComponent::OnRenderBegin()
 {
@@ -52,7 +51,7 @@ SResult LiquidGlassComponent::OnRenderBegin()
         Matrix4 mvp = GetWorldMatrix() * vp;
 		m_pMvpCbBuffer->Update(&mvp, sizeof(Matrix4));
 		m_pParamCbBuffer->Update(&m_Param, sizeof(LiquidGlassParam));
-        m_pLiquildTech->SetParam("src_tex", m_pBgTex);
+        m_pLiquildTech->SetParam("src_tex", m_pImage);
     }
     return S_Success;
 }
@@ -66,8 +65,6 @@ SResult LiquidGlassComponent::Render()
 }
 SResult LiquidGlassComponent::Tick(float delta_time)
 {
-    //delta_time = m_pSpringMassDamper_1->CalculateAdaptiveTimeStep();
-
 	m_pSpringMassDamper_1->Tick(delta_time);
     float3 v3_1 = m_pSpringMassDamper_1->GetPosition();
     m_Param.circle_center = float2(v3_1.x(), v3_1.y()) + float2(m_iWidth / 2.0f, m_iHeight / 2.0f);

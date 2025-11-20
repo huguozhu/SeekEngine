@@ -1,0 +1,55 @@
+//STAGE:ps
+#include "Common.dsh"
+#include "shared/Metaball.h"
+
+Texture2D src_tex;
+
+cbuffer cb_MetaBallParam
+{
+	MetaballParam param;
+}
+
+// 单个 Metaball 场函数
+float MetaballField(float3 pos, Metaball ball)
+{
+    float3 toCenter = pos - ball.position;
+    float sqrDist = dot(toCenter, toCenter);
+    
+    // 避免除零，使用平滑的场函数
+    return (ball.radius * ball.radius) / (sqrDist + 0.0001) * ball.intensity;
+}
+
+// 计算所有 Metaball 的总场
+float CalculateTotalField(float3 pos)
+{
+    float totalField = 0.0;
+    
+    for (uint i = 0; i < param.metaballCount; i++)
+    {
+        totalField += MetaballField(pos, param.balls[i]);
+    }
+    
+    return totalField;
+}
+
+// 将场函数转换为有符号距离场
+float SceneSDF(float3 pos)
+{
+    float field = CalculateTotalField(pos);
+    return param.surfaceThreshold - field;
+}
+
+// 主像素着色器
+float4 main(in float2 iTc : TEXCOORD) : SV_Target
+{
+	float2 cur_pos = float2(param.width * iTc.x, param.height * iTc.y);
+	float d = SceneSDF(float3(cur_pos, 0));
+	
+	float4 color = src_tex.Sample(linear_sampler, iTc);
+	float4 color_scale = float4(1.0, 0.0, 0.0, 1.0);
+	
+	if (d < 0)
+		color *= color_scale;
+    
+    return color;
+}

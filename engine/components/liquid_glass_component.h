@@ -17,15 +17,12 @@ public:
     virtual SResult     Render() override;
     virtual SResult     Tick(float delta_time) override;
 
-    void SetBgTex(RHITexturePtr bg) { m_pBgTex = bg; }
-
 private:
     void Reset();
     SResult InitShaders();
 
 private:
     Technique*          m_pLiquildTech = nullptr;
-    RHITexturePtr       m_pBgTex = nullptr;
 	RHIMeshPtr	        m_pLiquidMesh = nullptr;
 
     LiquidGlassParam    m_Param;

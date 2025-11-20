@@ -13,3 +13,15 @@ struct Metaball
     }
 #endif
 };
+
+#define MAX_METABALL_NUM 6
+struct MetaballParam
+{
+	float width;
+	float height;
+	
+    float surfaceThreshold;	
+	int metaballCount;
+	
+	Metaball balls[MAX_METABALL_NUM];
+};

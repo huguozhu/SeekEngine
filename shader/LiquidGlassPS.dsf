@@ -2,7 +2,6 @@
 #include "Common.dsh"
 #include "CalcSDF.dsh"
 #include "shared/LiquidGlass.h"
-#include "CalcSDF.dsh"
 
 static const float M_E = 2.718281828459045;
 

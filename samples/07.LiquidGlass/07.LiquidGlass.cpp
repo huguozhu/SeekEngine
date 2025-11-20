@@ -22,7 +22,7 @@ SResult LiquidGlass::OnCreate()
     std::string bg_files = FullPath("asset/textures/the_one.jpg");
     BitmapBufferPtr bit = ImageDecodeFromFile(bg_files, ImageType::JPEG);
     RHITexturePtr bg_tex = m_pContext->RHIContextInstance().CreateTexture2D(bit);
-    pLiquidGlass->SetBgTex(bg_tex);
+    pLiquidGlass->SetImage(bg_tex);
 
     m_pCameraEntity = MakeSharedPtr<Entity>(m_pContext.get(), "CameraEntity");
     CameraComponentPtr pCam = MakeSharedPtr<CameraComponent>(m_pContext.get());

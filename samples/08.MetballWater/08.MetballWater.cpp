@@ -17,7 +17,12 @@ SResult MetaballWater::OnCreate()
     m_pEntity->AddSceneComponent(pCam);
     m_pEntity->AddToTopScene();
 
+    std::string bg_files = FullPath("asset/textures/the_one.jpg");
+    BitmapBufferPtr bit = ImageDecodeFromFile(bg_files, ImageType::JPEG);
+    RHITexturePtr bg_tex = m_pContext->RHIContextInstance().CreateTexture2D(bit);
+
     Metaball2DComponentPtr pMetaball = MakeSharedPtr<Metaball2DComponent>(m_pContext.get(), (uint32_t)w, (uint32_t)h);
+    pMetaball->SetImage(bg_tex);
     m_pContext->SceneManagerInstance().AddSprite2DComponent(pMetaball);
 
     return S_Success;

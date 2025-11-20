@@ -13,16 +13,17 @@ public:
 
     void SetCenterPos(float2 pos);
 
-    virtual SResult             OnRenderBegin() { return S_Success; }
-    virtual SResult             OnRenderEnd() { return S_Success; }
-    virtual SResult             Render() = 0;
+    virtual SResult OnRenderBegin() { return S_Success; }
+    virtual SResult OnRenderEnd() { return S_Success; }
+    virtual SResult Render() = 0;
+
+    virtual void    SetImage(RHITexturePtr image) { m_pImage = image; }
 
 protected:
     uint32_t        m_iWidth;
     uint32_t        m_iHeight;
 	uint32_t	    m_iDrawIndex = 0;
     RHITexturePtr	m_pImage = nullptr;
-
 };
 
 SEEK_NAMESPACE_END

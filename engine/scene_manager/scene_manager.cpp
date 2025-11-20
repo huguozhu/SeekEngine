@@ -294,7 +294,7 @@ void SceneManager::AddToEntityRecursion(SceneComponentPtr scene_component)
     }
     if (scene_component->GetComponentType() == ComponentType::Metaball)
     {
-        m_vMetaballComponents.push_back((MetaballComponent*)scene_component.get());
+        m_vMetaball3DComponents.push_back((Metaball3DComponent*)scene_component.get());
 	}
     size_t child_num = scene_component->NumChildren();
     for (size_t i = 0; i < child_num; i++)

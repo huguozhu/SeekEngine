@@ -12,17 +12,21 @@ MetaballWaterSimulator::~MetaballWaterSimulator()
 {
 }
 
-
 void MetaballWaterSimulator::Tick(float delta_time)
 {
+    if (delta_time > 0.03)
+		delta_time = 0.03f; // 防止大时间步长导致的数值不稳定
+
+    if (!m_pMetaballs)
+        return;
     ApplyPhysics(delta_time);
     HandleCollisions();
-    HandleMetaballFusion();
+    //HandleMetaballFusion();
 }
 
 void MetaballWaterSimulator::ApplyPhysics(float delta_time)
 {
-    for (auto& ball : m_metaballs)
+    for (auto& ball : *m_pMetaballs)
     {
         // 应用重力
         ball.velocity.y() += m_gravity * delta_time;
@@ -37,7 +41,7 @@ void MetaballWaterSimulator::ApplyPhysics(float delta_time)
         ball.position.z() += ball.velocity.z() * delta_time;
 
         // Metaball 之间的排斥力（模拟表面张力）
-        for (auto& other : m_metaballs)
+        for (auto& other : *m_pMetaballs)
         {
             if (&ball != &other)
             {
@@ -71,54 +75,55 @@ float3 MetaballWaterSimulator::CalculateRepulsionForce(const Metaball& a, const 
 
 void MetaballWaterSimulator::HandleCollisions()
 {
-    for (auto& ball : m_metaballs)
+    for (auto& ball : *m_pMetaballs)
     {
         // 边界碰撞
         if (ball.position.x() - ball.radius < m_boundaryMin.x())
         {
             ball.position.x() = m_boundaryMin.x() + ball.radius;
-            ball.velocity.x() = -ball.velocity.x() * 0.7f;
+            ball.velocity.x() = -ball.velocity.x() * m_CollisionDamping;
         }
         else if (ball.position.x() + ball.radius > m_boundaryMax.x())
         {
             ball.position.x() = m_boundaryMax.x() - ball.radius;
-            ball.velocity.x() = -ball.velocity.x() * 0.7f;
+            ball.velocity.x() = -ball.velocity.x() * m_CollisionDamping;
         }
 
         if (ball.position.y() - ball.radius < m_boundaryMin.y())
         {
             ball.position.y() = m_boundaryMin.y() + ball.radius;
-            ball.velocity.y() = -ball.velocity.y() * 0.7f;
-            ball.velocity.x() *= 0.9f; // 地面摩擦
-            ball.velocity.z() *= 0.9f;
+            ball.velocity.y() = -ball.velocity.y() * m_CollisionDamping;
+
+            //ball.velocity.x() *= 0.9; // 地面摩擦
+            //ball.velocity.z() *= 0.9;
         }
         else if (ball.position.y() + ball.radius > m_boundaryMax.y())
         {
             ball.position.y() = m_boundaryMax.y() - ball.radius;
-            ball.velocity.y() = -ball.velocity.y() * 0.7f;
+            ball.velocity.y() = -ball.velocity.y() * m_CollisionDamping;
         }
 
         if (ball.position.z() - ball.radius < m_boundaryMin.z())
         {
             ball.position.z() = m_boundaryMin.z() + ball.radius;
-            ball.velocity.z() = -ball.velocity.z() * 0.7f;
+            ball.velocity.z() = -ball.velocity.z() * m_CollisionDamping;
         }
         else if (ball.position.z() + ball.radius > m_boundaryMax.z())
         {
             ball.position.z() = m_boundaryMax.z() - ball.radius;
-            ball.velocity.z() = -ball.velocity.z() * 0.7f;
+            ball.velocity.z() = -ball.velocity.z() * m_CollisionDamping;
         }
     }
 }
 
 void MetaballWaterSimulator::HandleMetaballFusion()
 {
-    for (size_t i = 0; i < m_metaballs.size(); ++i)
+    for (size_t i = 0; i < (*m_pMetaballs).size(); ++i)
     {
-        for (size_t j = i + 1; j < m_metaballs.size(); ++j)
+        for (size_t j = i + 1; j < (*m_pMetaballs).size(); ++j)
         {
-            auto& ball1 = m_metaballs[i];
-            auto& ball2 = m_metaballs[j];
+            auto& ball1 = (*m_pMetaballs)[i];
+            auto& ball2 = (*m_pMetaballs)[j];
 
             float3 pos1 = ball1.position;
             float3 pos2 = ball2.position;
@@ -148,9 +153,10 @@ void MetaballWaterSimulator::HandleMetaballFusion()
                 newBall.intensity = 1.0f;
 
                 // 移除旧球，添加新球
-                m_metaballs.erase(m_metaballs.begin() + j);
-                m_metaballs.erase(m_metaballs.begin() + i);
-                m_metaballs.push_back(newBall);
+
+                (*m_pMetaballs).erase((*m_pMetaballs).begin() + j);
+                (*m_pMetaballs).erase((*m_pMetaballs).begin() + i);
+                (*m_pMetaballs).push_back(newBall);
 
                 return; // 一次只处理一对融合
             }
