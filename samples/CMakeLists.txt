@@ -9,6 +9,8 @@ set(SAMPLE_COMMON_SRCS
     ${SEEK_SAMPLES_DIR}/common/app_imgui.cpp
     ${SEEK_SAMPLES_DIR}/common/first_person_camera_controller.h
     ${SEEK_SAMPLES_DIR}/common/first_person_camera_controller.cpp
+    ${SEEK_SAMPLES_DIR}/common/mouse_hook.h
+    ${SEEK_SAMPLES_DIR}/common/mouse_hook.cpp
 )
 
 set(SAMPLE_DEPENDENT_LIBS)

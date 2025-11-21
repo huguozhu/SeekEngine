@@ -17,6 +17,8 @@ public:
     virtual SResult     Render() override;
     virtual SResult     Tick(float delta_time) override;
 
+    bool HitShape(int shape_index);
+
 private:
     void Reset();
     SResult InitShaders();
@@ -29,8 +31,7 @@ private:
     RHIGpuBufferPtr     m_pMvpCbBuffer = nullptr;
     RHIGpuBufferPtr     m_pParamCbBuffer = nullptr;
 
-    SpringMassDamperPtr m_pSpringMassDamper_1 = nullptr;
-    SpringMassDamperPtr m_pSpringMassDamper_2 = nullptr;
+    SpringMassDamperPtr m_pSpringMassDamper[2] = { nullptr, nullptr };
 
 	float               m_fDuration = 0.0f;
 };

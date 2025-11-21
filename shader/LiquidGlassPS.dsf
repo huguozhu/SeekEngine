@@ -12,44 +12,35 @@ cbuffer cb_LiquidGlassParam
 	LiquidGlassParam param;
 }
 
-float f(float x)
+float GetSdf(int shape_type, float2 pos, float2 radius)
 {
-	return 1.0 - param.refraction_b * pow(param.refraction_c * M_E, -param.refraction_d * x - param.refraction_a);
+	if (shape_type == Shape_Type_Circle)
+		return sdCircle(pos, radius.x);
+	else if (shape_type == Shape_Type_Ellipse)
+		return sdEllipse(pos, radius);
+	else 
+		return 0;
 }
 
 float4 main(in float2 iTc : TEXCOORD) : SV_Target
 {
-	float2 cur_pos = float2(param.width * iTc.x, param.height * iTc.y);
-	float2 p1 = cur_pos - param.circle_center;
-	float d1 = sdCircle(p1, param.circle_radius);
-	
-	float2 p2 = cur_pos - param.ellipse_center;
-	float d2 = sdEllipse(p2, param.ellipse_radius);
-	
 	float4 color = src_tex.Sample(linear_sampler, iTc);
 	float4 color_scale = float4(1.0, 0.0, 0.0, 1.0);
 	
-	float d = sdopSmoothUnion(d1, d2, 100.0);
+	float2 cur_pos = float2(param.width * iTc.x, param.height * iTc.y);
+	float sdf[Num_Shapes];
+	for (int i=0; i<Num_Shapes; i++)
+	{
+		float2 pos = cur_pos - param.shapes[i].center;
+		sdf[i] = GetSdf(param.shapes[i].shape_type, pos, param.shapes[i].radius);
+	}
 	
-	//if (d1 < 0 || d2 <0)
+	float d = sdopSmoothUnion(sdf[0], sdf[1], 100.0);
 	if (d < 0)
 	{
 		 color *= color_scale;
 	}
-/* 	else
-	{		
-		float dist = -d / max(param.width, param.height);
-		float2 sampleP = p * pow(f(dist), param.refraction_power);
-		//float2 sampleP = sample_pos / float2(param.width, param.height);
-		
-		float2 quadNDC2ScreenNDCScale = float2(1.0, 1.0);
-		float2 mid_point = float2(0.0, 0.0);
-		float2 targetNDC = sampleP * quadNDC2ScreenNDCScale + mid_point;
-		coord = targetNDC * 0.5 + float2(0.5, 0.5);
-		
-		if (max(coord.x, coord.y) > 1.0 || min(coord.x, coord.y) < 0.0)
-			return float4(1.0, 0.0, 1.0, 1.0);	
-	} */
+	
 	return color;
 }
 
