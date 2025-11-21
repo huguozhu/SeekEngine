@@ -10,6 +10,7 @@
 #include "kernel/context.h"
 #include "utils/shape_mesh.h"
 #include "math/matrix.h"
+#include "math/math_utility.h"
 
 #define SEEK_MACRO_FILE_UID 75     // this code is auto generated, don't touch it!!!
 
@@ -28,8 +29,16 @@ LiquidGlassComponent::LiquidGlassComponent(Context* context, uint32_t width, uin
     m_Param.width = static_cast<float>(m_iWidth);
     m_Param.height = static_cast<float>(m_iHeight);
 
+    m_InitShapeType[0] = ShapeType::Circle;
+    m_InitShapeRadius[0] = float2(std::min(m_iWidth, m_iHeight) / 4.0f);
+    m_InitShapeCenter[0] = float2(m_iWidth / 4.0f, m_iHeight / 4.0f);
+
+    m_InitShapeType[1] = ShapeType::Ellipse;
+    m_InitShapeRadius[1] = float2(m_iWidth / 6.0f, m_iHeight / 6.0f);
+    m_InitShapeCenter[1] = float2(m_iWidth / 4.0f * 3, m_iHeight / 2.0f);
+
 	// init spring param
-	this->Reset();
+    this->ResetAll();
 }
 LiquidGlassComponent::~LiquidGlassComponent()
 {
@@ -65,45 +74,101 @@ SResult LiquidGlassComponent::Render()
 }
 SResult LiquidGlassComponent::Tick(float delta_time)
 {
-	m_pSpringMassDamper[0]->Tick(delta_time);
-    float3 v3_1 = m_pSpringMassDamper[0]->GetPosition();
-    m_Param.shapes[0].center = float2(v3_1.x(), v3_1.y()) + float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
+    delta_time = 0.003;
+    for (int i = 0; i < Num_Shapes; i++)
+    {
+        if (m_States[i] == SpringMassDamperState::Playing)
+        {
+            m_pSpringMassDamper[i]->Tick(delta_time);
+            float3 v = m_pSpringMassDamper[i]->GetPosition();
+            m_Param.shapes[i].center = float2(v.x(), v.y()) + float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
+        }
+    }
 
-    m_pSpringMassDamper[1]->Tick(delta_time);
-    float3 v3_2 = m_pSpringMassDamper[1]->GetPosition();
-    m_Param.shapes[1].center = float2(v3_2.x(), v3_2.y()) + float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
-    
     m_fDuration += delta_time;
     if (m_fDuration > 3.0f)
     {
         m_fDuration = 0.0;
-		this->Reset();
+		this->Reset(0);
     }
     
     return S_Success;
 }
-bool LiquidGlassComponent::HitShape(int shape_index)
-{
-    return true;
+
+float sdEllipse(float2 p, float2 r) {
+    // This implementation is an approximation but good enough for most cases
+    float k0 = Math::Length(p / r);
+    float k1 = Math::Length(p / (r * r));
+    return k0 * (k0 - 1.0) / k1;
 }
-
-
-
-void LiquidGlassComponent::Reset()
+bool LiquidGlassComponent::HitShape(float2 hit_pos, int& hited_shape_index)
 {
-    m_Param.shapes[0].shape_type = ShapeType::Circle;
-    m_Param.shapes[0].radius = float2(std::min(m_iWidth, m_iHeight) / 4.0f);
-    m_Param.shapes[0].center = float2(m_iWidth / 4.0f, m_iHeight / 4.0f);
-
-    m_Param.shapes[1].shape_type = ShapeType::Ellipse;
-    m_Param.shapes[1].radius = float2(m_iWidth / 6.0f, m_iHeight / 6.0f);
-    m_Param.shapes[1].center = float2(m_iWidth / 4.0f * 3, m_iHeight / 2.0f);
-
+    for (int i = 0; i < Num_Shapes; i++)
+    {
+        SdfShape shape = m_Param.shapes[i];
+        float sdf = 10000.0f;
+        if (shape.shape_type == ShapeType::Circle)
+        {
+            sdf = Math::Distance(hit_pos, shape.center) - shape.radius.x();
+        }
+        else if (shape.shape_type == ShapeType::Ellipse)
+        {
+            sdf = sdEllipse( (hit_pos - shape.center), shape.radius);
+        }
+        if (sdf <= 0)
+        {
+            hited_shape_index = i;
+            return true;
+        }
+    }
+    return false;
+}
+void LiquidGlassComponent::SetSpringState(uint32_t spring_index, SpringMassDamperState state)
+{
+    if (spring_index < Num_Shapes)
+        m_States[spring_index] = state;
+    return;
+}
+void LiquidGlassComponent::SetInitShapeType(uint32_t shape_index, ShapeType type)
+{
+    if (shape_index < Num_Shapes)
+        m_InitShapeType[shape_index] = type;
+    return;
+}
+void LiquidGlassComponent::SetInitShapeRadius(uint32_t shape_index, float2 pos)
+{
+    if (shape_index < Num_Shapes)
+        m_InitShapeRadius[shape_index] = pos;
+    return;
+}
+void LiquidGlassComponent::SetInitShapeCenter(uint32_t shape_index, float2 pos)
+{
+    if (shape_index < Num_Shapes)
+        m_InitShapeCenter[shape_index] = pos;
+    return;
+}
+void LiquidGlassComponent::SetCurShapeCenter(uint32_t shape_index, float2 pos)
+{
+    if (shape_index < Num_Shapes)
+        m_Param.shapes[shape_index].center = pos;
+    return;
+}
+void LiquidGlassComponent::Reset(uint32_t i)
+{
     // init spring param
-    float2 circle_x0 = m_Param.shapes[0].center - float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
-    float2 ellipse_x0 = m_Param.shapes[1].center - float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
-    m_pSpringMassDamper[0] = MakeSharedPtr<SpringMassDamper>(0.005f, 0.01f, 2.0f, float3(circle_x0.x(), circle_x0.y(), 0.0), 0.0f);
-    m_pSpringMassDamper[1] = MakeSharedPtr<SpringMassDamper>(0.005f, 0.01f, 2.0f, float3(ellipse_x0.x(), ellipse_x0.y(), 0.0), 0.0f);
+    {
+        m_Param.shapes[i].shape_type = m_InitShapeType[i];
+        m_Param.shapes[i].radius = m_InitShapeRadius[i];
+        m_Param.shapes[i].center = m_InitShapeCenter[i];
+
+        float2 center = m_InitShapeCenter[i] - float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
+        m_pSpringMassDamper[i] = MakeSharedPtr<SpringMassDamper>(0.005f, 0.01f, 2.0f, float3(center.x(), center.y(), 0.0), 0.0f);
+    }
+}
+void LiquidGlassComponent::ResetAll()
+{
+    for (uint32_t i = 0; i < Num_Shapes; i++)
+        this->Reset(i);
 }
 SResult LiquidGlassComponent::InitShaders()
 {

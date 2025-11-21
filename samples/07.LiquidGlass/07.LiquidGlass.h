@@ -2,7 +2,6 @@
 #include "app_framework.h"
 #include "seek_engine.h"
 #include "common/first_person_camera_controller.h"
-#include "common/mouse_hook.h"
 
 USING_NAMESPACE_SEEK
 
@@ -15,9 +14,9 @@ public:
     virtual SResult OnUpdate() override;
     virtual SResult InitContext(void* device = nullptr, void* native_wnd = nullptr);
 
+    void HandleMouseEvent();
     void SetBgTexture(RHITexturePtr bg) { m_pBgTexture = bg; }
     LiquidGlassComponentPtr GetLiquidGlassComponent() { return m_pGlass; }
-
 
 private:
     EntityPtr       m_pCameraEntity = nullptr;

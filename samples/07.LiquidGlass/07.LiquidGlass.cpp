@@ -4,64 +4,60 @@
 #define SEEK_MACRO_FILE_UID 91     // this code is auto generated, don't touch it!!!
 
 
-static int g_iClickDownId = 0;
-static int g_iMoveId = 0;
-static int g_iClickUpId = 0;
-enum class MouseState
+static int g_iChosenShapeIndex = -1;
+enum class ChoseState
 {
     None,
-    Clicked,
+    Chosen,
 };
-static MouseState g_MouseState = MouseState::None;
-bool OnLeftButtonClick(const MouseEvent& event, void* userData)
+static ChoseState g_ChoseState = ChoseState::None;
+
+void LiquidGlass::HandleMouseEvent()
 {
-    g_MouseState = MouseState::Clicked;
+    if (ImGui::IsMouseClicked(ImGuiPopupFlags_MouseButtonLeft))
+    {
+        ImVec2 pos = ImGui::GetMousePos();
+        int shape_index = -1;
+        bool hit = m_pGlass->HitShape(float2(pos.x, pos.y), shape_index);
+        if (hit)
+        {
+            g_ChoseState = ChoseState::Chosen;
+            g_iChosenShapeIndex = shape_index;
+            m_pGlass->SetSpringState(shape_index, SpringMassDamperState::Stopped);
+        }
+        else
+            g_ChoseState = ChoseState::None;
 
-    return true;
+    }
+    if (g_ChoseState == ChoseState::Chosen && g_iChosenShapeIndex >= 0)
+    {
+        if (ImGui::IsMouseDragging(ImGuiPopupFlags_MouseButtonLeft))
+        {
+            ImVec2 pos = ImGui::GetMousePos();
+            m_pGlass->SetCurShapeCenter(g_iChosenShapeIndex, float2(pos.x, pos.y));
+        }
+    }
+    if (ImGui::IsMouseReleased(ImGuiPopupFlags_MouseButtonLeft))
+    {
+        if (g_iChosenShapeIndex >= 0)
+        {
+            ImVec2 pos = ImGui::GetMousePos();
+            m_pGlass->SetInitShapeCenter(g_iChosenShapeIndex, float2(pos.x, pos.y));
+            m_pGlass->SetSpringState(g_iChosenShapeIndex, SpringMassDamperState::Playing);
+            m_pGlass->Reset(g_iChosenShapeIndex);
+        }
+        g_iChosenShapeIndex = -1;;
+        g_ChoseState = ChoseState::None;
+    }
 }
-bool OnMouseMove(const MouseEvent& event, void* userData) 
-{
-    if (g_MouseState != MouseState::Clicked)
-        return true;
-
-    LiquidGlass* pApp = (LiquidGlass*)userData;
-    LiquidGlassComponentPtr pGlass = pApp->GetLiquidGlassComponent();
-    return true;
-}
-bool OnLeftButtonUp(const MouseEvent& event, void* userData) 
-{
-    g_MouseState = MouseState::None;
-
-    return true;
-}
-
-
 
 LiquidGlass::LiquidGlass() 
     :AppFramework("LiquidGlass") 
 {
-    MouseHookManager& mouseManager = MouseHookManager::GetInstance();
-
-    // 注册事件回调
-    g_iClickDownId = mouseManager.RegisterCallback(
-        MouseEventType::LeftButtonDown, OnLeftButtonClick, this);
-
-    g_iMoveId = mouseManager.RegisterCallback(
-        MouseEventType::MouseMove, OnMouseMove, this);
-
-    g_iClickUpId = mouseManager.RegisterCallback(
-        MouseEventType::LeftButtonUp, OnLeftButtonUp, this);
 }
 LiquidGlass::~LiquidGlass()
 {
-    MouseHookManager& mouseManager = MouseHookManager::GetInstance();
-    // 卸载钩子
-    mouseManager.UninstallHook();
 
-    // 注销回调
-    mouseManager.UnregisterCallback(g_iClickDownId);
-    mouseManager.UnregisterCallback(g_iMoveId);
-    mouseManager.UnregisterCallback(g_iClickUpId);
 }
 SResult LiquidGlass::OnCreate()
 {
@@ -90,6 +86,8 @@ SResult LiquidGlass::OnCreate()
 
 SResult LiquidGlass::OnUpdate()
 {
+    this->HandleMouseEvent();
+
     SEEK_RETIF_FAIL(m_pContext->Tick());
     SEEK_RETIF_FAIL(m_pContext->BeginRender());
     SEEK_RETIF_FAIL(m_pContext->RenderFrame());
@@ -114,6 +112,7 @@ SResult LiquidGlass::InitContext(void* device, void* native_wnd)
 
     return S_Success;
 }
+
 
 int main()
 {
