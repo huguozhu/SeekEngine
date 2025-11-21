@@ -12,14 +12,14 @@ cbuffer cb_LiquidGlassParam
 	LiquidGlassParam param;
 }
 
-float GetSdf(int shape_type, float2 pos, float2 radius)
+float GetSdf(ShapeType shape_type, float2 pos, float2 radius)
 {
-	if (shape_type == Shape_Type_Circle)
+	if (shape_type == ShapeType::Circle) 
 		return sdCircle(pos, radius.x);
-	else if (shape_type == Shape_Type_Ellipse)
+	else if (shape_type == ShapeType::Ellipse)
 		return sdEllipse(pos, radius);
 	else 
-		return 0;
+		return 0; 
 }
 
 float4 main(in float2 iTc : TEXCOORD) : SV_Target

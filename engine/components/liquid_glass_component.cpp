@@ -68,12 +68,10 @@ SResult LiquidGlassComponent::Tick(float delta_time)
 	m_pSpringMassDamper[0]->Tick(delta_time);
     float3 v3_1 = m_pSpringMassDamper[0]->GetPosition();
     m_Param.shapes[0].center = float2(v3_1.x(), v3_1.y()) + float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
-    //m_Param.circle_center  = float2(v3_1.x(), v3_1.y()) + float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
 
     m_pSpringMassDamper[1]->Tick(delta_time);
     float3 v3_2 = m_pSpringMassDamper[1]->GetPosition();
     m_Param.shapes[1].center = float2(v3_2.x(), v3_2.y()) + float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
-    //m_Param.ellipse_center = float2(v3_2.x(), v3_2.y()) + float2(m_iWidth / 2.0f, m_iHeight / 2.0f);
     
     m_fDuration += delta_time;
     if (m_fDuration > 3.0f)
@@ -92,17 +90,12 @@ bool LiquidGlassComponent::HitShape(int shape_index)
 
 
 void LiquidGlassComponent::Reset()
-{   
-    //m_Param.circle_radius = std::min(m_iWidth, m_iHeight) / 4.0f;    
-    //m_Param.circle_center = float2(m_iWidth / 4.0f, m_iHeight / 4.0f);
-    m_Param.shapes[0].shape_type = Shape_Type_Circle;
+{
+    m_Param.shapes[0].shape_type = ShapeType::Circle;
     m_Param.shapes[0].radius = float2(std::min(m_iWidth, m_iHeight) / 4.0f);
     m_Param.shapes[0].center = float2(m_iWidth / 4.0f, m_iHeight / 4.0f);
 
-    
-    //m_Param.ellipse_radius = float2(m_iWidth / 6.0f, m_iHeight / 6.0f);
-    //m_Param.ellipse_center = float2(m_iWidth / 4.0f * 3, m_iHeight / 2.0f);
-    m_Param.shapes[1].shape_type = Shape_Type_Ellipse;
+    m_Param.shapes[1].shape_type = ShapeType::Ellipse;
     m_Param.shapes[1].radius = float2(m_iWidth / 6.0f, m_iHeight / 6.0f);
     m_Param.shapes[1].center = float2(m_iWidth / 4.0f * 3, m_iHeight / 2.0f);
 
