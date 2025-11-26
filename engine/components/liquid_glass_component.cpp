@@ -30,11 +30,11 @@ LiquidGlassComponent::LiquidGlassComponent(Context* context, uint32_t width, uin
     m_Param.height = static_cast<float>(m_iHeight);
 
     m_InitShapeType[0] = ShapeType::Circle;
-    m_InitShapeRadius[0] = float2(std::min(m_iWidth, m_iHeight) / 4.0f);
+    m_InitShapeSize[0] = float2(std::min(m_iWidth, m_iHeight) / 4.0f);
     m_InitShapeCenter[0] = float2(m_iWidth / 4.0f, m_iHeight / 4.0f);
 
     m_InitShapeType[1] = ShapeType::Ellipse;
-    m_InitShapeRadius[1] = float2(m_iWidth / 6.0f, m_iHeight / 6.0f);
+    m_InitShapeSize[1] = float2(m_iWidth / 6.0f, m_iHeight / 6.0f);
     m_InitShapeCenter[1] = float2(m_iWidth / 4.0f * 3, m_iHeight / 2.0f);
 
 	// init spring param
@@ -109,11 +109,11 @@ bool LiquidGlassComponent::HitShape(float2 hit_pos, int& hited_shape_index)
         float sdf = 10000.0f;
         if (shape.shape_type == ShapeType::Circle)
         {
-            sdf = Math::Distance(hit_pos, shape.center) - shape.radius.x();
+            sdf = Math::Distance(hit_pos, shape.center) - shape.size.x();
         }
         else if (shape.shape_type == ShapeType::Ellipse)
         {
-            sdf = sdEllipse( (hit_pos - shape.center), shape.radius);
+            sdf = sdEllipse( (hit_pos - shape.center), shape.size);
         }
         if (sdf <= 0)
         {
@@ -135,10 +135,10 @@ void LiquidGlassComponent::SetInitShapeType(uint32_t shape_index, ShapeType type
         m_InitShapeType[shape_index] = type;
     return;
 }
-void LiquidGlassComponent::SetInitShapeRadius(uint32_t shape_index, float2 pos)
+void LiquidGlassComponent::SetInitShapeSize(uint32_t shape_index, float2 size)
 {
     if (shape_index < Num_Shapes)
-        m_InitShapeRadius[shape_index] = pos;
+        m_InitShapeSize[shape_index] = size;
     return;
 }
 void LiquidGlassComponent::SetInitShapeCenter(uint32_t shape_index, float2 pos)
@@ -158,7 +158,7 @@ void LiquidGlassComponent::Reset(uint32_t i)
     // init spring param
     {
         m_Param.shapes[i].shape_type = m_InitShapeType[i];
-        m_Param.shapes[i].radius = m_InitShapeRadius[i];
+        m_Param.shapes[i].size = m_InitShapeSize[i];
         m_Param.shapes[i].center = m_InitShapeCenter[i];
 
         float2 center = m_InitShapeCenter[i] - float2(m_iWidth / 2.0f, m_iHeight / 2.0f);

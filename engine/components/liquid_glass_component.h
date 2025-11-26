@@ -26,7 +26,7 @@ public:
     bool HitShape(float2 hit_pos, int& hited_shape_index);
     void SetSpringState(uint32_t spring_index, SpringMassDamperState state);
     void SetInitShapeType(uint32_t shape_index, ShapeType type);
-    void SetInitShapeRadius(uint32_t shape_index, float2 pos);
+    void SetInitShapeSize(uint32_t shape_index, float2 size);
     void SetInitShapeCenter(uint32_t shape_index, float2 pos);
     void SetCurShapeCenter(uint32_t shape_index, float2 pos);
     void Reset(uint32_t shape_index);
@@ -46,10 +46,9 @@ private:
     SpringMassDamperPtr     m_pSpringMassDamper[Num_Shapes] = { nullptr, nullptr };
     SpringMassDamperState   m_States[Num_Shapes] = { SpringMassDamperState::Playing, SpringMassDamperState::Playing };
     ShapeType               m_InitShapeType[Num_Shapes];
-    float2                  m_InitShapeRadius[Num_Shapes];
+    float2                  m_InitShapeSize[Num_Shapes];
     float2                  m_InitShapeCenter[Num_Shapes];
     
-
 	float               m_fDuration = 0.0f;
 };
 

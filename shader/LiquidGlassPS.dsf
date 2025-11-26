@@ -32,7 +32,7 @@ float4 main(in float2 iTc : TEXCOORD) : SV_Target
 	for (int i=0; i<Num_Shapes; i++)
 	{
 		float2 pos = cur_pos - param.shapes[i].center;
-		sdf[i] = GetSdf(param.shapes[i].shape_type, pos, param.shapes[i].radius);
+		sdf[i] = GetSdf(param.shapes[i].shape_type, pos, param.shapes[i].size);
 	}
 	
 	float d = sdopSmoothUnion(sdf[0], sdf[1], 100.0);
