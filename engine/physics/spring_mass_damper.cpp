@@ -22,26 +22,26 @@ SpringMassDamper::SpringMassDamper(double mass, double damping, double stiffness
 
 void SpringMassDamper::Tick(double delta_time)
 {
-	double3 next_x0 = this->CalculateDisplacement(delta_time);
+	double3 next_x0 = this->CalculatePosition(delta_time);
     double3 next_v0 = this->CalculateVelocity(delta_time);
     m_x0 = next_x0;
     m_v0 = next_v0;
 }
 
-double3 SpringMassDamper::CalculateDisplacement(double t)
+double3 SpringMassDamper::CalculatePosition(double t)
 {
     if (IsUnderdamped()) {
         // 欠阻尼情况
-        return UnderdampedDisplacement(t);
-		//return UnderdampedDisplacement_Exact(t);
+        return UnderdampedPosition(t);
+		//return UnderdampedPosition_Exact(t);
     }
     else if (IsCriticallyDamped()) {
         // 临界阻尼情况
-        return CriticallyDampedDisplacement(t);
+        return CriticallyDampedPosition(t);
     }
     else {
         // 过阻尼情况
-        return OverdampedDisplacement(t);
+        return OverdampedPosition(t);
     }
 }
 
@@ -59,7 +59,7 @@ double3 SpringMassDamper::CalculateVelocity(double t)
     }
 }
 
-double3 SpringMassDamper::UnderdampedDisplacement(double t)
+double3 SpringMassDamper::UnderdampedPosition(double t)
 {
     double omega_d = m_OmegaN * std::sqrt(1 - m_Zeta * m_Zeta);
     double3 term1 = m_x0 * std::cos(omega_d * t);
@@ -68,7 +68,7 @@ double3 SpringMassDamper::UnderdampedDisplacement(double t)
     double3 v = (term1 + term2) * decay;
     return v;
 }
-double3 SpringMassDamper::UnderdampedDisplacement_Exact(double t)
+double3 SpringMassDamper::UnderdampedPosition_Exact(double t)
 {
     // 精确的无阻尼简谐运动公式:
     // x(t) = x0 * cos(ωt) + (v0/ω) * sin(ωt)
@@ -106,7 +106,7 @@ double3 SpringMassDamper::UnderdampedVelocity(double t) {
 }
 
 // 临界阻尼位移计算
-double3 SpringMassDamper::CriticallyDampedDisplacement(double t) {
+double3 SpringMassDamper::CriticallyDampedPosition(double t) {
     double3 A = m_x0;
     double3 B = m_v0 + m_x0 * m_OmegaN;
     return (A + B * t) * std::exp(-m_OmegaN * t);
@@ -121,7 +121,7 @@ double3 SpringMassDamper::CriticallyDampedVelocity(double t) {
 }
 
 // 过阻尼位移计算
-double3 SpringMassDamper::OverdampedDisplacement(double t) {
+double3 SpringMassDamper::OverdampedPosition(double t) {
     double omega_p = m_OmegaN * std::sqrt(m_Zeta * m_Zeta - 1);
     double3 A = m_x0;
     double3 B = (m_v0 + m_x0 * m_Zeta * m_OmegaN) / omega_p;

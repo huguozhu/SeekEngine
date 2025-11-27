@@ -10,7 +10,7 @@ float sdCircle(float2 p, float r) {
 
 // 2. Rectangle SDF
 // b: rectangle half-dimensions (half-width, half-height)
-float sdBox(float2 p, float2 b) {
+float sdRectangle(float2 p, float2 b) {
     float2 d = abs(p) - b;
     // max(d.x, d.y) handles exterior distance, min(..., 0.0) handles interior distance
     return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0);
@@ -18,7 +18,7 @@ float sdBox(float2 p, float2 b) {
 
 // 3. Rounded Rectangle SDF
 // b: half-dimensions, r: corner radius
-float sdRoundedBox(float2 p, float2 b, float r) {
+float sdRoundedRectangle(float2 p, float2 b, float r) {
     float2 d = abs(p) - b + r;
     return length(max(d, 0.0)) - r + min(max(d.x, d.y), 0.0);
 }

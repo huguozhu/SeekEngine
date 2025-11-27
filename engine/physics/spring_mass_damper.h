@@ -13,7 +13,7 @@ public:
     SpringMassDamper(double mass, double damping, double stiffness, double3 x0, double3 v0);
 
     // 计算在时间t时的位移
-    double3 CalculateDisplacement(double t);
+    double3 CalculatePosition(double t);
     // 计算在时间t时的速度
     double3 CalculateVelocity(double t);
 
@@ -36,19 +36,19 @@ public:
 
 private:
     // 欠阻尼位移计算
-    double3 UnderdampedDisplacement(double t);
+    double3 UnderdampedPosition(double t);
 	// 欠阻尼速度计算(精确计算)
-    double3 UnderdampedDisplacement_Exact(double t);
+    double3 UnderdampedPosition_Exact(double t);
     // 欠阻尼速度计算
     double3 UnderdampedVelocity(double t);
 
     // 临界阻尼位移计算
-    double3 CriticallyDampedDisplacement(double t);
+    double3 CriticallyDampedPosition(double t);
     // 临界阻尼速度计算
     double3 CriticallyDampedVelocity(double t);
 
     // 过阻尼位移计算
-    double3 OverdampedDisplacement(double t);
+    double3 OverdampedPosition(double t);
     // 过阻尼速度计算
     double3 OverdampedVelocity(double t);
 
