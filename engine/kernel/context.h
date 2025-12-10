@@ -53,7 +53,6 @@ enum class GlobalIlluminationMode : uint32_t
     RSM,
     LPV,        // Light Propagation Volumes Global Illumination
     VXGI,       // Voxel Cone Tracing Global Illumination
-    //SSGI,     // Screen Space Global Illumination
 };
 struct RenderInitInfo
 {
@@ -69,7 +68,6 @@ struct RenderInitInfo
     int32_t                 preferred_adapter = 0;
     LightingMode            lighting_mode = LightingMode::Phong;
     RendererType            renderer_type = RendererType::Forward;
-
 
     AntiAliasingMode        anti_aliasing_mode = AntiAliasingMode::None;
     FPSLimitType            fps_limit_type = FPSLimitType::FPS_60;

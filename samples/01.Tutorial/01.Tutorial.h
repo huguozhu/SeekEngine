@@ -8,17 +8,12 @@ class Tutorial : public AppFramework
 {
 public:
     Tutorial();
-    virtual ~Tutorial();   
-
-    virtual SResult         OnCreate() override;
-    virtual SResult         OnUpdate() override;
+    virtual ~Tutorial() = default;
+    virtual SResult OnCreate() override;
+    virtual SResult OnUpdate() override;
 
 private:
-    EntityPtr           m_pCameraEntity = nullptr;
-
-    EntityPtr           m_pMeshEntity = nullptr;
-
-    SphereMeshComponentPtr    m_pMesh = nullptr;
+    EntityPtr m_pEntity = nullptr;
 
 };
 

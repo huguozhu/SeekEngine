@@ -16,8 +16,8 @@ class AppFramework
 {
 public:
     AppFramework(std::string const& name);
-    virtual ~AppFramework()
-    {}
+    virtual ~AppFramework() = default;
+
     SResult Run();
 
     virtual SResult         OnCreate() = 0;

@@ -7,10 +7,6 @@ MeshLoader::MeshLoader()
 {
 }
 
-MeshLoader::~MeshLoader()
-{
-    
-}
 
 SResult MeshLoader::OnCreate()
 {

@@ -9,7 +9,7 @@ class MeshLoader : public AppFramework
 {
 public:
     MeshLoader();
-    virtual ~MeshLoader();
+    virtual ~MeshLoader() = default;
 
     virtual SResult         OnCreate() override;
     virtual SResult         OnUpdate() override;
