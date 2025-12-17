@@ -12,8 +12,8 @@ double SafeExp(double x)
     return std::exp(x);
 }
 
-SpringMassDamper::SpringMassDamper(double mass, double damping, double stiffness, double3 x0, double3 v0)
-	:m_mass(mass), m_damping(damping), m_stiffness(stiffness), m_x0(x0), m_v0(v0)
+SpringMassDamper::SpringMassDamper(double mass, double damping, double stiffness, double3 center, double3 x0, double3 v0)
+	:m_mass(mass), m_damping(damping), m_stiffness(stiffness), m_center(center), m_x0(x0), m_v0(v0)
 {
 	// 计算系统参数
 	m_OmegaN = std::sqrt(m_stiffness / m_mass);
@@ -22,9 +22,10 @@ SpringMassDamper::SpringMassDamper(double mass, double damping, double stiffness
 
 void SpringMassDamper::Tick(double delta_time)
 {
+    m_x0 = m_x0 - m_center;
 	double3 next_x0 = this->CalculatePosition(delta_time);
     double3 next_v0 = this->CalculateVelocity(delta_time);
-    m_x0 = next_x0;
+    m_x0 = next_x0 + m_center;
     m_v0 = next_v0;
 }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#define Num_Shapes 2
+#define MAX_Num_Shapes 6
 enum class ShapeType : int
 {
 	Unknown = -1,
@@ -13,17 +13,24 @@ enum class ShapeType : int
 struct SdfShape
 {
 	ShapeType shape_type;
-	float3 shape_params;
-	float2 center;
+	/*
+	 *	.x .y : all shape's x-axis & y-asix Stretch Coefficient
+	 *	.z: 
+			Round_Rectangle: 	corner radius
+			Super_Ellipse: 		shape power [0, 10]
+	 */
+	float3 shape_params;	
+	float2 center;		
 	float2 size;
 };
 
 struct LiquidGlassParam
 {
 	float width;
-	float height;
-	float2 pad;
+	float height;	
+	float sdf_smooth_value;
+	int shape_count;
 	
-	// shape1
-	SdfShape shapes[Num_Shapes];
+	// shapes
+	SdfShape shapes[MAX_Num_Shapes];
 };

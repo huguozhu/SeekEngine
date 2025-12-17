@@ -43,11 +43,19 @@ private:
     RHIGpuBufferPtr     m_pMvpCbBuffer = nullptr;
     RHIGpuBufferPtr     m_pParamCbBuffer = nullptr;
 
-    SpringMassDamperPtr     m_pSpringMassDamper[Num_Shapes] = { nullptr, nullptr };
-    SpringMassDamperState   m_States[Num_Shapes] = { SpringMassDamperState::Playing, SpringMassDamperState::Playing };
-    ShapeType               m_InitShapeType[Num_Shapes];
-    float2                  m_InitShapeSize[Num_Shapes];
-    float2                  m_InitShapeCenter[Num_Shapes];
+    // Dampers
+    float mass[MAX_Num_Shapes] = { 0.005, 0.005, 0.005, 0.005, 0.005, 0.005 };
+    float damping[MAX_Num_Shapes] = { 0.01, 0.01, 0.01, 0.01, 0.01, 0.01 };
+    float stiffness[MAX_Num_Shapes] = { 2.0, 2.0, 2.0, 2.0, 2.0, 2.0 };
+    double3 damper_centers[MAX_Num_Shapes];
+    SpringMassDamperPtr     m_pSpringMassDamper[MAX_Num_Shapes] = { nullptr, nullptr, };
+
+    SpringMassDamperState   m_States[MAX_Num_Shapes];;
+    ShapeType               m_InitShapeType[MAX_Num_Shapes];
+    float2                  m_InitShapeSize[MAX_Num_Shapes];
+    float2                  m_InitShapeCenter[MAX_Num_Shapes];
+    float3                  m_InitShapeParams[MAX_Num_Shapes];
+    int                     m_iNumShapes = 0;
     
 	float               m_fDuration = 0.0f;
 };

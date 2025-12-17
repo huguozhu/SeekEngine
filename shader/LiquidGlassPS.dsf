@@ -12,14 +12,30 @@ cbuffer cb_LiquidGlassParam
 	LiquidGlassParam param;
 }
 
-float GetSdf(ShapeType shape_type, float2 pos, float2 radius)
+float sdShape(SdfShape shape, float2 pos)
 {
-	if (shape_type == ShapeType::Circle) 
-		return sdCircle(pos, radius.x);
-	else if (shape_type == ShapeType::Ellipse)
-		return sdEllipse(pos, radius);
-	else 
-		return 0; 
+	if (shape.shape_type == ShapeType::Circle) 
+		return sdCircle(pos-shape.center , shape.size.x * 0.5);
+	else if (shape.shape_type == ShapeType::Ellipse)
+		return sdEllipse(pos-shape.center, shape.size * 0.5);
+	else if (shape.shape_type == ShapeType::Round_Rectangle)
+		return sdRoundedRectangle(pos-shape.center, shape.size, shape.shape_params.z);
+	else if (shape.shape_type == ShapeType::Super_Ellipse)
+		return sdSuperellipse(pos-shape.center, shape.shape_params.z, shape.size);
+	else
+		return 1000; 
+}
+
+float CalcSdf(float2 pos)
+{
+	int i;
+	float sd = sdShape(param.shapes[0], pos);
+	for (i=1; i<param.shape_count; i++)
+	{
+		float this_sd = sdShape(param.shapes[i], pos);
+		sd = sdopSmoothUnion(sd, this_sd, param.sdf_smooth_value);
+	}
+	return sd;
 }
 
 float4 main(in float2 iTc : TEXCOORD) : SV_Target
@@ -28,15 +44,8 @@ float4 main(in float2 iTc : TEXCOORD) : SV_Target
 	float4 color_scale = float4(1.0, 0.0, 0.0, 1.0);
 	
 	float2 cur_pos = float2(param.width * iTc.x, param.height * iTc.y);
-	float sdf[Num_Shapes];
-	for (int i=0; i<Num_Shapes; i++)
-	{
-		float2 pos = cur_pos - param.shapes[i].center;
-		sdf[i] = GetSdf(param.shapes[i].shape_type, pos, param.shapes[i].size);
-	}
-	
-	float d = sdopSmoothUnion(sdf[0], sdf[1], 100.0);
-	if (d < 0)
+	float sd = CalcSdf(cur_pos);
+	if (sd < 0)
 	{
 		 color *= color_scale;
 	}

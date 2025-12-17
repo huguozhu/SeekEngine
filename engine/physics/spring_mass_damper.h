@@ -10,7 +10,7 @@ SEEK_NAMESPACE_BEGIN
 class SpringMassDamper
 {
 public:
-    SpringMassDamper(double mass, double damping, double stiffness, double3 x0, double3 v0);
+    SpringMassDamper(double mass, double damping, double stiffness, double3 center, double3 x0, double3 v0);
 
     // 计算在时间t时的位移
     double3 CalculatePosition(double t);
@@ -57,6 +57,7 @@ private:
 	double m_mass;      // 质量,单位：kg 千克
 	double m_damping;   // 阻尼系数,单位：N·s/m 牛顿·秒/米
 	double m_stiffness; // 弹簧刚度,单位：N/m 牛顿/米
+    double3 m_center;   // 弹簧中心
     double3 m_x0;   // 初始位移
     double3 m_v0;   // 初始速度
 
