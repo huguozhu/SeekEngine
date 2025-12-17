@@ -35,7 +35,7 @@ LiquidGlassComponent::LiquidGlassComponent(Context* context, uint32_t width, uin
     m_Param.width = static_cast<float>(m_iWidth);
     m_Param.height = static_cast<float>(m_iHeight);
 	m_Param.shape_count = m_iNumShapes;
-    m_Param.sdf_smooth_value = 10.0f;
+    m_Param.sdf_smooth_value = 100.0f;
     
     m_InitShapeType[0]      = ShapeType::Circle;
     m_InitShapeSize[0]      = float2(std::min(half_w, half_h) * 0.5f, 0.0);

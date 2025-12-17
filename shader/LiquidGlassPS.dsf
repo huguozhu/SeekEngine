@@ -4,12 +4,19 @@
 #include "shared/LiquidGlass.h"
 
 static const float M_E = 2.718281828459045;
+static const float epsilon = 0.00001;
 
 Texture2D src_tex;
+Texture2D blurTexture;
 
 cbuffer cb_LiquidGlassParam
 {
 	LiquidGlassParam param;
+}
+
+cbuffer cb_LiquidGlassLighting
+{
+	LiquidGlassLighting lighting;
 }
 
 float sdShape(SdfShape shape, float2 pos)
@@ -36,6 +43,260 @@ float CalcSdf(float2 pos)
 		sd = sdopSmoothUnion(sd, this_sd, param.sdf_smooth_value);
 	}
 	return sd;
+}
+
+// Schlick fresnel
+float schlick_fresnel(float cos_theta, float ior_val) {
+    float r0 = (1.0 - ior_val) / (1.0 + ior_val);
+    r0 = r0 * r0;
+    return r0 + (1.0 - r0) * pow(1.0 - cos_theta, 5.0);
+}
+
+float normalized_height_from_sd(float sd, float edge_size) {
+    if (sd > 0.0) { return 0.0; }
+    if (sd < -edge_size) { return 1.0; }
+    return pow(1.0 - pow(abs(sd) / edge_size - 1.0, 4.0), 1.0 / 2.0); // 假设高度函数为凸边型
+}
+
+float height_from_sd(float sd, float edge_size, float height_edge, float height_center) {
+    if (sd > 0.0) { return 0.0; }
+    //return mix(height_edge, height_center, normalized_height_from_sd(sd, edge_size));
+    return lerp(height_edge, height_center, normalized_height_from_sd(sd, edge_size));
+}
+void Lighting2(float2 resolution, float2 p, out float4 fragColor) {
+    float2 uv = p / resolution;
+
+    float sd = CalcSdf(p); // support only one shape now
+     
+    // 边缘检测：sd 接近 0 时是边缘
+    float pixel = fwidth(sd);
+    float edge_width = pixel * 2.0; // 边缘影响范围（2 个像素）
+    float edge_distance = abs(sd); // 距离边缘的距离
+    float edge_factor = 1.0 - smoothstep(0.0, edge_width, edge_distance); // 1 在边缘，0 在内部
+
+    // caustic
+    float caustic = 0.0;
+    {
+        float caustic_sd = CalcSdf(p - lighting.shadow_offset);
+
+        if (caustic_sd > 0.0) { // outside the caustic
+            // attenuate based on the distance from edge
+            float max_caustic_distance = edge_width * 10.0;
+            float caustic_distance_ratio = caustic_sd / max_caustic_distance;
+            float falloff = exp(-caustic_distance_ratio * 2.5) * 0.2 + 1.0;
+            caustic = falloff;
+        } else { // inside the caustic
+            float normalized_h = normalized_height_from_sd(caustic_sd, lighting.shape_edge_size);
+            caustic = exp(normalized_h * 1.0 / 5.0) + 0.15;
+        }
+    }
+
+    // shadow
+    float shadow = 0.0;
+    {
+        float shadow_sd = CalcSdf(p -lighting.shadow_offset );
+        shadow = exp(-1.0 / lighting.shadow_expansion * abs(shadow_sd)) * lighting.shadow_intensity;
+    }
+
+    if (sd > 0.0) { // outside the medium
+		//float3 background_color = texture(backgroundTexture, uv).rgb;
+		
+		float3 background_color = src_tex.Sample(linear_sampler, uv).rgb;
+        float3 final_color = background_color * caustic * (1.0 - float3(shadow, shadow, shadow));
+        fragColor = float4(final_color, 1.0);
+        return;
+    }
+
+    float h = height_from_sd(sd, lighting.shape_edge_size, lighting.height_min, lighting.height_max);
+    float3 N;
+    {
+        float2 d = fwidth(p);
+
+        float dx = d.x;
+        float dy = d.y;
+
+        float sd_xp = CalcSdf(p + float2(dx, 0.0));
+        float sd_xm = CalcSdf(p - float2(dx, 0.0));
+        float sd_yp = CalcSdf(p + float2(0.0, dy));
+        float sd_ym = CalcSdf(p - float2(0.0, dy));
+
+        float h_xp = height_from_sd(sd_xp, lighting.shape_edge_size, lighting.height_min, lighting.height_max);
+        float h_xm = height_from_sd(sd_xm, lighting.shape_edge_size, lighting.height_min, lighting.height_max);
+        float h_yp = height_from_sd(sd_yp, lighting.shape_edge_size, lighting.height_min, lighting.height_max);
+        float h_ym = height_from_sd(sd_ym, lighting.shape_edge_size, lighting.height_min, lighting.height_max);
+
+        // central-difference gradient
+        float dhdx = (h_xp - h_xm) / (2.0 * dx);
+        float dhdy = (h_yp - h_ym) / (2.0 * dy);
+
+        // surface normal from heightfield: Sx = (1,0,dh/dx), Sy = (0,1,dh/dy), N = cross(Sx, Sy)
+        N = normalize(float3(-dhdx, -dhdy, 1.0));
+    }
+
+    float3 V = float3(0.0, 0.0, 1.0); // view direction
+    float3 I = -V; // incident direction
+
+    float eta_base = 1.0 / lighting.ior; // base eta (air -> medium)
+
+    float3 T; // refracted direction inside medium
+    if (sd < -lighting.shape_edge_size) {
+        T = float3(0.0, 0.0, -1.0);
+    } else {
+        T = refract(I, N, eta_base);
+    }
+    if (length(T) < epsilon) { // total internal reflection
+        //float3 background_color = texture(backgroundTexture, uv).rgb;
+		float3 background_color = src_tex.Sample(linear_sampler, uv).rgb;
+        float3 final_color = background_color * caustic * (1.0 - float3(shadow, shadow, shadow));
+        fragColor = float4(final_color, 1.0);
+        return;
+    }
+
+    // physically correct refraction offset calculation
+
+    // per-channel slight ior shift for dispersion
+    float etaR = 1.0 / max(lighting.ior - lighting.dispersion, 1e-4);
+    float etaG = 1.0 / max(lighting.ior, 1e-4);
+    float etaB = 1.0 / max(lighting.ior + lighting.dispersion, 1e-4);
+
+    float3 TR = refract(I, N, etaR);
+    float3 TG = refract(I, N, etaG);
+    float3 TB = refract(I, N, etaB);
+
+    if (length(TR) < 1e-5) TR = T;
+    if (length(TG) < 1e-5) TG = T;
+    if (length(TB) < 1e-5) TB = T;
+
+    // compute intersection with `z = 0` plane for each channel
+    float tzR = max(abs(TR.z), 1e-5);
+    float tzG = max(abs(TG.z), 1e-5);
+    float tzB = max(abs(TB.z), 1e-5);
+
+    float2 offR = (TR.xy / tzR) * h;
+    float2 offG = (TG.xy / tzG) * h;
+    float2 offB = (TB.xy / tzB) * h;
+
+    // --- LOD-aware sampling
+    //float tex_size = float(textureSize(blurTexture, 0).x); // assume square
+    uint tex_size, height;
+    blurTexture.GetDimensions(tex_size, height);
+    //float lodR = clamp(log2(max(1e-6, length(offR) * tex_size)), 0.0, 8.0);
+    //float lodG = clamp(log2(max(1e-6, length(offG) * tex_size)), 0.0, 8.0);
+    //float lodB = clamp(log2(max(1e-6, length(offB) * tex_size)), 0.0, 8.0);
+    //
+    //float2 uvR = clamp((p + offR) / resolution, float2(0.0), float2(1.0));
+    //float2 uvG = clamp((p + offG) / resolution, float2(0.0), float2(1.0));
+    //float2 uvB = clamp((p + offB) / resolution, float2(0.0), float2(1.0));
+    // 计算各通道的LOD级别
+    float lodR = clamp(log2(max(1e-6, length(offR) * tex_size)), 0.0, 8.0);
+    float lodG = clamp(log2(max(1e-6, length(offG) * tex_size)), 0.0, 8.0);
+    float lodB = clamp(log2(max(1e-6, length(offB) * tex_size)), 0.0, 8.0);
+
+    // 计算各通道的UV坐标（带边界保护）
+    float2 uvR = clamp((p + offR) / resolution, float2(0.0, 0.0), float2(1.0, 1.0));
+    float2 uvG = clamp((p + offG) / resolution, float2(0.0, 0.0), float2(1.0, 1.0));
+    float2 uvB = clamp((p + offB) / resolution, float2(0.0, 0.0), float2(1.0, 1.0));
+
+    float3 refracted_color;
+
+    {
+        //float r = textureLod(blurTexture, uvR, lodR).r;
+        //float g = textureLod(blurTexture, uvG, lodG).g;
+        //float b = textureLod(blurTexture, uvB, lodB).b;
+		float r = blurTexture.SampleLevel(linear_sampler, uvR, lodR).r;
+        float g = blurTexture.SampleLevel(linear_sampler, uvG, lodG).g;
+        float b = blurTexture.SampleLevel(linear_sampler, uvB, lodB).b;
+		
+        float3 refracted_blur_color = float3(r, g, b);
+
+        //float background_r = textureLod(backgroundTexture, uvR, lodR).r;
+        //float background_g = textureLod(backgroundTexture, uvG, lodG).g;
+        //float background_b = textureLod(backgroundTexture, uvB, lodB).b;
+		float background_r = src_tex.SampleLevel(linear_sampler, uvR, lodR).r;
+        float background_g = src_tex.SampleLevel(linear_sampler, uvG, lodG).g;
+        float background_b = src_tex.SampleLevel(linear_sampler, uvB, lodB).b;
+        float3 refracted_background_color = float3(background_r, background_g, background_b);
+
+        // 厚度越薄越清晰
+        float h = normalized_height_from_sd(sd, lighting.shape_edge_size);
+
+        refracted_color = lerp(refracted_background_color, refracted_blur_color, pow(h, 1.25));
+    }
+
+    {
+        // physically-correct Beer–Lambert absorption (glass's intrinsic color)
+        // match tint color at reference thickness
+
+        // normalize thickness: h_ratio ∈ [0, 1] where 1 = height_max
+        float h_ratio = h / lighting.reference_thickness;
+
+        // apply nonlinear curve to make color change more dramatic with height
+        float h_curve_power = 2.0;
+        float h_curve = pow(h_ratio, h_curve_power);
+
+        float3 sigma = -log(max(lighting.tint_color, float3(epsilon, epsilon, epsilon)));
+        float3 transmittance = exp(-sigma * h_curve);
+
+        refracted_color *= transmittance;
+    }
+
+    {
+        // float t = -h / T.z;
+        // float2 refracted_uv = (p + T.xy * t) / resolution;
+        // float3 refracted_color = texture(blurTexture, refracted_uv).rgb;
+
+        // specular highlight
+        // 使用 Blinn-Phong 模型计算高光
+        float3 L = normalize(lighting.sunlight_dir); // 光源方向
+        float3 H = normalize(V + L); // 半角向量
+        float N_dot_H = max(dot(N, H), 0.0);
+
+        // 高光参数
+        float shininess = 24.0; // 高光锐度，值越大高光越集中
+        float specular_base = pow(N_dot_H, shininess);
+
+        // 边缘高光增强
+        float edge_highlight_boost = 1.0 + edge_factor * 5.0;
+        float specular_intensity = specular_base * edge_highlight_boost * lighting.sunlight_intensity;
+
+        float3 specular_color = float3(1.0, 0.95, 0.9); // 温暖的太阳光颜色（偏黄白色）
+
+        // 结合折射颜色和高光
+        float3 final_color = refracted_color + specular_color * specular_intensity;
+
+        {
+            // towards specular highlight boost
+            float3 L = normalize(-lighting.sunlight_dir);
+            float3 H = normalize(V + L);
+            float N_dot_H = max(dot(N, H), 0.0);
+            float specular_base = pow(N_dot_H, shininess);
+            float specular_intensity = specular_base * edge_highlight_boost * lighting.sunlight_intensity * 0.5;
+            final_color += specular_color * specular_intensity;
+        }
+
+        // Fresnel 边缘光：在视角接近掠射角时增强反射
+        float cos_theta = saturate(dot(N, V)); // N·V，接近 0 时是掠射角
+        float F = schlick_fresnel(cos_theta, lighting.ior);
+
+        float fresnel_edge_boost = 1.0 + edge_factor * 2.5; // 边缘处增强 2 倍
+        float fresnel_intensity = F * fresnel_edge_boost * lighting.fresnel_scale;
+
+        float3 fresnel_color = float3(1.0, 1.0, 1.0); // 白色边缘光
+
+        // 将 Fresnel 边缘光添加到最终颜色（使用加法混合，模拟反射光）
+        final_color += fresnel_color * fresnel_intensity;
+
+        // 边缘抗锯齿：平滑过渡到背景
+        float edge_aa = smoothstep(0.0, edge_width, abs(sd));
+        //float3 background_color = texture(backgroundTexture, uv).rgb;
+		float3 background_color = src_tex.Sample(linear_sampler, uv).rgb;
+        final_color = lerp(background_color, final_color, edge_aa);
+
+        final_color *= caustic * (1.0 - float3(shadow, shadow, shadow));
+
+        fragColor = float4(final_color, 1.0);
+        return;
+    }
 }
 
 float4 main(in float2 iTc : TEXCOORD) : SV_Target

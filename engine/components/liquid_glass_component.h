@@ -40,6 +40,7 @@ private:
 	RHIMeshPtr	        m_pLiquidMesh = nullptr;
 
     LiquidGlassParam    m_Param;
+    LiquidGlassLighting m_LightingParam;
     RHIGpuBufferPtr     m_pMvpCbBuffer = nullptr;
     RHIGpuBufferPtr     m_pParamCbBuffer = nullptr;
 
@@ -56,8 +57,7 @@ private:
     float2                  m_InitShapeCenter[MAX_Num_Shapes];
     float3                  m_InitShapeParams[MAX_Num_Shapes];
     int                     m_iNumShapes = 0;
-    
-	float               m_fDuration = 0.0f;
+	float                   m_fDuration = 0.0f;
 };
 
 SEEK_NAMESPACE_END
