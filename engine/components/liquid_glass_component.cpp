@@ -1,6 +1,7 @@
 #include "components/liquid_glass_component.h"
 #include "components/camera_component.h"
 #include "scene_manager/scene_manager.h"
+#include "rhi/base/rhi_context.h"
 #include "rhi/base/rhi_mesh.h"
 #include "rhi/base/rhi_texture.h"
 #include "rhi/base/rhi_gpu_buffer.h"
@@ -11,6 +12,7 @@
 #include "utils/shape_mesh.h"
 #include "math/matrix.h"
 #include "math/math_utility.h"
+#include "effect/blur.h"
 
 #include <cmath>
 
@@ -75,6 +77,11 @@ LiquidGlassComponent::LiquidGlassComponent(Context* context, uint32_t width, uin
     damper_centers[4] = double3(half_w * 1.5, half_h * 1.5, 0.0);
     damper_centers[5] = double3(half_w * 0.0, half_h * 0.0, 0.0);
 
+    m_LightingParam =
+    {
+		40.0, float3(1.0, 1.0, 1.0), 1.5, 0.1, 0.05,  80.0, 120.0, 100, 0.75, 0.25, float3(-0.5, -1.0, -0.5), 12.0, float2(5.0, 5.0)
+    };
+
 	// init spring param
     this->ResetAll();
 }
@@ -98,7 +105,9 @@ SResult LiquidGlassComponent::OnRenderBegin()
         Matrix4 mvp = GetWorldMatrix() * vp;
 		m_pMvpCbBuffer->Update(&mvp, sizeof(Matrix4));
 		m_pParamCbBuffer->Update(&m_Param, sizeof(LiquidGlassParam));
+		m_pLightingCbBuffer->Update(&m_LightingParam, sizeof(LiquidGlassLighting));
         m_pLiquildTech->SetParam("src_tex", m_pImage);
+        m_pLiquildTech->SetParam("blurTexture", m_pImage);
     }
     return S_Success;
 }
@@ -244,6 +253,21 @@ void LiquidGlassComponent::ResetAll()
     for (uint32_t i = 0; i < m_iNumShapes; i++)
         this->Reset(i);
 }
+void LiquidGlassComponent::SetImage(RHITexturePtr image)
+{
+    m_pImage = image;
+	
+    RHITexture::Desc desc = m_pImage->Descriptor();
+    desc.width = desc.height = std::min(desc.width, desc.height);
+    desc.flags = RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_GENERATE_MIPS;
+    m_pBlurImage = m_pContext->RHIContextInstance().CreateTexture2D(desc);
+
+    GaussianBlurPtr blur = MakeSharedPtr<GaussianBlur>(m_pContext);
+    blur->SetSrcTexture(m_pImage);
+    blur->SetDstTexture(m_pBlurImage);
+    blur->Run();
+	m_pBlurImage->GenerateMipMap();
+}
 SResult LiquidGlassComponent::InitShaders()
 {
     Effect& effect = m_pContext->EffectInstance();
@@ -254,6 +278,9 @@ SResult LiquidGlassComponent::InitShaders()
     m_pLiquildTech = effect.GetTechnique("LiquildGlass");
 	m_pParamCbBuffer = rc.CreateConstantBuffer(sizeof(LiquidGlassParam), RESOURCE_FLAG_CPU_WRITE | RESOURCE_FLAG_GPU_READ);
 	m_pLiquildTech->SetParam("cb_LiquidGlassParam", m_pParamCbBuffer);
+
+    m_pLightingCbBuffer = rc.CreateConstantBuffer(sizeof(LiquidGlassLighting), RESOURCE_FLAG_CPU_WRITE | RESOURCE_FLAG_GPU_READ);
+    m_pLiquildTech->SetParam("cb_LiquidGlassLighting", m_pLightingCbBuffer);
 
     m_pMvpCbBuffer = rc.CreateConstantBuffer(sizeof(Matrix4), RESOURCE_FLAG_CPU_WRITE | RESOURCE_FLAG_GPU_READ);
     m_pLiquildTech->SetParam("cb_Sprite2DInfo", m_pMvpCbBuffer);

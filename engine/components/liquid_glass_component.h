@@ -32,17 +32,21 @@ public:
     void Reset(uint32_t shape_index);
     void ResetAll();
 
+    virtual void SetImage(RHITexturePtr image) override;
+
 private:
     SResult InitShaders();
 
 private:
     Technique*          m_pLiquildTech = nullptr;
 	RHIMeshPtr	        m_pLiquidMesh = nullptr;
+    RHITexturePtr       m_pBlurImage = nullptr;
 
     LiquidGlassParam    m_Param;
     LiquidGlassLighting m_LightingParam;
     RHIGpuBufferPtr     m_pMvpCbBuffer = nullptr;
     RHIGpuBufferPtr     m_pParamCbBuffer = nullptr;
+    RHIGpuBufferPtr     m_pLightingCbBuffer = nullptr;
 
     // Dampers
     float mass[MAX_Num_Shapes] = { 0.005, 0.005, 0.005, 0.005, 0.005, 0.005 };

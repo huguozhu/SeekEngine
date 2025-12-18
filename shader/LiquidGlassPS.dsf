@@ -63,9 +63,9 @@ float height_from_sd(float sd, float edge_size, float height_edge, float height_
     //return mix(height_edge, height_center, normalized_height_from_sd(sd, edge_size));
     return lerp(height_edge, height_center, normalized_height_from_sd(sd, edge_size));
 }
-void Lighting2(float2 resolution, float2 p, out float4 fragColor) {
+float4 Lighting(float2 resolution, float2 p)
+{
     float2 uv = p / resolution;
-
     float sd = CalcSdf(p); // support only one shape now
      
     // 边缘检测：sd 接近 0 时是边缘
@@ -96,15 +96,6 @@ void Lighting2(float2 resolution, float2 p, out float4 fragColor) {
     {
         float shadow_sd = CalcSdf(p -lighting.shadow_offset );
         shadow = exp(-1.0 / lighting.shadow_expansion * abs(shadow_sd)) * lighting.shadow_intensity;
-    }
-
-    if (sd > 0.0) { // outside the medium
-		//float3 background_color = texture(backgroundTexture, uv).rgb;
-		
-		float3 background_color = src_tex.Sample(linear_sampler, uv).rgb;
-        float3 final_color = background_color * caustic * (1.0 - float3(shadow, shadow, shadow));
-        fragColor = float4(final_color, 1.0);
-        return;
     }
 
     float h = height_from_sd(sd, lighting.shape_edge_size, lighting.height_min, lighting.height_max);
@@ -148,8 +139,7 @@ void Lighting2(float2 resolution, float2 p, out float4 fragColor) {
         //float3 background_color = texture(backgroundTexture, uv).rgb;
 		float3 background_color = src_tex.Sample(linear_sampler, uv).rgb;
         float3 final_color = background_color * caustic * (1.0 - float3(shadow, shadow, shadow));
-        fragColor = float4(final_color, 1.0);
-        return;
+        return float4(final_color, 1.0);
     }
 
     // physically correct refraction offset calculation
@@ -180,13 +170,7 @@ void Lighting2(float2 resolution, float2 p, out float4 fragColor) {
     //float tex_size = float(textureSize(blurTexture, 0).x); // assume square
     uint tex_size, height;
     blurTexture.GetDimensions(tex_size, height);
-    //float lodR = clamp(log2(max(1e-6, length(offR) * tex_size)), 0.0, 8.0);
-    //float lodG = clamp(log2(max(1e-6, length(offG) * tex_size)), 0.0, 8.0);
-    //float lodB = clamp(log2(max(1e-6, length(offB) * tex_size)), 0.0, 8.0);
-    //
-    //float2 uvR = clamp((p + offR) / resolution, float2(0.0), float2(1.0));
-    //float2 uvG = clamp((p + offG) / resolution, float2(0.0), float2(1.0));
-    //float2 uvB = clamp((p + offB) / resolution, float2(0.0), float2(1.0));
+
     // 计算各通道的LOD级别
     float lodR = clamp(log2(max(1e-6, length(offR) * tex_size)), 0.0, 8.0);
     float lodG = clamp(log2(max(1e-6, length(offG) * tex_size)), 0.0, 8.0);
@@ -217,9 +201,7 @@ void Lighting2(float2 resolution, float2 p, out float4 fragColor) {
         float background_b = src_tex.SampleLevel(linear_sampler, uvB, lodB).b;
         float3 refracted_background_color = float3(background_r, background_g, background_b);
 
-        // 厚度越薄越清晰
         float h = normalized_height_from_sd(sd, lighting.shape_edge_size);
-
         refracted_color = lerp(refracted_background_color, refracted_blur_color, pow(h, 1.25));
     }
 
@@ -294,8 +276,7 @@ void Lighting2(float2 resolution, float2 p, out float4 fragColor) {
 
         final_color *= caustic * (1.0 - float3(shadow, shadow, shadow));
 
-        fragColor = float4(final_color, 1.0);
-        return;
+        return float4(final_color, 1.0);
     }
 }
 
@@ -308,9 +289,9 @@ float4 main(in float2 iTc : TEXCOORD) : SV_Target
 	float sd = CalcSdf(cur_pos);
 	if (sd < 0)
 	{
-		 color *= color_scale;
+		float2 resolution = float2(param.width, param.height);
+		color = Lighting(resolution, cur_pos);
 	}
-	
 	return color;
 }
 
