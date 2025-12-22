@@ -1,7 +1,31 @@
+#include "app_framework.h"
+#include "seek_engine.h"
+#include "common/first_person_camera_controller.h"
 
-#include "06.GlobalIllumination.h" 
+USING_NAMESPACE_SEEK
 
-#define SEEK_MACRO_FILE_UID 91     // this code is auto generated, don't touch it!!!
+class GlobalIlluminationSample : public AppFramework
+{
+public:
+    GlobalIlluminationSample() :AppFramework("GlobalIlluminationSample") {}
+
+    virtual SResult OnCreate() override;
+    virtual SResult OnUpdate() override;
+    virtual SResult InitContext(void* device = nullptr, void* native_wnd = nullptr);
+
+    void AddSkyboxEntity();
+
+private:
+
+    EntityPtr m_pMeshEntity[2] = { nullptr };
+    EntityPtr m_pGltfMeshEntity[10] = { nullptr };
+    EntityPtr m_pCameraEntity = nullptr;
+    EntityPtr m_pLightEntity = nullptr;
+    EntityPtr m_pSkyBoxEntity = nullptr;
+
+    FirstPersonCameraController m_CameraController;
+};
+
 
 struct MeshInfo
 {
@@ -54,7 +78,7 @@ SResult GlobalIlluminationSample::OnCreate()
         if (!m_pGltfMeshEntity)
         {
             LOG_ERROR("CreateEntityFromFile error!");
-            return ERR_INVALID_INIT;
+            return -1;
         }
         m_pGltfMeshEntity[i]->GetRootComponent()->SetWorldTransform(mesh_infos[i].world_transform);
         m_pGltfMeshEntity[i]->AddToTopScene();
@@ -106,16 +130,16 @@ void GlobalIlluminationSample::AddSkyboxEntity()
     desc.flags = RESOURCE_FLAG_GPU_READ;
     std::vector<BitmapBufferPtr> datas(6, nullptr);
     std::string cube_files[6] = {
-        FullPath("asset/textures/skybox/positive_x.jpg"),
-        FullPath("asset/textures/skybox/negative_x.jpg"),
-        FullPath("asset/textures/skybox/positive_y.jpg"),
-        FullPath("asset/textures/skybox/negative_y.jpg"),
-        FullPath("asset/textures/skybox/positive_z.jpg"),
-        FullPath("asset/textures/skybox/negative_z.jpg"),
+        FullPath("asset/textures/skybox/daylight0.png"),
+        FullPath("asset/textures/skybox/daylight1.png"),
+        FullPath("asset/textures/skybox/daylight2.png"),
+        FullPath("asset/textures/skybox/daylight3.png"),
+        FullPath("asset/textures/skybox/daylight4.png"),
+        FullPath("asset/textures/skybox/daylight5.png"),
     };
     for (uint32_t i = 0; i < 6; i++)
     {
-        BitmapBufferPtr bit = ImageDecodeFromFile(cube_files[i], ImageType::JPEG);
+        BitmapBufferPtr bit = ImageDecodeFromFile(cube_files[i], ImageType::PNG);
         datas[i] = bit;
     }
     RHITexturePtr tex_cube = m_pContext->RHIContextInstance().CreateTextureCube(desc, datas);

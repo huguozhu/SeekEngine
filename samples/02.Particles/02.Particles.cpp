@@ -1,8 +1,40 @@
-#include "02.Particles.h"
+#include "app_framework.h"
+#include "seek_engine.h"
 #include "components/particle_component.h"
 #include "math/color.h"
+#include <cmath>
+#include <fstream>
+#include <sstream>
+#include "common/first_person_camera_controller.h"
 
-#define SEEK_MACRO_FILE_UID 46     // this code is auto generated, don't touch it!!!
+USING_NAMESPACE_SEEK
+
+class Particles : public AppFramework
+{
+public:
+    Particles() :AppFramework("Particles") {}
+
+    virtual SResult OnCreate() override;
+    virtual SResult OnUpdate() override;
+
+    void CreateParticleEntities();
+    void CreateWaterMarkEntity();
+
+private:
+    // Camera
+    EntityPtr           m_pCameraEntity = nullptr;
+    // Skybox
+    EntityPtr           m_pSkyBoxEntity = nullptr;
+
+
+    double              m_dStartTime = 0;
+
+    std::vector<EntityPtr>              m_ParticleList;
+    std::vector<ParticleComponentPtr>   m_pParticleComponentList;
+    std::vector<BitmapBufferPtr>        m_vBitmaps;
+
+    FirstPersonCameraController m_CameraController;
+};
 
 void Particles::CreateWaterMarkEntity()
 {

@@ -1,7 +1,29 @@
+#include "app_framework.h"
+#include "seek_engine.h"
+#include "common/first_person_camera_controller.h"
 
-#include "07.LiquidGlass.h"
+USING_NAMESPACE_SEEK
 
-#define SEEK_MACRO_FILE_UID 91     // this code is auto generated, don't touch it!!!
+class LiquidGlass : public AppFramework
+{
+public:
+    LiquidGlass();
+    ~LiquidGlass();
+    virtual SResult OnCreate() override;
+    virtual SResult OnUpdate() override;
+    virtual SResult InitContext(void* device = nullptr, void* native_wnd = nullptr);
+
+    void HandleMouseEvent();
+    void SetBgTexture(RHITexturePtr bg) { m_pBgTexture = bg; }
+    LiquidGlassComponentPtr GetLiquidGlassComponent() { return m_pGlass; }
+
+private:
+    EntityPtr       m_pCameraEntity = nullptr;
+    LiquidGlassComponentPtr m_pGlass = nullptr;
+    RHITexturePtr   m_pBgTexture;
+
+};
+
 
 
 static int g_iChosenShapeIndex = -1;
