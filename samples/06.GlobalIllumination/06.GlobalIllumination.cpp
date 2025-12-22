@@ -16,8 +16,6 @@ public:
     void AddSkyboxEntity();
 
 private:
-
-    EntityPtr m_pMeshEntity[2] = { nullptr };
     EntityPtr m_pGltfMeshEntity[10] = { nullptr };
     EntityPtr m_pCameraEntity = nullptr;
     EntityPtr m_pLightEntity = nullptr;

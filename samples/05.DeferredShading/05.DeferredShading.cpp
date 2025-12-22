@@ -27,6 +27,7 @@ private:
     EntityPtr m_pRotatingLights[NUM_LIGHTS] = { nullptr };
     EntityPtr m_pRotatingSphere[NUM_LIGHTS] = { nullptr };
 
+    bool m_bManyLights = true;
     FirstPersonCameraController m_CameraController;
 };
 
@@ -76,10 +77,15 @@ SResult DeferredShading::OnCreate()
     Viewport const& vp = rc.GetScreenRHIFrameBuffer()->GetViewport();
     float w = vp.width;
     float h = vp.height;
+
+    // Step1: add Many Lights
+    if (m_bManyLights)
+        this->InitRotatingLights();
+    // Step2: add Camera
     m_pCameraEntity = MakeSharedPtr<Entity>(m_pContext.get());
     CameraComponentPtr pCam = MakeSharedPtr<CameraComponent>(m_pContext.get());
     pCam->ProjPerspectiveParams(45.0 * Math::DEG2RAD, w / h, 0.01f, 200.0f);
-    pCam->SetLookAt(float3(-6.2, 5.8, -1.1), float3(-6.0, 5.6, -1.1), float3(0, 1, 0));
+    pCam->SetLookAt(float3(-6.2, 2.8, -1.1), float3(-2.0, 3.0, -1.1), float3(0, 1, 0));
     m_pCameraEntity->AddSceneComponent(pCam);
     m_pCameraEntity->AddToTopScene();
     m_CameraController.SetCamera(pCam.get());
@@ -98,13 +104,13 @@ SResult DeferredShading::OnCreate()
     pLight->SetColor(Color::White);
     pLight->SetDirection(float3(p, -p, p));
     pLight->SetIntensity(0.5);
-    pLight->CastShadow(1);
-	pLight->SoftShadow(1);
+    //pLight->CastShadow(1);
+	//pLight->SoftShadow(1);
 	pLight->SetWorldTranslation(float3(-p, p, -p));
     //pLight->CascadedShadow(1);
     m_pLightEntity[1] = MakeSharedPtr<Entity>(m_pContext.get(), "Directional Light");
     m_pLightEntity[1]->AddSceneComponent(pLight);
-    //m_pLightEntity[1]->AddToTopScene();
+    m_pLightEntity[1]->AddToTopScene();
 
     float3 spot_pos = float3(-p, p, -p);
     float3 look_at = float3(0, 0, 0);
@@ -119,7 +125,7 @@ SResult DeferredShading::OnCreate()
     pLight->CastShadow(1);
     m_pLightEntity[2] = MakeSharedPtr<Entity>(m_pContext.get(), "Spot Light");
     m_pLightEntity[2]->AddSceneComponent(pLight);
-    //m_pLightEntity[2]->AddToTopScene();
+    m_pLightEntity[2]->AddToTopScene();
 
     spot_pos = float3(p, p, -p);
     look_at = float3(0, 0, 0);
@@ -132,7 +138,7 @@ SResult DeferredShading::OnCreate()
     pLight->SetWorldTranslation(spot_pos);
     m_pLightEntity[3] = MakeSharedPtr<Entity>(m_pContext.get(), "Spot Light");
     m_pLightEntity[3]->AddSceneComponent(pLight);
-    //m_pLightEntity[3]->AddToTopScene();
+    m_pLightEntity[3]->AddToTopScene();
 
     float3 point_pos = float3(0, 3.0, 0);
     pLight = MakeSharedPtr<PointLightComponent>(m_pContext.get());
@@ -144,7 +150,7 @@ SResult DeferredShading::OnCreate()
 	pLight->SetWorldTranslation(point_pos);
     m_pLightEntity[4] = MakeSharedPtr<Entity>(m_pContext.get(), "Point Light");
     m_pLightEntity[4]->AddSceneComponent(pLight);
-    //m_pLightEntity[4]->AddToTopScene();
+    m_pLightEntity[4]->AddToTopScene();
 
     // Load gltf2 Mesh
     static std::vector<std::string> model_files = {
@@ -204,6 +210,9 @@ SResult DeferredShading::OnCreate()
 
 SResult DeferredShading::OnUpdate()
 {
+    if (m_bManyLights)
+        this->UpdateRotatingLights();
+
     m_CameraController.Update(m_pContext->GetDeltaTime());
     SEEK_RETIF_FAIL(m_pContext->Tick());
     SEEK_RETIF_FAIL(m_pContext->BeginRender());
