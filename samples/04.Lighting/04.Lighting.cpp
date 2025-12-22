@@ -27,7 +27,7 @@ SResult Lighting::OnCreate()
     pLight->SetColor(c);
     m_pLightEntity[0] = MakeSharedPtr<Entity>(m_pContext.get(), "Ambient Light");
     m_pLightEntity[0]->AddSceneComponent(pLight);
-    //m_pLightEntity[0]->AddToTopScene();
+    m_pLightEntity[0]->AddToTopScene();
 
     float p = 3.0;
     float3 directional_pos = float3(-p, p, p);
@@ -41,7 +41,7 @@ SResult Lighting::OnCreate()
     //pLight->CascadedShadow(1);
     m_pLightEntity[1] = MakeSharedPtr<Entity>(m_pContext.get(), "Directional Light");
     m_pLightEntity[1]->AddSceneComponent(pLight);
-    //m_pLightEntity[1]->AddToTopScene();
+    m_pLightEntity[1]->AddToTopScene();
 
     float3 spot_pos = float3(-p, p, 0);
     float3 look_at = float3(0, 0, 0);
@@ -57,7 +57,7 @@ SResult Lighting::OnCreate()
 	pLight->SoftShadow(1);
     m_pLightEntity[2] = MakeSharedPtr<Entity>(m_pContext.get(), "Spot Light");
     m_pLightEntity[2]->AddSceneComponent(pLight);
-    //m_pLightEntity[2]->AddToTopScene();
+    m_pLightEntity[2]->AddToTopScene();
 
     spot_pos = float3(p, p, -p);
     look_at = float3(0, 0, 0);
@@ -78,12 +78,12 @@ SResult Lighting::OnCreate()
     pLight->SetColor(Color::Green);    
     pLight->SetIntensity(45);
     pLight->CastShadow(1);
-    //pLight->SoftShadow(1);
+    pLight->SoftShadow(1);
     pLight->SetFalloffRadius(15.4);
 	pLight->SetWorldTranslation(point_pos);
     m_pLightEntity[4] = MakeSharedPtr<Entity>(m_pContext.get(), "Point Light");
     m_pLightEntity[4]->AddSceneComponent(pLight);
-    //m_pLightEntity[4]->AddToTopScene();
+    m_pLightEntity[4]->AddToTopScene();
 
     BitmapBufferPtr bit = ImageDecodeFromFile(FullPath("asset/textures/boy.jpg"), ImageType::JPEG);
     RHITexturePtr tex_0 = rc.CreateTexture2D(bit);
@@ -127,16 +127,16 @@ SResult Lighting::OnCreate()
     desc.flags = RESOURCE_FLAG_GPU_READ;
     std::vector<BitmapBufferPtr> datas(6, nullptr);
     std::string cube_files[6] = {
-        FullPath("asset/textures/skybox/positive_x.jpg"),
-        FullPath("asset/textures/skybox/negative_x.jpg"),
-        FullPath("asset/textures/skybox/positive_y.jpg"),
-        FullPath("asset/textures/skybox/negative_y.jpg"),
-        FullPath("asset/textures/skybox/positive_z.jpg"),
-        FullPath("asset/textures/skybox/negative_z.jpg"),
+        FullPath("asset/textures/skybox/daylight0.png"),
+        FullPath("asset/textures/skybox/daylight1.png"),
+        FullPath("asset/textures/skybox/daylight2.png"),
+        FullPath("asset/textures/skybox/daylight3.png"),
+        FullPath("asset/textures/skybox/daylight4.png"),
+        FullPath("asset/textures/skybox/daylight5.png"),
     };
     for (uint32_t i = 0; i < 6; i++)
     {
-        BitmapBufferPtr bit = ImageDecodeFromFile(cube_files[i], ImageType::JPEG);
+        BitmapBufferPtr bit = ImageDecodeFromFile(cube_files[i], ImageType::PNG);
         datas[i] = bit;
     }
     RHITexturePtr tex_cube = rc.CreateTextureCube(desc, datas);
