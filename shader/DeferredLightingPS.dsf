@@ -1,10 +1,12 @@
 //STAGE:ps
+//PREDEFINE:HAS_SHADOW=0,1
+//PREDEFINE:TILE_CULLING=0,1
 #include "Common.dsh"
 #include "Lighting.dsh"
-#include "Shadow.dsh"
 
-[SpecializationConstant] bool g_HasShadow   = false;
-[SpecializationConstant] bool g_TileCulling = false;
+#if HAS_SHADOW == 1
+#include "Shadow.dsh"
+#endif
 
 
 cbuffer cb_CameraInfo
@@ -16,7 +18,9 @@ cbuffer cb_DeferredLightingPSInfo
 	DeferredLightingInfo deferredLightingInfo;
 }
 
+#if TILE_CULLING == 1
 StructuredBuffer<TileInfo> tile_infos;
+#endif
 StructuredBuffer<LightInfo> light_infos;
 
 Texture2D gbuffer0;
@@ -47,8 +51,7 @@ float4 main(
 	float3 N = normalize(normal);
 	float3 Lo = 0;
 
-if (g_TileCulling)
-{
+#if TILE_CULLING == 1
 	float width, height;
 	gbuffer0.GetDimensions(width, height);
 	uint dispatch_width = (width + TILE_SIZE - 1) / TILE_SIZE;
@@ -58,55 +61,18 @@ if (g_TileCulling)
 	{
 		uint light_index = tile_infos[tile_index].light_indices[i];
 		LightInfo lightInfo = light_infos[light_index];
-
-		float shadow = 0;
-if (g_HasShadow)
-{
-		shadow = shadowing_tex.SampleLevel(shadow_map_sampler, iTc, 0)[lightInfo.shadowMapIndex];
-}
-		float3 L;
-		float lightAttenuation = 1.0;
-		[branch]
-		if (lightInfo.type == LIGHT_TYPE_DIRECTIONAL)
-		{
-			L = normalize(-lightInfo.direction);
-			lightAttenuation = 1.0;
-		}
-		else if (lightInfo.type == LIGHT_TYPE_SPOT)
-		{
-			L = normalize(lightInfo.posWorld - pos_world);
-			float3 posToLight = lightInfo.posWorld - pos_world;
-			lightAttenuation = GetDistanceAttenuation(posToLight, lightInfo.falloffRadius);
-			lightAttenuation *= GetSpotAngleAttenuation(L, lightInfo.direction, lightInfo.inOutCutoff);
-		}
-		else if (lightInfo.type == LIGHT_TYPE_POINT)
-		{
-			L = normalize(lightInfo.posWorld - pos_world);
-			float3 posToLight = lightInfo.posWorld - pos_world;
-			lightAttenuation = GetDistanceAttenuation(posToLight, lightInfo.falloffRadius);
-		}
-		float NoL = dot(N, L);
-		[branch]
-		if (NoL > 0.0)
-		{
-			float4 indirect_lighting = indirect_lighting_tex.SampleLevel(point_sampler, iTc, 0);
-			Lo += indirect_lighting.rgb + CalcLightingBRDF(albedo, metallic, roughness, lightInfo.color, lightInfo.intensity, lightAttenuation, N, L, V, shadow);
-		}
-	}
-}
-else
-{
+#elif TILE_CULLING == 0
 	[loop]
 	for (uint i=0; i<deferredLightingInfo.light_num; i++)
 	{
 		uint light_index = i + deferredLightingInfo.light_index_start;
 		LightInfo lightInfo = light_infos[light_index];
+#endif
 
 		float shadow = 0;
-if (g_HasShadow)
-{
+#if HAS_SHADOW == 1
 		shadow = shadowing_tex.SampleLevel(shadow_map_sampler, iTc, 0)[lightInfo.shadowMapIndex];
-}
+#endif
 		float3 L;
 		float lightAttenuation = 1.0;
 		[branch]
@@ -136,6 +102,5 @@ if (g_HasShadow)
 			Lo += indirect_lighting.rgb + CalcLightingBRDF(albedo, metallic, roughness, lightInfo.color, lightInfo.intensity, lightAttenuation, N, L, V, shadow);
 		}
 	}
-}
 	return float4(Lo, 1.0);
 }
