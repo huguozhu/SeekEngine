@@ -23,6 +23,11 @@ using ID3D12FencePtr                = ComPtr<ID3D12Fence>;
 using ID3D12DescriptorHeapPtr       = ComPtr<ID3D12DescriptorHeap>;
 using ID3D12ResourcePtr             = ComPtr<ID3D12Resource>;
 using ID3D12PipelineStatePtr        = ComPtr<ID3D12PipelineState>;
+using ID3D12RootSignaturePtr        = ComPtr<ID3D12RootSignature>;
+using ID3DBlobPtr                   = ComPtr<ID3DBlob>;
 using IDxcCompilerPtr               = ComPtr<IDxcCompiler>;
+using IDxcLibraryPtr                = ComPtr<IDxcLibrary>;
+using IDxcBlobEncodingPtr           = ComPtr<IDxcBlobEncoding>;
+using IDxcOperationResultPtr        = ComPtr<IDxcOperationResult>;
 
 SEEK_NAMESPACE_END
