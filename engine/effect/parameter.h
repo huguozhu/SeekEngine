@@ -32,6 +32,7 @@ enum class EffectDataType : uint32_t
     RWTexture,
     Sampler,
     SampledTexture, // for some shading language has no separate texture, only have combined texture, like glsl
+    Specialization,    // Slang specialization constant
 };
 
 /******************************************************************************

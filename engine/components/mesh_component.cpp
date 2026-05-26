@@ -183,6 +183,37 @@ SResult MeshComponent::OnRenderBegin(Technique* tech, RHIMeshPtr mesh)
         LOG_ERROR("MeshComponent::OnRenderBegin invalid RenderStage");
     }
 
+    // Set specialization constants from mesh/context state
+    // These drive PSO specialization to select optimized shader variants.
+    // SetSpecializationConstant is a no-op if the technique doesn't have that param.
+    tech->SetSpecializationConstant("g_JointBindSize", 0); // static mesh, no skeleton
+
+    // Material texture availability
+    MaterialPtr pMaterial = mesh->GetMaterial();
+    if (pMaterial)
+    {
+        tech->SetSpecializationConstant("g_HasAlbedoTex", pMaterial->albedo_tex ? 1 : 0);
+        tech->SetSpecializationConstant("g_HasNormalTex", pMaterial->normal_tex ? 1 : 0);
+        tech->SetSpecializationConstant("g_HasMetallicRoughTex", pMaterial->metallic_roughness_tex ? 1 : 0);
+        tech->SetSpecializationConstant("g_HasNormalMaskTex", pMaterial->normal_mask_tex ? 1 : 0);
+        tech->SetSpecializationConstant("g_HasNormal", pMaterial->normal_tex ? 1 : 0);
+    }
+
+    // TAA enabled from context
+    tech->SetSpecializationConstant("g_EnableTAA", m_pContext->GetAntiAliasingMode() == AntiAliasingMode::TAA ? 1 : 0);
+
+    // Lighting mode from context
+    tech->SetSpecializationConstant("g_LightMode", m_pContext->GetLightingMode() == LightingMode::PBR ? 1 : 0);
+
+    // Morph type
+    int32_t morphType = 0;
+    if (mesh->HasMorphTarget())
+        morphType = static_cast<int32_t>(mesh->GetMorphInfo().morph_target_type);
+    tech->SetSpecializationConstant("g_MorphType", morphType);
+
+    // Particle texture (not applicable to meshes)
+    tech->SetSpecializationConstant("g_HasTex", 0);
+
     SaveToPrevWorldMatrix();
     mesh->SaveToPrevMorphTargetWeights();
     return ret;

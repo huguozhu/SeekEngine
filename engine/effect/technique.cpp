@@ -292,6 +292,27 @@ SResult Technique::Build()
         }
     }
 
+    // Load specialization constants from shader reflection
+    for (size_t stage = 0; stage < SHADER_STAGE_COUNT; stage++)
+    {
+        if (!m_shaderRes[stage]) continue;
+        for (auto& spec : m_shaderRes[stage]->reflectInfo.specializations)
+        {
+            if (m_params.find(spec.name) == m_params.end())
+            {
+                Param param;
+                param.dataType = EffectDataType::Specialization;
+                param.name = spec.name;
+                int32_t defaultVal = 0;
+                if (spec.defaultValue == "false") defaultVal = 0;
+                else if (spec.defaultValue == "true") defaultVal = 1;
+                else defaultVal = std::stoi(spec.defaultValue);
+                param.specializationValues[spec.name] = defaultVal;
+                m_params[spec.name] = std::move(param);
+            }
+        }
+    }
+
     RHIProgramPtr program = m_pContext->RHIContextInstance().CreateRHIProgram();
     for (size_t stage = 0; stage != SHADER_STAGE_COUNT; stage++)
     {

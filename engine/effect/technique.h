@@ -124,6 +124,11 @@ public:
 
         EffectVariablePtr variable;
 
+        // Specialization constant values (name → int value)
+        // Populated from ShaderResource::reflectInfo.specializations
+        // Updated at draw time by SetSpecializationConstant()
+        std::unordered_map<std::string, int32_t> specializationValues;
+
         Param()
         {
             std::fill(bindings.begin(), bindings.end(), INVALID_BINDING_POINT);
@@ -201,6 +206,34 @@ public:
             return;
 
         *(paramIt->second.variable) = value;
+    }
+
+    // Specialization constant management
+    void SetSpecializationConstant(const std::string& name, int32_t value)
+    {
+        auto paramIt = m_params.find(name);
+        if (paramIt != m_params.end())
+            paramIt->second.specializationValues[name] = value;
+    }
+
+    bool GetSpecializationConstant(const std::string& name, int32_t& outValue) const
+    {
+        auto paramIt = m_params.find(name);
+        if (paramIt != m_params.end())
+        {
+            auto specIt = paramIt->second.specializationValues.find(name);
+            if (specIt != paramIt->second.specializationValues.end())
+            {
+                outValue = specIt->second;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    const std::unordered_map<std::string, Technique::Param>& GetParams() const
+    {
+        return m_params;
     }
 
     bool HasParam(const std::string& name)
