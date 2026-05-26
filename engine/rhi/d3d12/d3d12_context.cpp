@@ -444,6 +444,27 @@ SResult D3D12Context::Init()
 
         SEEK_RETIF_FAIL(this->CheckCapabilitySetSupport());
 
+        // Initialize null SRV/UAV descriptors for empty table slots
+        {
+            m_NullSrvUavDescBlock = m_pCbvSrvUavDescAllocator->Allocate(2);
+            m_hNullSrvHandle = m_NullSrvUavDescBlock.CpuHandle();
+            m_hNullUavHandle = m_NullSrvUavDescBlock.CpuHandle();
+            m_hNullUavHandle.ptr += m_pCbvSrvUavDescAllocator->DescriptorSize();
+
+            D3D12_SHADER_RESOURCE_VIEW_DESC nullSrvDesc = {};
+            nullSrvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            nullSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+            nullSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+            nullSrvDesc.Texture2D.MipLevels = 1;
+            m_pDevice->CreateShaderResourceView(nullptr, &nullSrvDesc, m_hNullSrvHandle);
+
+            D3D12_UNORDERED_ACCESS_VIEW_DESC nullUavDesc = {};
+            nullUavDesc.Format = DXGI_FORMAT_R32_UINT;
+            nullUavDesc.ViewDimension = D3D12_UAV_DIMENSION_BUFFER;
+            nullUavDesc.Buffer.NumElements = 1;
+            m_pDevice->CreateUnorderedAccessView(nullptr, nullptr, &nullUavDesc, m_hNullUavHandle);
+        }
+
         SEEK_RETIF_FAIL(this->CreateRootSignature());
 
         return S_Success;
@@ -495,7 +516,7 @@ SResult D3D12Context::EndFrame()
 *******************************************************************************/
 void D3D12Context::BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* cbuffer, const char* name)
 {
-    if (!cbuffer || binding >= 5) return;
+    if (!cbuffer || binding >= 7) return;
 
     ID3D12GraphicsCommandList* cmd_list = this->D3DRenderCmdList();
     const D3D12GpuBuffer* d3dBuf = static_cast<const D3D12GpuBuffer*>(cbuffer);
@@ -508,6 +529,8 @@ void D3D12Context::BindConstantBuffer(ShaderType stage, uint32_t binding, const 
     case 2: cmd_list->SetGraphicsRootConstantBufferView(ROOT_PARAM_CBV_B2, gpuAddr); break;
     case 3: cmd_list->SetGraphicsRootConstantBufferView(ROOT_PARAM_CBV_B3, gpuAddr); break;
     case 4: cmd_list->SetGraphicsRootConstantBufferView(ROOT_PARAM_CBV_B4, gpuAddr); break;
+    case 5: cmd_list->SetGraphicsRootConstantBufferView(ROOT_PARAM_CBV_B5, gpuAddr); break;
+    case 6: cmd_list->SetGraphicsRootConstantBufferView(ROOT_PARAM_CBV_B6, gpuAddr); break;
     default: break;
     }
 }
@@ -662,9 +685,9 @@ SResult D3D12Context::BeginRenderPass(const RenderPassInfo& renderPassInfo)
     }
     m_pCurrentRHIFrameBuffer = static_cast<D3D12FrameBuffer*>(renderPassInfo.fb);
 
-    m_pCurrentRHIFrameBuffer->BindBarrier(cmd_list);
-    this->FlushResourceBarriers(cmd_list);
-    m_pCurrentRHIFrameBuffer->SetRenderTargets(cmd_list);
+    // m_pCurrentRHIFrameBuffer->BindBarrier(cmd_list);
+    // this->FlushResourceBarriers(cmd_list);
+    // m_pCurrentRHIFrameBuffer->SetRenderTargets(cmd_list);
 
     // Reset PSO tracking and descriptor caches for new pass
     m_pCurPso = nullptr;
@@ -681,7 +704,7 @@ SResult D3D12Context::BeginRenderPass(const RenderPassInfo& renderPassInfo)
     d3dViewport.MaxDepth = 1.0;
     cmd_list->RSSetViewports(1, &d3dViewport);
 
-    m_pCurrentRHIFrameBuffer->Clear();
+    // m_pCurrentRHIFrameBuffer->Clear();
 
     return S_Success;
 }
@@ -810,11 +833,11 @@ SResult D3D12Context::DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, M
 SResult D3D12Context::CreateRootSignature()
 {
     // Root parameters:
-    // [0-4] CBV root descriptors (b0-b4)
-    // [5]   SRV descriptor table (t0+, unbounded)
+    // [0-6] CBV root descriptors (b0-b6)
+    // [7]   SRV descriptor table (t0+, unbounded)
     std::array<D3D12_ROOT_PARAMETER, NUM_ROOT_PARAMS> rootParams = {};
 
-    for (uint32_t i = 0; i < 5; i++)
+    for (uint32_t i = 0; i < 7; i++)
     {
         rootParams[i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
         rootParams[i].Descriptor.ShaderRegister = i;
@@ -965,8 +988,7 @@ void D3D12Context::UpdateRenderPso(ID3D12GraphicsCommandList* cmd_list, RHIProgr
         m_pCurrGraphicsRootSignature = m_pGraphicsRootSignature.Get();
     }
 
-    // TODO: FlushDescriptorTables disabled for debugging PSO creation
-    // this->FlushDescriptorTables(cmd_list);
+    this->FlushDescriptorTables(cmd_list);
 }
 
 void D3D12Context::UpdateComputePso(ID3D12GraphicsCommandList* cmd_list, RHIProgram* program, RHIMeshPtr const& mesh)

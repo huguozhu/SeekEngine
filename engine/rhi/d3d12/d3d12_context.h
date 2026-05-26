@@ -59,9 +59,11 @@ public:
     static constexpr uint32_t ROOT_PARAM_CBV_B2 = 2;
     static constexpr uint32_t ROOT_PARAM_CBV_B3 = 3;
     static constexpr uint32_t ROOT_PARAM_CBV_B4 = 4;
-    static constexpr uint32_t ROOT_PARAM_SRV_TABLE = 5;
-    static constexpr uint32_t ROOT_PARAM_UAV_TABLE = 6;
-    static constexpr uint32_t NUM_ROOT_PARAMS = 7;
+    static constexpr uint32_t ROOT_PARAM_CBV_B5 = 5;
+    static constexpr uint32_t ROOT_PARAM_CBV_B6 = 6;
+    static constexpr uint32_t ROOT_PARAM_SRV_TABLE = 7;
+    static constexpr uint32_t ROOT_PARAM_UAV_TABLE = 8;
+    static constexpr uint32_t NUM_ROOT_PARAMS = 9;
     static constexpr uint32_t NUM_STATIC_SAMPLERS = 3;
 
     static constexpr uint32_t MAX_DESCRIPTOR_SRV = 128;
