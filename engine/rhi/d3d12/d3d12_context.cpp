@@ -687,8 +687,8 @@ SResult D3D12Context::BeginRenderPass(const RenderPassInfo& renderPassInfo)
     }
     m_pCurrentRHIFrameBuffer = static_cast<D3D12FrameBuffer*>(renderPassInfo.fb);
 
-    // Apply barriers and set render targets
     m_pCurrentRHIFrameBuffer->BindBarrier(cmd_list);
+    // TODO: FlushResourceBarriers crashes (ResourceBarrier with empty/initial state vector)
     this->FlushResourceBarriers(cmd_list);
     m_pCurrentRHIFrameBuffer->SetRenderTargets(cmd_list);
 
@@ -707,7 +707,6 @@ SResult D3D12Context::BeginRenderPass(const RenderPassInfo& renderPassInfo)
     d3dViewport.MaxDepth = 1.0;
     cmd_list->RSSetViewports(1, &d3dViewport);
 
-    // Clear if requested
     m_pCurrentRHIFrameBuffer->Clear();
 
     return S_Success;

@@ -86,7 +86,7 @@ D3D12Uav::~D3D12Uav()
 * D3D12 Rtv
 *******************************************************************************/
 D3D12RenderTargetView::D3D12RenderTargetView(Context* context, D3D12ResourcePtr const& src, uint32_t first_subres, uint32_t num_subres)
-    :RHIRenderTargetView(context), m_pRtvResource(src)
+    :RHIRenderTargetView(context), m_pRtvResource(src), m_iFirstSubres(first_subres), m_iNumSubres(num_subres)
 {
 }
 void D3D12RenderTargetView::ClearColor(float4 const& color)
@@ -179,7 +179,7 @@ D3D12Rtv* D3D12TextureCubeFaceRtv::GetD3DRtv()
 * D3D12 Dsv
 *******************************************************************************/
 D3D12DepthStencilView::D3D12DepthStencilView(Context* context, D3D12ResourcePtr const& res, uint32_t first_subres, uint32_t num_subres)
-    :RHIDepthStencilView(context), m_pDsvResource(res)
+    :RHIDepthStencilView(context), m_pDsvResource(res), m_iFirstSubres(first_subres), m_iNumSubres(num_subres)
 {
 }
 void D3D12DepthStencilView::ClearDepth(float depth)

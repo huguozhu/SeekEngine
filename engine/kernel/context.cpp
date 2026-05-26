@@ -34,7 +34,7 @@ extern void OutputD3DCommonDebugInfo();
 Context::Context(const RenderInitInfo& init_info)
     :m_InitInfo(init_info)
 {
-    //m_InitInfo.rhi_type = RHIType::D3D12;
+    m_InitInfo.rhi_type = RHIType::D3D12;
 }
 Context::~Context()
 {
