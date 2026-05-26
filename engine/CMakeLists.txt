@@ -273,7 +273,7 @@ set(SEEK_STATICLIB_NAME ${PROJECT_NAME}-static CACHE STRING "" FORCE)
 
 if(TARGET_PLATFORM_WINDOWS)
     set(SEEK_BUILD_SHAREDLIB TRUE)
-    set(SEEK_STATICLIB_DEPENDENT_LIBS dxgi d3d11 d3dcompiler dxguid Windowscodecs Ws2_32 Winmm)
+    set(SEEK_STATICLIB_DEPENDENT_LIBS dxgi d3d11 d3d12 d3dcompiler dxcompiler dxguid Windowscodecs Ws2_32 Winmm)
 endif()    
 
 
