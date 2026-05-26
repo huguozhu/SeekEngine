@@ -240,7 +240,7 @@ namespace shadercompiler
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////
-    ///// shader stage & language (migrated from ShaderConductor)
+    ///// shader stage & language
     enum class ShaderStage : uint32_t
     {
         VertexShader,
@@ -268,7 +268,7 @@ namespace shadercompiler
     };
 
     ////////////////////////////////////////////////////////////////////////////////////////
-    ///// shader compiler macros (migrated from ShaderConductor)
+    ///// shader compiler macros
     struct MacroDefine
     {
         const char* name;
