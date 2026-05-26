@@ -1,22 +1,32 @@
 #include "seek.config.h"
-#include "ShaderConductor/ShaderConductor.hpp"
 #include "shader_helper.h"
 #include <fstream>
+#include <functional>
+#include <iomanip>
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <map>
 #include <set>
 #if defined(_WIN32)
 #include <windows.h>
-#include <d3dcompiler.h>
-#include <wrl/client.h>
 #endif
 #include "CLI/CLI.hpp"
 #include "shader_content_def.h"
+#include <slang.h>
+#include <slang-com-helper.h>
+#include <slang-com-ptr.h>
 
-using namespace ShaderConductor;
 using namespace shadercompiler;
+
+// Slang COM pointer aliases
+using SlangGlobalSessionPtr   = Slang::ComPtr<slang::IGlobalSession>;
+using SlangSessionPtr         = Slang::ComPtr<slang::ISession>;
+using SlangModulePtr          = Slang::ComPtr<slang::IModule>;
+using SlangEntryPointPtr      = Slang::ComPtr<slang::IEntryPoint>;
+using SlangComponentTypePtr   = Slang::ComPtr<slang::IComponentType>;
+using SlangBlobPtr            = Slang::ComPtr<slang::IBlob>;
 
 #define SUCCESS     0
 #define FAIL        (-__LINE__)
@@ -62,88 +72,6 @@ inline size_t HashRange(T first, T last)
     size_t seed = 0;
     HashRange(seed, first, last);
     return seed;
-}
-
-static void ParseReflectInfo(const Reflection& m_reflection, const std::string& stageName, bool isByteCode, ReflectInfo& reflectInfo)
-{
-    reflectInfo.stage = stageName;
-    reflectInfo.entry_point = "main";
-    if (isByteCode)
-        reflectInfo.code_type = CodeType::ByteCode;
-    else
-        reflectInfo.code_type = CodeType::SourceCode;
-    
-    for (uint32_t resourceIdx = 0; resourceIdx < m_reflection.NumResources(); resourceIdx++)
-    {
-        auto resource = m_reflection.ResourceByIndex(resourceIdx);
-
-        ResourceInfo resourceInfo;
-        resourceInfo.binding = resource->bindPoint;
-        resourceInfo.bindCount = resource->bindCount;
-        resourceInfo.name = resource->name;
-        resourceInfo.fallback_name = resource->fallbackName;
-        resourceInfo.sampler_name = resource->samplerName;
-        resourceInfo.texture_name = resource->textureName;
-        resourceInfo.size = 0;
-        switch (resource->type)
-        {
-            case ShaderResourceType::ConstantBuffer:
-            {    
-                resourceInfo.type = ResourceType::ConstantBuffer;
-                auto constant_buffer = m_reflection.ConstantBufferByName(resource->name);
-                resourceInfo.size = constant_buffer->Size();
-                break;
-            }
-            case ShaderResourceType::Texture:
-                resourceInfo.type = ResourceType::Texture;
-                break;
-            case ShaderResourceType::Sampler:
-                resourceInfo.type = ResourceType::Sampler;
-                break;
-            case ShaderResourceType::SampledTexture:
-                resourceInfo.type = ResourceType::SampledTexture;
-                break;
-            case ShaderResourceType::Buffer:
-                resourceInfo.type = ResourceType::Buffer;
-                break;
-            case ShaderResourceType::RWBuffer:
-                resourceInfo.type = ResourceType::RWBuffer;
-                break;
-            case ShaderResourceType::RWTexture:
-                resourceInfo.type = ResourceType::RWTexture;
-                break;
-            default:
-                continue; // ignore other resource
-        }
-        reflectInfo.resources.push_back(resourceInfo);
-    }
-
-    for (uint32_t idx = 0; idx < m_reflection.NumInputParameters(); idx++)
-    {
-        auto inputParameterDesc = m_reflection.InputParameter(idx);
-        SignatureParameter signatureParameter;
-        signatureParameter.semantic = inputParameterDesc->semantic;
-        signatureParameter.semantic_index = inputParameterDesc->semanticIndex;
-        signatureParameter.location = inputParameterDesc->location;
-        reflectInfo.input_signatures.push_back(signatureParameter);
-    }
-
-    for (uint32_t idx = 0; idx < m_reflection.NumOutputParameters(); idx++)
-    {
-        auto outputParameterDesc = m_reflection.OutputParameter(idx);
-        SignatureParameter signatureParameter;
-        signatureParameter.semantic = outputParameterDesc->semantic;
-        signatureParameter.semantic_index = outputParameterDesc->semanticIndex;
-        signatureParameter.location = outputParameterDesc->location;
-        reflectInfo.output_signatures.push_back(signatureParameter);
-    }
-
-    if (stageName == "cs")
-    {
-        reflectInfo.block_size.x = m_reflection.CSBlockSizeX();
-        reflectInfo.block_size.y = m_reflection.CSBlockSizeY();
-        reflectInfo.block_size.z = m_reflection.CSBlockSizeZ();
-    }
 }
 
 static MetaInfo _shaderMetaInfo;
@@ -194,6 +122,20 @@ static inline ShaderStage ParseShaderStage(const std::string& stageName)
     }
 }
 
+static inline SlangStage SlangStageFromShaderStage(ShaderStage stage)
+{
+    switch (stage)
+    {
+        case ShaderStage::VertexShader:   return SLANG_STAGE_VERTEX;
+        case ShaderStage::PixelShader:    return SLANG_STAGE_FRAGMENT;
+        case ShaderStage::GeometryShader: return SLANG_STAGE_GEOMETRY;
+        case ShaderStage::HullShader:     return SLANG_STAGE_HULL;
+        case ShaderStage::DomainShader:   return SLANG_STAGE_DOMAIN;
+        case ShaderStage::ComputeShader:  return SLANG_STAGE_COMPUTE;
+        default:                          return SLANG_STAGE_NONE;
+    }
+}
+
 static inline ShadingLanguage ParseShadingLanguage(const std::string& targetName)
 {
     if (targetName == "dxil")
@@ -230,6 +172,21 @@ static inline ShadingLanguage ParseShadingLanguage(const std::string& targetName
     }
 }
 
+static inline SlangCompileTarget ParseSlangCodeGenTarget(ShadingLanguage language)
+{
+    switch (language)
+    {
+        case ShadingLanguage::Dxil:      return SLANG_DXIL;
+        case ShadingLanguage::SpirV:     return SLANG_SPIRV;
+        case ShadingLanguage::Hlsl:      return SLANG_HLSL;
+        case ShadingLanguage::Glsl:      return SLANG_GLSL;
+        case ShadingLanguage::Essl:      return SLANG_GLSL;
+        case ShadingLanguage::Msl_macOS: return SLANG_METAL;
+        case ShadingLanguage::Msl_iOS:   return SLANG_METAL;
+        default:                         return SLANG_HLSL;
+    }
+}
+
 static std::map<ShadingLanguage, std::string> shaderLanguageMap{
     {ShadingLanguage::Dxil, "dxil"},
     {ShadingLanguage::SpirV, "spriv"},
@@ -260,14 +217,161 @@ static std::map<ShadingLanguage, const char*> shaderLanguageVersionMap{
     {ShadingLanguage::Msl_iOS, nullptr},
 };
 
-static std::map<ShaderStage, std::string> d3dShaderStageMap{
-    {ShaderStage::VertexShader, "vs_5_0"},
-    {ShaderStage::PixelShader, "ps_5_0"},
-    {ShaderStage::GeometryShader, "gs_5_0"},
-    {ShaderStage::HullShader, "hs_5_0"},
-    {ShaderStage::DomainShader, "ds_5_0"},
-    {ShaderStage::ComputeShader, "cs_5_0"},
-};
+static void ParseSlangReflection(slang::IComponentType* program, const std::string& stageName, ReflectInfo& reflectInfo)
+{
+    reflectInfo.stage = stageName;
+    reflectInfo.entry_point = "main";
+    reflectInfo.code_type = CodeType::SourceCode;
+
+    if (!program) return;
+
+    slang::ProgramLayout* layout = program->getLayout();
+    if (!layout) return;
+
+    // --- Resources ---
+    SlangInt paramCount = layout->getParameterCount();
+    for (SlangInt i = 0; i < paramCount; i++)
+    {
+        slang::VariableLayoutReflection* param = layout->getParameterByIndex(i);
+        if (!param) continue;
+
+        slang::ParameterCategory category = param->getCategory();
+        ResourceInfo resourceInfo;
+
+        if (category == slang::ParameterCategory::ConstantBuffer ||
+            category == slang::ParameterCategory::Uniform)
+        {
+            slang::TypeLayoutReflection* typeLayout = param->getTypeLayout();
+            resourceInfo.type = ResourceType::ConstantBuffer;
+            resourceInfo.binding = static_cast<uint32_t>(param->getBindingIndex());
+            resourceInfo.bindCount = 1;
+            const char* name = param->getName();
+            resourceInfo.name = name ? name : "";
+            resourceInfo.size = typeLayout ? static_cast<uint32_t>(typeLayout->getSize()) : 0;
+        }
+        else if (category == slang::ParameterCategory::ShaderResource)
+        {
+            slang::TypeLayoutReflection* typeLayout = param->getTypeLayout();
+            slang::TypeReflection* type = typeLayout ? typeLayout->getType() : nullptr;
+            if (type)
+            {
+                SlangResourceShape shape = type->getResourceShape();
+                resourceInfo.type = (shape == SLANG_RESOURCE_NONE) ? ResourceType::Buffer : ResourceType::Texture;
+            }
+            else
+            {
+                resourceInfo.type = ResourceType::Texture;
+            }
+            resourceInfo.binding = static_cast<uint32_t>(param->getBindingIndex());
+            resourceInfo.bindCount = 1;
+            const char* name = param->getName();
+            resourceInfo.name = name ? name : "";
+            resourceInfo.size = 0;
+        }
+        else if (category == slang::ParameterCategory::UnorderedAccess)
+        {
+            slang::TypeLayoutReflection* typeLayout = param->getTypeLayout();
+            slang::TypeReflection* type = typeLayout ? typeLayout->getType() : nullptr;
+            if (type)
+            {
+                SlangResourceShape shape = type->getResourceShape();
+                resourceInfo.type = (shape == SLANG_RESOURCE_NONE) ? ResourceType::RWBuffer : ResourceType::RWTexture;
+            }
+            else
+            {
+                resourceInfo.type = ResourceType::RWBuffer;
+            }
+            resourceInfo.binding = static_cast<uint32_t>(param->getBindingIndex());
+            resourceInfo.bindCount = 1;
+            const char* name = param->getName();
+            resourceInfo.name = name ? name : "";
+            resourceInfo.size = 0;
+        }
+        else if (category == slang::ParameterCategory::SamplerState)
+        {
+            resourceInfo.type = ResourceType::Sampler;
+            resourceInfo.binding = static_cast<uint32_t>(param->getBindingIndex());
+            resourceInfo.bindCount = 1;
+            const char* name = param->getName();
+            resourceInfo.name = name ? name : "";
+            resourceInfo.size = 0;
+        }
+        else
+        {
+            continue;
+        }
+
+        reflectInfo.resources.push_back(resourceInfo);
+    }
+
+    // --- Compute shader: thread group size ---
+    if (stageName == "cs")
+    {
+        slang::EntryPointReflection* ep = layout->getEntryPointByIndex(0);
+        if (ep)
+        {
+            SlangUInt sizeAlongAxis[3] = {1, 1, 1};
+            ep->getComputeThreadGroupSize(3, sizeAlongAxis);
+            reflectInfo.block_size.x = static_cast<uint32_t>(sizeAlongAxis[0]);
+            reflectInfo.block_size.y = static_cast<uint32_t>(sizeAlongAxis[1]);
+            reflectInfo.block_size.z = static_cast<uint32_t>(sizeAlongAxis[2]);
+        }
+    }
+
+    // --- Specialization Constants ---
+    for (SlangInt i = 0; i < paramCount; i++)
+    {
+        slang::VariableLayoutReflection* param = layout->getParameterByIndex(i);
+        if (!param) continue;
+
+        slang::ParameterCategory category = param->getCategory();
+        if (category != slang::ParameterCategory::SpecializationConstant)
+            continue;
+
+        SpecializationConstantInfo specInfo;
+        const char* name = param->getName();
+        specInfo.name = name ? name : "";
+
+        // Determine type from Slang type reflection
+        slang::TypeLayoutReflection* typeLayout = param->getTypeLayout();
+        if (typeLayout)
+        {
+            slang::TypeReflection* specType = typeLayout->getType();
+            if (specType)
+            {
+                switch (specType->getKind())
+                {
+                case slang::TypeReflection::Kind::Scalar:
+                {
+                    switch (specType->getScalarType())
+                    {
+                    case SLANG_SCALAR_TYPE_INT32:   specInfo.typeName = "int";   specInfo.defaultValue = "0"; break;
+                    case SLANG_SCALAR_TYPE_FLOAT32: specInfo.typeName = "float"; specInfo.defaultValue = "0.0"; break;
+                    case SLANG_SCALAR_TYPE_BOOL:    specInfo.typeName = "bool";  specInfo.defaultValue = "false"; break;
+                    default: specInfo.typeName = "unknown"; specInfo.defaultValue = "0"; break;
+                    }
+                    break;
+                }
+                default:
+                    specInfo.typeName = "unknown";
+                    specInfo.defaultValue = "0";
+                    break;
+                }
+            }
+            else
+            {
+                specInfo.typeName = "unknown";
+                specInfo.defaultValue = "0";
+            }
+        }
+        else
+        {
+            specInfo.typeName = "unknown";
+            specInfo.defaultValue = "0";
+        }
+        reflectInfo.specializations.push_back(specInfo);
+    }
+}
 
 static int read_file_content(const std::string& filename, std::string& content)
 {
@@ -320,109 +424,70 @@ static inline std::string trim_copy(std::string s)
     return s;
 }
 
-struct IncludeFilePool
+// ============================================================================
+// Slang Compiler Singleton
+// ============================================================================
+struct SlangCompiler
 {
-    const Blob& load_include_file(const std::string& includeFilePath, size_t* hash)
+    SlangGlobalSessionPtr globalSession;
+    SlangSessionPtr       session;
+    SlangCompileTarget    currentTarget = SLANG_TARGET_UNKNOWN;
+
+    SlangCompiler()
     {
-        auto blobIt = _fileBlob.find(includeFilePath);
-        if (blobIt != _fileBlob.end())
-            return blobIt->second;
+        slang::IGlobalSession* gs = nullptr;
+        slang::createGlobalSession(&gs);
+        globalSession = gs;
 
-        std::string fileContent;
-        int success = read_file_content(std::string{ SEEK_SHADER_SOURCE_DIR "/" } + includeFilePath, fileContent);
-        std::cout << "load include file: " << includeFilePath << ", success: " << success << std::endl;
-        if (SUCCESS != success)
-            return _emptyBlob;
+        // Create with no targets initially; target will be set on demand
+        slang::SessionDesc sessionDesc = {};
+        sessionDesc.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR;
 
-        if (hash)
-        {
-            *hash = std::hash<std::string>{}(fileContent);
-        }
-
-        return _fileBlob[includeFilePath] = Blob{ fileContent.data(), (uint32_t)fileContent.size() };
+        slang::ISession* s = nullptr;
+        globalSession->createSession(sessionDesc, &s);
+        session = s;
     }
 
-    bool is_loaded(const std::string& includeFilePath)
+    void ensureTarget(SlangCompileTarget target)
     {
-        return _fileBlob.find(includeFilePath) != _fileBlob.end();
+        if (currentTarget == target) return;
+
+        slang::TargetDesc targetDesc = {};
+        targetDesc.structureSize = sizeof(slang::TargetDesc);
+        targetDesc.format = target;
+        targetDesc.flags = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY;
+
+        slang::SessionDesc sessionDesc = {};
+        sessionDesc.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR;
+        sessionDesc.targets = &targetDesc;
+        sessionDesc.targetCount = 1;
+
+        slang::ISession* s = nullptr;
+        globalSession->createSession(sessionDesc, &s);
+        session = s;
+        currentTarget = target;
     }
 
-    std::map<std::string, Blob> _fileBlob;
-    Blob _emptyBlob;
+    ~SlangCompiler()
+    {
+        session = nullptr;
+        globalSession = nullptr;
+    }
 };
 
-static IncludeFilePool __includeFilePool;
+static SlangCompiler* g_slangCompiler = nullptr;
 
-#if defined(_WIN32)
-static int HLSLPrecompile(const void* shaderData, uint32_t shaderSize, const std::string& entryPoint, const std::string& stage, std::string& byteCode)
+static SlangCompiler& GetSlangCompiler()
 {
-    Microsoft::WRL::ComPtr<ID3DBlob> pError;
-    Microsoft::WRL::ComPtr<ID3DBlob> pCode;
-    static const char* v = "vs_5_0";
-    static const char* p = "ps_5_0";
-    static const char* g = "gs_5_0";
-    static const char* h = "hs_5_0";
-    static const char* d = "ds_5_0";
-    static const char* c = "cs_5_0";
-
-    const char* target;
-    if (stage == "vs")
-        target = "vs_5_0";
-    else if (stage == "ps")
-        target = "ps_5_0";
-    else if (stage == "cs")
-        target = "cs_5_0";
-    else
-    {
-        std::cerr << "unsupported stage " << stage << std::endl;
-        return FAIL;
-    }
-
-    UINT compileFlags = D3DCOMPILE_OPTIMIZATION_LEVEL3;
-    HRESULT hr = D3DCompile(shaderData, shaderSize, 
-        nullptr, // pSourceName
-        nullptr, // pDefines
-        nullptr, // pInclude
-        entryPoint.c_str(), // pEntryPoint
-        target, // pTarget
-        compileFlags, // Flags1
-        0, // Flags2
-        pCode.GetAddressOf(), 
-        pError.GetAddressOf());
-
-    if (hr != S_OK)
-    {
-        std::cerr << "D3DCompile fail, hr:" << hr << std::endl;
-        if (pError)
-        {
-            std::cerr << "ERROR: " << std::string{ (char*)pError->GetBufferPointer() } << std::endl;
-        }
-        return FAIL;
-    }
-
-    if (pError)
-    {
-        std::cout << "WARNING: " << std::string{ (char*)pError->GetBufferPointer() } << std::endl;
-    }
-
-    byteCode.resize(pCode->GetBufferSize());
-    memcpy((void*)byteCode.data(), pCode->GetBufferPointer(), pCode->GetBufferSize());
-    return SUCCESS;
+    if (!g_slangCompiler)
+        g_slangCompiler = new SlangCompiler();
+    return *g_slangCompiler;
 }
-#endif // _WIN32
 
-static int ShaderPrecompile(ShadingLanguage language, const void* shaderData, uint32_t shaderSize, const std::string& entryPoint, const std::string& stage, std::string& byteCode)
+static void CleanupSlangCompiler()
 {
-    switch (language)
-    {
-#if defined(_WIN32)
-        case ShadingLanguage::Hlsl:
-            return HLSLPrecompile(shaderData, shaderSize, entryPoint, stage, byteCode);
-#endif
-        default:
-            std::cerr << "cannot precompile %s" << shaderLanguageMap[language] << std::endl;
-            return FAIL;
-    }
+    delete g_slangCompiler;
+    g_slangCompiler = nullptr;
 }
 
 static void WriteByteArray(std::ofstream& outputHeaderFile, const void* data, size_t size, const std::string& varName)
@@ -560,16 +625,12 @@ int main(int argc, char** argv)
         const auto inputFileBaseName = inputFileName.substr(0, delimiterPos);
         const auto inputFilePath = shaderSourceDir + "/" + inputFileName;
 
-        // Compiler::SourceDesc
-        Compiler::SourceDesc sourceDesc{};
-        sourceDesc.entryPoint = entryPoint.c_str();
-        sourceDesc.fileName = inputFilePath.c_str();
         std::string source;
         {
-            std::ifstream inputFile(sourceDesc.fileName, std::ios_base::binary);
+            std::ifstream inputFile(inputFilePath, std::ios_base::binary);
             if (!inputFile)
             {
-                std::cerr << "couldn't open the input file: " << sourceDesc.fileName << std::endl;
+                std::cerr << "couldn't open the input file: " << inputFilePath << std::endl;
                 return FAIL;
             }
 
@@ -600,28 +661,16 @@ int main(int argc, char** argv)
         }
         _shaderMetaInfo.stage = stageName;
 
-        sourceDesc.source = source.c_str();
-        sourceDesc.stage = ParseShaderStage(stageName);
-        if (sourceDesc.stage == ShaderStage::NumShaderStages)
         {
-            std::cerr << "invalid shader stage: " << stageName << std::endl;
-            return FAIL;
+            ShaderStage stage = ParseShaderStage(stageName);
+            if (stage == ShaderStage::NumShaderStages)
+            {
+                std::cerr << "invalid shader stage: " << stageName << std::endl;
+                return FAIL;
+            }
         }
 
         std::map<std::string, std::string> dependIncludeFiles;
-        auto includeFileHandleFunc = [&](const char* includeFileName)->ShaderConductor::Blob
-        {
-            if (__includeFilePool.is_loaded(includeFileName))
-                return __includeFilePool.load_include_file(includeFileName, nullptr);
-
-            size_t hash;
-            auto& blob = __includeFilePool.load_include_file(includeFileName, &hash);
-            if (generateDependFile)
-            {
-                dependIncludeFiles[includeFileName] = std::to_string(hash);
-            }
-            return blob;
-        };
 
         std::vector<ExtentPredefine> fixed_macros;
         if (defines.size() > 0)
@@ -648,20 +697,9 @@ int main(int argc, char** argv)
             }
         }
 
-        // Compiler::Options
-        Compiler::Options compileOptions{};
-        compileOptions.packMatricesInRowMajor = false;
-        compileOptions.optimizationLevel = 3;
-        if (inputFileName == "FxaaPS.dsf")
-            compileOptions.optimizationLevel = 0;
-        compileOptions.disableOptimizations = false;
-        compileOptions.enableDebugInfo = false;
-        compileOptions.inheritCombinedSamplerBindings = true;
-        compileOptions.hlslAutoBindResource = false;
-        //compileOptions.mslEnableDecorationBinding = true;
-
-        // Compiler::TargetDesc
-        std::vector<Compiler::TargetDesc> targetDesc;
+        // Target description
+        struct TargetDesc { ShadingLanguage language; };
+        std::vector<TargetDesc> targetDesc;
         targetDesc.resize(targetName.size());
         for (size_t outputIdx = 0; outputIdx != targetName.size(); outputIdx++)
         {
@@ -671,7 +709,6 @@ int main(int argc, char** argv)
                 std::cerr << "invalid target shading language: " << targetName[outputIdx] << std::endl;
                 return FAIL;
             }
-            targetDesc[outputIdx].version = shaderLanguageVersionMap[targetDesc[outputIdx].language];
         }
 
         using CompileFunc = std::function<int(const std::vector<ExtentPredefine>&, const std::vector<ExtentPredefine>&)>;
@@ -709,9 +746,7 @@ int main(int argc, char** argv)
             std::vector<MacroDefine> macroDefines;
             macroDefines.reserve(fixed_macros.size() + active_macros.size());
             for (auto& macro : fixed_macros)
-            {
                 macroDefines.emplace_back(MacroDefine{ macro.name.c_str(), macro.value.c_str() });
-            }
             std::map<std::string, std::string> activeMacroMap;
             for (auto& macro : active_macros)
             {
@@ -722,53 +757,132 @@ int main(int argc, char** argv)
             size_t seed = 0;
             {
                 for (auto mapIt : activeMacroMap)
-                {
                     HashRange(seed, mapIt.second.begin(), mapIt.second.end());
-                }
             }
-            sourceDesc.numDefines = (uint32_t)macroDefines.size();
-            sourceDesc.defines = macroDefines.data();
-            std::vector<Compiler::ResultDesc> result(targetName.size());
-            Compiler::Compile(sourceDesc, compileOptions, targetDesc.data(), (uint32_t)targetDesc.size(), &result[0]);
+
+            SlangCompiler& slang = GetSlangCompiler();
+
+            // Build source with macros as prelude
+            std::string preamble;
+            for (auto& m : macroDefines)
+            {
+                preamble += "#define " + std::string(m.name) + " " + std::string(m.value) + "\n";
+            }
+            std::string fullSource = preamble + source;
+
+            // Step 1: Load module
+            SlangModulePtr module;
+            {
+                SlangBlobPtr diagBlob;
+                slang::IBlob* diag = nullptr;
+                slang::IModule* m = slang.session->loadModuleFromSourceString(
+                    inputFileBaseName.c_str(),
+                    inputFilePath.c_str(),
+                    fullSource.c_str(),
+                    &diag);
+                if (diag && diag->getBufferSize() > 0)
+                {
+                    const char* msg = static_cast<const char*>(diag->getBufferPointer());
+                    std::cerr << "Slang diagnostics for " << inputFileBaseName << ": "
+                              << std::string(msg, msg + diag->getBufferSize()) << std::endl;
+                }
+                if (!m)
+                {
+                    std::cerr << "Slang: loadModuleFromSource failed for " << inputFileBaseName << std::endl;
+                    return FAIL;
+                }
+                module = m;
+            }
+
+            // Step 2: Find entry point
+            SlangEntryPointPtr entryPoint;
+            {
+                ShaderStage shaderStage = ParseShaderStage(_shaderMetaInfo.stage);
+                SlangStage slangStage = SlangStageFromShaderStage(shaderStage);
+                slang::IEntryPoint* ep = nullptr;
+                SlangResult sr = module->findAndCheckEntryPoint("main", slangStage, &ep, nullptr);
+                if (SLANG_FAILED(sr) || !ep)
+                {
+                    std::cerr << "Slang: findAndCheckEntryPoint('main') failed for " << inputFileBaseName << std::endl;
+                    return FAIL;
+                }
+                entryPoint = ep;
+            }
+
+            // Step 3: Ensure session has the target configured
+            SlangCompileTarget slangTarget = ParseSlangCodeGenTarget(targetDesc[0].language);
+            slang.ensureTarget(slangTarget);
+
+            // Step 4: Create composite component type
+            SlangComponentTypePtr program;
+            {
+                slang::IComponentType* components[] = { module.get(), entryPoint.get() };
+                slang::IComponentType* prog = nullptr;
+                SlangResult sr = slang.session->createCompositeComponentType(
+                    components, 2,
+                    &prog);
+                if (SLANG_FAILED(sr) || !prog)
+                {
+                    std::cerr << "Slang: createCompositeComponentType failed for " << inputFileBaseName << std::endl;
+                    return FAIL;
+                }
+                program = prog;
+            }
 
             int compileRet = SUCCESS;
-            for (size_t resultIdx = 0; resultIdx != result.size(); resultIdx++)
+            for (size_t resultIdx = 0; resultIdx != targetDesc.size(); resultIdx++)
             {
-                if (result[resultIdx].errorWarningMsg.Size() > 0)
+                SlangBlobPtr codeBlob;
+                SlangBlobPtr diagBlob;
                 {
-                    const char* msg = reinterpret_cast<const char*>(result[resultIdx].errorWarningMsg.Data());
-                    std::cerr << "Compiler::Compile errorWarningMsg: " << std::string(msg, msg + result[resultIdx].errorWarningMsg.Size()) << std::endl;
+                    slang::IBlob* code = nullptr;
+                    slang::IBlob* diag = nullptr;
+                    SlangResult sr = program->getTargetCode(
+                        static_cast<SlangInt>(resultIdx), &code, &diag);
+                    codeBlob = code;
+                    diagBlob = diag;
+                    if (SLANG_FAILED(sr))
+                    {
+                        std::cerr << "Slang: getTargetCode failed for target " << resultIdx << std::endl;
+                        if (diagBlob && diagBlob->getBufferSize() > 0)
+                        {
+                            const char* msg = static_cast<const char*>(diagBlob->getBufferPointer());
+                            std::cerr << "Compile diagnostics: " << std::string(msg, msg + diagBlob->getBufferSize()) << std::endl;
+                        }
+                        compileRet = FAIL;
+                        continue;
+                    }
                 }
 
-                if (result[resultIdx].hasError)
-                    return FAIL;
-
-                if (result[resultIdx].target.Size() == 0)
+                if (diagBlob && diagBlob->getBufferSize() > 0)
                 {
-                    std::cerr << "size of compiled shader is 0, something wrong" << std::endl;
-                    return FAIL;
+                    const char* msg = static_cast<const char*>(diagBlob->getBufferPointer());
+                    std::cerr << "Slang diagnostics: " << std::string(msg, msg + diagBlob->getBufferSize()) << std::endl;
                 }
 
-                const void* shaderSourceData = result[resultIdx].target.Data();
-                uint32_t shaderSourceSize = result[resultIdx].target.Size();
-                
+                if (!codeBlob || codeBlob->getBufferSize() == 0)
+                {
+                    std::cerr << "Slang: empty output for target " << resultIdx << std::endl;
+                    compileRet = FAIL;
+                    continue;
+                }
+
+                const void* shaderSourceData = codeBlob->getBufferPointer();
+                uint32_t   shaderSourceSize  = static_cast<uint32_t>(codeBlob->getBufferSize());
+
                 const void* shaderHeaderData = shaderSourceData;
-                uint32_t shaderHeaderSize = shaderSourceSize;
+                uint32_t   shaderHeaderSize  = shaderSourceSize;
                 std::string byteCodeContent;
                 if (generateByteCode)
                 {
-                    int ret = ShaderPrecompile(targetDesc[resultIdx].language, shaderSourceData, shaderSourceSize, entryPoint, stageName, byteCodeContent);
-                    if (ret != SUCCESS)
-                        return ret;
-
-                    shaderHeaderData = byteCodeContent.data();
-                    shaderHeaderSize = (uint32_t)byteCodeContent.size();
+                    shaderHeaderData = shaderSourceData;
+                    shaderHeaderSize = shaderSourceSize;
                 }
 
                 std::string outputFileDir = shaderGenerateDir + "/" + targetName[resultIdx];
                 if (generateDebugShaderPass)
                     outputFileDir += SHADER_DEBUG_DIR_SUFFIX;
-                
+
                 std::string outputFileName = inputFileBaseName;
                 if (seed != 0)
                 {
@@ -777,7 +891,7 @@ int main(int argc, char** argv)
                     outputFileName += seedStream.str();
                 }
 
-                ///////////////////// shader code - source file /////////////////////
+                // Shader code source file
                 std::string outShaderSourceFilePath = outputFileDir + "/" + outputFileName + shaderLanguageExtMap[targetDesc[resultIdx].language];
                 std::ofstream outShaderSourceFile(outShaderSourceFilePath, std::ios_base::binary);
                 if (!outShaderSourceFile)
@@ -789,7 +903,7 @@ int main(int argc, char** argv)
                 outShaderSourceFile.write(reinterpret_cast<const char*>(shaderSourceData), shaderSourceSize);
                 std::cout << "shader code - source file saved in: " << outShaderSourceFilePath << std::endl;
 
-                ///////////////////// shader code - header file /////////////////////
+                // Shader code header file
                 std::string outShaderHeaderFilePath = outputFileDir + "/" + outputFileName + ".hpp";
                 std::ofstream outShaderHeaderFile(outShaderHeaderFilePath, std::ios_base::binary);
                 if (!outShaderHeaderFile)
@@ -813,10 +927,10 @@ int main(int argc, char** argv)
                 WriteByteArray(outShaderHeaderFile, shaderHeaderData, shaderHeaderSize, varShaderCodeName);
                 std::cout << "shader code - header file saved in: " << outShaderHeaderFilePath << std::endl;
 
-                ///////////////////// shader reflect - source file /////////////////////
+                // Shader reflect
                 std::string outReflectSourceFilePath = outputFileDir + "/" + outputFileName + SHADER_REFLECT_FILE_SUFFIX;
                 ReflectInfo reflectInfo;
-                ParseReflectInfo(result[resultIdx].reflection, stageName, generateByteCode, reflectInfo);
+                ParseSlangReflection(program.get(), stageName, reflectInfo);
                 std::string reflectJsonContent;
                 int wr = WriteReflectJson(reflectInfo, tightJson, reflectJsonContent);
                 if (wr != 0)
@@ -834,8 +948,6 @@ int main(int argc, char** argv)
                 outReflectSourceFile << reflectJsonContent << std::endl;
                 std::cout << "shader reflect - source file saved in: " << outReflectSourceFilePath << std::endl;
 
-                ///////////////////// shader reflect - header file /////////////////////
-                // shader reflect header file use the same file with shader code
                 std::string varShaderReflectName;
                 if (generateDebugShaderPass)
                     varShaderReflectName = shader_reflect_name(outputFileName, shaderLanguageMap[targetDesc[resultIdx].language], SHADER_DEBUG_DIR_SUFFIX);
@@ -851,16 +963,45 @@ int main(int argc, char** argv)
 
         auto preprocessFunc = [&](const std::vector<ExtentPredefine>& fixed_macros, const std::vector<ExtentPredefine>& active_macros)->int
         {
-            std::vector<MacroDefine> macroDefines;
-            macroDefines.reserve(fixed_macros.size() + active_macros.size());
+            // Build preamble with macros
+            std::string preamble;
             for (auto& macro : fixed_macros)
-            {
-                macroDefines.emplace_back(MacroDefine{ macro.name.c_str(), macro.value.c_str() });
-            }
-            sourceDesc.numDefines = (uint32_t)macroDefines.size();
-            sourceDesc.defines = macroDefines.data();
+                preamble += "#define " + std::string(macro.name) + " " + std::string(macro.value) + "\n";
+            for (auto& macro : active_macros)
+                preamble += "#define " + std::string(macro.name) + " " + std::string(macro.value) + "\n";
 
-            Compiler::ResultDesc result = Compiler::Preprocess(sourceDesc);
+            SlangCompiler& slang = GetSlangCompiler();
+            SlangModulePtr module;
+            {
+                std::string fullSource = preamble + source;
+                slang::IModule* m = slang.session->loadModuleFromSourceString(
+                    inputFileBaseName.c_str(),
+                    inputFilePath.c_str(),
+                    fullSource.c_str());
+                module = m;
+            }
+
+            if (module)
+            {
+                SlangInt depCount = module->getDependencyFileCount();
+                for (SlangInt i = 0; i < depCount; i++)
+                {
+                    const char* depPath = module->getDependencyFilePath(i);
+                    if (depPath)
+                    {
+                        std::string depName(depPath);
+                        // Normalize to relative path
+                        std::string shaderSourceDir = SEEK_SHADER_SOURCE_DIR;
+                        if (depName.find(shaderSourceDir + "/") == 0)
+                            depName = depName.substr(shaderSourceDir.size() + 1);
+                        else if (depName.find(shaderSourceDir + "\\") == 0)
+                            depName = depName.substr(shaderSourceDir.size() + 1);
+
+                        size_t hash = std::hash<std::string>{}(depName);
+                        dependIncludeFiles[depName] = std::to_string(hash);
+                    }
+                }
+            }
 
             return SUCCESS;
         };
@@ -868,7 +1009,6 @@ int main(int argc, char** argv)
         // compile and preprocess is mutual exclusion
         if (!generateDependFile)
         {
-            compileOptions.needReflection = true;
             int success = iterateFunc(extPredefines.begin(), extPredefines.end(), extPredefines.begin(), fixed_macros, extPredefines, compileFunc);
             if (success != SUCCESS)
                 return success;
@@ -906,10 +1046,7 @@ int main(int argc, char** argv)
             if (generateDebugFile)
             {
                 generateDebugShaderPass = true;
-                compileOptions.optimizationLevel = 0;
-                compileOptions.disableOptimizations = true;
-                compileOptions.enableDebugInfo = true;
-                
+
                 allOutFileNames.clear();
                 allShaderCodeVarNames.clear();
                 allShaderReflectVarNames.clear();
@@ -988,7 +1125,6 @@ int main(int argc, char** argv)
         }
         else
         {
-            sourceDesc.loadIncludeCallback = includeFileHandleFunc;
             int success = iterateFunc(extPredefines.begin(), extPredefines.end(), extPredefines.begin(), fixed_macros, extPredefines, preprocessFunc);
             if (success != SUCCESS)
                 return success;
@@ -1066,6 +1202,7 @@ int main(int argc, char** argv)
             std::cout << "tag file saved in: " << tagFilePath << std::endl;
         }
 
+        CleanupSlangCompiler();
         return SUCCESS;
     }
     catch (std::exception& ex)
@@ -1074,5 +1211,6 @@ int main(int argc, char** argv)
         return FAIL;
     }
 
+    CleanupSlangCompiler();
     return SUCCESS;
 }

@@ -240,6 +240,42 @@ namespace shadercompiler
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////
+    ///// shader stage & language (migrated from ShaderConductor)
+    enum class ShaderStage : uint32_t
+    {
+        VertexShader,
+        PixelShader,
+        GeometryShader,
+        HullShader,
+        DomainShader,
+        ComputeShader,
+
+        NumShaderStages,
+    };
+
+    enum class ShadingLanguage : uint32_t
+    {
+        Dxil = 0,
+        SpirV,
+
+        Hlsl,
+        Glsl,
+        Essl,
+        Msl_macOS,
+        Msl_iOS,
+
+        NumShadingLanguages,
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////
+    ///// shader compiler macros (migrated from ShaderConductor)
+    struct MacroDefine
+    {
+        const char* name;
+        const char* value;
+    };
+
+    ////////////////////////////////////////////////////////////////////////////////////////
     ///// shader reflect information
     enum class CodeType : uint8_t
     {
@@ -298,6 +334,13 @@ namespace shadercompiler
         uint32_t z = 0;
     };
 
+    struct SpecializationConstantInfo
+    {
+        std::string name;         // e.g. "g_JointBindSize"
+        std::string typeName;     // e.g. "int", "bool", "float"
+        std::string defaultValue; // e.g. "0", "false"
+    };
+
     struct ReflectInfo
     {
         CodeType code_type;
@@ -307,6 +350,7 @@ namespace shadercompiler
         std::vector<SignatureParameter> input_signatures;
         std::vector<SignatureParameter> output_signatures;
         ThreadBlockSize block_size; // only valid for cs, otherwise it will be {0, 0, 0}
+        std::vector<SpecializationConstantInfo> specializations;
     };
 
     struct ReflectJsonWriter : public JsonWriterBase
@@ -381,6 +425,19 @@ namespace shadercompiler
                 blockSizeVal.PushBack(reflectInfo.block_size.y, Allocator());
                 blockSizeVal.PushBack(reflectInfo.block_size.z, Allocator());
                 reflectVal.AddMember("block_size", blockSizeVal, Allocator());
+            }
+            if (reflectInfo.specializations.size() > 0)
+            {
+                rapidjson::Value specializationsVal(rapidjson::kArrayType);
+                for (auto& spec : reflectInfo.specializations)
+                {
+                    rapidjson::Value specVal(rapidjson::kObjectType);
+                    specVal.AddMember("name", rapidjson::StringRef(spec.name.c_str()), Allocator());
+                    specVal.AddMember("type", rapidjson::StringRef(spec.typeName.c_str()), Allocator());
+                    specVal.AddMember("default", rapidjson::StringRef(spec.defaultValue.c_str()), Allocator());
+                    specializationsVal.PushBack(specVal, Allocator());
+                }
+                reflectVal.AddMember("specializations", specializationsVal, Allocator());
             }
             root.AddMember("reflect", reflectVal, Allocator());
             return DoWrite(content);
@@ -461,6 +518,18 @@ namespace shadercompiler
                 reflectInfo.block_size.x = blockSizeVal[0].GetUint();
                 reflectInfo.block_size.y = blockSizeVal[1].GetUint();
                 reflectInfo.block_size.z = blockSizeVal[2].GetUint();
+            }
+            if (reflectVal.HasMember("specializations"))
+            {
+                auto& specsVal = reflectVal["specializations"];
+                reflectInfo.specializations.resize(specsVal.Size());
+                for (uint32_t idx = 0; idx < specsVal.Size(); idx++)
+                {
+                    auto& specVal = specsVal[idx];
+                    reflectInfo.specializations[idx].name = specVal["name"].GetString();
+                    reflectInfo.specializations[idx].typeName = specVal["type"].GetString();
+                    reflectInfo.specializations[idx].defaultValue = specVal["default"].GetString();
+                }
             }
             return 0;
         }
