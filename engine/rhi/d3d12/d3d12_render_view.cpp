@@ -108,6 +108,7 @@ D3D12Texture2DCubeRtv::D3D12Texture2DCubeRtv(Context* context, RHITexturePtr con
     m_iWidth = tex_2d_cube->Width();
     m_iHeight = tex_2d_cube->Height();
     m_ePixelFormat = tex_2d_cube->Format();
+    m_Param.pixel_format = m_ePixelFormat;
     m_iNumSamples = tex_2d_cube->NumSamples();
 
     m_Param.texture = tex_2d_cube;
@@ -130,6 +131,8 @@ D3D12Texture3DRtv::D3D12Texture3DRtv(Context* context, RHITexturePtr const& tex_
 {
     m_iWidth = tex_3d->Width(mip_level);
     m_iHeight = tex_3d->Height(mip_level);
+    m_ePixelFormat = tex_3d->Format();
+    m_Param.pixel_format = m_ePixelFormat;
     m_iNumSamples = tex_3d->NumSamples();
 
     m_Param.texture = tex_3d;
@@ -155,6 +158,8 @@ D3D12TextureCubeFaceRtv::D3D12TextureCubeFaceRtv(Context* context, RHITexturePtr
 {
     m_iWidth = tex_cube->Width(mip_level);
     m_iHeight = tex_cube->Height(mip_level);
+    m_ePixelFormat = tex_cube->Format();
+    m_Param.pixel_format = m_ePixelFormat;
     m_iNumSamples = tex_cube->NumSamples();
 
     m_Param.texture = tex_cube;
@@ -228,6 +233,7 @@ D3D12Texture2DDsv::D3D12Texture2DDsv(Context* context, RHITexturePtr const& tex_
     m_ePixelFormat = tex_2d->Format();
     m_iNumSamples = tex_2d->NumSamples();
 
+    m_Param.pixel_format = m_ePixelFormat;
     m_Param.texture = tex_2d;
     m_Param.first_array_index = first_array_index;
     m_Param.num_arrays = array_size;
@@ -252,6 +258,7 @@ D3D12TextureCubeFaceDsv::D3D12TextureCubeFaceDsv(Context* context, RHITexturePtr
     m_iHeight = tex_cube->Height();
     m_ePixelFormat = tex_cube->Format();
     m_iNumSamples = tex_cube->NumSamples();
+    m_Param.pixel_format = m_ePixelFormat;
 
     m_Param.texture = tex_cube;
     m_Param.first_array_index = array_index;

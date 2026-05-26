@@ -84,9 +84,9 @@ DXGI_FORMAT D3DCommonTranslate::TranslateToPlatformFormat(PixelFormat format)
     case PixelFormat::R32G32B32A32_FLOAT:   res = DXGI_FORMAT_R32G32B32A32_FLOAT;   break;
 
         // depth
-    case PixelFormat::D16:                  res = DXGI_FORMAT_R16_TYPELESS;         break;
-    case PixelFormat::D24S8:                res = DXGI_FORMAT_R24G8_TYPELESS;       break;
-    case PixelFormat::D32F:                 res = DXGI_FORMAT_R32_TYPELESS;         break;
+    case PixelFormat::D16:                  res = DXGI_FORMAT_D16_UNORM;            break;
+    case PixelFormat::D24S8:                res = DXGI_FORMAT_D24_UNORM_S8_UINT;    break;
+    case PixelFormat::D32F:                 res = DXGI_FORMAT_D32_FLOAT;            break;
     }
     return res;
 }

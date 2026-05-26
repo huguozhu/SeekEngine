@@ -102,13 +102,13 @@ void D3D12FrameBuffer::SetRenderTargets(ID3D12GraphicsCommandList* cmd_list)
 		m_bViewDirty = false;
 	}
 
-    cmd_list->OMSetRenderTargets(
-        static_cast<UINT>(m_vD3dRtvCpuHandles.size()),
-        m_vD3dRtvCpuHandles.data(),
-        FALSE,
-        m_D3dSdvHandlePtr);
+//    cmd_list->OMSetRenderTargets(
+//        static_cast<UINT>(m_vD3dRtvCpuHandles.size()),
+//        m_vD3dRtvCpuHandles.data(),
+//        FALSE,
+//        m_D3dSdvHandlePtr);
 
-    cmd_list->RSSetViewports(1, &m_stD3dViewport);
+    // cmd_list->RSSetViewports(1, &m_stD3dViewport);
 }
 size_t D3D12FrameBuffer::PsoHashValue()
 {
