@@ -1,8 +1,10 @@
 //STAGE:ps
+//PREDEFINE:USE_CSM=0,1
 #include "Common.dsh"
-#include "Shadow.dsh"
 
-[SpecializationConstant] bool g_UseCsm = false;
+#if USE_CSM == 0
+#include "Shadow.dsh"
+#endif
 
 cbuffer lightInfo
 {
@@ -20,7 +22,8 @@ cbuffer deferredLightingInfo
 }
 Texture2D depth_tex;
 
-// CSM resources always declared; g_UseCsm guards usage at call site
+
+#if USE_CSM == 1
 cbuffer csmDistance
 {
 	float4 csmDistance;
@@ -82,6 +85,7 @@ float CalcDirectionalLightCascadedShadow(LightInfo lightInfo, float3 posWorld)
 	}
 	return shadow;
 }
+#endif
 
 float4 main(
 	in 	float4 iPosView	: POSITION,
@@ -92,14 +96,10 @@ float4 main(
 	float3 pos_view = (iPosView.xyz / iPosView.w) * (depth_view / cameraInfo.farPlane);
 	float4 pos_world = mul(float4(pos_view, 1.0), deferredLightingInfo.lightVolumeInvView);
 	pos_world = pos_world / pos_world.w;
-	float shadow;
-	if (g_UseCsm)
-{
-	shadow = CalcDirectionalLightCascadedShadow(lightInfo, pos_world.xyz);
-}
-else
-{
-	shadow = CalcSpotDirectionalLightShadow(lightInfo, pos_world.xyz);
-}
+#if USE_CSM == 1
+	float shadow = CalcDirectionalLightCascadedShadow(lightInfo, pos_world.xyz);
+#elif USE_CSM == 0
+	float shadow = CalcSpotDirectionalLightShadow(lightInfo, pos_world.xyz);
+#endif
 	return float4(shadow, shadow, shadow, shadow);
 }

@@ -1,8 +1,7 @@
+//PREDEFINE:HAS_MATERIAL_NORMAL=0,1
+//PREDEFINE:ENABLE_TAA=0,1
 //STAGE:ps
 #include "Common.dsh"
-
-[SpecializationConstant] bool g_HasNormal = false;
-[SpecializationConstant] bool g_EnableTAA = false;
 
 cbuffer materialInfo
 {
@@ -23,11 +22,12 @@ struct GBuffer
 	float3 	albedo;
 	float 	metallic;
 
-// g_EnableTAA handled by specialization constant at link time
+#if ENABLE_TAA
 	// RT2 R8G8B8A8_UNORM
 	float2 velocity;
 	float occlusion;
 	float UNUSED1;
+#endif
 };
 
 float3x3 CalcTBN(float3 normal, float4 tangent)
@@ -43,11 +43,14 @@ float3x3 CalcTBN(float3 normal, float4 tangent)
 void main(
 	in float2 texCoord		: TEXCOORD,
 	in float3 normal		: NORMAL,
+#if HAS_MATERIAL_NORMAL
     in float4 tangent		: TANGENT,
+#endif
     in float3 posWorld		: POSITION0,
-// g_EnableTAA handled by specialization constant at link time
+#if ENABLE_TAA
     in float4 prePos       	: POSITION1,
     in float4 unjitterPos  	: POSITION2,
+#endif
 	out float4 rt0			: SV_Target0,
 	out float4 rt1			: SV_Target1,
 	out float4 rt2			: SV_Target2)
@@ -73,8 +76,7 @@ void main(
         gbuffer.albedo *= albedo.xyz;
     }
 
-if (g_HasNormal)
-{
+#if HAS_MATERIAL_NORMAL == 1
 	[branch]
     if (materialInfo.hasBasicTex.y)
     {
@@ -88,16 +90,18 @@ if (g_HasNormal)
 
 		gbuffer.normal = normal;
     }
-}
+#endif
 
-// g_EnableTAA handled by specialization constant at link time
+#if ENABLE_TAA
     float4 pre_pos = prePos / prePos.w;
     float4 unjitter_pos = unjitterPos / unjitterPos.w;
     pre_pos.xy = pre_pos.xy / float2(2.0f, -2.0f) + float2(0.5f, 0.5f);
     unjitter_pos.xy = unjitter_pos.xy / float2(2.0f, -2.0f) + float2(0.5f, 0.5f);
     float2 velocity = float2(unjitter_pos.x - pre_pos.x, unjitter_pos.y - pre_pos.y);
+#endif
 	rt0 = float4(BestFitNormal_Encode(normalize(gbuffer.normal)), gbuffer.roughness);
 	rt1 = float4(gbuffer.albedo, gbuffer.metallic);
-// g_EnableTAA handled by specialization constant at link time
+#if ENABLE_TAA
 	rt2 = float4(velocity, 0.0, posWorld.x);
+#endif
 }

@@ -66,7 +66,7 @@ SResult GlobalIlluminationSample::OnCreate()
     // Load gltf2 Mesh
     static std::vector<MeshInfo> mesh_infos = {
         { FullPath("asset/gltf/Sponza/Sponza.gltf")},
-        { FullPath("asset/gltf/BoomBox/BoomBox.gltf"), Math::Scale(30, 30, 30) * Math::RotationY(90 * Math::DEG2RAD) * Math::Translate(0, 0.5, 0) },
+        { FullPath("asset/gltf/cube/cube.gltf"), Math::Scale(30, 30, 30) * Math::RotationY(90 * Math::DEG2RAD) * Math::Translate(0, 0.5, 0) },
     };
     for (uint32_t i = 0; i< mesh_infos.size(); i++)
     {

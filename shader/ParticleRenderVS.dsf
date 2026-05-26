@@ -1,8 +1,7 @@
 //STAGE:vs
+//PREDEFINE:HAS_TEX=0,1
 #include "shared/ParticleCommon.h"
 #include "Common.dsh"
-
-[SpecializationConstant] bool g_HasTex = false;
 
 cbuffer CParticleVertices
 {
@@ -22,7 +21,9 @@ Texture2D size_over_life_tex;
 void main(
 	uint instance_id 	: SV_InstanceID,
 	uint vertex_id 		: SV_VertexID,
+#if HAS_TEX	== 1
 	out float2 oTc		: TEXCOORD,
+#endif
 	out float4 oColor	: COLOR,
 	out float4 oPos		: SV_POSITION
 )
@@ -42,8 +43,8 @@ void main(
 	pos = mul(pos, param.proj_matrix);
 	oPos = pos;
 
-if (g_HasTex)
-{
+
+#if HAS_TEX	== 1
 	uint row_index = uint(particle.tex_index / param.tex_rows_cols.x);
 	uint col_index = uint(particle.tex_index % param.tex_rows_cols.x);
 	float2 tc_in = particle_vertices_tc[vertex_id].zw;
@@ -53,5 +54,5 @@ if (g_HasTex)
 	float tc_x = tc_x_clip * (col_index + uint(tc_in.x));
 	float tc_y = 1.0 - tc_y_clip * (row_index + uint(tc_in.y));
 	oTc = float2(tc_x, tc_y);
-}
+#endif
 }

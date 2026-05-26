@@ -760,8 +760,6 @@ int main(int argc, char** argv)
                     HashRange(seed, mapIt.second.begin(), mapIt.second.end());
             }
 
-            SlangCompiler& slang = GetSlangCompiler();
-
             // Build source with macros as prelude
             std::string preamble;
             for (auto& m : macroDefines)
@@ -770,12 +768,38 @@ int main(int argc, char** argv)
             }
             std::string fullSource = preamble + source;
 
+            // Create a fresh session per variant to avoid Slang module caching
+            // across different predefine combinations
+            SlangGlobalSessionPtr localGlobal;
+            SlangSessionPtr localSession;
+            if (slang::createGlobalSession(localGlobal.writeRef()) != SLANG_OK)
+            {
+                std::cerr << "Slang: createGlobalSession failed" << std::endl;
+                return FAIL;
+            }
+            {
+                SlangCompileTarget slangTarget = ParseSlangCodeGenTarget(targetDesc[0].language);
+                slang::TargetDesc td = {};
+                td.structureSize = sizeof(slang::TargetDesc);
+                td.format = slangTarget;
+                td.flags = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY;
+
+                slang::SessionDesc sessionDesc = {};
+                sessionDesc.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR;
+                sessionDesc.targets = &td;
+                sessionDesc.targetCount = 1;
+
+                slang::ISession* s = nullptr;
+                localGlobal->createSession(sessionDesc, &s);
+                localSession = SlangSessionPtr(s);
+            }
+
             // Step 1: Load module
             SlangModulePtr module;
             {
                 SlangBlobPtr diagBlob;
                 slang::IBlob* diag = nullptr;
-                slang::IModule* m = slang.session->loadModuleFromSourceString(
+                slang::IModule* m = localSession->loadModuleFromSourceString(
                     inputFileBaseName.c_str(),
                     inputFilePath.c_str(),
                     fullSource.c_str(),
@@ -809,16 +833,13 @@ int main(int argc, char** argv)
                 entryPoint = ep;
             }
 
-            // Step 3: Ensure session has the target configured
-            SlangCompileTarget slangTarget = ParseSlangCodeGenTarget(targetDesc[0].language);
-            slang.ensureTarget(slangTarget);
-
+            // Step 3: Target already configured on localSession
             // Step 4: Create composite component type
             SlangComponentTypePtr program;
             {
                 slang::IComponentType* components[] = { module.get(), entryPoint.get() };
                 slang::IComponentType* prog = nullptr;
-                SlangResult sr = slang.session->createCompositeComponentType(
+                SlangResult sr = localSession->createCompositeComponentType(
                     components, 2,
                     &prog);
                 if (SLANG_FAILED(sr) || !prog)
@@ -974,8 +995,9 @@ int main(int argc, char** argv)
             SlangModulePtr module;
             {
                 std::string fullSource = preamble + source;
+                std::string uniqueModuleName = inputFileBaseName + "_dep";
                 slang::IModule* m = slang.session->loadModuleFromSourceString(
-                    inputFileBaseName.c_str(),
+                    uniqueModuleName.c_str(),
                     inputFilePath.c_str(),
                     fullSource.c_str());
                 module = m;

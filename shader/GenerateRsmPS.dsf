@@ -1,10 +1,8 @@
+//PREDEFINE:HAS_MATERIAL_NORMAL=0,1
 //STAGE:ps
 
 #include "Common.dsh"
 #include "Lighting.dsh"
-
-[SpecializationConstant] bool g_HasNormal = false;
-
 cbuffer materialInfo
 {
     MaterialInfo materialInfo;
@@ -21,7 +19,9 @@ Texture2D albedoTex;
 void main(
 	in float2 texCoord	: TEXCOORD,
 	in float3 normal	: NORMAL,
+#if HAS_MATERIAL_NORMAL
     in float4 tangent	: TANGENT,
+#endif
     in float3 posWorld	: POSITION,
 
 	out float4 rsm0		: SV_Target0,	// normal
@@ -30,8 +30,7 @@ void main(
 {
 	float3 normal_world = normalize(normal);
 
-if (g_HasNormal)
-{
+#if HAS_MATERIAL_NORMAL == 1
     if (materialInfo.hasBasicTex.y)
     {
 		float3 pixelNormal = normalTex.Sample(linear_sampler, texCoord).rgb;
@@ -45,7 +44,7 @@ if (g_HasNormal)
         float3x3 TBN = float3x3(T, B, N);
         normal_world = mul(pixelNormal, TBN);
     }
-}
+#endif
 	rsm0 = float4(BestFitNormal_Encode(normalize(normal_world)), 1.0);
 	rsm1 = float4(posWorld, 1.0);
 
