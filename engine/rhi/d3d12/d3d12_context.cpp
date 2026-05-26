@@ -435,7 +435,10 @@ SResult D3D12Context::Init()
             SEEK_RETIF_FAIL(hr);
         }
 
-        return CheckCapabilitySetSupport();
+        SEEK_RETIF_FAIL(this->CheckCapabilitySetSupport());
+        SEEK_RETIF_FAIL(this->CreateRootSignature());
+
+        return S_Success;
     } while (0);
 
     return S_Success;
@@ -478,10 +481,65 @@ SResult D3D12Context::EndFrame()
 {
     return S_Success;
 }
+
+/******************************************************************************
+* Resource Binding
+*******************************************************************************/
+void D3D12Context::BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* cbuffer, const char* name)
+{
+    if (!cbuffer || binding >= 5) return;
+
+    ID3D12GraphicsCommandList* cmd_list = this->D3DRenderCmdList();
+    const D3D12GpuBuffer* d3dBuf = static_cast<const D3D12GpuBuffer*>(cbuffer);
+    D3D12_GPU_VIRTUAL_ADDRESS gpuAddr = d3dBuf->GpuVirtualAddress();
+
+    switch (binding)
+    {
+    case 0: cmd_list->SetGraphicsRootConstantBufferView(ROOT_PARAM_CBV_B0, gpuAddr); break;
+    case 1: cmd_list->SetGraphicsRootConstantBufferView(ROOT_PARAM_CBV_B1, gpuAddr); break;
+    case 2: cmd_list->SetGraphicsRootConstantBufferView(ROOT_PARAM_CBV_B2, gpuAddr); break;
+    case 3: cmd_list->SetGraphicsRootConstantBufferView(ROOT_PARAM_CBV_B3, gpuAddr); break;
+    case 4: cmd_list->SetGraphicsRootConstantBufferView(ROOT_PARAM_CBV_B4, gpuAddr); break;
+    default: break;
+    }
+}
+
+void D3D12Context::BindTexture(ShaderType stage, uint32_t binding, const RHITexture* texture, const char* name)
+{
+}
+
+void D3D12Context::BindSampler(ShaderType stage, uint32_t binding, const RHISampler* sampler, const char* name)
+{
+}
+
+void D3D12Context::BindRHISrv(ShaderType stage, uint32_t binding, const RHIShaderResourceView* srv, const char* name)
+{
+}
+
+void D3D12Context::BindRHIUav(ShaderType stage, uint32_t binding, const RHIUnorderedAccessView* uav, const char* name)
+{
+}
+
+void D3D12Context::BindRWTexture(ShaderType stage, uint32_t binding, const RHITexture* rw_texture, const char* name)
+{
+}
+
 SResult D3D12Context::BeginRenderPass(const RenderPassInfo& renderPassInfo)
 {
     if (!renderPassInfo.fb)
         return ERR_INVALID_DATA;
+
+    // Lazy frame init: if cmd list isn't open, reset and begin
+    static bool s_firstFrame = true;
+    auto& threadCtx = this->CurThreadContext(true);
+    ID3D12GraphicsCommandList* cmd_list = threadCtx.D3DCmdList();
+
+    // Reset state tracking each frame
+    if (s_firstFrame)
+    {
+        s_firstFrame = false;
+        // cmd list is already open from AttachNativeWindow/SwapBuffers
+    }
 
     SResult ret = renderPassInfo.fb->Bind();
     if (SEEK_CHECKFAILED(ret))
@@ -491,6 +549,15 @@ SResult D3D12Context::BeginRenderPass(const RenderPassInfo& renderPassInfo)
     }
     m_pCurrentRHIFrameBuffer = static_cast<D3D12FrameBuffer*>(renderPassInfo.fb);
 
+    // Apply barriers and set render targets
+    m_pCurrentRHIFrameBuffer->BindBarrier(cmd_list);
+    this->FlushResourceBarriers(cmd_list);
+    m_pCurrentRHIFrameBuffer->SetRenderTargets(cmd_list);
+
+    // Reset PSO tracking for new pass
+    m_pCurPso = nullptr;
+    m_pCurrGraphicsRootSignature = nullptr;
+
     D3D12_VIEWPORT d3dViewport;
     d3dViewport.TopLeftX = (FLOAT)m_pCurrentRHIFrameBuffer->GetViewport().left;
     d3dViewport.TopLeftY = (FLOAT)m_pCurrentRHIFrameBuffer->GetViewport().top;
@@ -498,8 +565,11 @@ SResult D3D12Context::BeginRenderPass(const RenderPassInfo& renderPassInfo)
     d3dViewport.Height = (FLOAT)m_pCurrentRHIFrameBuffer->GetViewport().height;
     d3dViewport.MinDepth = 0.0;
     d3dViewport.MaxDepth = 1.0;
-    ID3D12GraphicsCommandList* cmd_list = this->D3DRenderCmdList();
     cmd_list->RSSetViewports(1, &d3dViewport);
+
+    // Clear if requested
+    m_pCurrentRHIFrameBuffer->Clear();
+
     return S_Success;
 }
 SResult D3D12Context::Render(RHIProgram* program, RHIMeshPtr const& mesh)
@@ -544,8 +614,160 @@ SResult D3D12Context::EndRenderPass()
     return S_Success;
 }
 
+/******************************************************************************
+* Root Signature
+*******************************************************************************/
+SResult D3D12Context::CreateRootSignature()
+{
+    // Root parameters:
+    // [0-4] CBV root descriptors (b0-b4)
+    // [5]   SRV descriptor table (t0+, unbounded)
+    std::array<D3D12_ROOT_PARAMETER, NUM_ROOT_PARAMS> rootParams = {};
 
+    for (uint32_t i = 0; i < 5; i++)
+    {
+        rootParams[i].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+        rootParams[i].Descriptor.ShaderRegister = i;
+        rootParams[i].Descriptor.RegisterSpace = 0;
+        rootParams[i].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+    }
 
+    // SRV descriptor table: one range for t0+, unbounded
+    D3D12_DESCRIPTOR_RANGE srvRange = {};
+    srvRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
+    srvRange.NumDescriptors = (UINT)-1; // unbounded
+    srvRange.BaseShaderRegister = 0;
+    srvRange.RegisterSpace = 0;
+    srvRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+    rootParams[ROOT_PARAM_SRV_TABLE].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParams[ROOT_PARAM_SRV_TABLE].DescriptorTable.NumDescriptorRanges = 1;
+    rootParams[ROOT_PARAM_SRV_TABLE].DescriptorTable.pDescriptorRanges = &srvRange;
+    rootParams[ROOT_PARAM_SRV_TABLE].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    // Static samplers
+    std::array<D3D12_STATIC_SAMPLER_DESC, NUM_STATIC_SAMPLERS> staticSamplers = {};
+
+    // s0: linear wrap sampler
+    staticSamplers[0].Filter = D3D12_FILTER_MIN_MAG_MIP_LINEAR;
+    staticSamplers[0].AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSamplers[0].AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSamplers[0].AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;
+    staticSamplers[0].MipLODBias = 0;
+    staticSamplers[0].MaxAnisotropy = 1;
+    staticSamplers[0].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    staticSamplers[0].BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+    staticSamplers[0].MinLOD = 0;
+    staticSamplers[0].MaxLOD = D3D12_FLOAT32_MAX;
+    staticSamplers[0].ShaderRegister = 0;
+    staticSamplers[0].RegisterSpace = 0;
+    staticSamplers[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+    // s1: point clamp sampler
+    staticSamplers[1].Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
+    staticSamplers[1].AddressU = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    staticSamplers[1].AddressV = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    staticSamplers[1].AddressW = D3D12_TEXTURE_ADDRESS_MODE_CLAMP;
+    staticSamplers[1].MipLODBias = 0;
+    staticSamplers[1].MaxAnisotropy = 1;
+    staticSamplers[1].ComparisonFunc = D3D12_COMPARISON_FUNC_ALWAYS;
+    staticSamplers[1].BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+    staticSamplers[1].MinLOD = 0;
+    staticSamplers[1].MaxLOD = D3D12_FLOAT32_MAX;
+    staticSamplers[1].ShaderRegister = 1;
+    staticSamplers[1].RegisterSpace = 0;
+    staticSamplers[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+    // s2: shadow comparison sampler
+    staticSamplers[2].Filter = D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT;
+    staticSamplers[2].AddressU = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+    staticSamplers[2].AddressV = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+    staticSamplers[2].AddressW = D3D12_TEXTURE_ADDRESS_MODE_BORDER;
+    staticSamplers[2].MipLODBias = 0;
+    staticSamplers[2].MaxAnisotropy = 1;
+    staticSamplers[2].ComparisonFunc = D3D12_COMPARISON_FUNC_LESS_EQUAL;
+    staticSamplers[2].BorderColor = D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE;
+    staticSamplers[2].MinLOD = 0;
+    staticSamplers[2].MaxLOD = D3D12_FLOAT32_MAX;
+    staticSamplers[2].ShaderRegister = 2;
+    staticSamplers[2].RegisterSpace = 0;
+    staticSamplers[2].ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;
+
+    // Build the root signature
+    D3D12_ROOT_SIGNATURE_DESC rootSigDesc = {};
+    rootSigDesc.NumParameters = NUM_ROOT_PARAMS;
+    rootSigDesc.pParameters = rootParams.data();
+    rootSigDesc.NumStaticSamplers = NUM_STATIC_SAMPLERS;
+    rootSigDesc.pStaticSamplers = staticSamplers.data();
+    rootSigDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+    ID3DBlobPtr pSignature;
+    ID3DBlobPtr pError;
+    HRESULT hr = D3D12SerializeRootSignature(&rootSigDesc,
+        D3D_ROOT_SIGNATURE_VERSION_1, pSignature.GetAddressOf(), pError.GetAddressOf());
+    if (FAILED(hr))
+    {
+        if (pError)
+            LOG_ERROR("D3D12SerializeRootSignature failed: %s", (char*)pError->GetBufferPointer());
+        return ERR_INVALID_DATA;
+    }
+
+    hr = m_pDevice->CreateRootSignature(0, pSignature->GetBufferPointer(),
+        pSignature->GetBufferSize(), IID_PPV_ARGS(m_pGraphicsRootSignature.ReleaseAndGetAddressOf()));
+    if (FAILED(hr))
+    {
+        LOG_ERROR("CreateRootSignature failed, hr=%x", hr);
+        return ERR_INVALID_DATA;
+    }
+
+    // Compute root signature (same layout, no IA flag)
+    rootSigDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
+    pSignature.Reset();
+    pError.Reset();
+    hr = D3D12SerializeRootSignature(&rootSigDesc,
+        D3D_ROOT_SIGNATURE_VERSION_1, pSignature.GetAddressOf(), pError.GetAddressOf());
+    if (FAILED(hr)) { return ERR_INVALID_DATA; }
+
+    hr = m_pDevice->CreateRootSignature(0, pSignature->GetBufferPointer(),
+        pSignature->GetBufferSize(), IID_PPV_ARGS(m_pComputeRootSignature.ReleaseAndGetAddressOf()));
+    if (FAILED(hr))
+    {
+        LOG_ERROR("CreateRootSignature(compute) failed, hr=%x", hr);
+        return ERR_INVALID_DATA;
+    }
+
+    return S_Success;
+}
+
+void D3D12Context::UpdateRenderPso(ID3D12GraphicsCommandList* cmd_list, RHIProgram* program, RHIMeshPtr const& mesh)
+{
+    D3D12RenderState* rs = static_cast<D3D12RenderState*>(mesh->GetRenderState().get());
+    D3D12FrameBuffer* fb = this->m_pCurrentRHIFrameBuffer;
+    D3D12Mesh& d3dMesh = static_cast<D3D12Mesh&>(*mesh);
+
+    if (!fb) return;
+
+    ID3D12PipelineState* pso = rs->GetGraphicPso(d3dMesh, *program, *fb);
+    if (!pso) return;
+
+    if (m_pCurPso != pso)
+    {
+        cmd_list->SetPipelineState(pso);
+        m_pCurPso = pso;
+    }
+
+    if (m_pCurrGraphicsRootSignature != m_pGraphicsRootSignature.Get())
+    {
+        cmd_list->SetGraphicsRootSignature(m_pGraphicsRootSignature.Get());
+        m_pCurrGraphicsRootSignature = m_pGraphicsRootSignature.Get();
+    }
+
+}
+
+void D3D12Context::UpdateComputePso(ID3D12GraphicsCommandList* cmd_list, RHIProgram* program, RHIMeshPtr const& mesh)
+{
+    cmd_list->SetComputeRootSignature(m_pComputeRootSignature.Get());
+}
 
 /******************************************************************************
 * D3D12Context::PerThreadContext

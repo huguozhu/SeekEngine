@@ -29,11 +29,42 @@ SResult D3D12FrameBuffer::Resolve()
 }
 void D3D12FrameBuffer::Clear(uint32_t flags, float4 const& clr, float depth, int32_t stencil)
 {
+    D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
+    ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
+    if (flags & CBM_COLOR)
+    {
+        for (uint32_t i = 0; i < m_vD3dRtvCpuHandles.size(); ++i)
+        {
+            if (m_vD3dRtvCpuHandles[i].ptr)
+            {
+                cmd_list->ClearRenderTargetView(m_vD3dRtvCpuHandles[i], &clr.x(), 0, nullptr);
+            }
+        }
+    }
+
+    if ((flags & CBM_DEPTH) || (flags & CBM_STENCIL))
+    {
+        D3D12_CLEAR_FLAGS d3dFlags = {};
+        if (flags & CBM_DEPTH)  d3dFlags |= D3D12_CLEAR_FLAG_DEPTH;
+        if (flags & CBM_STENCIL) d3dFlags |= D3D12_CLEAR_FLAG_STENCIL;
+        if (m_D3dSdvHandlePtr && m_D3dSdvHandlePtr->ptr)
+        {
+            cmd_list->ClearDepthStencilView(*m_D3dSdvHandlePtr, d3dFlags, depth, (UINT8)stencil, 0, nullptr);
+        }
+    }
 }
+
 void D3D12FrameBuffer::ClearRenderTarget(Attachment att, float4 const& clr)
 {
+    D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
+    ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
+    uint32_t idx = (uint32_t)att;
+    if (idx < m_vD3dRtvCpuHandles.size() && m_vD3dRtvCpuHandles[idx].ptr)
+    {
+        cmd_list->ClearRenderTargetView(m_vD3dRtvCpuHandles[idx], &clr.x(), 0, nullptr);
+    }
 }
 
 void D3D12FrameBuffer::BindBarrier(ID3D12GraphicsCommandList* cmd_list)
@@ -71,8 +102,13 @@ void D3D12FrameBuffer::SetRenderTargets(ID3D12GraphicsCommandList* cmd_list)
 		m_bViewDirty = false;
 	}
 
-    m_vD3dRtvResources.clear();
-    m_vD3dRtvCpuHandles.resize(m_vRenderTargets.size());
+    cmd_list->OMSetRenderTargets(
+        static_cast<UINT>(m_vD3dRtvCpuHandles.size()),
+        m_vD3dRtvCpuHandles.data(),
+        FALSE,
+        m_D3dSdvHandlePtr);
+
+    cmd_list->RSSetViewports(1, &m_stD3dViewport);
 }
 size_t D3D12FrameBuffer::PsoHashValue()
 {

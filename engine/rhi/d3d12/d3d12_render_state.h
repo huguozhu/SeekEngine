@@ -18,7 +18,7 @@ public:
     {}
     SResult Active();
 
-    ID3D12PipelineState* GetGraphicPso(RHIMesh& mesh, RHIShader& shader, RHIFrameBuffer& fb);
+    ID3D12PipelineState* GetGraphicPso(RHIMesh& mesh, RHIProgram& program, RHIFrameBuffer& fb);
 
 private:
     std::variant<D3D12_GRAPHICS_PIPELINE_STATE_DESC, D3D12_COMPUTE_PIPELINE_STATE_DESC> m_PsoDesc;

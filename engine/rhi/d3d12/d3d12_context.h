@@ -48,6 +48,21 @@ public:
     void ForceFlush();
     void ForceFinish();
 
+    // Root Signature
+    SResult CreateRootSignature();
+    ID3D12RootSignature* GetGraphicsRootSignature() { return m_pGraphicsRootSignature.Get(); }
+    ID3D12RootSignature* GetComputeRootSignature() { return m_pComputeRootSignature.Get(); }
+
+    // Root parameter indices
+    static constexpr uint32_t ROOT_PARAM_CBV_B0 = 0;
+    static constexpr uint32_t ROOT_PARAM_CBV_B1 = 1;
+    static constexpr uint32_t ROOT_PARAM_CBV_B2 = 2;
+    static constexpr uint32_t ROOT_PARAM_CBV_B3 = 3;
+    static constexpr uint32_t ROOT_PARAM_CBV_B4 = 4;
+    static constexpr uint32_t ROOT_PARAM_SRV_TABLE = 5;
+    static constexpr uint32_t NUM_ROOT_PARAMS = 6;
+    static constexpr uint32_t NUM_STATIC_SAMPLERS = 3;
+
     void IASetVertexBuffers(ID3D12GraphicsCommandList* cmd_list, uint32_t start_slot, std::span<D3D12_VERTEX_BUFFER_VIEW const> views);
     void IASetIndexBuffer(ID3D12GraphicsCommandList* cmd_list, D3D12_INDEX_BUFFER_VIEW const& view);
     void RSSetViewports(ID3D12GraphicsCommandList* cmd_list, std::span<D3D12_VIEWPORT const> viewports);
@@ -143,12 +158,12 @@ public:
     void                    BeginCapture() override {}
     void                    EndCapture() override {}
     
-    void                    BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* cbuffer, const char* name) override { return ; }
-    void                    BindRHISrv(ShaderType stage, uint32_t binding, const RHIShaderResourceView* srv, const char* name) override { return ; }
-    void                    BindRHIUav(ShaderType stage, uint32_t binding, const RHIUnorderedAccessView* uav, const char* name) override { return ; }
-    void                    BindTexture(ShaderType stage, uint32_t binding, const RHITexture* texture, const char* name) override { return ; }
-    void                    BindRWTexture(ShaderType stage, uint32_t binding, const RHITexture* rw_texture, const char* name) override { return ; }
-    void                    BindSampler(ShaderType stage, uint32_t binding, const RHISampler* sampler, const char* name) override { return ; }
+    void                    BindConstantBuffer(ShaderType stage, uint32_t binding, const RHIGpuBuffer* cbuffer, const char* name) override;
+    void                    BindRHISrv(ShaderType stage, uint32_t binding, const RHIShaderResourceView* srv, const char* name) override;
+    void                    BindRHIUav(ShaderType stage, uint32_t binding, const RHIUnorderedAccessView* uav, const char* name) override;
+    void                    BindTexture(ShaderType stage, uint32_t binding, const RHITexture* texture, const char* name) override;
+    void                    BindRWTexture(ShaderType stage, uint32_t binding, const RHITexture* rw_texture, const char* name) override;
+    void                    BindSampler(ShaderType stage, uint32_t binding, const RHISampler* sampler, const char* name) override;
 
 protected:
     // Functions that only can been called by Context
@@ -219,6 +234,9 @@ private:
     };
     std::array<PerFrameContext, NUM_BACK_BUFFERS> m_vPerFrameContexts;
     uint32_t m_iCurFrameIndex = 0;
+    uint32_t& CurFrameIndex() { return m_iCurFrameIndex; }
+    uint64_t& FrameFenceValue() { return m_iFrameFenceValue; }
+    RHIFencePtr const& FrameFence() { return m_pFrameFence; }
 
     RHIFencePtr m_pFrameFence = nullptr;
     uint64_t m_iFrameFenceValue = 0;
@@ -257,7 +275,14 @@ private:
     D3D12GpuMemoryAllocatorPtr m_pUploadMemoryAllocator = nullptr;
     D3D12GpuMemoryAllocatorPtr m_pReadbackMemoryAllocator = nullptr;
 
-    
+    // Owned root signatures
+    ID3D12RootSignaturePtr m_pGraphicsRootSignature = nullptr;
+    ID3D12RootSignaturePtr m_pComputeRootSignature = nullptr;
+
+    // Cached current descriptor heaps
+    ID3D12DescriptorHeapPtr m_pCurSrvUavHeap = nullptr;
+    ID3D12DescriptorHeapPtr m_pCurSamplerHeap = nullptr;
+
 };
 
 SEEK_NAMESPACE_END

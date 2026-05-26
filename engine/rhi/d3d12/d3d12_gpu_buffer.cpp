@@ -244,6 +244,38 @@ SResult D3D12GpuBuffer::Create(RHIGpuBufferData* buffer_data)
 
 SResult D3D12GpuBuffer::Update(RHIGpuBufferData* buffer_data)
 {
+    if (!buffer_data || !buffer_data->m_pData || buffer_data->m_iDataSize == 0)
+        return S_Success;
+
+    if (m_GpuMemoryBlock.GetCpuAddress())
+    {
+        // Upload heap: direct memcpy
+        memcpy(m_GpuMemoryBlock.GetCpuAddress(), buffer_data->m_pData,
+            Math::Min(buffer_data->m_iDataSize, m_iSize));
+    }
+    else if (m_pD3dResource)
+    {
+        // Default heap: use a staging upload
+        D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
+        auto uploadMem = rc.AllocUploadMemBlock(buffer_data->m_iDataSize, 256);
+        memcpy(uploadMem.GetCpuAddress(), buffer_data->m_pData, buffer_data->m_iDataSize);
+
+        rc.ResetLoadCmd();
+        ID3D12GraphicsCommandList* cmd_list = rc.D3DLoadCmdList();
+
+        this->UpdateResourceBarrier(cmd_list, 0, D3D12_RESOURCE_STATE_COPY_DEST);
+        rc.FlushResourceBarriers(cmd_list);
+
+        cmd_list->CopyBufferRegion(m_pD3dResource.Get(), m_iD3dResourceOffset,
+            uploadMem.GetResource(), uploadMem.GetOffset(), buffer_data->m_iDataSize);
+
+        this->UpdateResourceBarrier(cmd_list, 0, D3D12_RESOURCE_STATE_GENERIC_READ);
+        rc.FlushResourceBarriers(cmd_list);
+
+        rc.CommitLoadCmd();
+        rc.SyncLoadCmd();
+        rc.DeallocUploadMemBlock(std::move(uploadMem));
+    }
     return S_Success;
 }
 

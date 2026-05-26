@@ -4,9 +4,11 @@
 #include "rhi/d3d12/d3d12_framebuffer.h"
 #include "rhi/d3d12/d3d12_mesh.h"
 #include "rhi/d3d12/d3d12_shader.h"
+#include "rhi/d3d12/d3d12_program.h"
 #include "kernel/context.h"
 #include "math/color.h"
 #include "math/hash.h"
+#include "utils/log.h"
 
 SEEK_NAMESPACE_BEGIN
 
@@ -70,7 +72,7 @@ D3D12RenderState::D3D12RenderState(Context* context, RasterizerStateDesc const& 
 			| ((src.bColorWriteMask & CWM_Green) ? D3D12_COLOR_WRITE_ENABLE_GREEN : 0)
 			| ((src.bColorWriteMask & CWM_Blue) ? D3D12_COLOR_WRITE_ENABLE_BLUE : 0)
 			| ((src.bColorWriteMask & CWM_Alpha) ? D3D12_COLOR_WRITE_ENABLE_ALPHA : 0);
-	}	
+	}
 
 	desc.NodeMask = 0;
 	desc.CachedPSO.pCachedBlob = nullptr;
@@ -82,19 +84,27 @@ SResult D3D12RenderState::Active()
 	D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
 	ID3D12GraphicsCommandList* cmd_list =rc.D3DRenderCmdList();
 	cmd_list->OMSetStencilRef(m_stRenderStateDesc.depthStencil.iFrontStencilRef);
-	cmd_list->OMSetBlendFactor(&m_stRenderStateDesc.blend.fBlendFactor.x());	
+	cmd_list->OMSetBlendFactor(&m_stRenderStateDesc.blend.fBlendFactor.x());
 	return S_Success;
 }
-ID3D12PipelineState* D3D12RenderState::GetGraphicPso(RHIMesh& mesh, RHIShader& shader, RHIFrameBuffer& fb)
+ID3D12PipelineState* D3D12RenderState::GetGraphicPso(RHIMesh& mesh, RHIProgram& program, RHIFrameBuffer& fb)
 {
 	D3D12Mesh& d3d_mesh = (D3D12Mesh&)(mesh);
-	D3D12Shader& d3d_shader = (D3D12Shader&)(shader);	
 	D3D12FrameBuffer& d3d12_fb = (D3D12FrameBuffer&)(fb);
 
+	// Hash includes all shader stages in the program
 	size_t hash_val = 0;
 	HashCombine(hash_val, d3d_mesh.PsoHashValue());
-	HashCombine(hash_val, d3d_shader.PsoHashValue());
 	HashCombine(hash_val, d3d12_fb.PsoHashValue());
+	for (uint32_t i = 0; i < to_underlying(ShaderType::Num); i++)
+	{
+		RHIShader* shader = program.GetShader(static_cast<ShaderType>(i));
+		if (shader)
+		{
+			D3D12Shader& d3dShader = static_cast<D3D12Shader&>(*shader);
+			HashCombine(hash_val, d3dShader.PsoHashValue());
+		}
+	}
 
 	auto iter = m_vPsos.find(hash_val);
 	if (iter == m_vPsos.end())
@@ -102,14 +112,29 @@ ID3D12PipelineState* D3D12RenderState::GetGraphicPso(RHIMesh& mesh, RHIShader& s
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC pso_desc = std::get<D3D12_GRAPHICS_PIPELINE_STATE_DESC>(m_PsoDesc);
 
 		d3d_mesh.UpdatePsoDesc(pso_desc);
-		d3d_shader.UpdatePsoDesc(pso_desc);
+		for (uint32_t i = 0; i < to_underlying(ShaderType::Num); i++)
+		{
+			RHIShader* shader = program.GetShader(static_cast<ShaderType>(i));
+			if (shader)
+			{
+				D3D12Shader& d3dShader = static_cast<D3D12Shader&>(*shader);
+				d3dShader.UpdatePsoDesc(pso_desc);
+			}
+		}
 		d3d12_fb.UpdatePsoDesc(pso_desc);
 
+		// Set root signature
 		D3D12Context& rc = (D3D12Context&)m_pContext->RHIContextInstance();
 		ID3D12Device* d3d_device = rc.GetD3D12Device();
+		pso_desc.pRootSignature = rc.GetGraphicsRootSignature();
 
 		ID3D12PipelineStatePtr d3d_pso;
-		SEEK_THROW_IFFAIL(d3d_device->CreateGraphicsPipelineState(&pso_desc, IID_PPV_ARGS(d3d_pso.ReleaseAndGetAddressOf())));
+		HRESULT hr = d3d_device->CreateGraphicsPipelineState(&pso_desc, IID_PPV_ARGS(d3d_pso.ReleaseAndGetAddressOf()));
+		if (FAILED(hr))
+		{
+			LOG_ERROR("CreateGraphicsPipelineState failed, hr=%x", hr);
+			return nullptr;
+		}
 		iter = m_vPsos.emplace(hash_val, std::move(d3d_pso)).first;
 	}
 

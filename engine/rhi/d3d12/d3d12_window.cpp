@@ -96,13 +96,35 @@ SResult D3D12Window::SwapBuffers()
         D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
         ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
+        // Transition back buffer to PRESENT
         D3D12Texture& rt_tex = static_cast<D3D12Texture&>(*m_vBackBufferTexes[m_iCurBackBufferIndex]);
         rt_tex.UpdateResourceBarrier(cmd_list, 0, D3D12_RESOURCE_STATE_PRESENT);
         rc.FlushResourceBarriers(cmd_list);
-        
+
+        // Close and execute command list
+        SEEK_THROW_IFFAIL(cmd_list->Close());
+        ID3D12CommandList* cmdLists[] = { cmd_list };
+        ID3D12CommandQueue* cmdQueue = rc.GetD3D12CommandQueue();
+        cmdQueue->ExecuteCommandLists(1, cmdLists);
+
+        // Present
         m_pSwapChain->Present(0, 0);
         m_iCurBackBufferIndex = m_pSwapChain->GetCurrentBackBufferIndex();
         this->AttachTargetView(Attachment::Color0, m_vBackBufferRtvs[m_iCurBackBufferIndex]);
+
+        // Signal fence, sync, advance frame index
+        auto& threadCtx = rc.CurThreadContext(true);
+        uint32_t frameIdx = rc.CurFrameIndex();
+        threadCtx.CommitCmd(cmdQueue, frameIdx);
+        rc.FrameFenceValue() = rc.FrameFence()->Signal(cmdQueue);
+        threadCtx.SyncCmd(frameIdx);
+
+        // Advance frame index and reset for next frame
+        rc.CurFrameIndex() = (frameIdx + 1) % NUM_BACK_BUFFERS;
+        frameIdx = rc.CurFrameIndex();
+        ID3D12CommandAllocator* allocator = threadCtx.D3DCmdAllocator(frameIdx);
+        SEEK_THROW_IFFAIL(allocator->Reset());
+        SEEK_THROW_IFFAIL(cmd_list->Reset(allocator, nullptr));
     }
 
     return S_Success;

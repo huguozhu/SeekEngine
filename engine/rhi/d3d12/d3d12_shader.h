@@ -15,15 +15,23 @@ public:
         : RHIShader(context, type, name, entry_func_name, code)
     {
     }
+    virtual ~D3D12Shader();
 
     SResult                 Active();
     void                    Deactive();
     virtual SResult         OnCompile() override;
 
-    size_t PsoHashValue() { return 0; }
+    size_t PsoHashValue();
+    const D3D12_SHADER_BYTECODE& GetShaderByteCode() const { return m_ShaderByteCode; }
     void UpdatePsoDesc(D3D12_GRAPHICS_PIPELINE_STATE_DESC& pso_desc) const;
     void UpdatePsoDesc(D3D12_COMPUTE_PIPELINE_STATE_DESC& pso_desc) const;
 
+private:
+    size_t m_iPsoHashValue = 0;
+    ID3DBlobPtr m_pShaderBlob = nullptr;
+    D3D12_SHADER_BYTECODE m_ShaderByteCode = {};
+
+    static const char* GetCompileTarget(ShaderType type);
 };
 
 SEEK_NAMESPACE_END
