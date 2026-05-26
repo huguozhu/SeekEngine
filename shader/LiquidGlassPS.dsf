@@ -28,7 +28,7 @@ float sdShape(SdfShape shape, float2 pos)
 	else if (shape.shape_type == ShapeType::Round_Rectangle)
 		return sdRoundedRectangle(pos-shape.center, shape.size, shape.shape_params.z);
 	else if (shape.shape_type == ShapeType::Super_Ellipse)
-		return sdSuperellipse(pos-shape.center, shape.shape_params.z, shape.size);
+		return sdSuperellipse(pos-shape.center, shape.shape_params.z, shape.size.x);
 	else
 		return 1000; 
 }

@@ -15,7 +15,7 @@ void main(
 {	
 	float4 pos = float4(iPos, 1.0);
 	oPos = pos;
-	oPosView = mul(pos, param.inv_proj_matrix);
+	oPosView = mul(pos, param.inv_view_matrix);
 	oPosView /= oPosView.w;
 	oTc = TexCoordFromPosNDC(iPos);
 }	
