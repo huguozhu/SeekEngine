@@ -182,37 +182,39 @@ set(ENGINE_CODE
 
     # d3d12 rhi
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_context.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_context.cpp  # D3D12 MVP WIP
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_context_factory.cpp  # D3D12 MVP WIP
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_context.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_context_factory.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_fence.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_fence.cpp  # D3D12 MVP WIP
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_fence.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_framebuffer.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_framebuffer.cpp  # D3D12 MVP WIP
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_framebuffer.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_descriptor_allocator.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_descriptor_allocator.cpp  # D3D12 MVP WIP
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_descriptor_allocator.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_memory_allocator.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_memory_allocator.cpp  # D3D12 MVP WIP
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_memory_allocator.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_mesh.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_mesh.cpp  # D3D12 MVP WIP
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_mesh.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_predeclare.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_buffer.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_buffer.cpp  # D3D12 MVP WIP
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_gpu_buffer.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_program.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_program.cpp  # D3D12 MVP WIP
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_program.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_query.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_query.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_state.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_state.cpp  # D3D12 MVP WIP
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_state.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_view.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_view.cpp  # D3D12 MVP WIP
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_render_view.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_resource.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_resource.cpp  # D3D12 MVP WIP    
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_resource.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_shader.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_shader.cpp  # D3D12 MVP WIP    
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_shader.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_texture.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_texture.cpp  # D3D12 MVP WIP
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_texture.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_translate.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_translate.cpp  # D3D12 MVP WIP
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_translate.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_window.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_window.cpp  # D3D12 MVP WIP
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d12/d3d12_window.cpp
     
     ## vulkan rhi
     #${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_rhi_context.h
@@ -273,7 +275,7 @@ set(SEEK_STATICLIB_NAME ${PROJECT_NAME}-static CACHE STRING "" FORCE)
 
 if(TARGET_PLATFORM_WINDOWS)
     set(SEEK_BUILD_SHAREDLIB TRUE)
-    set(SEEK_STATICLIB_DEPENDENT_LIBS dxgi d3d11 d3dcompiler dxguid Windowscodecs Ws2_32 Winmm)
+    set(SEEK_STATICLIB_DEPENDENT_LIBS dxgi d3d11 d3d12 d3dcompiler dxguid Windowscodecs Ws2_32 Winmm)
 endif()    
 
 

@@ -4,9 +4,9 @@
 #include "kernel/context.h"
 #include "math/hash.h"
 #include "utils/log.h"
-#include "utils/error.h"
+#include "utils/timer.h"
 
-#pragma comment(lib, "dxcompiler.lib")
+#define SEEK_MACRO_FILE_UID 69     // this code is auto generated, don't touch it!!!
 
 SEEK_NAMESPACE_BEGIN
 
@@ -33,12 +33,12 @@ const char* D3D12Shader::GetCompileTarget(ShaderType type)
 {
     switch (type)
     {
-    case ShaderType::Vertex:   return "vs_6_0";
-    case ShaderType::Pixel:    return "ps_6_0";
-    case ShaderType::Geometry: return "gs_6_0";
-    case ShaderType::Hull:     return "hs_6_0";
-    case ShaderType::Domain:   return "ds_6_0";
-    case ShaderType::Compute:  return "cs_6_0";
+    case ShaderType::Vertex:   return "vs_5_0";
+    case ShaderType::Pixel:    return "ps_5_0";
+    case ShaderType::Geometry: return "gs_5_0";
+    case ShaderType::Hull:     return "hs_5_0";
+    case ShaderType::Domain:   return "ds_5_0";
+    case ShaderType::Compute:  return "cs_5_0";
     default:                   return nullptr;
     }
 }
@@ -48,122 +48,66 @@ SResult D3D12Shader::OnCompile()
     std::string macroStr;
     for (auto& m : m_vMacros)
         macroStr += m.first + ":" + m.second + ",";
+    TIMER_BEG(t1);
     LOG_INFO("D3D12Shader::OnCompile() %s Macro(%s)", m_szEntryFuncName.c_str(), macroStr.c_str());
 
-    IDxcCompilerPtr pCompiler;
-    HRESULT hr = DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(pCompiler.GetAddressOf()));
-    if (FAILED(hr))
-    {
-        LOG_ERROR("DxcCreateInstance(CLSID_DxcCompiler) failed, hr=%x", hr);
-        return ERR_INVALID_SHADER;
-    }
-
-    IDxcLibraryPtr pLibrary;
-    hr = DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(pLibrary.GetAddressOf()));
-    if (FAILED(hr))
-    {
-        LOG_ERROR("DxcCreateInstance(CLSID_DxcLibrary) failed, hr=%x", hr);
-        return ERR_INVALID_SHADER;
-    }
-
-    IDxcBlobEncodingPtr pSource;
-    hr = pLibrary->CreateBlobWithEncodingOnHeapCopy(
-        m_szCode.data(), (UINT32)m_szCode.size(), CP_UTF8, pSource.GetAddressOf());
-    if (FAILED(hr))
-    {
-        LOG_ERROR("CreateBlobWithEncodingOnHeapCopy failed, hr=%x", hr);
-        return ERR_INVALID_SHADER;
-    }
-
-    std::vector<LPCWSTR> args;
-    args.push_back(L"-E");
-    std::wstring entryW(m_szEntryFuncName.begin(), m_szEntryFuncName.end());
-    args.push_back(entryW.c_str());
-
-    args.push_back(L"-T");
-    const char* target = GetCompileTarget(m_eShaderType);
-    if (!target) return ERR_INVALID_ARG;
-    std::string targetStr(target);
-    std::wstring targetW(targetStr.begin(), targetStr.end());
-    args.push_back(targetW.c_str());
-
+    ID3DBlob* pError = nullptr;
+    ID3DBlobPtr pCode = nullptr;
+    DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
     if (m_pContext->EnableDebug())
+        dwShaderFlags |= D3DCOMPILE_DEBUG | D3DCOMPILE_SKIP_OPTIMIZATION;
+
+    LPCVOID code_data = nullptr;
+    SIZE_T code_size = 0;
+    HRESULT hr = S_OK;
+    if (m_bCodePrecompiled)
     {
-        args.push_back(L"-Zi");     // debug info
-        args.push_back(L"-Od");     // disable optimizations
+        code_data = m_szCode.data();
+        code_size = m_szCode.size();
     }
     else
     {
-        args.push_back(L"-O3");     // optimization level 3
-    }
-
-    // Add macros as -D defines
-    std::vector<std::wstring> macroWStrs;
-    std::vector<DxcDefine> defines;
-    for (auto& m : m_vMacros)
-    {
-        DxcDefine def;
-        macroWStrs.push_back(std::wstring(m.first.begin(), m.first.end()));
-        def.Name = macroWStrs.back().c_str();
-        macroWStrs.push_back(std::wstring(m.second.begin(), m.second.end()));
-        def.Value = macroWStrs.back().c_str();
-        defines.push_back(def);
-    }
-    for (auto& p : m_vPredefines)
-    {
-        DxcDefine def;
-        macroWStrs.push_back(std::wstring(p.name.begin(), p.name.end()));
-        def.Name = macroWStrs.back().c_str();
-        macroWStrs.push_back(std::wstring(p.value.begin(), p.value.end()));
-        def.Value = macroWStrs.back().c_str();
-        defines.push_back(def);
-    }
-
-    // Add PLATFORM_HLSL for preprocessor branching
-    {
-        DxcDefine def;
-        def.Name = L"PLATFORM_HLSL";
-        def.Value = L"1";
-        defines.push_back(def);
-    }
-
-    IDxcOperationResultPtr pResult;
-    hr = pCompiler->Compile(
-        pSource.Get(),
-        nullptr,                    // source name
-        entryW.c_str(),
-        targetW.c_str(),
-        args.data(), (UINT32)args.size(),
-        defines.data(), (UINT32)defines.size(),
-        nullptr,                    // include handler
-        pResult.GetAddressOf());
-
-    if (FAILED(hr))
-    {
-        LOG_ERROR("IDxcCompiler::Compile failed, hr=%x", hr);
-        return ERR_INVALID_SHADER;
-    }
-
-    HRESULT compileStatus;
-    pResult->GetStatus(&compileStatus);
-    if (FAILED(compileStatus))
-    {
-        IDxcBlobEncodingPtr pErrors;
-        pResult->GetErrorBuffer(pErrors.GetAddressOf());
-        if (pErrors && pErrors->GetBufferSize() > 0)
+        LPCVOID data = m_szCode.data();
+        SIZE_T data_size = m_szCode.size();
+        const char* entry_func = m_szEntryFuncName.c_str();
+        const char* target = GetCompileTarget(m_eShaderType);
+        D3D_SHADER_MACRO* pMacros = nullptr;
+        size_t macro_size = m_vMacros.size() + 1 + m_vPredefines.size();
+        if (macro_size > 0)
         {
-            LOG_ERROR("D3D12 Shader Compile Error:\r\n%s", (char*)pErrors->GetBufferPointer());
+            pMacros = (D3D_SHADER_MACRO*)malloc(sizeof(D3D_SHADER_MACRO) * (macro_size + 1));
+            seek_memset_s(pMacros, sizeof(D3D_SHADER_MACRO) * (macro_size + 1), 0, sizeof(D3D_SHADER_MACRO) * (macro_size + 1));
+            uint32_t index = 0;
+            for (auto& m : m_vMacros)
+            {
+                pMacros[index].Name = m.first.c_str();
+                pMacros[index].Definition = m.second.c_str();
+                index++;
+            }
+            for (auto& p : m_vPredefines)
+            {
+                pMacros[index].Name = p.name.c_str();
+                pMacros[index].Definition = p.value.c_str();
+                index++;
+            }
+            pMacros[index].Name = "PLATFORM_HLSL";
+            pMacros[index].Definition = "1";
         }
-        return ERR_INVALID_SHADER;
+        hr = D3DCompile(data, data_size, nullptr, pMacros, nullptr, entry_func, target, dwShaderFlags, 0, pCode.GetAddressOf(), &pError);
+        if (pMacros)
+        {
+            free(pMacros);
+        }
+        if (FAILED(hr))
+        {
+            LOG_ERROR("D3DCompile Error:\r\n %s", (char*)pError->GetBufferPointer());
+            SAFE_RELEASE(pError);
+            return ERR_INVALID_SHADER;
+        }
+        SAFE_RELEASE(pError);
     }
 
-    hr = pResult->GetResult(m_pShaderBlob.ReleaseAndGetAddressOf());
-    if (FAILED(hr))
-    {
-        LOG_ERROR("GetResult failed, hr=%x", hr);
-        return ERR_INVALID_SHADER;
-    }
-
+    m_pShaderBlob = pCode;
     m_ShaderByteCode.pShaderBytecode = m_pShaderBlob->GetBufferPointer();
     m_ShaderByteCode.BytecodeLength = m_pShaderBlob->GetBufferSize();
 
@@ -172,6 +116,7 @@ SResult D3D12Shader::OnCompile()
         (char const*)m_ShaderByteCode.pShaderBytecode,
         (char const*)m_ShaderByteCode.pShaderBytecode + m_ShaderByteCode.BytecodeLength);
 
+    TIMER_END(t1, "D3D12Shader::OnCompile()");
     return S_Success;
 }
 
@@ -205,3 +150,5 @@ void D3D12Shader::UpdatePsoDesc(D3D12_COMPUTE_PIPELINE_STATE_DESC& pso_desc) con
 }
 
 SEEK_NAMESPACE_END
+
+#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!

@@ -32,7 +32,7 @@ void D3D12FrameBuffer::Clear(uint32_t flags, float4 const& clr, float depth, int
     D3D12Context& rc = static_cast<D3D12Context&>(m_pContext->RHIContextInstance());
     ID3D12GraphicsCommandList* cmd_list = rc.D3DRenderCmdList();
 
-    if (flags & CBM_COLOR)
+    if (flags & CBM_Color)
     {
         for (uint32_t i = 0; i < m_vD3dRtvCpuHandles.size(); ++i)
         {
@@ -43,11 +43,11 @@ void D3D12FrameBuffer::Clear(uint32_t flags, float4 const& clr, float depth, int
         }
     }
 
-    if ((flags & CBM_DEPTH) || (flags & CBM_STENCIL))
+    if ((flags & CBM_Depth) || (flags & CBM_Stencil))
     {
         D3D12_CLEAR_FLAGS d3dFlags = {};
-        if (flags & CBM_DEPTH)  d3dFlags |= D3D12_CLEAR_FLAG_DEPTH;
-        if (flags & CBM_STENCIL) d3dFlags |= D3D12_CLEAR_FLAG_STENCIL;
+        if (flags & CBM_Depth)  d3dFlags |= D3D12_CLEAR_FLAG_DEPTH;
+        if (flags & CBM_Stencil) d3dFlags |= D3D12_CLEAR_FLAG_STENCIL;
         if (m_D3dSdvHandlePtr && m_D3dSdvHandlePtr->ptr)
         {
             cmd_list->ClearDepthStencilView(*m_D3dSdvHandlePtr, d3dFlags, depth, (UINT8)stencil, 0, nullptr);

@@ -116,7 +116,7 @@ SResult D3D12Window::SwapBuffers()
         auto& threadCtx = rc.CurThreadContext(true);
         uint32_t frameIdx = rc.CurFrameIndex();
         threadCtx.CommitCmd(cmdQueue, frameIdx);
-        rc.FrameFenceValue() = rc.FrameFence()->Signal(cmdQueue);
+        rc.FrameFenceValue() = rc.FrameFence()->Signal();
         threadCtx.SyncCmd(frameIdx);
 
         // Advance frame index and reset for next frame

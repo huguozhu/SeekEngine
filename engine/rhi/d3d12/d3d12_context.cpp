@@ -7,6 +7,7 @@
 #include "rhi/d3d12/d3d12_render_state.h"
 #include "rhi/d3d12/d3d12_program.h"
 #include "rhi/d3d12/d3d12_shader.h"
+#include "rhi/d3d12/d3d12_gpu_buffer.h"
 #include "rhi/d3d_common/d3d_adapter.h"
 
 #include "kernel/context.h"
@@ -60,13 +61,6 @@ ID3D12CommandAllocator* D3D12Context::D3DRenderCmdAllocator() const
 ID3D12GraphicsCommandList* D3D12Context::D3DRenderCmdList() const
 {
     return this->CurThreadContext(true).D3DCmdList();
-}
-void D3D12Context::UpdateRenderPso(ID3D12GraphicsCommandList* cmd_list, RHIProgram* program, RHIMeshPtr const& mesh)
-{
-
-}
-void D3D12Context::UpdateComputePso(ID3D12GraphicsCommandList* cmd_list, RHIProgram* program, RHIMeshPtr const& mesh)
-{
 }
 
 ID3D12CommandAllocator* D3D12Context::D3DLoadCmdAllocator() const

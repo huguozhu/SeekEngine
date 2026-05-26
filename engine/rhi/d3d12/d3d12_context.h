@@ -233,10 +233,14 @@ private:
         std::mutex m_Mutex;
     };
     std::array<PerFrameContext, NUM_BACK_BUFFERS> m_vPerFrameContexts;
+
+public:
     uint32_t m_iCurFrameIndex = 0;
     uint32_t& CurFrameIndex() { return m_iCurFrameIndex; }
     uint64_t& FrameFenceValue() { return m_iFrameFenceValue; }
     RHIFencePtr const& FrameFence() { return m_pFrameFence; }
+
+private:
 
     RHIFencePtr m_pFrameFence = nullptr;
     uint64_t m_iFrameFenceValue = 0;
