@@ -121,6 +121,7 @@ void CreateSphere(MeshData& mesh_data, float radius, uint32_t levels, uint32_t s
     mesh_data.positions.push_back(float3(0, radius, 0));
     mesh_data.texcoords.push_back(float2(0, 0));
     mesh_data.normals.push_back(float3(0, 1, 0));
+    mesh_data.tangent.push_back(float4(1, 0, 0, 1));
 
     // Middle Points
     for (uint32_t i = 1; i < levels; ++i)
@@ -138,6 +139,7 @@ void CreateSphere(MeshData& mesh_data, float radius, uint32_t levels, uint32_t s
             mesh_data.positions.push_back(pos);
             mesh_data.texcoords.push_back(float2(theta / Math::PI2, phi / Math::PI));
             mesh_data.normals.push_back(Math::Normalize(pos));
+            mesh_data.tangent.push_back(float4(-sinf(theta), 0, cosf(theta), 1));
         }
     }
 
@@ -145,6 +147,7 @@ void CreateSphere(MeshData& mesh_data, float radius, uint32_t levels, uint32_t s
     mesh_data.positions.push_back(float3(0, -radius, 0));
     mesh_data.texcoords.push_back(float2(0, 1));
     mesh_data.normals.push_back(float3(0, -1, 0));
+    mesh_data.tangent.push_back(float4(1, 0, 0, 1));
 
     // Indices
     if (levels > 1)
@@ -192,6 +195,7 @@ void CreateCone(MeshData& mesh_data, float radius, float height, uint32_t slices
         mesh_data.positions.push_back(float3(0, h2, 0));
         mesh_data.texcoords.push_back(float2(0.5, 0.0));
         mesh_data.normals.push_back(float3(radius * cosf(theta) / len, height / len, radius * sinf(theta) / len));
+        mesh_data.tangent.push_back(float4(-sinf(theta), 0, cosf(theta), 1));
     }
     //      side plane's bottom points
     for (uint32_t i = 0; i < slices; ++i)
@@ -201,6 +205,7 @@ void CreateCone(MeshData& mesh_data, float radius, float height, uint32_t slices
         mesh_data.positions.push_back(float3(radius * cosf(theta), -h2, radius * sinf(theta)));
         mesh_data.texcoords.push_back(float2(cosf(theta) / 2 + 0.5f, sinf(theta) / 2 + 0.5f));
         mesh_data.normals.push_back(float3(radius * cosf(theta) / len, height / len, radius * sinf(theta) / len));
+        mesh_data.tangent.push_back(float4(-sinf(theta), 0, cosf(theta), 1));
     }
     //      side planes's indices
     for (uint32_t i = 0; i < slices; ++i)
@@ -219,12 +224,14 @@ void CreateCone(MeshData& mesh_data, float radius, float height, uint32_t slices
         mesh_data.positions.push_back(float3(radius * cosf(theta), -h2, radius * sinf(theta)));
         mesh_data.texcoords.push_back(float2(cosf(theta) / 2 + 0.5f, sinf(theta) / 2 + 0.5f));
         mesh_data.normals.push_back(float3(0, -1, 0));
+        mesh_data.tangent.push_back(float4(-sinf(theta), 0, cosf(theta), 1));
     }
 
     //      bottom center point
     mesh_data.positions.push_back(float3(0, -h2, 0));
     mesh_data.texcoords.push_back(float2(0.5, 0.5));
     mesh_data.normals.push_back(float3(0, -1, 0));
+    mesh_data.tangent.push_back(float4(1, 0, 0, 1));
 
     //      indices
     uint32_t offset = 2 * slices;

@@ -1,13 +1,12 @@
+//PREDEFINE:LIGHT_MODE=0,1
+//PREDEFINE:HAS_MATERIAL_ALBEDO=0,1
+//PREDEFINE:HAS_MATERIAL_NORMAL=0,1
+//PREDEFINE:HAS_MATERIAL_METALLIC_ROUGHNESS=0,1
+//PREDEFINE:HAS_MATERIAL_NORMAL_MASK=0,1
 //STAGE:ps
 #include "Common.dsh"
 #include "Lighting.dsh"
 #include "Shadow.dsh"
-
-[SpecializationConstant] int  g_LightMode           = 0;  // 0=Phong, 1=PBR
-[SpecializationConstant] bool g_HasAlbedoTex        = false;
-[SpecializationConstant] bool g_HasNormalTex        = false;
-[SpecializationConstant] bool g_HasMetallicRoughTex = false;
-[SpecializationConstant] bool g_HasNormalMaskTex    = false;
 
 cbuffer materialInfo
 {
@@ -24,10 +23,21 @@ cbuffer cameraInfo
     CameraInfo cameraInfo;
 };
 
+#if HAS_MATERIAL_ALBEDO
 Texture2D albedoTex;
+#endif
+
+#if HAS_MATERIAL_NORMAL
 Texture2D normalTex;
+#endif
+
+#if HAS_MATERIAL_METALLIC_ROUGHNESS
 Texture2D metallicRoughnessTex;
+#endif
+
+#if HAS_MATERIAL_NORMAL_MASK
 Texture2D normalMaskTex;
+#endif
 
 float3 CalcEnvironmentAmbient(MaterialParam materialParam, float2 texcoord, float3 N, float3 V)
 {
@@ -78,14 +88,11 @@ float3 CalcLighting(MaterialParam materialParam, LightInfo lightInfo, float2 iTe
             float3 posToLight = lightInfo.posWorld - posWorld;
             lightAttenuation = GetDistanceAttenuation(posToLight, lightInfo.falloffRadius);
         }
-if (g_LightMode == 1)
-{
+#if LIGHT_MODE == 1
         Lo = CalcLightingBRDF(materialParam, lightInfo, lightAttenuation, N, L, V, shadow);
-}
-else
-{
+#else
         Lo = CalcLightingPhong(materialParam, lightInfo, lightAttenuation, N, L, V, shadow);
-}
+#endif
     }
     return Lo;
 }
@@ -94,7 +101,9 @@ struct VSOutput
 {
     float2 texCoord     : TEXCOORD;
     float3 normal       : NORMAL;
+#if HAS_MATERIAL_NORMAL
     float4 tangent      : TANGENT;
+#endif // HAS_MATERIAL_NORMAL
     float3 posWorld     : POSITION0;
     float4 pos          : SV_POSITION;
 };
@@ -110,21 +119,19 @@ MaterialParam CalcMaterialParam(MaterialInfo materialInfo, float2 texCoord, floa
 
 	materialParam.albedo = materialInfo.albedoFactor.xyz;
 	materialParam.alpha  = materialInfo.albedoFactor.w;
-if (g_HasAlbedoTex)
-{
+#if HAS_MATERIAL_ALBEDO
     float4 albedo = albedoTex.Sample(linear_sampler, texCoord);
     materialParam.albedo *= albedo.xyz;
     materialParam.alpha = albedo.w;
-}
+#endif // HAS_MATERIAL_ALBEDO
 
 	materialParam.metallic = materialInfo.metallicFactor;
     materialParam.roughness = materialInfo.roughnessFactor;
-if (g_HasMetallicRoughTex)
-{
+#if HAS_MATERIAL_METALLIC_ROUGHNESS
     float3 _rgb = metallicRoughnessTex.Sample(linear_sampler, texCoord).rgb;
     materialParam.metallic *= _rgb.b;
     materialParam.roughness *= _rgb.g;
-}
+#endif // HAS_MATERIAL_METALLIC_ROUGHNESS
 
 	float3 specularColor = CalcSpecularColor(materialParam.albedo, materialParam.metallic);
     float3 F0 = specularColor;
@@ -150,21 +157,19 @@ PSOutput main(VSOutput input)
     float3 normal = input.normal;
     if (materialInfo.hasBasicTex.x == 1234) // input.texCoord may be optimized out, so hardcode here
         normal = float3(input.texCoord, 0.5);
-if (g_HasNormalTex)
-{
+#if HAS_MATERIAL_NORMAL
     float3 pixelNormal = normalTex.Sample(linear_sampler, input.texCoord).rgb;
     pixelNormal = (pixelNormal * 2.0 - 1.0) * float3(materialInfo.normalScale, materialInfo.normalScale, 1.0);
 
-if (g_HasNormalMaskTex)
-{
+#if HAS_MATERIAL_NORMAL_MASK
     float4 normalMask = normalMaskTex.Sample(linear_sampler, input.texCoord);
     float influence = min(dot(normalMask, materialInfo.normalMaskWeights), 1.0);
     pixelNormal = pixelNormal * float3(influence, influence, 1.0);
-}
+#endif
 
     float3x3 TBN = CalcTBN(normal, input.tangent);
     normal = mul(pixelNormal, TBN);
-}
+#endif
 
     float3 color = float3(0.0, 0.0, 0.0);
     float3 N = normalize(normal);
