@@ -92,13 +92,14 @@ float4 main(
 	float3 pos_view = (iPosView.xyz / iPosView.w) * (depth_view / cameraInfo.farPlane);
 	float4 pos_world = mul(float4(pos_view, 1.0), deferredLightingInfo.lightVolumeInvView);
 	pos_world = pos_world / pos_world.w;
-if (g_UseCsm)
+	float shadow;
+	if (g_UseCsm)
 {
-	float shadow = CalcDirectionalLightCascadedShadow(lightInfo, pos_world.xyz);
+	shadow = CalcDirectionalLightCascadedShadow(lightInfo, pos_world.xyz);
 }
 else
 {
-	float shadow = CalcSpotDirectionalLightShadow(lightInfo, pos_world.xyz);
+	shadow = CalcSpotDirectionalLightShadow(lightInfo, pos_world.xyz);
 }
 	return float4(shadow, shadow, shadow, shadow);
 }
