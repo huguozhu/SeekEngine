@@ -21,8 +21,6 @@ enum class RHIType : uint32_t
 {
     Unknown,
     D3D11,
-    D3D12,      // not supported fully
-    Vulkan,     // not supported fully
     Metal,      // not supported yet
     GLES,       // not supported yet
 };
