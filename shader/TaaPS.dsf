@@ -1,6 +1,6 @@
 //STAGE:ps
 #include "Common.dsh"
-#include "shared/Taa.h"
+import Taa;
 
 Texture2D currentTex;
 Texture2D historyTex;

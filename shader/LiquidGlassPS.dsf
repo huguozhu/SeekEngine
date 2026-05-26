@@ -1,7 +1,7 @@
 //STAGE:ps
 #include "Common.dsh"
 #include "CalcSDF.dsh"
-#include "shared/LiquidGlass.h"
+import LiquidGlass;
 
 static const float M_E = 2.718281828459045;
 static const float epsilon = 0.00001;

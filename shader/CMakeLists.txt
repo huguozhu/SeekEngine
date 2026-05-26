@@ -3,13 +3,19 @@ if(CMAKE_VERSION VERSION_GREATER_EQUAL "3.27")
 endif()
 
 set(shader_shared_files
-    ${SEEK_SHADER_SOURCE_DIR}/shared/ColorReplace.h
-    ${SEEK_SHADER_SOURCE_DIR}/shared/common.h
-    ${SEEK_SHADER_SOURCE_DIR}/shared/GI.h
-    ${SEEK_SHADER_SOURCE_DIR}/shared/ParticleCommon.h
-    ${SEEK_SHADER_SOURCE_DIR}/shared/SkyBox.h
-    ${SEEK_SHADER_SOURCE_DIR}/shared/Ssao.h
-    ${SEEK_SHADER_SOURCE_DIR}/shared/WaterMark.h
+    ${SEEK_SHADER_SOURCE_DIR}/shared/Blur.slang
+    ${SEEK_SHADER_SOURCE_DIR}/shared/ColorReplace.slang
+    ${SEEK_SHADER_SOURCE_DIR}/shared/CommonTypes.slang
+    ${SEEK_SHADER_SOURCE_DIR}/shared/GI.slang
+    ${SEEK_SHADER_SOURCE_DIR}/shared/LiquidGlass.slang
+    ${SEEK_SHADER_SOURCE_DIR}/shared/MetaBall.slang
+    ${SEEK_SHADER_SOURCE_DIR}/shared/ParticleCommonTypes.slang
+    ${SEEK_SHADER_SOURCE_DIR}/shared/SkyBox.slang
+    ${SEEK_SHADER_SOURCE_DIR}/shared/Sprite2D.slang
+    ${SEEK_SHADER_SOURCE_DIR}/shared/Ssao.slang
+    ${SEEK_SHADER_SOURCE_DIR}/shared/Taa.slang
+    ${SEEK_SHADER_SOURCE_DIR}/shared/WaterMark.slang
+    ${SEEK_SHADER_SOURCE_DIR}/shared/Waves.slang
 )
 
 set(shader_header_files

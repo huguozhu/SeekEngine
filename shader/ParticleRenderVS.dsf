@@ -1,6 +1,6 @@
 //STAGE:vs
 //PREDEFINE:HAS_TEX=0,1
-#include "shared/ParticleCommon.h"
+import ParticleCommonTypes;
 #include "Common.dsh"
 
 cbuffer CParticleVertices

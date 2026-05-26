@@ -1,5 +1,5 @@
 //STAGE:vs
-#include "shared/GI.h"
+import GI;
 cbuffer cb_InjectVertics
 {
 	float4 vertices[3];

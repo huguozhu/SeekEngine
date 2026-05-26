@@ -1,6 +1,6 @@
 //STAGE:ps
 #include "Common.dsh"
-#include "shared/Metaball.h"
+import MetaBall;
 
 Texture2D src_tex;
 

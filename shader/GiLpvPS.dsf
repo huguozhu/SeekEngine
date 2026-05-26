@@ -1,6 +1,6 @@
 //STAGE:ps
 #include "Lighting.dsh"
-#include "shared/GI.h"
+import GI;
 #include "Common.dsh"
 
 Texture2D gbuffer0;

@@ -1,8 +1,9 @@
 //STAGE:cs
-#include "shared/ParticleCommon.h"
+#include "ParticleCommon.dsh"
+import ParticleCommonTypes;
 
-RWStructuredBuffer<ParticleCounters> particle_counters;
-RWStructuredBuffer<uint>	dead_indices;
+// Defined in ParticleCommon.dsh
+// Defined in ParticleCommon.dsh
 cbuffer CInitParam
 {
 	uint max_particles;

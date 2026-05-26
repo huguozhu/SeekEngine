@@ -1,6 +1,29 @@
 #pragma once
 
-#include "shared/common.h"
+// 宏定义保留在 .dsh 中（通过 #include 文本包含传播）
+#define JOINT_MAX_COUNT         600
+#define MAX_MORPH_SIZE          200
+#define MORPH_COMPONENT_NONE    0
+#define MORPH_COMPONENT_POS     1
+#define MORPH_COMPONENT_NORMAL  2
+#define FlippingValue           -1
+#define LIGHT_TYPE_AMBIENT      0
+#define LIGHT_TYPE_DIRECTIONAL  1
+#define LIGHT_TYPE_SPOT         2
+#define LIGHT_TYPE_POINT        3
+#define CB_BINDING_MODEL_INFO           0
+#define CB_BINDING_VIEW_INFO            1
+#define CB_BINDING_LIGHT_INFO           2
+#define CB_BINDING_MATERIAL_INFO        3
+#define CB_BINDING_MORPH_TARGET_INFO    4
+#define CB_BINDING_FIXED_COUNT          5
+#define MAX_DEFERRED_LIGHTS_NUM         1024
+#define MAX_DEFERRED_LIGHTS_INDICES     ((MAX_DEFERRED_LIGHTS_NUM >> 3) - 1)
+#define TILE_SIZE                       16
+#define NUM_CSM_LEVELS                  4
+
+// 结构体类型从模块导入
+import CommonTypes;
 
 static const float PI 					= 3.1415926;
 static const float3 RGB_TO_LUM			= float3(0.2126, 0.7152, 0.0722);

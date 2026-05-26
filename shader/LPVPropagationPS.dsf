@@ -1,5 +1,5 @@
 //STAGE:ps
-#include "shared/GI.h"
+import GI;
 #include "Common.dsh"
 
 Texture3D redSH;

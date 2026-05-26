@@ -1,7 +1,7 @@
 //STAGE:ps
 #include "Lighting.dsh"
 #include "Common.dsh"
-#include "shared/Ssao.h"
+import Ssao;
 
 static const int kernel_size = 64;
 static const float radius = 0.5;

@@ -1,6 +1,6 @@
 //STAGE:ps
 #include "Common.dsh"
-#include "shared/Blur.h"
+import Blur;
 
 Texture2D src_tex;
 

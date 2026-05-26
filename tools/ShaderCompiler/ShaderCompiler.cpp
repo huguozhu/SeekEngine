@@ -1,6 +1,7 @@
 #include "seek.config.h"
 #include "shader_helper.h"
 #include <fstream>
+#include <cstdio>
 #include <functional>
 #include <iomanip>
 #include <iostream>
@@ -448,7 +449,7 @@ struct SlangCompiler
         session = s;
     }
 
-    void ensureTarget(SlangCompileTarget target)
+    void ensureTarget(SlangCompileTarget target, const std::string& shaderDir)
     {
         if (currentTarget == target) return;
 
@@ -457,10 +458,16 @@ struct SlangCompiler
         targetDesc.format = target;
         targetDesc.flags = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY;
 
+        // 设置搜索路径，支持 import 模块解析
+        std::string sharedDir = shaderDir + "/shared";
+        const char* searchPaths[] = { shaderDir.c_str(), sharedDir.c_str() };
+
         slang::SessionDesc sessionDesc = {};
         sessionDesc.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR;
         sessionDesc.targets = &targetDesc;
         sessionDesc.targetCount = 1;
+        sessionDesc.searchPaths = searchPaths;
+        sessionDesc.searchPathCount = 2;
 
         slang::ISession* s = nullptr;
         globalSession->createSession(sessionDesc, &s);
@@ -760,9 +767,9 @@ int main(int argc, char** argv)
                     HashRange(seed, mapIt.second.begin(), mapIt.second.end());
             }
 
-            // Build source with macros as prelude
+            // 变体宏（PREDEFINE）通过源码前导注入，仅影响入口点
             std::string preamble;
-            for (auto& m : macroDefines)
+            for (auto& m : active_macros)
             {
                 preamble += "#define " + std::string(m.name) + " " + std::string(m.value) + "\n";
             }
@@ -784,17 +791,38 @@ int main(int argc, char** argv)
                 td.format = slangTarget;
                 td.flags = SLANG_TARGET_FLAG_GENERATE_SPIRV_DIRECTLY;
 
+                // 设置搜索路径，支持 import 模块解析
+                std::string sharedDir = shaderSourceDir + "/shared";
+                const char* searchPaths[] = { shaderSourceDir.c_str(), sharedDir.c_str() };
+
+                // 将平台级宏（--define）设为 Session 级预处理器宏，确保 import 的模块也能访问
+                std::vector<slang::PreprocessorMacroDesc> sessionMacros;
+                for (auto& fm : fixed_macros)
+                {
+                    slang::PreprocessorMacroDesc md = {};
+                    md.name = fm.name.c_str();
+                    md.value = fm.value.c_str();
+                    sessionMacros.push_back(md);
+                }
+
                 slang::SessionDesc sessionDesc = {};
                 sessionDesc.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR;
                 sessionDesc.targets = &td;
                 sessionDesc.targetCount = 1;
+                sessionDesc.searchPaths = searchPaths;
+                sessionDesc.searchPathCount = 2;
+                if (!sessionMacros.empty())
+                {
+                    sessionDesc.preprocessorMacros = sessionMacros.data();
+                    sessionDesc.preprocessorMacroCount = static_cast<SlangInt>(sessionMacros.size());
+                }
 
                 slang::ISession* s = nullptr;
                 localGlobal->createSession(sessionDesc, &s);
                 localSession = SlangSessionPtr(s);
             }
 
-            // Step 1: Load module
+            // Step 1: Load module from source string
             SlangModulePtr module;
             {
                 SlangBlobPtr diagBlob;

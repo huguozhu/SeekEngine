@@ -1,4 +1,20 @@
-#include "shared/ParticleCommon.h"
+// 宏定义保留在 .dsh 中（通过 #include 文本包含传播）
+#define PARTICLE_CS_X_SIZE      32
+#define BITONIC_BLOCK_SIZE      512
+#define TRANSPOSE_BLOCK_SIZE    16
+#define RANDOM_FLOAT_NUM        512
+#define Emit_Direction_Type_Directional    0
+#define Emit_Direction_Type_BiDirectional  1
+#define Emit_Direction_Type_Uniform_2D     2
+#define Emit_Direction_Type_Uniform_3D     3
+#define Emit_Shape_Type_Sphere             0
+#define Emit_Shape_Type_Box                1
+#define Tex_Time_Sampling_Type_Play_Once           0
+#define Tex_Time_Sampling_Type_Play_Loop           1
+#define Tex_Time_Sampling_Type_Random_Still_Frame  2
+#define Tex_Time_Sampling_Type_Random_Loop         3
+
+import ParticleCommonTypes;
 cbuffer CAliveIndices
 {
 	uint pre_sim_index;

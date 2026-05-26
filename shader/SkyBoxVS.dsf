@@ -1,5 +1,5 @@
 //STAGE:vs
-#include "shared/SkyBox.h"
+import SkyBox;
 
 cbuffer cb_SkyBoxParams
 {

@@ -1,6 +1,6 @@
 //STAGE:ps
 #include "Common.dsh"
-#include "shared/WaterMark.h"
+import WaterMark;
 
 cbuffer waterMarkDesc
 {

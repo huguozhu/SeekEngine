@@ -1,6 +1,6 @@
 //STAGE:vs
 #include "Common.dsh"
-#include "shared/GI.h"
+import GI;
 
 cbuffer cb_InvProjMatrix
 {
