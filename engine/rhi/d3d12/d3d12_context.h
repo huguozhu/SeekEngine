@@ -60,8 +60,12 @@ public:
     static constexpr uint32_t ROOT_PARAM_CBV_B3 = 3;
     static constexpr uint32_t ROOT_PARAM_CBV_B4 = 4;
     static constexpr uint32_t ROOT_PARAM_SRV_TABLE = 5;
-    static constexpr uint32_t NUM_ROOT_PARAMS = 6;
+    static constexpr uint32_t ROOT_PARAM_UAV_TABLE = 6;
+    static constexpr uint32_t NUM_ROOT_PARAMS = 7;
     static constexpr uint32_t NUM_STATIC_SAMPLERS = 3;
+
+    static constexpr uint32_t MAX_DESCRIPTOR_SRV = 128;
+    static constexpr uint32_t MAX_DESCRIPTOR_UAV = 16;
 
     void IASetVertexBuffers(ID3D12GraphicsCommandList* cmd_list, uint32_t start_slot, std::span<D3D12_VERTEX_BUFFER_VIEW const> views);
     void IASetIndexBuffer(ID3D12GraphicsCommandList* cmd_list, D3D12_INDEX_BUFFER_VIEW const& view);
@@ -141,12 +145,12 @@ public:
     SResult                 Render(RHIProgram* program, RHIMeshPtr const& mesh) override;
     SResult                 EndRenderPass() override;
 
-    void                    BeginComputePass(const ComputePassInfo& computePassInfo) override { return ; }
-    SResult                 Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z) override { return 0; }
-    SResult                 DispatchIndirect(RHIProgram* program, RHIGpuBufferPtr indirectBuf) { return 0; }
-    SResult                 DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIGpuBufferPtr indirectBuf, MeshTopologyType type) { return 0; }
-    SResult                 DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, MeshTopologyType type, uint32_t vertexCountPerInstance, uint32_t instanceCount, uint32_t startVertexLocation, uint32_t startInstanceLocation) override { return 0; }
-    void                    EndComputePass() override { return ; }
+    void                    BeginComputePass(const ComputePassInfo& computePassInfo) override;
+    SResult                 Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z) override;
+    SResult                 DispatchIndirect(RHIProgram* program, RHIGpuBufferPtr indirectBuf);
+    SResult                 DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIGpuBufferPtr indirectBuf, MeshTopologyType type);
+    SResult                 DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, MeshTopologyType type, uint32_t vertexCountPerInstance, uint32_t instanceCount, uint32_t startVertexLocation, uint32_t startInstanceLocation) override;
+    void                    EndComputePass() override;
 
     SResult                 SyncTexture(RHITexturePtr tex) override { return 0; }
     SResult                 CopyTexture(RHITexturePtr tex_src, RHITexturePtr tex_dst) override { return 0; }
@@ -286,6 +290,20 @@ private:
     // Cached current descriptor heaps
     ID3D12DescriptorHeapPtr m_pCurSrvUavHeap = nullptr;
     ID3D12DescriptorHeapPtr m_pCurSamplerHeap = nullptr;
+
+    // Per-pass descriptor cache
+    void FlushDescriptorTables(ID3D12GraphicsCommandList* cmd_list);
+    struct DescriptorCache
+    {
+        D3D12GpuDescriptorBlock block;
+        D3D12_CPU_DESCRIPTOR_HANDLE pendingHandles[MAX_DESCRIPTOR_SRV] = {};
+        uint32_t maxBinding = 0;
+        bool dirty = false;
+        bool tableSet = false;
+        void Reset() { maxBinding = 0; dirty = false; tableSet = false; block.Reset(); }
+    };
+    DescriptorCache m_srvCache;
+    DescriptorCache m_uavCache;
 
 };
 

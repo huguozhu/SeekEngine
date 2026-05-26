@@ -8,6 +8,7 @@
 #include "rhi/d3d12/d3d12_program.h"
 #include "rhi/d3d12/d3d12_shader.h"
 #include "rhi/d3d12/d3d12_gpu_buffer.h"
+#include "rhi/d3d12/d3d12_texture.h"
 #include "rhi/d3d_common/d3d_adapter.h"
 
 #include "kernel/context.h"
@@ -430,6 +431,27 @@ SResult D3D12Context::Init()
         }
 
         SEEK_RETIF_FAIL(this->CheckCapabilitySetSupport());
+
+        // Initialize null SRV/UAV descriptors for empty table slots
+        {
+            m_NullSrvUavDescBlock = m_pCbvSrvUavDescAllocator->Allocate(2);
+            m_hNullSrvHandle = m_NullSrvUavDescBlock.CpuHandle();
+            m_hNullUavHandle = m_NullSrvUavDescBlock.CpuHandle();
+            m_hNullUavHandle.ptr += m_pCbvSrvUavDescAllocator->DescriptorSize();
+
+            D3D12_SHADER_RESOURCE_VIEW_DESC nullSrvDesc = {};
+            nullSrvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            nullSrvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+            nullSrvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+            nullSrvDesc.Texture2D.MipLevels = 1;
+            m_pDevice->CreateShaderResourceView(nullptr, &nullSrvDesc, m_hNullSrvHandle);
+
+            D3D12_UNORDERED_ACCESS_VIEW_DESC nullUavDesc = {};
+            nullUavDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            nullUavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+            m_pDevice->CreateUnorderedAccessView(nullptr, nullptr, &nullUavDesc, m_hNullUavHandle);
+        }
+
         SEEK_RETIF_FAIL(this->CreateRootSignature());
 
         return S_Success;
@@ -500,22 +522,144 @@ void D3D12Context::BindConstantBuffer(ShaderType stage, uint32_t binding, const 
 
 void D3D12Context::BindTexture(ShaderType stage, uint32_t binding, const RHITexture* texture, const char* name)
 {
+    if (!texture || binding >= MAX_DESCRIPTOR_SRV) return;
+    D3D12Texture* d3dTex = (D3D12Texture*)(texture);
+    D3D12SrvPtr const& srv = d3dTex->GetD3DSrv();
+    if (srv && srv->Handle().ptr)
+    {
+        m_srvCache.pendingHandles[binding] = srv->Handle();
+        if (binding >= m_srvCache.maxBinding)
+            m_srvCache.maxBinding = binding + 1;
+        m_srvCache.dirty = true;
+    }
 }
 
 void D3D12Context::BindSampler(ShaderType stage, uint32_t binding, const RHISampler* sampler, const char* name)
 {
+    // Static samplers s0/s1/s2 are defined in the root signature and always active.
+    // Dynamic sampler binding via descriptor table is not yet implemented.
 }
 
 void D3D12Context::BindRHISrv(ShaderType stage, uint32_t binding, const RHIShaderResourceView* srv, const char* name)
 {
+    if (!srv || binding >= MAX_DESCRIPTOR_SRV) return;
+
+    D3D12ShaderResourceView* d3dSrv = (D3D12ShaderResourceView*)(srv);
+    D3D12Srv* handle = d3dSrv->GetD3DSrv();
+    if (!handle) return;
+
+    m_srvCache.pendingHandles[binding] = handle->Handle();
+    if (binding >= m_srvCache.maxBinding)
+        m_srvCache.maxBinding = binding + 1;
+    m_srvCache.dirty = true;
 }
 
 void D3D12Context::BindRHIUav(ShaderType stage, uint32_t binding, const RHIUnorderedAccessView* uav, const char* name)
 {
+    if (!uav || binding >= MAX_DESCRIPTOR_UAV) return;
+
+    D3D12UnorderedAccessView* d3dUav = (D3D12UnorderedAccessView*)(uav);
+    D3D12Uav* handle = d3dUav->GetD3DUav();
+    if (!handle) return;
+
+    m_uavCache.pendingHandles[binding] = handle->Handle();
+    if (binding >= m_uavCache.maxBinding)
+        m_uavCache.maxBinding = binding + 1;
+    m_uavCache.dirty = true;
 }
 
 void D3D12Context::BindRWTexture(ShaderType stage, uint32_t binding, const RHITexture* rw_texture, const char* name)
 {
+    if (!rw_texture || binding >= MAX_DESCRIPTOR_UAV) return;
+    D3D12Texture* d3dTex = (D3D12Texture*)(rw_texture);
+    D3D12UavPtr const& uav = d3dTex->GetD3DUav();
+    if (uav && uav->Handle().ptr)
+    {
+        m_uavCache.pendingHandles[binding] = uav->Handle();
+        if (binding >= m_uavCache.maxBinding)
+            m_uavCache.maxBinding = binding + 1;
+        m_uavCache.dirty = true;
+    }
+}
+
+void D3D12Context::FlushDescriptorTables(ID3D12GraphicsCommandList* cmd_list)
+{
+    ID3D12Device* device = m_pDevice.Get();
+    uint32_t descriptorSize = m_pDynamicCbvSrvUavDescAllocator->DescriptorSize();
+
+    uint32_t srvCount = Math::Max(m_srvCache.maxBinding, 1u);
+    uint32_t uavCount = Math::Max(m_uavCache.maxBinding, 1u);
+
+    // Allocate SRV block if needed
+    if (m_srvCache.dirty || !m_srvCache.tableSet)
+    {
+        if (m_srvCache.block.GetSize() < srvCount)
+        {
+            if (m_srvCache.block.GetHeap())
+                m_pDynamicCbvSrvUavDescAllocator->Deallocate(std::move(m_srvCache.block), m_iFrameFenceValue);
+            m_srvCache.block = m_pDynamicCbvSrvUavDescAllocator->Allocate(srvCount);
+            m_srvCache.dirty = true;
+        }
+    }
+
+    // Allocate UAV block if needed
+    if (m_uavCache.dirty || !m_uavCache.tableSet)
+    {
+        if (m_uavCache.block.GetSize() < uavCount)
+        {
+            if (m_uavCache.block.GetHeap())
+                m_pDynamicCbvSrvUavDescAllocator->Deallocate(std::move(m_uavCache.block), m_iFrameFenceValue);
+            m_uavCache.block = m_pDynamicCbvSrvUavDescAllocator->Allocate(uavCount);
+            m_uavCache.dirty = true;
+        }
+    }
+
+    // Set descriptor heap BEFORE setting any descriptor tables
+    ID3D12DescriptorHeap* pHeap = m_srvCache.block.GetHeap();
+    if (!pHeap) pHeap = m_uavCache.block.GetHeap();
+    if (pHeap && m_pCurSrvUavHeap.Get() != pHeap)
+    {
+        cmd_list->SetDescriptorHeaps(1, &pHeap);
+        m_pCurSrvUavHeap = pHeap;
+    }
+
+    // Flush SRV descriptor table
+    if (m_srvCache.dirty && m_srvCache.maxBinding > 0)
+    {
+        for (uint32_t i = 0; i < srvCount; i++)
+        {
+            D3D12_CPU_DESCRIPTOR_HANDLE src = (i < m_srvCache.maxBinding && m_srvCache.pendingHandles[i].ptr) ? m_srvCache.pendingHandles[i] : m_hNullSrvHandle;
+            D3D12_CPU_DESCRIPTOR_HANDLE dst = m_srvCache.block.CpuHandle();
+            dst.ptr += i * descriptorSize;
+            device->CopyDescriptorsSimple(1, dst, src, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        }
+        m_srvCache.dirty = false;
+    }
+
+    if (m_srvCache.block.GetHeap())
+    {
+        cmd_list->SetGraphicsRootDescriptorTable(ROOT_PARAM_SRV_TABLE, m_srvCache.block.GpuHandle());
+        m_srvCache.tableSet = true;
+    }
+
+    // Flush UAV descriptor table
+    if (m_uavCache.dirty && m_uavCache.maxBinding > 0)
+    {
+        for (uint32_t i = 0; i < uavCount; i++)
+        {
+            D3D12_CPU_DESCRIPTOR_HANDLE src = (i < m_uavCache.maxBinding && m_uavCache.pendingHandles[i].ptr) ? m_uavCache.pendingHandles[i] : m_hNullUavHandle;
+            D3D12_CPU_DESCRIPTOR_HANDLE dst = m_uavCache.block.CpuHandle();
+            dst.ptr += i * descriptorSize;
+            device->CopyDescriptorsSimple(1, dst, src, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        }
+        m_uavCache.dirty = false;
+    }
+
+    if (m_uavCache.block.GetHeap())
+    {
+        cmd_list->SetGraphicsRootDescriptorTable(ROOT_PARAM_UAV_TABLE, m_uavCache.block.GpuHandle());
+        m_uavCache.tableSet = true;
+    }
 }
 
 SResult D3D12Context::BeginRenderPass(const RenderPassInfo& renderPassInfo)
@@ -548,9 +692,11 @@ SResult D3D12Context::BeginRenderPass(const RenderPassInfo& renderPassInfo)
     this->FlushResourceBarriers(cmd_list);
     m_pCurrentRHIFrameBuffer->SetRenderTargets(cmd_list);
 
-    // Reset PSO tracking for new pass
+    // Reset PSO tracking and descriptor caches for new pass
     m_pCurPso = nullptr;
     m_pCurrGraphicsRootSignature = nullptr;
+    m_srvCache.Reset();
+    m_uavCache.Reset();
 
     D3D12_VIEWPORT d3dViewport;
     d3dViewport.TopLeftX = (FLOAT)m_pCurrentRHIFrameBuffer->GetViewport().left;
@@ -609,6 +755,83 @@ SResult D3D12Context::EndRenderPass()
 }
 
 /******************************************************************************
+* Compute Pass
+*******************************************************************************/
+void D3D12Context::BeginComputePass(const ComputePassInfo& computePassInfo)
+{
+    m_srvCache.Reset();
+    m_uavCache.Reset();
+}
+
+SResult D3D12Context::Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z)
+{
+    if (!program) return ERR_INVALID_ARG;
+
+    D3D12Program* d3dProgram = static_cast<D3D12Program*>(program);
+    d3dProgram->Active();
+
+    ID3D12GraphicsCommandList* cmd_list = this->D3DRenderCmdList();
+    this->UpdateComputePso(cmd_list, program, nullptr);
+    cmd_list->Dispatch(x, y, z);
+
+    return S_Success;
+}
+
+void D3D12Context::EndComputePass()
+{
+}
+
+SResult D3D12Context::DispatchIndirect(RHIProgram* program, RHIGpuBufferPtr indirectBuf)
+{
+    if (!program || !indirectBuf) return ERR_INVALID_ARG;
+
+    D3D12Program* d3dProgram = static_cast<D3D12Program*>(program);
+    d3dProgram->Active();
+
+    ID3D12GraphicsCommandList* cmd_list = this->D3DRenderCmdList();
+    this->UpdateComputePso(cmd_list, program, nullptr);
+
+    const D3D12GpuBuffer* d3dBuf = static_cast<const D3D12GpuBuffer*>(indirectBuf.get());
+    ID3D12Resource* d3dRes = d3dBuf->GetD3DResource();
+    cmd_list->ExecuteIndirect(m_pDispatchIndirectSign.Get(), 1,
+        d3dRes, 0, nullptr, 0);
+
+    return S_Success;
+}
+
+SResult D3D12Context::DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIGpuBufferPtr indirectBuf, MeshTopologyType type)
+{
+    if (!program || !indirectBuf) return ERR_INVALID_ARG;
+
+    D3D12Program* d3dProgram = static_cast<D3D12Program*>(program);
+    d3dProgram->Active();
+
+    ID3D12GraphicsCommandList* cmd_list = this->D3DRenderCmdList();
+    this->UpdateRenderPso(cmd_list, program, nullptr);
+
+    const D3D12GpuBuffer* d3dBuf = static_cast<const D3D12GpuBuffer*>(indirectBuf.get());
+    ID3D12Resource* d3dRes = d3dBuf->GetD3DResource();
+    cmd_list->ExecuteIndirect(m_pDrawIndirectSign.Get(), 1,
+        d3dRes, 0, nullptr, 0);
+
+    return S_Success;
+}
+
+SResult D3D12Context::DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, MeshTopologyType type, uint32_t vertexCountPerInstance, uint32_t instanceCount, uint32_t startVertexLocation, uint32_t startInstanceLocation)
+{
+    if (!program) return ERR_INVALID_ARG;
+
+    D3D12Program* d3dProgram = static_cast<D3D12Program*>(program);
+    d3dProgram->Active();
+
+    ID3D12GraphicsCommandList* cmd_list = this->D3DRenderCmdList();
+    this->UpdateRenderPso(cmd_list, program, nullptr);
+    cmd_list->DrawInstanced(vertexCountPerInstance, instanceCount, startVertexLocation, startInstanceLocation);
+
+    return S_Success;
+}
+
+/******************************************************************************
 * Root Signature
 *******************************************************************************/
 SResult D3D12Context::CreateRootSignature()
@@ -638,6 +861,19 @@ SResult D3D12Context::CreateRootSignature()
     rootParams[ROOT_PARAM_SRV_TABLE].DescriptorTable.NumDescriptorRanges = 1;
     rootParams[ROOT_PARAM_SRV_TABLE].DescriptorTable.pDescriptorRanges = &srvRange;
     rootParams[ROOT_PARAM_SRV_TABLE].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
+
+    // UAV descriptor table: one range for u0+, unbounded
+    D3D12_DESCRIPTOR_RANGE uavRange = {};
+    uavRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
+    uavRange.NumDescriptors = (UINT)-1; // unbounded
+    uavRange.BaseShaderRegister = 0;
+    uavRange.RegisterSpace = 0;
+    uavRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+
+    rootParams[ROOT_PARAM_UAV_TABLE].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
+    rootParams[ROOT_PARAM_UAV_TABLE].DescriptorTable.NumDescriptorRanges = 1;
+    rootParams[ROOT_PARAM_UAV_TABLE].DescriptorTable.pDescriptorRanges = &uavRange;
+    rootParams[ROOT_PARAM_UAV_TABLE].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
 
     // Static samplers
     std::array<D3D12_STATIC_SAMPLER_DESC, NUM_STATIC_SAMPLERS> staticSamplers = {};
@@ -756,11 +992,18 @@ void D3D12Context::UpdateRenderPso(ID3D12GraphicsCommandList* cmd_list, RHIProgr
         m_pCurrGraphicsRootSignature = m_pGraphicsRootSignature.Get();
     }
 
+    // Ensure descriptor tables are committed before draw
+    this->FlushDescriptorTables(cmd_list);
 }
 
 void D3D12Context::UpdateComputePso(ID3D12GraphicsCommandList* cmd_list, RHIProgram* program, RHIMeshPtr const& mesh)
 {
-    cmd_list->SetComputeRootSignature(m_pComputeRootSignature.Get());
+    if (m_CurComputeRootSignature != m_pComputeRootSignature.Get())
+    {
+        cmd_list->SetComputeRootSignature(m_pComputeRootSignature.Get());
+        m_CurComputeRootSignature = m_pComputeRootSignature.Get();
+    }
+    this->FlushDescriptorTables(cmd_list);
 }
 
 /******************************************************************************
