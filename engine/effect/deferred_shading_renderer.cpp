@@ -81,8 +81,8 @@ SResult DeferredShadingRenderer::Init()
     }
     m_pSsaoSampleKernelCBuffer  = rc.CreateConstantBuffer(sizeof(ssao_kernels[0]) * ssao_kernels.size(), RESOURCE_FLAG_CPU_WRITE);
     m_pSsaoParamCBuffer         = rc.CreateConstantBuffer(sizeof(SsaoParam), RESOURCE_FLAG_CPU_WRITE);
-    m_pLightInfoCBuffer         = rc.CreateGpuBuffer(sizeof(LightInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_CPU_WRITE | RESOURCE_FLAG_RAW, sizeof(LightInfo), nullptr);
-    m_pLightInfoSrv             = rc.CreateBufferSrv(m_pLightInfoCBuffer,PixelFormat::Unknown,0, sizeof(LightInfo) * MAX_DEFERRED_LIGHTS_NUM /4);
+    m_pLightInfoCBuffer         = rc.CreateGpuBuffer(sizeof(LightInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_CPU_WRITE | RESOURCE_FLAG_GPU_STRUCTURED, sizeof(LightInfo), nullptr);
+    m_pLightInfoSrv             = rc.CreateBufferSrv(m_pLightInfoCBuffer,PixelFormat::Unknown,0, MAX_DEFERRED_LIGHTS_NUM);
     m_pLightCullingInfoCBuffer  = rc.CreateConstantBuffer(sizeof(LightCullingInfo) * MAX_DEFERRED_LIGHTS_NUM, RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_CPU_WRITE, nullptr);
     m_pDeferredLightingInfoCBuffer = rc.CreateConstantBuffer(sizeof(DeferredLightingInfo), RESOURCE_FLAG_CPU_WRITE);
 
@@ -90,7 +90,7 @@ SResult DeferredShadingRenderer::Init()
     {
         uint32_t tile_width = (w + TILE_SIZE - 1) / TILE_SIZE;
         uint32_t tile_height = (h + TILE_SIZE - 1) / TILE_SIZE;
-        m_pTileInfoBuffer = rc.CreateGpuBuffer(sizeof(TileInfo) * tile_width * tile_height, RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_RAW, sizeof(TileInfo),  nullptr);
+        m_pTileInfoBuffer = rc.CreateGpuBuffer(sizeof(TileInfo) * tile_width * tile_height, RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_GPU_STRUCTURED, sizeof(TileInfo),  nullptr);
         m_pTileInfoSrv = rc.CreateBufferSrv(m_pTileInfoBuffer, PixelFormat::Unknown, 0, sizeof(TileInfo) * tile_width * tile_height / 4);
         m_pTileInfoUav = rc.CreateBufferUav(m_pTileInfoBuffer, PixelFormat::Unknown, 0, sizeof(TileInfo) * tile_width * tile_height / 4);
     }
