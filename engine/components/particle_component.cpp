@@ -14,7 +14,7 @@
 #define SEEK_MACRO_FILE_UID 100    // this code is auto generated, don't touch it!!!
 
 SEEK_NAMESPACE_BEGIN
-#include "shader/shared/ParticleCommon.h"
+#include "shader/Particles/ParticleCommon.h"
 static const uint32_t DEBUG_MAX_PARTICLES = 32; 
 static const uint32_t GRADIENT_SAMPLES = 32;
 static uint32_t s_ComponentIndex = 0;

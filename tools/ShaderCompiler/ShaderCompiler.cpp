@@ -468,14 +468,15 @@ struct SlangCompiler
 
         // 设置搜索路径，支持 import 模块解析
         std::string sharedDir = shaderDir + "/shared";
-        const char* searchPaths[] = { shaderDir.c_str(), sharedDir.c_str() };
+        std::string particlesDir = shaderDir + "/Particles";
+        const char* searchPaths[] = { shaderDir.c_str(), sharedDir.c_str(), particlesDir.c_str() };
 
         slang::SessionDesc sessionDesc = {};
         sessionDesc.defaultMatrixLayoutMode = SLANG_MATRIX_LAYOUT_COLUMN_MAJOR;
         sessionDesc.targets = &targetDesc;
         sessionDesc.targetCount = 1;
         sessionDesc.searchPaths = searchPaths;
-        sessionDesc.searchPathCount = 2;
+        sessionDesc.searchPathCount = 3;
 
         slang::ISession* s = nullptr;
         globalSession->createSession(sessionDesc, &s);
@@ -636,8 +637,13 @@ int main(int argc, char** argv)
         std::string shaderSourceDir = SEEK_SHADER_SOURCE_DIR;
         std::string shaderGenerateDir = SEEK_GENERATED_SHADER_DIR;
 
-        size_t delimiterPos = inputFileName.find_last_of('.');
-        const auto inputFileBaseName = inputFileName.substr(0, delimiterPos);
+        // 提取纯文件名（剥离可能存在的子目录前缀，如 Particles/xxx.slang）
+        std::string inputFileShortName = inputFileName;
+        size_t lastSlash = inputFileShortName.find_last_of("/\\");
+        if (lastSlash != std::string::npos)
+            inputFileShortName = inputFileShortName.substr(lastSlash + 1);
+        size_t delimiterPos = inputFileShortName.find_last_of('.');
+        const auto inputFileBaseName = inputFileShortName.substr(0, delimiterPos);
         const auto inputFilePath = shaderSourceDir + "/" + inputFileName;
 
         std::string source;
@@ -801,7 +807,8 @@ int main(int argc, char** argv)
 
                 // 设置搜索路径，支持 import 模块解析
                 std::string sharedDir = shaderSourceDir + "/shared";
-                const char* searchPaths[] = { shaderSourceDir.c_str(), sharedDir.c_str() };
+                std::string particlesDir = shaderSourceDir + "/Particles";
+                const char* searchPaths[] = { shaderSourceDir.c_str(), sharedDir.c_str(), particlesDir.c_str() };
 
                 // 将平台级宏（--define）设为 Session 级预处理器宏，确保 import 的模块也能访问
                 std::vector<slang::PreprocessorMacroDesc> sessionMacros;
@@ -818,7 +825,7 @@ int main(int argc, char** argv)
                 sessionDesc.targets = &td;
                 sessionDesc.targetCount = 1;
                 sessionDesc.searchPaths = searchPaths;
-                sessionDesc.searchPathCount = 2;
+                sessionDesc.searchPathCount = 3;
                 if (!sessionMacros.empty())
                 {
                     sessionDesc.preprocessorMacros = sessionMacros.data();

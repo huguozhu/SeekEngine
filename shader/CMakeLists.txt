@@ -9,7 +9,7 @@ set(shader_shared_files
     ${SEEK_SHADER_SOURCE_DIR}/shared/GI.slang
     ${SEEK_SHADER_SOURCE_DIR}/shared/LiquidGlass.slang
     ${SEEK_SHADER_SOURCE_DIR}/shared/MetaBall.slang
-    ${SEEK_SHADER_SOURCE_DIR}/shared/ParticleCommonTypes.slang
+    ${SEEK_SHADER_SOURCE_DIR}/Particles/ParticleCommonTypes.slang
     ${SEEK_SHADER_SOURCE_DIR}/shared/SkyBox.slang
     ${SEEK_SHADER_SOURCE_DIR}/shared/Sprite2D.slang
     ${SEEK_SHADER_SOURCE_DIR}/shared/Ssao.slang
@@ -29,7 +29,7 @@ set(shader_header_files
     ${SEEK_SHADER_SOURCE_DIR}/ToneMapping.slangh
     ${SEEK_SHADER_SOURCE_DIR}/CommonCBuffer.slangh
     ${SEEK_SHADER_SOURCE_DIR}/VertexCommon.slangh
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleCommon.slangh
+    ${SEEK_SHADER_SOURCE_DIR}/Particles/ParticleCommon.slangh
     ${SEEK_SHADER_SOURCE_DIR}/Shadow.slangh
 )
 
@@ -83,16 +83,16 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/WaterMarkGenerateCS.slang
 
     # Particle shaders
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleInitCS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleTickBeginCS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleEmitCS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleSimulateCS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleCullingCS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/ParticlePreSortCS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleBitonicSortCS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleSortMatrixTransposeCS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleRenderVS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleRenderPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/Particles/ParticleInitCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/Particles/ParticleTickBeginCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/Particles/ParticleEmitCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/Particles/ParticleSimulateCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/Particles/ParticleCullingCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/Particles/ParticlePreSortCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/Particles/ParticleBitonicSortCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/Particles/ParticleSortMatrixTransposeCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/Particles/ParticleRenderVS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/Particles/ParticleRenderPS.slang
 )
 
 ################## shader_target_platform ##################
@@ -126,12 +126,13 @@ set(all_generated_depend_dependfiles)
 foreach(single_shader_sources_file ${shader_sources_files})
     get_filename_component(single_shader_filename ${single_shader_sources_file} NAME)
     get_filename_component(single_shader_basename ${single_shader_sources_file} NAME_WLE)
+    file(RELATIVE_PATH single_shader_relpath "${SEEK_SHADER_SOURCE_DIR}" "${single_shader_sources_file}")
 
     set(single_tag_depend_tagfile "${generated_shader_tag_depend_dir}/${single_shader_basename}${SHADER_TAG_FILE_SUFFIX}")
     set(single_depend_dependfile  "${generated_shader_depend_dir}/${single_shader_basename}${SHADER_DEPEND_FILE_SUFFIX}")
     add_custom_command(
         OUTPUT ${single_tag_depend_tagfile} ${single_depend_dependfile}
-        COMMAND ${ShaderCompiler_bin} --input "${single_shader_filename}" --depend
+        COMMAND ${ShaderCompiler_bin} --input "${single_shader_relpath}" --depend
         DEPENDS ${single_shader_sources_file} ${shader_header_files} ${shader_shared_files} # also depend on ${ShaderCompiler_bin}, but ShaderCompiler always been build which make incremental build no meaning
         WORKING_DIRECTORY ${ShaderCompiler_working_dir}
     )
@@ -169,13 +170,14 @@ set(all_generated_tag_compile_tagfiles)
 foreach(single_shader_sources_file ${shader_sources_files})
     get_filename_component(single_shader_filename ${single_shader_sources_file} NAME)
     get_filename_component(single_shader_basename ${single_shader_sources_file} NAME_WLE)
+    file(RELATIVE_PATH single_shader_relpath "${SEEK_SHADER_SOURCE_DIR}" "${single_shader_sources_file}")
 
     set(single_depend_dependfile  "${generated_shader_depend_dir}/${single_shader_basename}${SHADER_DEPEND_FILE_SUFFIX}")
     set(single_tag_compile_tagfile "${generated_shader_tag_compile_dir}/${single_shader_basename}${SHADER_TAG_FILE_SUFFIX}")
 
     add_custom_command(
         OUTPUT ${single_tag_compile_tagfile}
-        COMMAND ${ShaderCompiler_bin} --input=${single_shader_filename} --target=${shader_target_platform} ${shader_compile_options}
+        COMMAND ${ShaderCompiler_bin} --input=${single_shader_relpath} --target=${shader_target_platform} ${shader_compile_options}
         DEPENDS ${single_shader_sources_file} ${single_depend_dependfile} # also depend on ${ShaderCompiler_bin}, but ShaderCompiler always been build which make incremental build no meaning
         WORKING_DIRECTORY ${ShaderCompiler_working_dir})
 
