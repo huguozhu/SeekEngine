@@ -258,7 +258,7 @@ SResult LPV::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
 
     Effect& effect = m_pContext->EffectInstance();
     // for Inject
-    effect.LoadTechnique(TechName_LPVInject, &RenderStateDesc::DepthDisable(), "LPVInjectVS", "LPVInjectPS", nullptr);
+    effect.LoadTechnique(TechName_LPVInject, &RenderStateDesc::DepthDisable(), "LPV_Inject_VS", "LPV_Inject_PS", nullptr);
     Technique* pInjectTech = effect.GetTechnique(TechName_LPVInject);
     if (!pInjectTech)
     {
@@ -344,7 +344,7 @@ SResult LPV::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, 
         m_pFbPropagation[i]->SetViewport({ 0, 0, LPV_SIZE, LPV_SIZE });
     }
 
-    effect.LoadTechnique(TechName_LPVPropagation, &m_PropagationRsDesc, "LPVPropagationVS", "LPVPropagationPS", nullptr);
+    effect.LoadTechnique(TechName_LPVPropagation, &m_PropagationRsDesc, "LPV_Propagation_VS", "LPV_Propagation_PS", nullptr);
     Technique* pPropagationTech = effect.GetTechnique(TechName_LPVPropagation);
     if (!pPropagationTech)
     {

@@ -74,7 +74,7 @@ SResult WaterMarkComponent::Render()
         std::string tech_name = "WaterMark";
         Effect& effect = m_pContext->EffectInstance();
         SEEK_RETIF_FAIL(effect.LoadTechnique(tech_name, &RenderStateDesc::WaterMark(),
-            "WaterMarkVS", "WaterMarkPS", nullptr));
+            "WaterMark_VS", "WaterMark_PS", nullptr));
         m_pTechWaterMarkRender = effect.GetTechnique(tech_name);
         m_pTechWaterMarkRender->SetParam("waterMarkDesc", m_pWaterMarkDescCBuffer);
         m_pTechWaterMarkRender->SetParam("targetSize", m_pWaterMarkTargetSizeCBuffer);

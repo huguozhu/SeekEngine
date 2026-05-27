@@ -54,10 +54,6 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/IrradianceConvolutionPS.slang
     ${SEEK_SHADER_SOURCE_DIR}/LightCullingCS.slang
     ${SEEK_SHADER_SOURCE_DIR}/LiquidGlassPS.slang    
-    ${SEEK_SHADER_SOURCE_DIR}/LPVInjectPS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/LPVInjectVS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/LPVPropagationPS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/LPVPropagationVS.slang
     ${SEEK_SHADER_SOURCE_DIR}/MeshRenderingVS.slang
 
     ${SEEK_SHADER_SOURCE_DIR}/PostProcessVS.slang
@@ -74,8 +70,6 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/TaaPS.slang
     ${SEEK_SHADER_SOURCE_DIR}/ToneMappingPS.slang
 
-    ${SEEK_SHADER_SOURCE_DIR}/WaterMarkPS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/WaterMarkVS.slang
     ${SEEK_SHADER_SOURCE_DIR}/WaterMarkGenerateCS.slang
 
     # Particle shaders
@@ -190,6 +184,15 @@ set(multi_entry_shaders
     # Ssao VS + PS 合并
     "SsaoRendering.slang|Ssao_VS|vs|ssao_vs"
     "SsaoRendering.slang|Ssao_PS|ps|ssao_ps"
+    # LPV 注入 VS + PS 合并
+    "LPVInjectRendering.slang|LPV_Inject_VS|vs|lpvinject_vs"
+    "LPVInjectRendering.slang|LPV_Inject_PS|ps|lpvinject_ps"
+    # LPV 传播 VS + PS 合并
+    "LPVPropagationRendering.slang|LPV_Propagation_VS|vs|lpvpropagation_vs"
+    "LPVPropagationRendering.slang|LPV_Propagation_PS|ps|lpvpropagation_ps"
+    # 水印 VS + PS 合并
+    "WaterMarkRendering.slang|WaterMark_VS|vs|watermark_vs"
+    "WaterMarkRendering.slang|WaterMark_PS|ps|watermark_ps"
 )
 
 set(multi_entry_output_names "")

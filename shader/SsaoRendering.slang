@@ -6,13 +6,13 @@ static const int kernel_size = 64;
 static const float radius = 0.5;
 static const float bias = 0.025;
 
-// VS cbuffer
+// VS 常量缓冲区
 cbuffer cb_SsaoVSParam
 {
 	SsaoParam vs_param;
 }
 
-// PS cbuffers / 资源
+// PS 常量缓冲区 / 资源
 Texture2D gbuffer0;
 Texture2D depth_tex;
 Texture2D ssao_noise;
