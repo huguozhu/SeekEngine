@@ -204,7 +204,7 @@ SResult DeferredShadingRenderer::Init()
     effect.LoadTechnique(szTechName_PreZ,               &RenderStateDesc::Default3D(),  "PreZMeshRenderingVS",  "EmptyPS");
     effect.LoadTechnique(szTechName_GenerateGBuffer,    &RenderStateDesc::GBuffer(),    "MeshRenderingVS",      "GenerateGBufferPS");
     effect.LoadTechnique(szTechName_DeferredLighting,   &RenderStateDesc::Lighting(),   "DeferredLightingVS",   "DeferredLightingPS");
-    effect.LoadTechnique(szTechName_SSAO,               &RenderStateDesc::PostProcess(),"SsaoVS",               "SsaoPS");
+    effect.LoadTechnique(szTechName_SSAO,               &RenderStateDesc::PostProcess(),"Ssao_VS",               "Ssao_PS");
     effect.LoadTechnique(szTechName_GenerateRsm,        &RenderStateDesc::Default3D(),  "MeshRenderingVS",      "GenerateRsmPS");
 
     

@@ -71,8 +71,6 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/ShadowingSpotPS.slang
     
     ${SEEK_SHADER_SOURCE_DIR}/Sprite2DVS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/SsaoVS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/SsaoPS.slang
     ${SEEK_SHADER_SOURCE_DIR}/TaaPS.slang
     ${SEEK_SHADER_SOURCE_DIR}/ToneMappingPS.slang
 
@@ -186,9 +184,12 @@ endforeach()
 # 格式：每行 "源文件|输出名|stage|入口函数"
 # 同一源文件可有多行，分别编译为不同的输出名（如将 VS 和 PS 合并到一个 .slang 文件）
 set(multi_entry_shaders
-    # SkyBox VS + PS 合并到一个 .slang 文件
+    # SkyBox VS + PS 合并
     "SkyBoxRendering.slang|SkyBox_VS|vs|skybox_vs"
     "SkyBoxRendering.slang|SkyBox_PS|ps|skybox_ps"
+    # Ssao VS + PS 合并
+    "SsaoRendering.slang|Ssao_VS|vs|ssao_vs"
+    "SsaoRendering.slang|Ssao_PS|ps|ssao_ps"
 )
 
 set(multi_entry_output_names "")
