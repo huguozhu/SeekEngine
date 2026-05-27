@@ -247,11 +247,10 @@ SResult D3D11GpuBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
     }
 
     misc_flags = 0;
-    if (m_iFlags & RESOURCE_FLAG_UAV || m_iFlags & RESOURCE_FLAG_RAW)
-    {
-        misc_flags |= (m_iFlags & RESOURCE_FLAG_GPU_STRUCTURED)
-            ? D3D11_RESOURCE_MISC_BUFFER_STRUCTURED : D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
-    }
+    if (m_iFlags & RESOURCE_FLAG_GPU_STRUCTURED)
+        misc_flags |= D3D11_RESOURCE_MISC_BUFFER_STRUCTURED;
+    if (m_iFlags & RESOURCE_FLAG_RAW)
+        misc_flags |= D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
     if (m_iFlags & RESOURCE_FLAG_DRAW_INDIRECT_ARGS)
     {
         misc_flags |= D3D11_RESOURCE_MISC_DRAWINDIRECT_ARGS;

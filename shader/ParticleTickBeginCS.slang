@@ -1,9 +1,9 @@
 //STAGE:cs
 #include "ParticleCommon.slangh"
 RWStructuredBuffer<Particle> particle_datas;
-RWStructuredBuffer<ParticleDrawArgs> draw_args;
-RWStructuredBuffer<DispatchArgs> simulate_dispatch_args;
-RWStructuredBuffer<DispatchArgs> emit_dispatch_args;
+RWBuffer<uint> draw_args;
+RWBuffer<uint> simulate_dispatch_args;
+RWBuffer<uint> emit_dispatch_args;
 
 cbuffer CTickBeginParam
 {
@@ -18,16 +18,16 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	particle_counters[0].render_count = 0;
 	particle_counters[0].alive_count[post_sim_index] = 0;
 
-	draw_args[0].count = 6;
-	draw_args[0].instance_count = 0;
-	draw_args[0].first = 0;
-	draw_args[0].base_instance = 0;
+	draw_args[0] = 6;
+	draw_args[1] = 0;
+	draw_args[2] = 0;
+	draw_args[3] = 0;
 
-	emit_dispatch_args[0].dispatch_num_x = uint(ceil(float(particle_counters[0].emit_count) / float(PARTICLE_CS_X_SIZE)));
-	emit_dispatch_args[0].dispatch_num_y = 1;
-	emit_dispatch_args[0].dispatch_num_z = 1;
+	emit_dispatch_args[0] = uint(ceil(float(particle_counters[0].emit_count) / float(PARTICLE_CS_X_SIZE)));
+	emit_dispatch_args[1] = 1;
+	emit_dispatch_args[2] = 1;
 
-	simulate_dispatch_args[0].dispatch_num_x = uint(ceil(float(particle_counters[0].simulate_count) / float(PARTICLE_CS_X_SIZE)));
-	simulate_dispatch_args[0].dispatch_num_y = 1;
-	simulate_dispatch_args[0].dispatch_num_z = 1;
+	simulate_dispatch_args[0] = uint(ceil(float(particle_counters[0].simulate_count) / float(PARTICLE_CS_X_SIZE)));
+	simulate_dispatch_args[1] = 1;
+	simulate_dispatch_args[2] = 1;
 }

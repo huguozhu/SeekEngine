@@ -4,7 +4,7 @@
 
 StructuredBuffer<Particle> particle_datas;
 RWStructuredBuffer<SortInfo>	sort_indices;
-RWStructuredBuffer<ParticleDrawArgs> draw_args;
+RWBuffer<uint> draw_args;
 
 Texture2D size_over_life_tex;
 
@@ -62,7 +62,7 @@ void main(uint3 DTid : SV_DispatchThreadID)
 	
 	uint render_index;
 	InterlockedAdd(particle_counters[0].render_count, 1, render_index);
-	InterlockedAdd(draw_args[0].instance_count, 1);
+	InterlockedAdd(draw_args[1], 1);
 	GroupMemoryBarrierWithGroupSync();
 	sort_indices[render_index].particle_index = alive_post_simulate_indices[index];	
 	sort_indices[render_index].particle_depth = particle_view_pos[2];

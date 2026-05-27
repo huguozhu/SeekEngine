@@ -289,7 +289,7 @@ SResult Particles::OnCreate()
     m_CameraController.SetCamera(pCam.get());
 
     CreateParticleEntities();
-    CreateWaterMarkEntity();
+    //CreateWaterMarkEntity();
     return S_Success;
 }
 

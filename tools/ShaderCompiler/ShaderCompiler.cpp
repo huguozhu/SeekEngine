@@ -256,8 +256,12 @@ static void ParseSlangReflection(slang::IComponentType* program, const std::stri
             slang::TypeReflection* type = typeLayout ? typeLayout->getType() : nullptr;
             if (type)
             {
-                SlangResourceShape shape = type->getResourceShape();
-                resourceInfo.type = (shape == SLANG_RESOURCE_NONE) ? ResourceType::Buffer : ResourceType::Texture;
+                SlangResourceShape shape = (SlangResourceShape)(type->getResourceShape() & SLANG_RESOURCE_BASE_SHAPE_MASK);
+                bool isBuffer = (shape == SLANG_RESOURCE_NONE ||
+                                 shape == SLANG_STRUCTURED_BUFFER ||
+                                 shape == SLANG_BYTE_ADDRESS_BUFFER ||
+                                 shape == SLANG_TEXTURE_BUFFER);
+                resourceInfo.type = isBuffer ? ResourceType::Buffer : ResourceType::Texture;
             }
             else
             {
@@ -275,8 +279,12 @@ static void ParseSlangReflection(slang::IComponentType* program, const std::stri
             slang::TypeReflection* type = typeLayout ? typeLayout->getType() : nullptr;
             if (type)
             {
-                SlangResourceShape shape = type->getResourceShape();
-                resourceInfo.type = (shape == SLANG_RESOURCE_NONE) ? ResourceType::RWBuffer : ResourceType::RWTexture;
+                SlangResourceShape shape = (SlangResourceShape)(type->getResourceShape() & SLANG_RESOURCE_BASE_SHAPE_MASK);
+                bool isBuffer = (shape == SLANG_RESOURCE_NONE ||
+                                 shape == SLANG_STRUCTURED_BUFFER ||
+                                 shape == SLANG_BYTE_ADDRESS_BUFFER ||
+                                 shape == SLANG_TEXTURE_BUFFER);
+                resourceInfo.type = isBuffer ? ResourceType::RWBuffer : ResourceType::RWTexture;
             }
             else
             {

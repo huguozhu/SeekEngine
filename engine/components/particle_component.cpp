@@ -246,21 +246,21 @@ SResult ParticleComponent::InitResource()
    
     uint32_t max_count = m_iMaxParticles;
     m_pParticleCounters = rc.CreateGpuBuffer(sizeof(ParticleCounters),
-        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_RAW,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_GPU_STRUCTURED,
         sizeof(ParticleCounters));
-    m_pParticleCountersUav = rc.CreateBufferUav(m_pParticleCounters, PixelFormat::Unknown, 0, sizeof(ParticleCounters) / 4);
+    m_pParticleCountersUav = rc.CreateBufferUav(m_pParticleCounters, PixelFormat::Unknown, 0, 1);// sizeof(ParticleCounters) / 4 );
 
     m_pParticleDeadIndices = rc.CreateGpuBuffer(max_count * sizeof(uint),
-        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_RAW,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_GPU_STRUCTURED,
         sizeof(uint));
     m_pParticleDeadIndicesUav = rc.CreateBufferUav(m_pParticleDeadIndices, PixelFormat::Unknown, 0, max_count);
 
 
     m_pParticleAliveIndices[0] = rc.CreateGpuBuffer(max_count * sizeof(uint),
-        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_RAW,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_GPU_STRUCTURED,
         sizeof(uint));
     m_pParticleAliveIndices[1] = rc.CreateGpuBuffer(max_count * sizeof(uint),
-        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_RAW,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_GPU_STRUCTURED,
         sizeof(uint));
     m_pParticleAliveIndicesUav[0] = rc.CreateBufferUav(m_pParticleAliveIndices[0], PixelFormat::Unknown, 0, max_count);
     m_pParticleAliveIndicesUav[1] = rc.CreateBufferUav(m_pParticleAliveIndices[1], PixelFormat::Unknown, 0, max_count);
@@ -268,39 +268,39 @@ SResult ParticleComponent::InitResource()
     
     uint32_t sort_capacity = to2power(max_count);
     m_pParticleSortIndices = rc.CreateGpuBuffer(sort_capacity * sizeof(SortInfo),
-        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_RAW,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_GPU_STRUCTURED,
         sizeof(SortInfo));
-    m_pParticleSortIndicesSrv = rc.CreateBufferSrv(m_pParticleSortIndices, PixelFormat::Unknown, 0, sort_capacity * sizeof(SortInfo) / 4);
-    m_pParticleSortIndicesUav = rc.CreateBufferUav(m_pParticleSortIndices, PixelFormat::Unknown, 0, sort_capacity * sizeof(SortInfo) / 4);
+    m_pParticleSortIndicesSrv = rc.CreateBufferSrv(m_pParticleSortIndices, PixelFormat::Unknown, 0, sort_capacity); // * sizeof(SortInfo) / 4);
+    m_pParticleSortIndicesUav = rc.CreateBufferUav(m_pParticleSortIndices, PixelFormat::Unknown, 0, sort_capacity); // * sizeof(SortInfo) / 4);
     
     
     m_pParticleSortTempIndices = rc.CreateGpuBuffer(sort_capacity * sizeof(SortInfo),
-        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_RAW,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_GPU_STRUCTURED,
         sizeof(SortInfo));
-    m_pParticleSortTempIndicesUav = rc.CreateBufferUav(m_pParticleSortTempIndices, PixelFormat::Unknown, 0, sort_capacity * sizeof(SortInfo) / 4);
+    m_pParticleSortTempIndicesUav = rc.CreateBufferUav(m_pParticleSortTempIndices, PixelFormat::Unknown, 0, sort_capacity); // * sizeof(SortInfo) / 4);
     
     
     m_pParticleDatas = rc.CreateGpuBuffer(max_count * sizeof(Particle),
-        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_RAW,
+        RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_UAV | RESOURCE_FLAG_GPU_STRUCTURED,
         sizeof(Particle));
-    m_pParticleDatasSrv = rc.CreateBufferSrv(m_pParticleDatas, PixelFormat::Unknown, 0, max_count * sizeof(Particle) / 4);
-    m_pParticleDatasUav = rc.CreateBufferUav(m_pParticleDatas, PixelFormat::Unknown, 0, max_count * sizeof(Particle) / 4);
+    m_pParticleDatasSrv = rc.CreateBufferSrv(m_pParticleDatas, PixelFormat::Unknown, 0, max_count); // * sizeof(Particle) / 4);
+    m_pParticleDatasUav = rc.CreateBufferUav(m_pParticleDatas, PixelFormat::Unknown, 0, max_count); // * sizeof(Particle) / 4);
 
 
     m_pParticleDrawIndirectArgs = rc.CreateGpuBuffer(sizeof(ParticleDrawArgs),
-        RESOURCE_FLAG_RAW | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS | RESOURCE_FLAG_UAV,
+        RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS | RESOURCE_FLAG_UAV,
         sizeof(ParticleDrawArgs));
-    m_pParticleDrawIndirectArgsUav = rc.CreateBufferUav(m_pParticleDrawIndirectArgs, PixelFormat::Unknown, 0, sizeof(ParticleDrawArgs)/4);
-    
+    m_pParticleDrawIndirectArgsUav = rc.CreateBufferUav(m_pParticleDrawIndirectArgs, PixelFormat::R32_UINT, 0, sizeof(ParticleDrawArgs) / 4);
+
     m_pParticleDispatchEmitIndirectArgs = rc.CreateGpuBuffer(sizeof(DispatchArgs),
-        RESOURCE_FLAG_RAW | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS | RESOURCE_FLAG_UAV,
+        RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS | RESOURCE_FLAG_UAV,
         sizeof(DispatchArgs));
-    m_pParticleDispatchEmitIndirectArgsUav = rc.CreateBufferUav(m_pParticleDispatchEmitIndirectArgs, PixelFormat::Unknown, 0, sizeof(DispatchArgs)/4);
-    
+    m_pParticleDispatchEmitIndirectArgsUav = rc.CreateBufferUav(m_pParticleDispatchEmitIndirectArgs, PixelFormat::R32_UINT, 0, sizeof(DispatchArgs)/4);
+
     m_pParticleDispatchSimulateIndirectArgs = rc.CreateGpuBuffer(sizeof(DispatchArgs),
-        RESOURCE_FLAG_RAW | RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS | RESOURCE_FLAG_UAV,
+        RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_DRAW_INDIRECT_ARGS | RESOURCE_FLAG_UAV,
         sizeof(DispatchArgs));
-    m_pParticleDispatchSimulateIndirectArgsUav = rc.CreateBufferUav(m_pParticleDispatchSimulateIndirectArgs, PixelFormat::Unknown, 0, sizeof(DispatchArgs)/4);
+    m_pParticleDispatchSimulateIndirectArgsUav = rc.CreateBufferUav(m_pParticleDispatchSimulateIndirectArgs, PixelFormat::R32_UINT, 0, sizeof(DispatchArgs)/4);
 
     // Techs set Params
     m_pTechParticleInit->SetParam("CInitParam", m_pParticleInitParam);
@@ -395,6 +395,7 @@ SResult ParticleComponent::EmitParticles()
     rc.BeginComputePass({"ParticleEmit"});
     m_pTechParticleEmit->DispatchIndirect(m_pParticleDispatchEmitIndirectArgs);
     rc.EndComputePass();
+    SelectDebugInfo();
     return S_Success;
 }
 SResult ParticleComponent::SimulateParticles(float delta_time)
@@ -636,6 +637,7 @@ SResult ParticleComponent::Tick_GPU(float delta_time)
     if (m_Param.particle_tex)
         SEEK_RETIF_FAIL(this->SortParticles());
 
+    SelectDebugInfo();
     m_iPreSimIndex  = 1 - m_iPreSimIndex;
     m_iPostSimIndex = 1 - m_iPostSimIndex;
     return S_Success;
@@ -708,43 +710,44 @@ void ParticleComponent::RegisterParticleCallback(ParticleCallback cb, void* user
 }
 void ParticleComponent::SelectDebugInfo()
 {
-    ParticleCounters counters = { 1 };
+    static int s_frameCount = 0;
+    s_frameCount++;
+    if (s_frameCount % 60 != 0) // 每60帧打印一次
+        return;
+
+    // 先同步 GPU，确保 Compute Shader 写入完成
+    this->GpuSyncFence();
+
+    ParticleCounters counters = {};
     BufferPtr buf1 = MakeSharedPtr<Buffer>(m_pParticleCounters->GetSize(), (uint8_t*)&counters);
     m_pParticleCounters->CopyBack(buf1);
+    counters = *(ParticleCounters*)buf1->Data();
 
-    Particle datas[DEBUG_MAX_PARTICLES] = { 0.f };
-    BufferPtr buf2 = MakeSharedPtr<Buffer>(m_pParticleDatas->GetSize(), (uint8_t*)datas);
-    m_pParticleDatas->CopyBack(buf2);
-
-    uint32_t pre_indices[DEBUG_MAX_PARTICLES] = { 0 };
-    BufferPtr buf3 = MakeSharedPtr<Buffer>(m_pParticleAliveIndices[m_iPreSimIndex]->GetSize(), (uint8_t*)pre_indices);
-    m_pParticleAliveIndices[m_iPreSimIndex]->CopyBack(buf3);
-
-    uint32_t post_indices[DEBUG_MAX_PARTICLES] = { 0 };
-    BufferPtr buf4 = MakeSharedPtr<Buffer>(m_pParticleAliveIndices[m_iPostSimIndex]->GetSize(), (uint8_t*)post_indices);
-    m_pParticleAliveIndices[m_iPostSimIndex]->CopyBack(buf4);
-
-    uint32_t dead_indices[DEBUG_MAX_PARTICLES] = { 0 };
-    BufferPtr buf5 = MakeSharedPtr<Buffer>(m_pParticleDeadIndices->GetSize(), (uint8_t*)dead_indices);
-    m_pParticleDeadIndices->CopyBack(buf5);
-
-    ParticleDrawArgs arg = { 0 };
+    ParticleDrawArgs arg = {};
     BufferPtr buf6 = MakeSharedPtr<Buffer>(m_pParticleDrawIndirectArgs->GetSize(), (uint8_t*)&arg);
     m_pParticleDrawIndirectArgs->CopyBack(buf6);
+    arg = *(ParticleDrawArgs*)buf6->Data();
 
-    //DispatchArgs dis0 = { 0 };
-    //BufferPtr buf7 = MakeSharedPtr<Buffer>(m_pParticleDispatchEmitIndirectArgs->GetSize(), (uint8_t*)&dis0);
-    //m_pParticleDispatchEmitIndirectArgs->CopyBack(buf7);
+    DispatchArgs emitDisp = {};
+    BufferPtr buf7 = MakeSharedPtr<Buffer>(m_pParticleDispatchEmitIndirectArgs->GetSize(), (uint8_t*)&emitDisp);
+    m_pParticleDispatchEmitIndirectArgs->CopyBack(buf7);
+    emitDisp = *(DispatchArgs*)buf7->Data();
 
-    //DispatchArgs dis1 = { 0 };
-    //BufferPtr buf8 = MakeSharedPtr<Buffer>(m_pParticleDispatchSimulateIndirectArgs->GetSize(), (uint8_t*)&dis1);
-    //m_pParticleDispatchSimulateIndirectArgs->CopyBack(buf8);
+    DispatchArgs simDisp = {};
+    BufferPtr buf8 = MakeSharedPtr<Buffer>(m_pParticleDispatchSimulateIndirectArgs->GetSize(), (uint8_t*)&simDisp);
+    m_pParticleDispatchSimulateIndirectArgs->CopyBack(buf8);
+    simDisp = *(DispatchArgs*)buf8->Data();
 
-    SortInfo sort_info[DEBUG_MAX_PARTICLES] = { 0 };
-    BufferPtr buf9 = MakeSharedPtr<Buffer>(m_pParticleSortIndices->GetSize(), (uint8_t*)sort_info);
-    m_pParticleSortIndices->CopyBack(buf9);
-
-    buf1 = buf1;
+    LOG_INFO("[Particle Debug #%d] elapsed=%.2f emit_interval=%.2f",
+        s_frameCount, m_fElapsed, m_fElapsed - m_fLastEmitTime);
+    LOG_INFO("  Counters: dead=%u alive_pre=%u alive_post=%u emit=%u sim=%u render=%u",
+        counters.dead_count, counters.alive_count[0], counters.alive_count[1],
+        counters.emit_count, counters.simulate_count, counters.render_count);
+    LOG_INFO("  DrawArgs: verts=%u instances=%u first=%u base=%u",
+        arg.count, arg.instance_count, arg.first, arg.base_instance);
+    LOG_INFO("  Dispatch: emit=(%u,%u,%u) sim=(%u,%u,%u)",
+        emitDisp.dispatch_num_x, emitDisp.dispatch_num_y, emitDisp.dispatch_num_z,
+        simDisp.dispatch_num_x, simDisp.dispatch_num_y, simDisp.dispatch_num_z);
 }
 void ParticleComponent::GpuSyncFence()
 {
