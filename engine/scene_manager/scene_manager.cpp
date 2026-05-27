@@ -471,6 +471,8 @@ SResult SceneManager::RenderSprite2DScene()
 {
     for (auto& component : m_vSprite2DComponentList)
     {
+        if (!component->IsEnabled())
+            continue;
         SEEK_RETIF_FAIL(component->Render());
     }
     return S_Success;

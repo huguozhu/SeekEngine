@@ -19,11 +19,15 @@ public:
 
     virtual void    SetImage(RHITexturePtr image) { m_pImage = image; }
 
+    void            SetEnabled(bool enabled) { m_bEnabled = enabled; }
+    bool            IsEnabled() const { return m_bEnabled; }
+
 protected:
     uint32_t        m_iWidth;
     uint32_t        m_iHeight;
 	uint32_t	    m_iDrawIndex = 0;
     RHITexturePtr	m_pImage = nullptr;
+    bool            m_bEnabled = true;
 };
 
 SEEK_NAMESPACE_END

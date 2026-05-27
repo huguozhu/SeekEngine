@@ -4,27 +4,34 @@
 
 USING_NAMESPACE_SEEK
 
-class LiquidGlass : public AppFramework
+enum class SDFSceneType : int
+{
+    LiquidGlass = 0,
+    MetaballWater = 1,
+};
+
+static const char* g_szSceneNames[] = { "LiquidGlass", "MetaballWater" };
+
+class SDF_Metaball : public AppFramework
 {
 public:
-    LiquidGlass();
-    ~LiquidGlass();
+    SDF_Metaball();
+    ~SDF_Metaball();
     virtual SResult OnCreate() override;
     virtual SResult OnUpdate() override;
     virtual SResult InitContext(void* device = nullptr, void* native_wnd = nullptr);
 
     void HandleMouseEvent();
-    void SetBgTexture(RHITexturePtr bg) { m_pBgTexture = bg; }
-    LiquidGlassComponentPtr GetLiquidGlassComponent() { return m_pGlass; }
+    void SwitchScene(SDFSceneType scene);
 
 private:
-    EntityPtr       m_pCameraEntity = nullptr;
+    EntityPtr               m_pCameraEntity = nullptr;
     LiquidGlassComponentPtr m_pGlass = nullptr;
-    RHITexturePtr   m_pBgTexture;
+    Metaball2DComponentPtr  m_pMetaball = nullptr;
+    RHITexturePtr           m_pBgTexture;
+    SDFSceneType            m_eActiveScene = SDFSceneType::LiquidGlass;
 
 };
-
-
 
 static int g_iChosenShapeIndex = -1;
 enum class ChoseState
@@ -34,9 +41,9 @@ enum class ChoseState
 };
 static ChoseState g_ChoseState = ChoseState::None;
 
-void LiquidGlass::HandleMouseEvent()
+void SDF_Metaball::HandleMouseEvent()
 {
-    if (ImGui::IsMouseClicked(ImGuiPopupFlags_MouseButtonLeft))
+    if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
     {
         ImVec2 pos = ImGui::GetMousePos();
         int shape_index = -1;
@@ -53,13 +60,13 @@ void LiquidGlass::HandleMouseEvent()
     }
     if (g_ChoseState == ChoseState::Chosen && g_iChosenShapeIndex >= 0)
     {
-        if (ImGui::IsMouseDragging(ImGuiPopupFlags_MouseButtonLeft))
+        if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
         {
             ImVec2 pos = ImGui::GetMousePos();
             m_pGlass->SetCurShapeCenter(g_iChosenShapeIndex, float2(pos.x, pos.y));
         }
     }
-    if (ImGui::IsMouseReleased(ImGuiPopupFlags_MouseButtonLeft))
+    if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
     {
         if (g_iChosenShapeIndex >= 0)
         {
@@ -73,28 +80,46 @@ void LiquidGlass::HandleMouseEvent()
     }
 }
 
-LiquidGlass::LiquidGlass() 
-    :AppFramework("LiquidGlass") 
+void SDF_Metaball::SwitchScene(SDFSceneType scene)
+{
+    if (m_eActiveScene == scene)
+        return;
+
+    m_eActiveScene = scene;
+
+    if (m_pGlass)
+        m_pGlass->SetEnabled(scene == SDFSceneType::LiquidGlass);
+    if (m_pMetaball)
+        m_pMetaball->SetEnabled(scene == SDFSceneType::MetaballWater);
+}
+
+SDF_Metaball::SDF_Metaball()
+    :AppFramework("SDF_Metaball")
 {
 }
-LiquidGlass::~LiquidGlass()
+SDF_Metaball::~SDF_Metaball()
 {
 
 }
-SResult LiquidGlass::OnCreate()
+SResult SDF_Metaball::OnCreate()
 {
     RHIContext& rc = m_pContext->RHIContextInstance();
     Viewport const& vp = rc.GetScreenRHIFrameBuffer()->GetViewport();
     float w = vp.width;
     float h = vp.height;
 
-    m_pGlass = MakeSharedPtr<LiquidGlassComponent>(m_pContext.get(), (uint32_t)w, (uint32_t)h);
-    m_pContext->SceneManagerInstance().AddSprite2DComponent(m_pGlass);
-
     std::string bg_files = FullPath("asset/textures/the_one.jpg");
     BitmapBufferPtr bit = ImageDecodeFromFile(bg_files, ImageType::JPEG);
-    RHITexturePtr bg_tex = m_pContext->RHIContextInstance().CreateTexture2D(bit);
-    m_pGlass->SetImage(bg_tex);
+    m_pBgTexture = m_pContext->RHIContextInstance().CreateTexture2D(bit);
+
+    m_pGlass = MakeSharedPtr<LiquidGlassComponent>(m_pContext.get(), (uint32_t)w, (uint32_t)h);
+    m_pGlass->SetImage(m_pBgTexture);
+    m_pContext->SceneManagerInstance().AddSprite2DComponent(m_pGlass);
+
+    m_pMetaball = MakeSharedPtr<Metaball2DComponent>(m_pContext.get(), (uint32_t)w, (uint32_t)h);
+    m_pMetaball->SetImage(m_pBgTexture);
+    m_pMetaball->SetEnabled(false);
+    m_pContext->SceneManagerInstance().AddSprite2DComponent(m_pMetaball);
 
     m_pCameraEntity = MakeSharedPtr<Entity>(m_pContext.get(), "CameraEntity");
     CameraComponentPtr pCam = MakeSharedPtr<CameraComponent>(m_pContext.get());
@@ -106,19 +131,36 @@ SResult LiquidGlass::OnCreate()
     return S_Success;
 }
 
-SResult LiquidGlass::OnUpdate()
+SResult SDF_Metaball::OnUpdate()
 {
-    this->HandleMouseEvent();
+    if (m_eActiveScene == SDFSceneType::LiquidGlass)
+        this->HandleMouseEvent();
 
     SEEK_RETIF_FAIL(m_pContext->Tick());
     SEEK_RETIF_FAIL(m_pContext->BeginRender());
     SEEK_RETIF_FAIL(m_pContext->RenderFrame());
+
     IMGUI_Begin();
+    {
+        ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(260, 80), ImGuiCond_FirstUseEver);
+        ImGui::Begin("SDF Scene Selector");
+        {
+            int current_scene = (int)m_eActiveScene;
+            if (ImGui::Combo("Scene", &current_scene, g_szSceneNames, IM_ARRAYSIZE(g_szSceneNames)))
+            {
+                SwitchScene((SDFSceneType)current_scene);
+            }
+            ImGui::Text("Current: %s", g_szSceneNames[(int)m_eActiveScene]);
+        }
+        ImGui::End();
+    }
     IMGUI_Rendering();
+
     SEEK_RETIF_FAIL(m_pContext->EndRender());
     return S_Success;
 }
-SResult LiquidGlass::InitContext(void* device, void* native_wnd)
+SResult SDF_Metaball::InitContext(void* device, void* native_wnd)
 {
     RenderInitInfo info = {};
     info.rhi_type = RHIType::D3D11;
@@ -138,7 +180,7 @@ SResult LiquidGlass::InitContext(void* device, void* native_wnd)
 
 int main()
 {
-    LiquidGlass theApp;
+    SDF_Metaball theApp;
     return APP_RUN(&theApp);
 }
 

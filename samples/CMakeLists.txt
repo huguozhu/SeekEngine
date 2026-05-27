@@ -72,9 +72,8 @@ endfunction(add_sample_project)
 
 add_sample_project(01.Tutorial)
 add_sample_project(02.Particles)
+add_sample_project(03.SDF_Metaball)
 add_sample_project(04.Lighting)
 add_sample_project(05.DeferredShading)
 add_sample_project(06.GlobalIllumination)
-add_sample_project(07.LiquidGlass)
-add_sample_project(08.MetballWater)
 
