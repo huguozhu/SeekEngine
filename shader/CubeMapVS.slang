@@ -1,0 +1,22 @@
+//STAGE:vs
+#include "Common.slangh"
+
+struct CubeMapVSParams
+{
+    float4x4 mvp;
+};
+
+cbuffer cb_CubeVSParams
+{
+    CubeMapVSParams params;
+}
+
+void main(
+	in float3 iPos			: POSITION,
+	out float3 oWorldPos	: POSITION,
+	out float4 oPos			: SV_POSITION
+)
+{
+	oWorldPos = iPos;
+	oPos = mul(float4(iPos, 1.0), params.mvp);
+}

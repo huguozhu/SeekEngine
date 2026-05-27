@@ -1,0 +1,38 @@
+// 宏定义保留在 .slangh 中（通过 #include 文本包含传播）
+#define PARTICLE_CS_X_SIZE      32
+#define BITONIC_BLOCK_SIZE      512
+#define TRANSPOSE_BLOCK_SIZE    16
+#define RANDOM_FLOAT_NUM        512
+#define Emit_Direction_Type_Directional    0
+#define Emit_Direction_Type_BiDirectional  1
+#define Emit_Direction_Type_Uniform_2D     2
+#define Emit_Direction_Type_Uniform_3D     3
+#define Emit_Shape_Type_Sphere             0
+#define Emit_Shape_Type_Box                1
+#define Tex_Time_Sampling_Type_Play_Once           0
+#define Tex_Time_Sampling_Type_Play_Loop           1
+#define Tex_Time_Sampling_Type_Random_Still_Frame  2
+#define Tex_Time_Sampling_Type_Random_Loop         3
+
+import ParticleCommonTypes;
+cbuffer CAliveIndices
+{
+	uint pre_sim_index;
+	uint post_sim_index;
+};
+RWStructuredBuffer<ParticleCounters> particle_counters;
+RWStructuredBuffer<uint>	dead_indices;
+RWStructuredBuffer<uint>	alive_pre_simulate_indices;
+RWStructuredBuffer<uint>	alive_post_simulate_indices;
+
+cbuffer CRandom_Floats
+{
+	float4 random_floats[RANDOM_FLOAT_NUM/4];
+}
+float _GetRandomFloat(uint particle_index, uint curent_float_index)
+{
+	uint index = (particle_index + curent_float_index) % RANDOM_FLOAT_NUM;
+	return random_floats[index/4][index%4];
+}
+
+#define GetRandomFloat() _GetRandomFloat(particle_index, cur_random_index++)

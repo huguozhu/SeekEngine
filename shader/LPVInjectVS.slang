@@ -1,0 +1,62 @@
+//STAGE:vs
+#include "Lighting.slangh"
+import GI;
+
+Texture2D rsm_color0;
+Texture2D rsm_color1;
+Texture2D rsm_color2;
+
+struct RSMTexel
+{
+    float3 rsm_normal;
+    float3 rsm_position;
+	float3 rsm_flux;
+};
+
+struct PSInput
+{
+	float4 screenPos: SV_POSITION;
+	float3 normal 	: NORMAL;
+	float3 flux 	: POSITION;
+};
+
+cbuffer cb_RTIndex
+{
+	uint index;
+}
+
+RSMTexel GetRSMTexel(uint2 coords)
+{
+    RSMTexel texel = (RSMTexel)0;
+	
+	float3 rsm0        = rsm_color0.Load(int3(coords, 0)).xyz;
+    texel.rsm_normal   = normalize(BestFitNormal_Decode(rsm0));
+	texel.rsm_position = rsm_color1.Load(int3(coords, 0)).xyz;
+    texel.rsm_flux     = rsm_color2.Load(int3(coords, 0)).xyz;
+    return texel;
+}
+
+PSInput main(uint vertex_id : SV_VertexID)
+{
+	PSInput output = (PSInput)0;
+
+	uint2 RSMsize;
+	rsm_color0.GetDimensions(RSMsize.x, RSMsize.y);
+	uint2 rsmCoords = uint2(vertex_id % RSMsize.x, vertex_id / RSMsize.x);
+
+	RSMTexel texel = GetRSMTexel(rsmCoords);
+
+	/* 
+	+(0.5f * texel.rsm_normal)：假设了每个格子中的光照的位置都为格子的中心点，为了防止出现自光照与自阴影，
+	在存储前要将虚拟点光源现在所在的位置沿着其法线移动半个格子的距离，再去判断其所在的格子。
+	*/
+	float3 pos_ws = texel.rsm_position;
+	float4 cellPos = float4(int3(pos_ws * LPV_SCALE + float3(LPV_SIZE_HALF, LPV_SIZE_HALF, LPV_SIZE_HALF) + 0.5f * texel.rsm_normal), 1.0f);
+	
+	output.screenPos = float4((cellPos.xy + 0.5f) * LPV_SIZE_INVERSE * 2.0f - 1.0f, (cellPos.z + 0.5 - index) * LPV_SIZE_INVERSE, 1.0f);
+	output.screenPos.y = -output.screenPos.y;
+	
+	output.normal = texel.rsm_normal;
+	output.flux = texel.rsm_flux;
+	return output;
+}

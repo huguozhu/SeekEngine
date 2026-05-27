@@ -19,80 +19,80 @@ set(shader_shared_files
 )
 
 set(shader_header_files
-    ${SEEK_SHADER_SOURCE_DIR}/BRDF.dsh
-    ${SEEK_SHADER_SOURCE_DIR}/CalcSDF.dsh
-    ${SEEK_SHADER_SOURCE_DIR}/Common.dsh
-    ${SEEK_SHADER_SOURCE_DIR}/IBL.dsh
-    ${SEEK_SHADER_SOURCE_DIR}/Lighting.dsh
-    ${SEEK_SHADER_SOURCE_DIR}/MorphTarget.dsh
-    ${SEEK_SHADER_SOURCE_DIR}/Skeleton.dsh
-    ${SEEK_SHADER_SOURCE_DIR}/ToneMapping.dsh
-    ${SEEK_SHADER_SOURCE_DIR}/CommonCBuffer.dsh
-    ${SEEK_SHADER_SOURCE_DIR}/VertexCommon.dsh
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleCommon.dsh
-    ${SEEK_SHADER_SOURCE_DIR}/Shadow.dsh
+    ${SEEK_SHADER_SOURCE_DIR}/BRDF.slangh
+    ${SEEK_SHADER_SOURCE_DIR}/CalcSDF.slangh
+    ${SEEK_SHADER_SOURCE_DIR}/Common.slangh
+    ${SEEK_SHADER_SOURCE_DIR}/IBL.slangh
+    ${SEEK_SHADER_SOURCE_DIR}/Lighting.slangh
+    ${SEEK_SHADER_SOURCE_DIR}/MorphTarget.slangh
+    ${SEEK_SHADER_SOURCE_DIR}/Skeleton.slangh
+    ${SEEK_SHADER_SOURCE_DIR}/ToneMapping.slangh
+    ${SEEK_SHADER_SOURCE_DIR}/CommonCBuffer.slangh
+    ${SEEK_SHADER_SOURCE_DIR}/VertexCommon.slangh
+    ${SEEK_SHADER_SOURCE_DIR}/ParticleCommon.slangh
+    ${SEEK_SHADER_SOURCE_DIR}/Shadow.slangh
 )
 
 set(shader_sources_files
-    ${SEEK_SHADER_SOURCE_DIR}/BlurPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/CopyPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/CubeMapVS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/DeferredLightingVS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/DeferredLightingPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/EmptyPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/EquirectangularToCubeMapPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/ForwardRenderingCommonPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/FxaaPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/GenBRDF2DLutPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/GenerateCascadedShadowMapPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/GenerateCubeShadowMapPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/GenerateGBufferPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/GenerateRsmPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/GiRsmPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/GiLpvPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/GiVS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/IrradianceConvolutionPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/LightCullingCS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/LiquidGlassPS.dsf    
-    ${SEEK_SHADER_SOURCE_DIR}/LPVInjectPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/LPVInjectVS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/LPVPropagationPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/LPVPropagationVS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/MeshRenderingVS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/BlurPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/CopyPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/CubeMapVS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/DeferredLightingVS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/DeferredLightingPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/EmptyPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/EquirectangularToCubeMapPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/ForwardRenderingCommonPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/FxaaPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/GenBRDF2DLutPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/GenerateCascadedShadowMapPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/GenerateCubeShadowMapPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/GenerateGBufferPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/GenerateRsmPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/GiRsmPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/GiLpvPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/GiVS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/IrradianceConvolutionPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/LightCullingCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/LiquidGlassPS.slang    
+    ${SEEK_SHADER_SOURCE_DIR}/LPVInjectPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/LPVInjectVS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/LPVPropagationPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/LPVPropagationVS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/MeshRenderingVS.slang
 
-    ${SEEK_SHADER_SOURCE_DIR}/PostProcessVS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/PrefilterEnvPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/PreZMeshRenderingVS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/Sprite2DMetaballPS.dsf    
+    ${SEEK_SHADER_SOURCE_DIR}/PostProcessVS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/PrefilterEnvPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/PreZMeshRenderingVS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/Sprite2DMetaballPS.slang    
    
-    ${SEEK_SHADER_SOURCE_DIR}/ShadowCopyPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/ShadowingDirectionalPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/ShadowingPointPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/ShadowingSpotPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/ShadowCopyPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/ShadowingDirectionalPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/ShadowingPointPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/ShadowingSpotPS.slang
     
-    ${SEEK_SHADER_SOURCE_DIR}/SkyBoxVS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/SkyBoxPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/Sprite2DVS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/SsaoVS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/SsaoPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/TaaPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/ToneMappingPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/SkyBoxVS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/SkyBoxPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/Sprite2DVS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/SsaoVS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/SsaoPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/TaaPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/ToneMappingPS.slang
 
-    ${SEEK_SHADER_SOURCE_DIR}/WaterMarkPS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/WaterMarkVS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/WaterMarkGenerateCS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/WaterMarkPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/WaterMarkVS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/WaterMarkGenerateCS.slang
 
     # Particle shaders
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleInitCS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleTickBeginCS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleEmitCS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleSimulateCS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleCullingCS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/ParticlePreSortCS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleBitonicSortCS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleSortMatrixTransposeCS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleRenderVS.dsf
-    ${SEEK_SHADER_SOURCE_DIR}/ParticleRenderPS.dsf
+    ${SEEK_SHADER_SOURCE_DIR}/ParticleInitCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/ParticleTickBeginCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/ParticleEmitCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/ParticleSimulateCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/ParticleCullingCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/ParticlePreSortCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/ParticleBitonicSortCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/ParticleSortMatrixTransposeCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/ParticleRenderVS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/ParticleRenderPS.slang
 )
 
 ################## shader_target_platform ##################

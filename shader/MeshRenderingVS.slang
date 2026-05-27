@@ -1,0 +1,104 @@
+//PREDEFINE:JOINT_BIND_SIZE=0,4,8
+//PREDEFINE:HAS_MATERIAL_NORMAL=0,1
+//PREDEFINE:ENABLE_TAA=0,1
+//PREDEFINE:MORPH_TYPE=0,1
+//STAGE=vs
+#include "Common.slangh"
+#include "MorphTarget.slangh"
+#include "Skeleton.slangh"
+
+cbuffer modelInfo
+{
+    ModelInfo modelInfo;
+};
+
+struct VSInput
+{
+    uint vertex_id      : SV_VertexID;
+    float3 posLocal     : POSITION;
+    float2 texCoord     : TEXCOORD;
+    float3 normal       : NORMAL;
+
+#if HAS_MATERIAL_NORMAL
+    float4 tangent      : TANGENT;
+#endif // HAS_MATERIAL_NORMAL
+
+#if JOINT_BIND_SIZE > 0
+    float4 blendWeight  : BLENDWEIGHT;
+    uint4  blendIndex   : BLENDINDEX;
+#if JOINT_BIND_SIZE > 4
+    float4 blendWeight1 : BLENDWEIGHT1;
+    uint4  blendIndex1  : BLENDINDEX1;
+#endif
+#endif
+};
+
+struct VSOutput
+{
+    float2 texCoord     : TEXCOORD;
+    float3 normal       : NORMAL;
+#if HAS_MATERIAL_NORMAL
+    float4 tangent      : TANGENT;
+#endif // HAS_MATERIAL_NORMAL
+    float3 posWorld     : POSITION0;
+#if ENABLE_TAA
+    float4 prePos       : POSITION1;
+    float4 unjitterPos  : POSITION2;
+#endif // ENABLE_TAA
+    float4 pos          : SV_POSITION;
+};
+
+VSOutput main(VSInput input)
+{
+    VSOutput output;
+
+    output.texCoord = input.texCoord;
+    float4 pos = float4(input.posLocal, 1.0);
+	float4 prev_pos = pos;
+    float4 normal = float4(input.normal, 1.0);
+    float4x4 normal_trans = modelInfo.normalMatrix;
+
+    CalcMorphTargetPosition(input.vertex_id, pos);
+    CalcMorphTargetNormal(input.vertex_id, normal);
+
+#if ENABLE_TAA
+    CalcPrevMorphTarget(input.vertex_id, prev_pos, normal);
+#endif
+
+#if JOINT_BIND_SIZE > 4
+    float4x4 skin_mat = CalcSkeletonMatrixEx(input.blendWeight, input.blendIndex, input.blendWeight1, input.blendIndex1);
+    pos = mul(pos, skin_mat);
+#if ENABLE_TAA
+    float4x4 prev_skin_mat = CalcPrevSkeletonMatrixEx(input.blendWeight, input.blendIndex, input.blendWeight1, input.blendIndex1);
+    prev_pos = mul(prev_pos, prev_skin_mat);
+#endif
+    normal_trans = transpose(MatrixInverse(mul(skin_mat, modelInfo.modelMatrix)));
+#elif JOINT_BIND_SIZE > 0
+    float4x4 skin_mat = CalcSkeletonMatrix(input.blendWeight, input.blendIndex);
+    pos = mul(pos, skin_mat);
+#if ENABLE_TAA
+    float4x4 prev_skin_mat = CalcPrevSkeletonMatrix(input.blendWeight, input.blendIndex);
+    prev_pos = mul(prev_pos, prev_skin_mat);
+#endif
+    normal_trans = transpose(MatrixInverse(mul(skin_mat, modelInfo.modelMatrix)));
+#endif
+
+    normal = mul(normal, normal_trans);
+    output.normal = normal.xyz;
+
+#if HAS_MATERIAL_NORMAL
+    float4 tangent = float4(input.tangent.xyz, 1.0);
+    output.tangent   = mul(tangent, normal_trans);
+    output.tangent.w = input.tangent.w;
+#endif // HAS_MATERIAL_NORMAL
+
+    pos.w = 1.0;
+    output.pos = mul(pos, modelInfo.mvpMatrix);
+    output.posWorld = mul(pos, modelInfo.modelMatrix).xyz;
+
+#if ENABLE_TAA
+    output.unjitterPos = mul(pos, modelInfo.unjitterMVP);
+    output.prePos = mul(prev_pos, modelInfo.preMVP);
+#endif
+    return output;
+}

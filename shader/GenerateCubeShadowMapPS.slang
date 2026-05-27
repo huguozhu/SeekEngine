@@ -1,0 +1,26 @@
+//STAGE:ps
+#include "Common.slangh"
+cbuffer genCubeShadowInfo
+{
+	GenCubeShadowInfo genCubeShadowInfo;
+}
+
+struct VSOutput
+{
+    float3 posWorld     : POSITION0;
+    float4 pos          : SV_POSITION;
+};
+struct PSOutput
+{
+    float4 color    : SV_Target0;
+};
+
+PSOutput main(VSOutput input)
+{
+	PSOutput output;
+
+	float light_distance = length(input.posWorld - genCubeShadowInfo.cubeLightPos);
+	light_distance = light_distance / genCubeShadowInfo.cameraFarPlane;
+	output.color = light_distance;
+	return output;
+}
