@@ -70,8 +70,6 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/ShadowingPointPS.slang
     ${SEEK_SHADER_SOURCE_DIR}/ShadowingSpotPS.slang
     
-    ${SEEK_SHADER_SOURCE_DIR}/SkyBoxVS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/SkyBoxPS.slang
     ${SEEK_SHADER_SOURCE_DIR}/Sprite2DVS.slang
     ${SEEK_SHADER_SOURCE_DIR}/SsaoVS.slang
     ${SEEK_SHADER_SOURCE_DIR}/SsaoPS.slang
@@ -182,6 +180,57 @@ foreach(single_shader_sources_file ${shader_sources_files})
         WORKING_DIRECTORY ${ShaderCompiler_working_dir})
 
     list(APPEND all_generated_tag_compile_tagfiles ${single_tag_compile_tagfile})
+endforeach()
+
+############################## 多入口点着色器 ##############################
+# 格式：每行 "源文件|输出名|stage|入口函数"
+# 同一源文件可有多行，分别编译为不同的输出名（如将 VS 和 PS 合并到一个 .slang 文件）
+set(multi_entry_shaders
+    # SkyBox VS + PS 合并到一个 .slang 文件
+    "SkyBoxRendering.slang|SkyBox_VS|vs|skybox_vs"
+    "SkyBoxRendering.slang|SkyBox_PS|ps|skybox_ps"
+)
+
+set(multi_entry_output_names "")
+set(multi_depend_sources_processed "")
+
+foreach(multi_entry ${multi_entry_shaders})
+    string(REPLACE "|" ";" multi_parts "${multi_entry}")
+    list(GET multi_parts 0 multi_source)
+    list(GET multi_parts 1 multi_output)
+    list(GET multi_parts 2 multi_stage)
+    list(GET multi_parts 3 multi_entry_name)
+
+    get_filename_component(multi_source_basename "${multi_source}" NAME_WLE)
+
+    # 依赖分析：每个源文件只需生成一次
+    list(FIND multi_depend_sources_processed "${multi_source}" depend_done)
+    if(depend_done EQUAL -1)
+        set(single_tag_depend_tagfile "${generated_shader_tag_depend_dir}/${multi_source_basename}${SHADER_TAG_FILE_SUFFIX}")
+        set(single_depend_dependfile  "${generated_shader_depend_dir}/${multi_source_basename}${SHADER_DEPEND_FILE_SUFFIX}")
+        add_custom_command(
+            OUTPUT ${single_tag_depend_tagfile} ${single_depend_dependfile}
+            COMMAND ${ShaderCompiler_bin} --input "${multi_source}" --depend
+            DEPENDS "${SEEK_SHADER_SOURCE_DIR}/${multi_source}" ${shader_header_files} ${shader_shared_files}
+            WORKING_DIRECTORY ${ShaderCompiler_working_dir}
+        )
+        list(APPEND all_generated_tag_depend_tagfiles ${single_tag_depend_tagfile})
+        list(APPEND all_generated_depend_dependfiles ${single_depend_dependfile})
+        list(APPEND multi_depend_sources_processed "${multi_source}")
+    endif()
+
+    set(single_depend_dependfile "${generated_shader_depend_dir}/${multi_source_basename}${SHADER_DEPEND_FILE_SUFFIX}")
+
+    # 编译
+    set(single_tag_compile_tagfile "${generated_shader_tag_compile_dir}/${multi_output}${SHADER_TAG_FILE_SUFFIX}")
+    add_custom_command(
+        OUTPUT ${single_tag_compile_tagfile}
+        COMMAND ${ShaderCompiler_bin} --input="${multi_source}" --output="${multi_output}" --stage="${multi_stage}" --entry="${multi_entry_name}" --target=${shader_target_platform} ${shader_compile_options}
+        DEPENDS "${SEEK_SHADER_SOURCE_DIR}/${multi_source}" ${single_depend_dependfile}
+        WORKING_DIRECTORY ${ShaderCompiler_working_dir}
+    )
+    list(APPEND all_generated_tag_compile_tagfiles ${single_tag_compile_tagfile})
+    list(APPEND multi_entry_output_names ${multi_output})
 endforeach()
 
 message(STATUS ${CMAKE_CURRENT_LIST_DIR})

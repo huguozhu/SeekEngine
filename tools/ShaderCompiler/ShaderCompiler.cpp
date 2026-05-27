@@ -218,10 +218,10 @@ static std::map<ShadingLanguage, const char*> shaderLanguageVersionMap{
     {ShadingLanguage::Msl_iOS, nullptr},
 };
 
-static void ParseSlangReflection(slang::IComponentType* program, const std::string& stageName, ReflectInfo& reflectInfo)
+static void ParseSlangReflection(slang::IComponentType* program, const std::string& stageName, const std::string& entryPoint, ReflectInfo& reflectInfo)
 {
     reflectInfo.stage = stageName;
-    reflectInfo.entry_point = "main";
+    reflectInfo.entry_point = entryPoint;
     reflectInfo.code_type = CodeType::SourceCode;
 
     if (!program) return;
@@ -605,6 +605,9 @@ int main(int argc, char** argv)
         ->default_val("main")
         ->run_callback_for_default();
 
+    std::string outputName;
+    app.add_option("--output", outputName, "output file base name (default: derived from input file name)");
+
     std::vector<std::string> defines;
     app.add_option("--define", defines, "macro definitions, format: define=value or define");
 
@@ -644,6 +647,7 @@ int main(int argc, char** argv)
             inputFileShortName = inputFileShortName.substr(lastSlash + 1);
         size_t delimiterPos = inputFileShortName.find_last_of('.');
         const auto inputFileBaseName = inputFileShortName.substr(0, delimiterPos);
+        const auto outputBaseName = outputName.empty() ? inputFileBaseName : outputName;
         const auto inputFilePath = shaderSourceDir + "/" + inputFileName;
 
         std::string source;
@@ -843,7 +847,7 @@ int main(int argc, char** argv)
                 SlangBlobPtr diagBlob;
                 slang::IBlob* diag = nullptr;
                 slang::IModule* m = localSession->loadModuleFromSourceString(
-                    inputFileBaseName.c_str(),
+                    outputBaseName.c_str(),
                     inputFilePath.c_str(),
                     fullSource.c_str(),
                     &diag);
@@ -862,25 +866,25 @@ int main(int argc, char** argv)
             }
 
             // Step 2: Find entry point
-            SlangEntryPointPtr entryPoint;
+            SlangEntryPointPtr slangEntryPoint;
             {
                 ShaderStage shaderStage = ParseShaderStage(_shaderMetaInfo.stage);
                 SlangStage slangStage = SlangStageFromShaderStage(shaderStage);
                 slang::IEntryPoint* ep = nullptr;
-                SlangResult sr = module->findAndCheckEntryPoint("main", slangStage, &ep, nullptr);
+                SlangResult sr = module->findAndCheckEntryPoint(entryPoint.c_str(), slangStage, &ep, nullptr);
                 if (SLANG_FAILED(sr) || !ep)
                 {
-                    std::cerr << "Slang: findAndCheckEntryPoint('main') failed for " << inputFileBaseName << std::endl;
+                    std::cerr << "Slang: findAndCheckEntryPoint('" << entryPoint << "') failed for " << inputFileBaseName << std::endl;
                     return FAIL;
                 }
-                entryPoint = ep;
+                slangEntryPoint = ep;
             }
 
             // Step 3: Target already configured on localSession
             // Step 4: Create composite component type
             SlangComponentTypePtr program;
             {
-                slang::IComponentType* components[] = { module.get(), entryPoint.get() };
+                slang::IComponentType* components[] = { module.get(), slangEntryPoint.get() };
                 slang::IComponentType* prog = nullptr;
                 SlangResult sr = localSession->createCompositeComponentType(
                     components, 2,
@@ -947,7 +951,7 @@ int main(int argc, char** argv)
                 if (generateDebugShaderPass)
                     outputFileDir += SHADER_DEBUG_DIR_SUFFIX;
 
-                std::string outputFileName = inputFileBaseName;
+                std::string outputFileName = outputBaseName;
                 if (seed != 0)
                 {
                     std::stringstream seedStream;
@@ -994,7 +998,7 @@ int main(int argc, char** argv)
                 // Shader reflect
                 std::string outReflectSourceFilePath = outputFileDir + "/" + outputFileName + SHADER_REFLECT_FILE_SUFFIX;
                 ReflectInfo reflectInfo;
-                ParseSlangReflection(program.get(), stageName, reflectInfo);
+                ParseSlangReflection(program.get(), stageName, entryPoint, reflectInfo);
                 std::string reflectJsonContent;
                 int wr = WriteReflectJson(reflectInfo, tightJson, reflectJsonContent);
                 if (wr != 0)
@@ -1080,7 +1084,7 @@ int main(int argc, char** argv)
 
             for (size_t targetIdx = 0; targetIdx != targetName.size(); targetIdx++)
             {
-                std::string headerFilePath = shaderGenerateDir + "/" + targetName[targetIdx] + "/" + inputFileBaseName + ".h";
+                std::string headerFilePath = shaderGenerateDir + "/" + targetName[targetIdx] + "/" + outputBaseName + ".h";
                 std::ofstream headerFile(headerFilePath, std::ios_base::binary);
                 if (!headerFile)
                 {
@@ -1094,13 +1098,13 @@ int main(int argc, char** argv)
                     headerFile << "#include \"" << allOutFileNames[idx] << ".hpp\"" << std::endl;
                 }
                 headerFile << std::endl;
-                headerFile << "#define SHADER_CODE_MAP_GROUP_" << shaderLanguageMap[targetDesc[targetIdx].language] << "_" << inputFileBaseName << " \\" << std::endl;
+                headerFile << "#define SHADER_CODE_MAP_GROUP_" << shaderLanguageMap[targetDesc[targetIdx].language] << "_" << outputBaseName << " \\" << std::endl;
                 for (size_t idx = 0; idx != allOutFileNames.size(); idx++)
                 {
                     headerFile << "    SHADER_CODE_MAP_MEMBER_VAR(" << allOutFileNames[idx] << "," << allShaderCodeVarNames[idx] << ") \\"<< std::endl;
                 }
                 headerFile << std::endl;
-                headerFile << "#define SHADER_REFLECT_MAP_GROUP_" << shaderLanguageMap[targetDesc[targetIdx].language] << "_" << inputFileBaseName << " \\" << std::endl;
+                headerFile << "#define SHADER_REFLECT_MAP_GROUP_" << shaderLanguageMap[targetDesc[targetIdx].language] << "_" << outputBaseName << " \\" << std::endl;
                 for (size_t idx = 0; idx != allOutFileNames.size(); idx++)
                 {
                     headerFile << "    SHADER_REFLECT_MAP_MEMBER_VAR(" << allOutFileNames[idx] << "," << allShaderReflectVarNames[idx] << ") \\"<< std::endl;
@@ -1122,7 +1126,7 @@ int main(int argc, char** argv)
 
                 for (size_t targetIdx = 0; targetIdx != targetName.size(); targetIdx++)
                 {
-                    std::string headerFilePath = shaderGenerateDir + "/" + targetName[targetIdx] + SHADER_DEBUG_DIR_SUFFIX + "/" + inputFileBaseName + ".h";
+                    std::string headerFilePath = shaderGenerateDir + "/" + targetName[targetIdx] + SHADER_DEBUG_DIR_SUFFIX + "/" + outputBaseName + ".h";
                     std::ofstream headerFile(headerFilePath, std::ios_base::binary);
                     if (!headerFile)
                     {
@@ -1135,13 +1139,13 @@ int main(int argc, char** argv)
                         headerFile << "#include \"" << allOutFileNames[idx] << ".hpp\"" << std::endl;
                     }
                     headerFile << std::endl;
-                    headerFile << "#define SHADER_CODE_MAP_GROUP_" << shaderLanguageMap[targetDesc[targetIdx].language] << "_" << inputFileBaseName << SHADER_DEBUG_DIR_SUFFIX << " \\" << std::endl;
+                    headerFile << "#define SHADER_CODE_MAP_GROUP_" << shaderLanguageMap[targetDesc[targetIdx].language] << "_" << outputBaseName << SHADER_DEBUG_DIR_SUFFIX << " \\" << std::endl;
                     for (size_t idx = 0; idx != allOutFileNames.size(); idx++)
                     {
                         headerFile << "    SHADER_CODE_MAP_MEMBER_VAR(" << allOutFileNames[idx] << "," << allShaderCodeVarNames[idx] << ") \\"<< std::endl;
                     }
                     headerFile << std::endl;
-                    headerFile << "#define SHADER_REFLECT_MAP_GROUP_" << shaderLanguageMap[targetDesc[targetIdx].language] << "_" << inputFileBaseName << SHADER_DEBUG_DIR_SUFFIX << " \\" << std::endl;
+                    headerFile << "#define SHADER_REFLECT_MAP_GROUP_" << shaderLanguageMap[targetDesc[targetIdx].language] << "_" << outputBaseName << SHADER_DEBUG_DIR_SUFFIX << " \\" << std::endl;
                     for (size_t idx = 0; idx != allOutFileNames.size(); idx++)
                     {
                         headerFile << "    SHADER_REFLECT_MAP_MEMBER_VAR(" << allOutFileNames[idx] << "," << allShaderReflectVarNames[idx] << ") \\"<< std::endl;
@@ -1150,8 +1154,8 @@ int main(int argc, char** argv)
                 }
             }
 
-            std::string metaSourceFilePath = SEEK_GENERATED_META_DIR "/" + inputFileBaseName + SHADER_META_FILE_SUFFIX;
-            std::string metaHeaderFilePath = SEEK_GENERATED_META_DIR "/" + inputFileBaseName + ".h";
+            std::string metaSourceFilePath = SEEK_GENERATED_META_DIR "/" + outputBaseName + SHADER_META_FILE_SUFFIX;
+            std::string metaHeaderFilePath = SEEK_GENERATED_META_DIR "/" + outputBaseName + ".h";
 
             ///////////////////// shader meta - source file /////////////////////
             std::string metaJsonContent;
@@ -1177,12 +1181,12 @@ int main(int argc, char** argv)
             metaHeaderFile << "#pragma once" << std::endl
                            << "#include <cstdint>" << std::endl
                            << std::endl;
-            std::string varShaderMetaName = shader_meta_name(inputFileBaseName);
+            std::string varShaderMetaName = shader_meta_name(outputBaseName);
             WriteByteArray(metaHeaderFile, metaJsonContent.data(), metaJsonContent.size(), varShaderMetaName);
             std::cout << "shader meta - header file saved in: " << metaHeaderFilePath << std::endl;
             
             // generate tag file for incremental build
-            std::string tagFilePath = SEEK_GENERATED_TAG_DIR "/" SHADER_COMPILE_FILE_SUFFIX "/" + inputFileBaseName + SHADER_TAG_FILE_SUFFIX;
+            std::string tagFilePath = SEEK_GENERATED_TAG_DIR "/" SHADER_COMPILE_FILE_SUFFIX "/" + outputBaseName + SHADER_TAG_FILE_SUFFIX;
             int generateRet = GenerateTagFile(tagFilePath);
             if (generateRet != SUCCESS)
                 return generateRet;

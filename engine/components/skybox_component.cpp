@@ -27,7 +27,7 @@ SkyBoxComponent::SkyBoxComponent(Context* context)
     m_vMeshes.push_back(mesh);
 
     Effect& effect = m_pContext->EffectInstance();
-    effect.LoadTechnique("SkyBox", &RenderStateDesc::Skybox(), "SkyBoxVS", "SkyBoxPS", nullptr);
+    effect.LoadTechnique("SkyBox", &RenderStateDesc::Skybox(), "SkyBox_VS", "SkyBox_PS", nullptr);
     m_pTechSkyBox  = effect.GetTechnique("SkyBox");
 }
 

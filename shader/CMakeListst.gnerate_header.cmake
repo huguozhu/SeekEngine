@@ -73,6 +73,11 @@ foreach(single_shader_sources_file ${shader_sources_files})
     string(APPEND GENERATED_SHADER_META_CONTENT_PART1 "#include \"${single_shader_basename}.h\"\n")
     string(APPEND GENERATED_SHADER_META_CONTENT_PART2 "    SHADER_META_MAP_MEMBER(${single_shader_basename})\n")
 endforeach()
+# 多入口点着色器输出名
+foreach(multi_output ${multi_entry_output_names})
+    string(APPEND GENERATED_SHADER_META_CONTENT_PART1 "#include \"${multi_output}.h\"\n")
+    string(APPEND GENERATED_SHADER_META_CONTENT_PART2 "    SHADER_META_MAP_MEMBER(${multi_output})\n")
+endforeach()
 string(APPEND GENERATED_SHADER_META_CONTENT_PART2 "}\;\n")
 file(WRITE ${SEEK_GENERATED_META_DIR}/${GENERATED_SHADER_META_CONTENT_FILE}
     "#pragma once\n"
@@ -91,6 +96,11 @@ foreach(TARGET_PLATFORM ${shader_target_platform})
         string(APPEND GENERATED_SHADER_CODE_CONTENT_PART1 "#include \"${single_shader_basename}.h\"\n")
         string(APPEND GENERATED_SHADER_CODE_CONTENT_PART2 "    SHADER_CODE_MAP_GROUP(${single_shader_basename},${TARGET_PLATFORM},)\n")
     endforeach()
+    # 多入口点着色器输出名
+    foreach(multi_output ${multi_entry_output_names})
+        string(APPEND GENERATED_SHADER_CODE_CONTENT_PART1 "#include \"${multi_output}.h\"\n")
+        string(APPEND GENERATED_SHADER_CODE_CONTENT_PART2 "    SHADER_CODE_MAP_GROUP(${multi_output},${TARGET_PLATFORM},)\n")
+    endforeach()
     string(APPEND GENERATED_SHADER_CODE_CONTENT_PART2 "}\;\n")
     file(WRITE ${SEEK_GENERATED_SHADER_DIR}/${TARGET_PLATFORM}/${GENERATED_SHADER_CODE_CONTENT_FILE}
         "#pragma once\n"
@@ -107,6 +117,11 @@ foreach(TARGET_PLATFORM ${shader_target_platform})
             get_filename_component(single_shader_basename ${single_shader_sources_file} NAME_WLE)
             string(APPEND GENERATED_SHADER_CODE_CONTENT_PART1 "#include \"${single_shader_basename}.h\"\n")
             string(APPEND GENERATED_SHADER_CODE_CONTENT_PART2 "    SHADER_CODE_MAP_GROUP(${single_shader_basename},${TARGET_PLATFORM},${SHADER_DEBUG_DIR_SUFFIX})\n")
+        endforeach()
+        # 多入口点着色器输出名
+        foreach(multi_output ${multi_entry_output_names})
+            string(APPEND GENERATED_SHADER_CODE_CONTENT_PART1 "#include \"${multi_output}.h\"\n")
+            string(APPEND GENERATED_SHADER_CODE_CONTENT_PART2 "    SHADER_CODE_MAP_GROUP(${multi_output},${TARGET_PLATFORM},${SHADER_DEBUG_DIR_SUFFIX})\n")
         endforeach()
         string(APPEND GENERATED_SHADER_CODE_CONTENT_PART2 "}\;\n")
         file(WRITE ${SEEK_GENERATED_SHADER_DIR}/${TARGET_PLATFORM}${SHADER_DEBUG_DIR_SUFFIX}/${GENERATED_SHADER_CODE_CONTENT_FILE}
@@ -128,6 +143,11 @@ foreach(TARGET_PLATFORM ${shader_target_platform})
         string(APPEND GENERATED_SHADER_REFLECT_CONTENT_PART1 "#include \"${single_shader_basename}.h\"\n")
         string(APPEND GENERATED_SHADER_REFLECT_CONTENT_PART2 "    SHADER_REFLECT_MAP_GROUP(${single_shader_basename},${TARGET_PLATFORM},)\n")
     endforeach()
+    # 多入口点着色器输出名
+    foreach(multi_output ${multi_entry_output_names})
+        string(APPEND GENERATED_SHADER_REFLECT_CONTENT_PART1 "#include \"${multi_output}.h\"\n")
+        string(APPEND GENERATED_SHADER_REFLECT_CONTENT_PART2 "    SHADER_REFLECT_MAP_GROUP(${multi_output},${TARGET_PLATFORM},)\n")
+    endforeach()
     string(APPEND GENERATED_SHADER_REFLECT_CONTENT_PART2 "}\;\n")
     file(WRITE ${SEEK_GENERATED_SHADER_DIR}/${TARGET_PLATFORM}/${GENERATED_SHADER_REFLECT_CONTENT_FILE}
         "#pragma once\n"
@@ -144,6 +164,11 @@ foreach(TARGET_PLATFORM ${shader_target_platform})
             get_filename_component(single_shader_basename ${single_shader_sources_file} NAME_WLE)
             string(APPEND GENERATED_SHADER_REFLECT_CONTENT_PART1 "#include \"${single_shader_basename}.h\"\n")
             string(APPEND GENERATED_SHADER_REFLECT_CONTENT_PART2 "    SHADER_REFLECT_MAP_GROUP(${single_shader_basename},${TARGET_PLATFORM},${SHADER_DEBUG_DIR_SUFFIX})\n")
+        endforeach()
+        # 多入口点着色器输出名
+        foreach(multi_output ${multi_entry_output_names})
+            string(APPEND GENERATED_SHADER_REFLECT_CONTENT_PART1 "#include \"${multi_output}.h\"\n")
+            string(APPEND GENERATED_SHADER_REFLECT_CONTENT_PART2 "    SHADER_REFLECT_MAP_GROUP(${multi_output},${TARGET_PLATFORM},${SHADER_DEBUG_DIR_SUFFIX})\n")
         endforeach()
         string(APPEND GENERATED_SHADER_REFLECT_CONTENT_PART2 "}\;\n")
         file(WRITE ${SEEK_GENERATED_SHADER_DIR}/${TARGET_PLATFORM}${SHADER_DEBUG_DIR_SUFFIX}/${GENERATED_SHADER_REFLECT_CONTENT_FILE}
