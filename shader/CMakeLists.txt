@@ -81,8 +81,6 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/Particles/ParticlePreSortCS.slang
     ${SEEK_SHADER_SOURCE_DIR}/Particles/ParticleBitonicSortCS.slang
     ${SEEK_SHADER_SOURCE_DIR}/Particles/ParticleSortMatrixTransposeCS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/Particles/ParticleRenderVS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/Particles/ParticleRenderPS.slang
 )
 
 ################## shader_target_platform ##################
@@ -193,6 +191,9 @@ set(multi_entry_shaders
     # 水印 VS + PS 合并
     "WaterMarkRendering.slang|WaterMark_VS|vs|watermark_vs"
     "WaterMarkRendering.slang|WaterMark_PS|ps|watermark_ps"
+    # 粒子渲染 VS + PS 合并（带 HAS_TEX 预定义变体）
+    "Particles/ParticleRender.slang|ParticleRender_VS|vs|particle_vs"
+    "Particles/ParticleRender.slang|ParticleRender_PS|ps|particle_ps"
 )
 
 set(multi_entry_output_names "")

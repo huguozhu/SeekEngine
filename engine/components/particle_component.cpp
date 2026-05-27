@@ -99,7 +99,7 @@ SResult ParticleComponent::InitShaders()
         {Tech_PreSort,              nullptr, nullptr, "ParticlePreSortCS"},
         {Tech_BitonicSort,          nullptr, nullptr, "ParticleBitonicSortCS"},
         {Tech_SortMatrixTranspose,  nullptr, nullptr, "ParticleSortMatrixTransposeCS"},
-        {Tech_Render,               "ParticleRenderVS", "ParticleRenderPS", nullptr},
+        {Tech_Render,               "ParticleRender_VS", "ParticleRender_PS", nullptr},
     };
     
     Effect& effect = m_pContext->EffectInstance();
