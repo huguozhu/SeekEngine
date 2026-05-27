@@ -250,6 +250,53 @@ inline bool IsValidVertexFormat(int elementType, int componentType)
     return ConvertToVertexFormat(elementType, componentType) != VertexFormat::Unknown;
 }
 
+// ===== cgltf 兼容重载（cgltf 枚举值与 glTF JSON 规范常量值不同，需要转换） =====
+
+// cgltf_component_type (1-6) -> GLTF_COMPONENT_TYPE_* (5120-5126) 转换
+inline int CgltfToGltfComponentType(int ct)
+{
+    static const int kMap[] = {
+        0,                               // cgltf_component_type_invalid = 0
+        GLTF_COMPONENT_TYPE_BYTE,        // cgltf_component_type_r_8 = 1
+        GLTF_COMPONENT_TYPE_UNSIGNED_BYTE, // cgltf_component_type_r_8u = 2
+        GLTF_COMPONENT_TYPE_SHORT,       // cgltf_component_type_r_16 = 3
+        GLTF_COMPONENT_TYPE_UNSIGNED_SHORT, // cgltf_component_type_r_16u = 4
+        GLTF_COMPONENT_TYPE_UNSIGNED_INT, // cgltf_component_type_r_32u = 5
+        GLTF_COMPONENT_TYPE_FLOAT,       // cgltf_component_type_r_32f = 6
+    };
+    return kMap[ct];
+}
+
+// cgltf 顶点属性类型（cgltf_attribute_type）映射到引擎顶点属性
+inline std::pair<VertexElementUsage, uint32_t> ConvertVertexAttribute(int index, int type)
+{
+    VertexElementUsage usage;
+    switch (type)
+    {
+    case 1: usage = VertexElementUsage::Position;    break; // cgltf_attribute_type_position
+    case 2: usage = VertexElementUsage::Normal;      break; // cgltf_attribute_type_normal
+    case 3: usage = VertexElementUsage::Tangent;     break; // cgltf_attribute_type_tangent
+    case 4: usage = VertexElementUsage::TexCoord;    break; // cgltf_attribute_type_texcoord
+    case 5: usage = VertexElementUsage::Color;       break; // cgltf_attribute_type_color
+    case 6: usage = VertexElementUsage::BlendIndex;  break; // cgltf_attribute_type_joints
+    case 7: usage = VertexElementUsage::BlendWeight; break; // cgltf_attribute_type_weights
+    default: usage = VertexElementUsage::Position;   break;
+    }
+    return {usage, (uint32_t)index};
+}
+
+// cgltf 插值类型（cgltf_interpolation_type）映射到引擎插值类型
+inline InterpolationType ConvertToInterpolationType(int interpolation)
+{
+    switch (interpolation)
+    {
+    case 0: return InterpolationType::Linear;       // cgltf_interpolation_type_linear
+    case 1: return InterpolationType::Step;         // cgltf_interpolation_type_step
+    case 2: return InterpolationType::CubicSpline;  // cgltf_interpolation_type_cubic_spline
+    default: return InterpolationType::Linear;
+    }
+}
+
 } // namespace gltf
 
 SEEK_NAMESPACE_END

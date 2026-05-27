@@ -249,12 +249,14 @@ add_dependencies(${SEEK_STATICLIB_NAME} GenerateShaders)
 target_link_libraries(${SEEK_STATICLIB_NAME} PUBLIC
     turbojpeg
     libpng
-    rapidjson
     eigen
     zlib
     ${SEEK_STATICLIB_DEPENDENT_LIBS}
 )
-target_include_directories(${SEEK_STATICLIB_NAME} PUBLIC ${SEEK_ENGINE_SOURCE_DIR})
+target_include_directories(${SEEK_STATICLIB_NAME} PUBLIC
+    ${SEEK_ENGINE_SOURCE_DIR}
+    ${SEEK_ENGINE_SOURCE_DIR}/third_party/cgltf
+)
 
 
 

@@ -1,5 +1,6 @@
 #pragma once
 #include "seek_engine.h"
+#include "importer/gltf2_loader.h"
 #include "app_imgui.h"
 
 USING_NAMESPACE_SEEK

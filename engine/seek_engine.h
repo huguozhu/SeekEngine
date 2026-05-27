@@ -22,7 +22,7 @@
 
 // importer
 #include "importer/loader.h"
-#include "importer/gltf2_loader.h"
+
 
 // kernel
 #include "kernel/kernel.h"

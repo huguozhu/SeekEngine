@@ -1,41 +1,256 @@
-// 先引入 cgltf 的类型声明（不带 CGLTF_IMPLEMENTATION）
-// 确保头文件处理时 ::cgltf_data 等类型已完整定义
-#include "cgltf.h"
+# cgltf 替换自研 glTF 加载器 — 实现计划
 
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+
+**Goal:** 用 cgltf 替换 engine/importer/gltf2_loader.cpp 中的手写 rapidjson 解析逻辑
+
+**Architecture:** cgltf 负责 glTF/GLB 解析和 buffer 加载，glTF2_Loader 负责将 cgltf 的 C 结构体转换为引擎的 SceneComponent/MeshComponent/MaterialResource 等类型
+
+**Tech Stack:** C++20, CMake, cgltf (single-header C library), D3D11
+
+---
+
+### Task 1: 下载 cgltf.h 并集成到构建系统
+
+**Files:**
+- Create: `engine/third_party/cgltf/cgltf.h`
+
+- [ ] **Step 1: 下载 cgltf.h**
+
+```powershell
+$url = "https://raw.githubusercontent.com/jkuhlmann/cgltf/master/cgltf.h"
+$dest = "engine/third_party/cgltf/cgltf.h"
+if (-not (Test-Path "engine/third_party/cgltf")) { New-Item -ItemType Directory -Force -Path "engine/third_party/cgltf" }
+Invoke-WebRequest -Uri $url -OutFile $dest
+```
+
+- [ ] **Step 2: 更新 engine/CMakeLists.txt，添加 cgltf include path**
+
+修改 `engine/CMakeLists.txt:257`，在 `target_include_directories` 行后追加 cgltf 目录：
+
+```cmake
+target_include_directories(${SEEK_STATICLIB_NAME} PUBLIC
+    ${SEEK_ENGINE_SOURCE_DIR}
+    ${SEEK_ENGINE_SOURCE_DIR}/third_party/cgltf
+)
+```
+
+现有代码位置（`engine/CMakeLists.txt:257`）：
+```cmake
+target_include_directories(${SEEK_STATICLIB_NAME} PUBLIC ${SEEK_ENGINE_SOURCE_DIR})
+```
+
+替换为：
+```cmake
+target_include_directories(${SEEK_STATICLIB_NAME} PUBLIC
+    ${SEEK_ENGINE_SOURCE_DIR}
+    ${SEEK_ENGINE_SOURCE_DIR}/third_party/cgltf
+)
+```
+
+- [ ] **Step 3: 确认 rapidjson 在 engine 的外观**
+
+用 `git grep "rapidjson" -- engine/` 确认 engine 目录下使用 rapidjson 的文件仅限于 `engine/importer/loader.h`、`engine/importer/gltf2_loader.h`、`engine/importer/gltf2_loader.cpp`。若如此，后续步骤中可将 `rapidjson` 从 engine 的 `target_link_libraries` 中移除。
+
+---
+
+### Task 2: 简化 loader.h
+
+**Files:**
+- Modify: `engine/importer/loader.h`
+
+- [ ] **Step 1: 用以下内容替换 loader.h**
+
+```cpp
+#pragma once
+
+#include "kernel/kernel.h"
+
+SEEK_NAMESPACE_BEGIN
+
+class Loader
+{
+public:
+    virtual SResult LoadSceneFromFile(std::string const& filePath,
+                                      SceneComponentPtr& scene,
+                                      std::vector<AnimationComponentPtr>& anim) = 0;
+
+    virtual std::map<uint32_t, MeshComponentPtr>&     GetMeshComponentMap() = 0;
+    virtual std::map<uint32_t, SceneComponentPtr>&    GetSceneComponentMap() = 0;
+    virtual std::map<std::string, SceneComponentPtr>& GetSceneComponentMapByName() = 0;
+};
+
+CLASS_DECLARE(Loader);
+
+SEEK_NAMESPACE_END
+```
+
+变化：
+- 移除 `#include "rapidjson/document.h"`
+- 移除 `virtual SResult TickSceneFromJson(std::string const& jsonStr) = 0;`
+- 移除 `virtual rapidjson::Document& GetModelDoc() = 0;`
+
+---
+
+### Task 3: 重写 gltf2_loader.h
+
+**Files:**
+- Modify: `engine/importer/gltf2_loader.h`
+
+- [ ] **Step 1: 用以下内容替换 gltf2_loader.h**
+
+```cpp
+#pragma once
+
+#include "seek_engine.h"
+#include "resource/resource_mgr.h"
+#include "importer/loader.h"
+#include "components/animation_component.h"
+
+SEEK_NAMESPACE_BEGIN
+
+struct BufferResource;
+
+// 保留的轻量中间类型（引擎特有）
+struct LoaderTexture
+{
+    int32_t imageIndex = -1;
+    int32_t samplerIndex = -1;
+    int32_t texCoord = 0;
+    float scale = 1.0f;
+};
+using LoaderTexturePtr = std::shared_ptr<LoaderTexture>;
+
+struct LoaderImage
+{
+    std::string mimeType;
+    std::string uriPath; // 绝对路径，非 URI 时为空
+    BitmapBufferPtr bitmapData = nullptr;
+};
+using LoaderImagePtr = std::shared_ptr<LoaderImage>;
+
+struct LoaderSkin
+{
+    std::vector<Matrix4> inverseBindMatrices;
+    std::vector<SceneComponentPtr> joints;
+    SceneComponentPtr skeleton;
+};
+using LoaderSkinPtr = std::shared_ptr<LoaderSkin>;
+
+// cgltf 前置声明
+struct cgltf_data;
+
+class glTF2_Loader : public Loader
+{
+public:
+    glTF2_Loader(Context* ctx);
+    virtual ~glTF2_Loader();
+
+    virtual SResult LoadSceneFromFile(std::string const& filePath,
+                                      SceneComponentPtr& scene,
+                                      std::vector<AnimationComponentPtr>& anim) override;
+
+    virtual std::map<uint32_t, MeshComponentPtr>&           GetMeshComponentMap() override;
+    virtual std::map<uint32_t, SceneComponentPtr>&          GetSceneComponentMap() override;
+    virtual std::map<std::string, SceneComponentPtr>&       GetSceneComponentMapByName() override;
+
+private:
+    // 入口
+    SceneComponentPtr LoadDefaultScene(cgltf_data* data);
+    SceneComponentPtr LoadScene(cgltf_data* data, uint32_t index);
+
+    // 转换方法（从 cgltf 到引擎类型）
+    SceneComponentPtr LoadNode(cgltf_data* data, uint32_t index);
+    MeshComponentPtr  LoadMesh(cgltf_data* data, uint32_t mesh_index,
+                               bool has_skin, uint32_t skin_index);
+    LightComponentPtr LoadLight(cgltf_data* data, uint32_t light_index);
+    RHIMeshPtr        LoadPrimitive(cgltf_data* data, struct cgltf_primitive* primitive);
+    std::shared_ptr<MaterialResource> LoadMaterial(cgltf_data* data,
+                                                   struct cgltf_material* material,
+                                                   bool hasTangent);
+    LoaderTexturePtr  LoadTexture(cgltf_data* data, uint32_t tex_index,
+                                  struct cgltf_texture_view* tex_view);
+    LoaderImagePtr    LoadImage(cgltf_data* data, uint32_t image_index, bool bColor);
+    LoaderSkinPtr     LoadSkin(cgltf_data* data, uint32_t skin_index);
+    void              LoadAnimation(cgltf_data* data,
+                                    std::vector<AnimationComponentPtr>& animations);
+
+    // 材质扩展
+    bool LoadMetallicRoughness(struct cgltf_pbr_metallic_roughness* pbr,
+                               MaterialResource& matRes);
+    bool LoadClearcoat(struct cgltf_clearcoat* cc, MaterialResource& matRes);
+    bool LoadSheen(struct cgltf_sheen* sheen, MaterialResource& matRes);
+
+    // Morph target
+    void ConverterToMorphStreamUnitFromTargets(RHIMeshPtr& mesh,
+                                               struct cgltf_primitive* primitive,
+                                               AABBox& targets_box);
+
+    // 辅助：读取 accessor 数据指针和步长
+    static const uint8_t* AccessorData(const struct cgltf_accessor* accessor);
+    static uint32_t AccessorStride(const struct cgltf_accessor* accessor);
+
+private:
+    Context* m_pContext;
+
+    std::map<uint32_t, SceneComponentPtr>                  m_Nodes;
+    std::map<std::string, SceneComponentPtr>               m_NodesMapByName;
+    std::map<uint32_t, MeshComponentPtr>                   m_Meshes;
+    std::map<uint32_t, LightComponentPtr>                  m_Lights;
+    std::map<uint32_t, std::shared_ptr<MaterialResource>>  m_Materials;
+    std::map<uint32_t, LoaderTexturePtr>                   m_Textures;
+    std::map<uint32_t, LoaderImagePtr>                     m_Images;
+    std::map<uint32_t, LoaderSkinPtr>                      m_Skins;
+
+    bool m_isLoadSucceed;
+    std::string m_filePath;
+
+    // 保持 backend buffer 存活（cgltf buffer data 的生命周期管理）
+    std::vector<std::shared_ptr<BufferResource>> m_BuffersResources;
+};
+
+SEEK_NAMESPACE_END
+```
+
+变化：
+- 移除 `#include "rapidjson/document.h"` 和 `#include "importer/gltf2.h"`
+- 移除 `LoaderBuffer`、`LoaderBufferView`、`LoaderAccessor`、`LoaderAnimSampler` 四个中间类型
+- 移除所有和这几个类型相关的 map 成员（m_Buffers, m_BufferViews, m_Accessors, m_AnimSamplers）
+- 移除 `GLBInfo`、`m_isGLBFormat`、`m_Doc`、`m_ExtensionsUsed`、`m_gltfResource`、`m_fileRes`、`m_uriFileResources`
+- 移除 `LoadBuffer`、`LoadBufferView`、`LoadAccessor`、`LoadAnimationSampler`、`LoadUriFile`、`GetUriAbsolutePath`、`LoadExtensionsUsed`、`GetModelDoc`、`TickSceneFromJson`
+- 所有转换方法的输入参数从 `rapidjson::Value&` 改为 cgltf 类型
+- 新增 `AccessorData` / `AccessorStride` 辅助方法
+- `LoadTexture` 增加 `cgltf_texture_view*` 参数，cgltf 的纹理引用中提取 texCoord/scale
+- `LoadPrimitive` 改为接收 `cgltf_primitive*` 而非 `Value&`；`LoadSceneFromFile` 用 `cgltf_data` 统一传递
+
+---
+
+### Task 4: 重写 gltf2_loader.cpp — 基础结构
+
+**Files:**
+- Modify: `engine/importer/gltf2_loader.cpp`
+
+- [ ] **Step 1: 替换文件顶部 includes 和全局宏**
+
+将行 1-16：
+```cpp
 #include "gltf2_loader.h"
-#include "gltf2.h"                // gltf 命名空间辅助函数（ConvertToTopologyType 等）
 #include "utils/image_decode.h"
 #include "utils/log.h"
+#include "utils/zbase64.h"
 #include "utils/timer.h"
 #include "utils/error.h"
 #include "math/math_utility.h"
-
-// Windows.h 通过 d3d11 RHI 头文件间接包含，LoadImage 是 Windows API 宏，会与我们的方法名冲突
-#ifdef LoadImage
-#undef LoadImage
-#endif
-
-// 引入 cgltf 的函数实现（定义 CGLTF_IMPLEMENTATION 后再次 include）
-// 实现部分在 cgltf.h 的 include guard 之外，第二次 include 仍会处理
-#define CGLTF_IMPLEMENTATION
-#include "cgltf.h"
+#include <fstream>
+#include "zlib.h"
 
 using namespace std;
 using namespace seek_engine;
+using namespace rapidjson;
 
 #define SEEK_MACRO_FILE_UID 81     // this code is auto generated, don't touch it!!!
 
 SEEK_NAMESPACE_BEGIN
-
-// 将全局命名空间的 cgltf 类型引入 seek_engine
-using ::cgltf_data;
-using ::cgltf_primitive;
-using ::cgltf_material;
-using ::cgltf_texture_view;
-using ::cgltf_accessor;
-using ::cgltf_pbr_metallic_roughness;
-using ::cgltf_clearcoat;
-using ::cgltf_sheen;
 
 #define RETURN_IF_FOUND(map, key) \
     { \
@@ -45,8 +260,80 @@ using ::cgltf_sheen;
         } \
     }
 
-// ===== 辅助方法 =====
+#define INIT_AND_RETURN_IF_FOUND(vec, objname, index)       \
+    if (vec.empty())                                        \
+    {                                                       \
+        if (m_Doc.HasMember(objname))                       \
+        {                                                   \
+            Value& v = m_Doc[objname];                      \
+            if (v.IsArray())                                \
+                vec.resize(v.Size());                       \
+        }                                                   \
+    }                                                       \
+    if (index >= vec.size())                                \
+        return nullptr;                                     \
+    if (vec[index])                                         \
+        return vec[index];
+```
 
+替换为：
+```cpp
+#define CGLTF_IMPLEMENTATION
+#include "cgltf.h"
+
+#include "gltf2_loader.h"
+#include "utils/image_decode.h"
+#include "utils/log.h"
+#include "utils/timer.h"
+#include "utils/error.h"
+#include "math/math_utility.h"
+
+using namespace std;
+using namespace seek_engine;
+
+#define SEEK_MACRO_FILE_UID 81     // this code is auto generated, don't touch it!!!
+
+SEEK_NAMESPACE_BEGIN
+
+#define RETURN_IF_FOUND(map, key) \
+    { \
+        auto i = (map).find(key); \
+        if (i != (map).end()) { \
+            return i->second; \
+        } \
+    }
+```
+
+变化：
+- 移除 `zbase64.h`、`zlib.h`、`<fstream>`（cgltf 内部处理 base64/deflate/文件读取）
+- 移除 `using namespace rapidjson;`、`INIT_AND_RETURN_IF_FOUND` 宏
+- 添加 `#define CGLTF_IMPLEMENTATION` + `#include "cgltf.h"`
+
+- [ ] **Step 2: 替换构造函数和析构函数（行 42-52）**
+
+保持不变，只需确保构造函数匹配 header：
+```cpp
+glTF2_Loader::glTF2_Loader(Context* ctx)
+    : m_pContext(ctx)
+{
+    m_isLoadSucceed = true;
+}
+
+glTF2_Loader::~glTF2_Loader()
+{
+}
+```
+
+---
+
+### Task 5: 重写 gltf2_loader.cpp — LoadSceneFromFile + AccessorData/Stride
+
+**Files:**
+- Modify: `engine/importer/gltf2_loader.cpp`
+
+- [ ] **Step 1: 重写 LoadSceneFromFile（替换行 54-149）**
+
+```cpp
 const uint8_t* glTF2_Loader::AccessorData(const cgltf_accessor* accessor)
 {
     if (!accessor || !accessor->buffer_view)
@@ -61,26 +348,9 @@ uint32_t glTF2_Loader::AccessorStride(const cgltf_accessor* accessor)
     if (!accessor)
         return 0;
     if (accessor->stride > 0)
-        return (uint32_t)accessor->stride;
-    // cgltf_component_type 枚举值（1-6）与 gltf2.h 中 GLTF_COMPONENT_TYPE_* 常量（5120-5126）不同，需转换
-    return (uint32_t)gltf::ElementSize(
-        gltf::CgltfToGltfComponentType((int)accessor->component_type),
-        (int)accessor->type);
+        return accessor->stride;
+    return gltf::ElementSize((int)accessor->component_type, (int)accessor->type);
 }
-
-// ===== 构造 / 析构 =====
-
-glTF2_Loader::glTF2_Loader(Context* ctx)
-    : m_pContext(ctx)
-{
-    m_isLoadSucceed = true;
-}
-
-glTF2_Loader::~glTF2_Loader()
-{
-}
-
-// ===== 主入口 =====
 
 SResult glTF2_Loader::LoadSceneFromFile(std::string const& filePath,
                                          SceneComponentPtr& scene,
@@ -118,7 +388,7 @@ SResult glTF2_Loader::LoadSceneFromFile(std::string const& filePath,
         LOG_WARNING("glTF2_Loader: cgltf_validate warning");
     TIMER_END(t2, "glTF2_Loader: validate");
 
-    // 为每个 buffer 创建生命周期管理对象，确保 cgltf_free 后数据指针仍有效
+    // 为 buffer 创建生命周期管理对象（确保 cgltf_free 前 buffer 数据不被释放）
     m_BuffersResources.clear();
     for (size_t i = 0; i < data->buffers_count; i++)
     {
@@ -143,15 +413,23 @@ SResult glTF2_Loader::LoadSceneFromFile(std::string const& filePath,
     cgltf_free(data);
     return S_Success;
 }
+```
 
-// ===== 场景 / 节点 =====
+---
 
+### Task 6: 重写 gltf2_loader.cpp — LoadDefaultScene / LoadScene / LoadNode
+
+**Files:**
+- Modify: `engine/importer/gltf2_loader.cpp`
+
+- [ ] **Step 1: 重写 LoadDefaultScene 和 LoadScene（替换行 151-215）**
+
+```cpp
 SceneComponentPtr glTF2_Loader::LoadDefaultScene(cgltf_data* data)
 {
     SceneComponentPtr rootSC = nullptr;
     if (data->scene)
     {
-        // 指针算术获取默认场景在数组中的索引
         uint32_t index = (uint32_t)(data->scene - data->scenes);
         rootSC = LoadScene(data, index);
     }
@@ -183,6 +461,13 @@ SceneComponentPtr glTF2_Loader::LoadScene(cgltf_data* data, uint32_t index)
     }
     return sc;
 }
+```
+
+- [ ] **Step 2: 重写 LoadNode（替换行 220-333）**
+
+```cpp
+#define JsonValue2Float4(v) float4(v[0].GetFloat(), v[1].GetFloat(), v[2].GetFloat(), v[3].GetFloat())
+#define JsonValue2Float3(v) float3(v[0].GetFloat(), v[1].GetFloat(), v[2].GetFloat())
 
 SceneComponentPtr glTF2_Loader::LoadNode(cgltf_data* data, uint32_t index)
 {
@@ -212,38 +497,37 @@ SceneComponentPtr glTF2_Loader::LoadNode(cgltf_data* data, uint32_t index)
 
     m_Nodes[index] = sc;
 
-    // 矩阵变换（matrix 优先于 TRS）
+    // 矩阵
     if (node->has_matrix)
     {
         Matrix4 mat4 = Matrix4(node->matrix);
         sc->SetLocalTransform(mat4);
     }
 
-    // TRS 变换
+    // TRS
     if (node->has_rotation)
     {
-        const float* r = node->rotation;
-        Quaternion qua = Quaternion(r[0], r[1], r[2], r[3]);
+        Quaternion qua = Quaternion(node->rotation[0], node->rotation[1],
+                                    node->rotation[2], node->rotation[3]);
         sc->SetLocalRotation(qua);
     }
     if (node->has_scale)
     {
-        const float* s = node->scale;
-        float3 scale = float3{s[0], s[1], s[2]};
+        float3 scale = float3{node->scale[0], node->scale[1], node->scale[2]};
         sc->SetLocalScale(scale);
     }
     if (node->has_translation)
     {
-        const float* t = node->translation;
-        float3 pos = float3{t[0], t[1], t[2]};
+        float3 pos = float3{node->translation[0], node->translation[1],
+                            node->translation[2]};
         sc->SetLocalTranslation(pos);
     }
 
-    // 节点名称
+    // 名称
     if (node->name)
         sc->SetName(node->name);
 
-    // 子节点递归加载
+    // 子节点
     for (size_t i = 0; i < node->children_count; i++)
     {
         uint32_t child_index = (uint32_t)(node->children[i] - data->nodes);
@@ -255,15 +539,25 @@ SceneComponentPtr glTF2_Loader::LoadNode(cgltf_data* data, uint32_t index)
         }
     }
 
-    // 按名称索引，供后续查找
     if (sc->GetName() != "")
         m_NodesMapByName[sc->GetName()] = sc;
 
     return sc;
 }
+```
 
-// ===== 网格 =====
+保留 `JsonValue2Float4` / `JsonValue2Float3` 宏，后续任务中确认若已无引用则删除。
 
+---
+
+### Task 7: 重写 gltf2_loader.cpp — LoadMesh + LoadPrimitive
+
+**Files:**
+- Modify: `engine/importer/gltf2_loader.cpp`
+
+- [ ] **Step 1: 重写 LoadMesh（替换行 335-432）**
+
+```cpp
 MeshComponentPtr glTF2_Loader::LoadMesh(cgltf_data* data, uint32_t mesh_index,
                                          bool has_skin, uint32_t skin_index)
 {
@@ -275,7 +569,6 @@ MeshComponentPtr glTF2_Loader::LoadMesh(cgltf_data* data, uint32_t mesh_index,
 
     cgltf_mesh* mesh = &data->meshes[mesh_index];
 
-    // 蒙皮骨骼网格
     LoaderSkinPtr skin = nullptr;
     if (has_skin)
     {
@@ -292,7 +585,7 @@ MeshComponentPtr glTF2_Loader::LoadMesh(cgltf_data* data, uint32_t mesh_index,
 
     m_Meshes[mesh_index] = meshComponent;
 
-    // 网格名称
+    // 名称
     if (mesh->name)
         meshComponent->SetName(mesh->name);
 
@@ -305,7 +598,7 @@ MeshComponentPtr glTF2_Loader::LoadMesh(cgltf_data* data, uint32_t mesh_index,
             weights[i] = mesh->weights[i];
     }
 
-    // morph target 名称
+    // morph target names (存储在 extras 中，cgltf 通过 target_names 暴露)
     std::vector<std::string> targetNames;
     if (mesh->target_names_count > 0)
     {
@@ -317,7 +610,7 @@ MeshComponentPtr glTF2_Loader::LoadMesh(cgltf_data* data, uint32_t mesh_index,
         }
     }
 
-    // 遍历所有 primitives
+    // 遍历 primitives
     AABBox meshes_box;
     meshes_box.Min(float3(0.0f));
     meshes_box.Max(float3(0.0f));
@@ -344,9 +637,11 @@ MeshComponentPtr glTF2_Loader::LoadMesh(cgltf_data* data, uint32_t mesh_index,
 
     return meshComponent;
 }
+```
 
-// ===== 图元 / 顶点数据 =====
+- [ ] **Step 2: 重写 LoadPrimitive（替换行 491-689）**
 
+```cpp
 RHIMeshPtr glTF2_Loader::LoadPrimitive(cgltf_data* data,
                                         cgltf_primitive* primitive)
 {
@@ -360,9 +655,9 @@ RHIMeshPtr glTF2_Loader::LoadPrimitive(cgltf_data* data,
         return mesh;
 
     // 拓扑类型
-    mesh->SetTopologyType(gltf::ConvertToTopologyType((int)primitive->type - 1));
+    mesh->SetTopologyType(gltf::ConvertToTopologyType(primitive->type));
 
-    // 顶点属性解析
+    // 遍历顶点属性
     VertexAttributeResource vertexAttributeRes;
     bool hasPosition = false;
     bool hasNormal = false;
@@ -389,23 +684,21 @@ RHIMeshPtr glTF2_Loader::LoadPrimitive(cgltf_data* data,
             vertexStreams.emplace(bvIndex, VertexStream{});
             vertexStream = &vertexStreams[bvIndex];
             if (accessor->stride > 0)
-                vertexStream->stride = (uint32_t)accessor->stride;
+                vertexStream->stride = accessor->stride;
             else
                 vertexStream->stride = (uint32_t)gltf::ElementSize(
-                    gltf::CgltfToGltfComponentType((int)accessor->component_type),
-                    (int)accessor->type);
+                    (int)accessor->component_type, (int)accessor->type);
             vertexStream->offset = 0;
         }
 
         VertexStreamLayout layout;
         layout.buffer_offset = accessor->offset;
         layout.format = gltf::ConvertToVertexFormat(
-            (int)accessor->type,
-            gltf::CgltfToGltfComponentType((int)accessor->component_type));
+            (int)accessor->type, (int)accessor->component_type);
         layout.usage = vertexAttribute.first;
         layout.usage_index = vertexAttribute.second;
 
-        // Joint index 特殊处理
+        // Joint index 特殊处理：uint8/uint16 → uint32
         if (vertexAttribute.first == VertexElementUsage::BlendIndex)
         {
             layout.format = VertexFormat::UInt4;
@@ -430,7 +723,7 @@ RHIMeshPtr glTF2_Loader::LoadPrimitive(cgltf_data* data,
             {
                 const uint16_t* src16 = (const uint16_t*)src;
                 for (uint32_t j = 0; j < jointsDataSize; j++)
-                    _backJointData.get()[j] = (uint32_t)src16[j];
+                    _backJointData.get()[j] = src16[j];
             }
             vertexStream->stride = 16;
             blendIndexBufferRes.emplace(bvIndex, std::move(_backJointBuf));
@@ -458,6 +751,7 @@ RHIMeshPtr glTF2_Loader::LoadPrimitive(cgltf_data* data,
             hasTangent = true;
     }
 
+    // 组装 vertex streams
     for (auto& pair : vertexStreams)
     {
         vertexAttributeRes._vertexStreams.push_back(pair.second);
@@ -465,6 +759,7 @@ RHIMeshPtr glTF2_Loader::LoadPrimitive(cgltf_data* data,
             vertexAttributeRes._vertexBuffers.push_back(blendIndexBufferRes[pair.first]);
         else
         {
+            // 使用 cgltf buffer data 创建 BufferResource
             cgltf_buffer_view* bv = &data->buffer_views[pair.first];
             auto bufRes = MakeSharedPtr<BufferResource>();
             bufRes->_data = static_cast<uint8_t*>(bv->buffer->data) + bv->offset;
@@ -480,7 +775,7 @@ RHIMeshPtr glTF2_Loader::LoadPrimitive(cgltf_data* data,
     if (!hasTexcoord)
         LOG_ERROR("Lack texcoord in the mesh\n");
 
-    // 索引缓冲区
+    // 索引
     if (primitive->indices)
     {
         cgltf_accessor* indices_acc = primitive->indices;
@@ -488,12 +783,11 @@ RHIMeshPtr glTF2_Loader::LoadPrimitive(cgltf_data* data,
         std::shared_ptr<VertexIndicesResource> indicesResource =
             MakeSharedPtr<VertexIndicesResource>();
         indicesResource->_indexBufferType = gltf::ConvertToIndexBufferType(
-            gltf::CgltfToGltfComponentType((int)indices_acc->component_type));
+            (int)indices_acc->component_type);
         indicesResource->_indexCount = (uint32_t)indices_acc->count;
-        indicesResource->_data = const_cast<uint8_t*>(indexData);
+        indicesResource->_data = indexData;
         indicesResource->_size = (size_t)indices_acc->count *
-            (size_t)gltf::ComponentByteSize(
-                gltf::CgltfToGltfComponentType((int)indices_acc->component_type));
+            (size_t)gltf::ComponentByteSize((int)indices_acc->component_type);
         mesh->SetIndexBufferResource(indicesResource);
     }
 
@@ -511,6 +805,7 @@ RHIMeshPtr glTF2_Loader::LoadPrimitive(cgltf_data* data,
     // 材质
     if (primitive->material)
     {
+        uint32_t material_index = (uint32_t)(primitive->material - data->materials);
         std::shared_ptr<MaterialResource> material =
             LoadMaterial(data, primitive->material, hasTangent);
         if (material)
@@ -530,12 +825,27 @@ RHIMeshPtr glTF2_Loader::LoadPrimitive(cgltf_data* data,
 
     return mesh;
 }
+```
 
-// ===== 材质 =====
+注意：`gltf::ComponentByteSize` 和 `gltf::ElementSize` 现在需要接受 cgltf 枚举值（与 glTF 规范值相同）。`gltf::ComponentByteSize` 当前签名
+`int ComponentByteSize(int componentType)` 取 `componentType - GLTF_COMPONENT_TYPE_BYTE` 做索引，cgltf 的枚举值也以 5120 为起点，兼容。但调用时需显式 cast。
 
+在后续 Task 11（更新 gltf2.h）中将函数参数类型从 `int` 更新为 cgltf 枚举。
+
+---
+
+### Task 8: 重写 gltf2_loader.cpp — LoadMaterial + PBR helpers + LoadLight
+
+**Files:**
+- Modify: `engine/importer/gltf2_loader.cpp`
+
+- [ ] **Step 1: 重写 LoadMaterial（替换行 691-808）**
+
+```cpp
 std::shared_ptr<MaterialResource> glTF2_Loader::LoadMaterial(
     cgltf_data* data, cgltf_material* mat, bool hasTangent)
 {
+    // 使用 material index 做缓存
     uint32_t mat_index = (uint32_t)(mat - data->materials);
     RETURN_IF_FOUND(m_Materials, mat_index);
 
@@ -544,10 +854,11 @@ std::shared_ptr<MaterialResource> glTF2_Loader::LoadMaterial(
     if (mat->name)
         material->_name = mat->name;
 
+    // PBR metallic-roughness
     if (mat->has_pbr_metallic_roughness)
         this->LoadMetallicRoughness(data, &mat->pbr_metallic_roughness, *material.get());
 
-    // 法线贴图
+    // normal texture
     if (mat->normal_texture.texture)
     {
         if (hasTangent)
@@ -555,61 +866,56 @@ std::shared_ptr<MaterialResource> glTF2_Loader::LoadMaterial(
             LoaderTexturePtr tex = this->LoadTexture(
                 data, (uint32_t)(mat->normal_texture.texture - data->textures),
                 &mat->normal_texture);
-            if (tex && tex->imageIndex >= 0)
-            {
-                LoaderImagePtr img = this->LoadImage(data, (uint32_t)tex->imageIndex, false);
-                if (img)
-                {
-                    material->_normalImage = img->bitmapData;
-                    material->_normalScale = mat->normal_texture.scale;
-                }
-            }
+            LoaderImagePtr img = this->LoadImage(data, tex->imageIndex, false);
+            material->_normalImage = img->bitmapData;
+            material->_normalScale = mat->normal_texture.scale;
         }
         else
             LOG_WARNING("Has normal texture, but lack tangent data in the mesh\n");
     }
 
-    // 遮挡贴图
+    // occlusion texture
     if (mat->occlusion_texture.texture)
     {
         LoaderTexturePtr tex = this->LoadTexture(
             data, (uint32_t)(mat->occlusion_texture.texture - data->textures),
             &mat->occlusion_texture);
-        if (tex && tex->imageIndex >= 0)
-        {
-            LoaderImagePtr img = this->LoadImage(data, (uint32_t)tex->imageIndex, false);
-            if (img)
-                material->_occlusionImage = img->bitmapData;
-        }
+        LoaderImagePtr img = this->LoadImage(data, tex->imageIndex, false);
+        material->_occlusionImage = img->bitmapData;
     }
 
-    // 自发光贴图
+    // emissive texture
     if (mat->emissive_texture.texture)
     {
         LoaderTexturePtr tex = this->LoadTexture(
             data, (uint32_t)(mat->emissive_texture.texture - data->textures),
             &mat->emissive_texture);
-        if (tex && tex->imageIndex >= 0)
-        {
-            LoaderImagePtr img = this->LoadImage(data, (uint32_t)tex->imageIndex, false);
-            if (img)
-                material->_emmissiveImage = img->bitmapData;
-        }
+        LoaderImagePtr img = this->LoadImage(data, tex->imageIndex, false);
+        material->_emmissiveImage = img->bitmapData;
     }
 
+    // emissive factor
     material->_emissiveFactor = float3{mat->emissive_factor[0],
                                        mat->emissive_factor[1],
                                        mat->emissive_factor[2]};
 
+    // alpha mode
     switch (mat->alpha_mode)
     {
-    case cgltf_alpha_mode_mask:  material->_alphaMode = AlphaMode::Mask;  break;
-    case cgltf_alpha_mode_blend: material->_alphaMode = AlphaMode::Blend; break;
-    default:                     material->_alphaMode = AlphaMode::Opaque; break;
+    case cgltf_alpha_mode_mask:
+        material->_alphaMode = AlphaMode::Mask;
+        break;
+    case cgltf_alpha_mode_blend:
+        material->_alphaMode = AlphaMode::Blend;
+        break;
+    default:
+        material->_alphaMode = AlphaMode::Opaque;
+        break;
     }
     material->_alphaCutoff = mat->alpha_cutoff;
     material->_doubleSided = mat->double_sided;
 
+    // extensions
     if (mat->has_clearcoat)
         this->LoadClearcoat(data, &mat->clearcoat, *material.get());
     if (mat->has_sheen)
@@ -620,9 +926,57 @@ std::shared_ptr<MaterialResource> glTF2_Loader::LoadMaterial(
     m_Materials[mat_index] = material;
     return material;
 }
+```
 
-// ===== PBR 扩展 =====
+- [ ] **Step 2: 重写 LoadMetallicRoughness（替换行 810-851）**
 
+```cpp
+bool glTF2_Loader::LoadMetallicRoughness(cgltf_pbr_metallic_roughness* pbr,
+                                          MaterialResource& pMaterial)
+{
+    pMaterial._albedoFactor = float4{pbr->base_color_factor[0],
+                                     pbr->base_color_factor[1],
+                                     pbr->base_color_factor[2],
+                                     pbr->base_color_factor[3]};
+
+    pMaterial._metallicFactor = pbr->metallic_factor;
+    pMaterial._roughnessFactor = pbr->roughness_factor;
+
+    if (pbr->base_color_texture.texture)
+    {
+        // 无法从方法内访问 data->textures，通过纹理指针的传递
+        // 此处通过 data 中的 textures 数组反向计算索引，需由调用方透传 data
+        // 实际：调用此方法的 LoadMaterial 已将 data 作为成员，但这里没有 data 参数
+        // 解决：将 data 作为参数传入或用成员变量 m_data
+        LOG_WARNING("base color texture loading needs data access - handled in LoadMaterial");
+    }
+
+    if (pbr->metallic_roughness_texture.texture)
+    {
+        LOG_WARNING("metallic roughness texture loading needs data access - handled in LoadMaterial");
+    }
+
+    return true;
+}
+```
+
+等等，这里有个问题。`LoadMetallicRoughness` 需要 `data` 来计算纹理索引，但当前签名没有 `data`。需要调整设计：要么给这些辅助方法加 `data` 参数，要么纹理加载全部移到 `LoadMaterial` 中处理。
+
+**更新 Task 3 (gltf2_loader.h) 中的签名**，将以下方法都加上 `cgltf_data* data` 参数：
+
+```cpp
+    bool LoadMetallicRoughness(cgltf_data* data,
+                               struct cgltf_pbr_metallic_roughness* pbr,
+                               MaterialResource& matRes);
+    bool LoadClearcoat(cgltf_data* data,
+                       struct cgltf_clearcoat* cc, MaterialResource& matRes);
+    bool LoadSheen(cgltf_data* data,
+                   struct cgltf_sheen* sheen, MaterialResource& matRes);
+```
+
+**更正 Task 8 Step 2:**
+
+```cpp
 bool glTF2_Loader::LoadMetallicRoughness(
     cgltf_data* data, cgltf_pbr_metallic_roughness* pbr, MaterialResource& pMaterial)
 {
@@ -639,12 +993,8 @@ bool glTF2_Loader::LoadMetallicRoughness(
             data,
             (uint32_t)(pbr->base_color_texture.texture - data->textures),
             &pbr->base_color_texture);
-        if (tex && tex->imageIndex >= 0)
-        {
-            LoaderImagePtr img = this->LoadImage(data, (uint32_t)tex->imageIndex, true);
-            if (img)
-                pMaterial._albedoImage = img->bitmapData;
-        }
+        LoaderImagePtr img = this->LoadImage(data, tex->imageIndex, true);
+        pMaterial._albedoImage = img->bitmapData;
     }
 
     if (pbr->metallic_roughness_texture.texture)
@@ -653,17 +1003,17 @@ bool glTF2_Loader::LoadMetallicRoughness(
             data,
             (uint32_t)(pbr->metallic_roughness_texture.texture - data->textures),
             &pbr->metallic_roughness_texture);
-        if (tex && tex->imageIndex >= 0)
-        {
-            LoaderImagePtr img = this->LoadImage(data, (uint32_t)tex->imageIndex, false);
-            if (img)
-                pMaterial._metallicRoughnessImage = img->bitmapData;
-        }
+        LoaderImagePtr img = this->LoadImage(data, tex->imageIndex, false);
+        pMaterial._metallicRoughnessImage = img->bitmapData;
     }
 
     return true;
 }
+```
 
+- [ ] **Step 3: 重写 LoadClearcoat（替换行 853-888）**
+
+```cpp
 bool glTF2_Loader::LoadClearcoat(cgltf_data* data,
                                   cgltf_clearcoat* cc, MaterialResource& pMaterial)
 {
@@ -676,12 +1026,8 @@ bool glTF2_Loader::LoadClearcoat(cgltf_data* data,
             data,
             (uint32_t)(cc->clearcoat_texture.texture - data->textures),
             &cc->clearcoat_texture);
-        if (tex && tex->imageIndex >= 0)
-        {
-            LoaderImagePtr img = this->LoadImage(data, (uint32_t)tex->imageIndex, false);
-            if (img)
-                pMaterial._clearcoatImage = img->bitmapData;
-        }
+        LoaderImagePtr img = this->LoadImage(data, tex->imageIndex, false);
+        pMaterial._clearcoatImage = img->bitmapData;
     }
 
     if (cc->clearcoat_roughness_texture.texture)
@@ -690,17 +1036,17 @@ bool glTF2_Loader::LoadClearcoat(cgltf_data* data,
             data,
             (uint32_t)(cc->clearcoat_roughness_texture.texture - data->textures),
             &cc->clearcoat_roughness_texture);
-        if (tex && tex->imageIndex >= 0)
-        {
-            LoaderImagePtr img = this->LoadImage(data, (uint32_t)tex->imageIndex, false);
-            if (img)
-                pMaterial._clearcoatRoughnessImage = img->bitmapData;
-        }
+        LoaderImagePtr img = this->LoadImage(data, tex->imageIndex, false);
+        pMaterial._clearcoatRoughnessImage = img->bitmapData;
     }
 
     return true;
 }
+```
 
+- [ ] **Step 4: 重写 LoadSheen（替换行 890-925）**
+
+```cpp
 bool glTF2_Loader::LoadSheen(cgltf_data* data,
                               cgltf_sheen* sheen, MaterialResource& pMaterial)
 {
@@ -715,12 +1061,8 @@ bool glTF2_Loader::LoadSheen(cgltf_data* data,
             data,
             (uint32_t)(sheen->sheen_color_texture.texture - data->textures),
             &sheen->sheen_color_texture);
-        if (tex && tex->imageIndex >= 0)
-        {
-            LoaderImagePtr img = this->LoadImage(data, (uint32_t)tex->imageIndex, false);
-            if (img)
-                pMaterial._sheenColorImage = img->bitmapData;
-        }
+        LoaderImagePtr img = this->LoadImage(data, tex->imageIndex, false);
+        pMaterial._sheenColorImage = img->bitmapData;
     }
 
     if (sheen->sheen_roughness_texture.texture)
@@ -729,19 +1071,19 @@ bool glTF2_Loader::LoadSheen(cgltf_data* data,
             data,
             (uint32_t)(sheen->sheen_roughness_texture.texture - data->textures),
             &sheen->sheen_roughness_texture);
-        if (tex && tex->imageIndex >= 0)
-        {
-            LoaderImagePtr img = this->LoadImage(data, (uint32_t)tex->imageIndex, false);
-            if (img)
-                pMaterial._sheenRoughnessImage = img->bitmapData;
-        }
+        LoaderImagePtr img = this->LoadImage(data, tex->imageIndex, false);
+        pMaterial._sheenRoughnessImage = img->bitmapData;
     }
 
     return true;
 }
+```
 
-// ===== 光源 =====
+- [ ] **Step 5: 保留 LoadLight（替换行 434-489）**
 
+cgltf 通过 `cgltf_data::lights` 暴露 KHR_lights_punctual 扩展。注意 cgltf 将 lights 挂在 data 级别而非 node extensions。
+
+```cpp
 LightComponentPtr glTF2_Loader::LoadLight(cgltf_data* data, uint32_t light_index)
 {
     RETURN_IF_FOUND(m_Lights, light_index);
@@ -779,9 +1121,20 @@ LightComponentPtr glTF2_Loader::LoadLight(cgltf_data* data, uint32_t light_index
 
     return lightComponent;
 }
+```
 
-// ===== 纹理 / 图片 =====
+注意：原代码中 LoadLight 在 LoadNode 中被调用（被注释掉了），但声明保留。新版 LoadNode 中可以从 node 的 extensions 或 data 的 lights 中提取 light 信息。cgltf 当前不直接支持 `KHR_lights_punctual` 在 node 级别的 light 引用，如需完整支持需手动解析扩展 JSON。当前保持与原代码相同的行为（注释掉）。
 
+---
+
+### Task 9: 重写 gltf2_loader.cpp — LoadTexture + LoadImage
+
+**Files:**
+- Modify: `engine/importer/gltf2_loader.cpp`
+
+- [ ] **Step 1: 重写 LoadTexture（替换行 927-957）**
+
+```cpp
 LoaderTexturePtr glTF2_Loader::LoadTexture(cgltf_data* data, uint32_t tex_index,
                                             cgltf_texture_view* tex_view)
 {
@@ -803,6 +1156,7 @@ LoaderTexturePtr glTF2_Loader::LoadTexture(cgltf_data* data, uint32_t tex_index,
         else
             tex->samplerIndex = -1;
 
+        // texCoord 和 scale 来自纹理引用（texture info / texture view）
         if (tex_view)
         {
             tex->texCoord = tex_view->texcoord;
@@ -813,7 +1167,11 @@ LoaderTexturePtr glTF2_Loader::LoadTexture(cgltf_data* data, uint32_t tex_index,
     }
     return tex;
 }
+```
 
+- [ ] **Step 2: 重写 LoadImage（替换行 959-1077）**
+
+```cpp
 LoaderImagePtr glTF2_Loader::LoadImage(cgltf_data* data, uint32_t image_index,
                                         bool bColor)
 {
@@ -842,12 +1200,15 @@ LoaderImagePtr glTF2_Loader::LoadImage(cgltf_data* data, uint32_t image_index,
 
     if (cimg->buffer_view)
     {
+        // 去重：如果已有同 buffer_view + mimeType 的 image，复用 bitmapData
         for (auto& it : m_Images)
         {
-            if (it.second && it.second->mimeType == img->mimeType)
+            if (it.second->mimeType == img->mimeType)
             {
-                cgltf_image* prevImg = (it.first < data->images_count)
-                    ? &data->images[it.first] : nullptr;
+                cgltf_image* prevImg = nullptr;
+                uint32_t prevIndex = it.first;
+                if (prevIndex < data->images_count)
+                    prevImg = &data->images[prevIndex];
                 if (prevImg && prevImg->buffer_view == cimg->buffer_view)
                 {
                     img->bitmapData = it.second->bitmapData;
@@ -870,6 +1231,9 @@ LoaderImagePtr glTF2_Loader::LoadImage(cgltf_data* data, uint32_t image_index,
     {
         img->uriPath = cimg->uri;
 
+        // cgltf_load_buffers 已加载 URI 引用的文件
+        // 如果是外部图片文件（非 data URI），cgltf 不会自动加载
+        // 回退到手动文件加载
         if (cimg->buffer_view)
         {
             cgltf_buffer_view* bv = cimg->buffer_view;
@@ -897,9 +1261,18 @@ LoaderImagePtr glTF2_Loader::LoadImage(cgltf_data* data, uint32_t image_index,
     m_Images[image_index] = img;
     return img;
 }
+```
 
-// ===== 骨骼 / 动画 =====
+---
 
+### Task 10: 重写 gltf2_loader.cpp — LoadSkin + LoadAnimation + MorphTarget
+
+**Files:**
+- Modify: `engine/importer/gltf2_loader.cpp`
+
+- [ ] **Step 1: 重写 LoadSkin（替换行 1079-1142）**
+
+```cpp
 LoaderSkinPtr glTF2_Loader::LoadSkin(cgltf_data* data, uint32_t skin_index)
 {
     RETURN_IF_FOUND(m_Skins, skin_index);
@@ -911,6 +1284,7 @@ LoaderSkinPtr glTF2_Loader::LoadSkin(cgltf_data* data, uint32_t skin_index)
     cgltf_skin* cskin = &data->skins[skin_index];
     skin = MakeSharedPtr<LoaderSkin>();
 
+    // inverse bind matrices
     if (cskin->inverse_bind_matrices)
     {
         cgltf_accessor* accessor = cskin->inverse_bind_matrices;
@@ -925,6 +1299,7 @@ LoaderSkinPtr glTF2_Loader::LoadSkin(cgltf_data* data, uint32_t skin_index)
         }
     }
 
+    // joints
     for (size_t i = 0; i < cskin->joints_count; i++)
     {
         uint32_t joint_index = (uint32_t)(cskin->joints[i] - data->nodes);
@@ -935,6 +1310,7 @@ LoaderSkinPtr glTF2_Loader::LoadSkin(cgltf_data* data, uint32_t skin_index)
             LOG_ERROR("skin joints index is not correct");
     }
 
+    // skeleton root
     if (cskin->skeleton)
     {
         uint32_t skel_index = (uint32_t)(cskin->skeleton - data->nodes);
@@ -948,7 +1324,11 @@ LoaderSkinPtr glTF2_Loader::LoadSkin(cgltf_data* data, uint32_t skin_index)
     m_Skins[skin_index] = skin;
     return skin;
 }
+```
 
+- [ ] **Step 2: 重写 LoadAnimation（替换行 1144-1295）**
+
+```cpp
 void glTF2_Loader::LoadAnimation(cgltf_data* data,
                                   std::vector<AnimationComponentPtr>& animations)
 {
@@ -1012,9 +1392,11 @@ void glTF2_Loader::LoadAnimation(cgltf_data* data,
                 continue;
             }
 
+            // interpolation type
             animTrack->SetInterpolationType(
-                gltf::ConvertToInterpolationType((int)sampler->interpolation));
+                gltf::ConvertToInterpolationType(sampler->interpolation));
 
+            // 读取输入/输出数据
             cgltf_accessor* input_acc = sampler->input;
             cgltf_accessor* output_acc = sampler->output;
             if (!input_acc || !output_acc)
@@ -1105,9 +1487,11 @@ void glTF2_Loader::LoadAnimation(cgltf_data* data,
         animations.push_back(anim);
     }
 }
+```
 
-// ===== Morph Target =====
+- [ ] **Step 3: 重写 ConverterToMorphStreamUnitFromTargets（替换行 1577-1633）**
 
+```cpp
 void glTF2_Loader::ConverterToMorphStreamUnitFromTargets(
     RHIMeshPtr& mesh, cgltf_primitive* primitive, AABBox& targets_box)
 {
@@ -1115,6 +1499,7 @@ void glTF2_Loader::ConverterToMorphStreamUnitFromTargets(
     if (targetSize == 0)
         return;
 
+    // 获取第一个 target 的 POSITION accessor 以获取 count
     cgltf_morph_target* firstTarget = &primitive->targets[0];
     cgltf_accessor* firstAcc = nullptr;
     for (size_t a = 0; a < firstTarget->attributes_count; a++)
@@ -1129,7 +1514,7 @@ void glTF2_Loader::ConverterToMorphStreamUnitFromTargets(
         return;
 
     int32_t targetCount = (int32_t)firstAcc->count;
-    int32_t allTargetDataSize = (int32_t)targetSize * targetCount * 4;
+    int32_t allTargetDataSize = (int32_t)targetSize * targetCount * 4; // float4
 
     MorphTargetResource morphTargetRes;
     std::shared_ptr<float> allTargetData{
@@ -1182,9 +1567,11 @@ void glTF2_Loader::ConverterToMorphStreamUnitFromTargets(
     morphTargetRes._size = allTargetDataSize * sizeof(float);
     mesh->SetMorphTargetResource(morphTargetRes);
 }
+```
 
-// ===== 访问器（公共接口） =====
+- [ ] **Step 4: 保留访问器方法（替换行 1649-1669）**
 
+```cpp
 std::map<uint32_t, MeshComponentPtr>& glTF2_Loader::GetMeshComponentMap()
 {
     return m_Meshes;
@@ -1199,7 +1586,267 @@ std::map<std::string, SceneComponentPtr>& glTF2_Loader::GetSceneComponentMapByNa
 {
     return m_NodesMapByName;
 }
+```
+
+- [ ] **Step 5: 确认删除不再需要的方法**
+
+以下方法应已从文件中删除（对应之前替换的行）：
+- `LoadBuffer` (行 1499-1575)
+- `LoadBufferView` (行 1377-1409)
+- `LoadAccessor` (行 1346-1375)
+- `LoadAnimationSampler` (行 1297-1334)
+- `LoadUriFile` (行 1635-1647)
+- `IsURIData` (行 1411-1470)
+- `DecodeDataFromURI` (行 1472-1497)
+- `LoadExtensionsUsed` (行 151-165)
+- `GetModelDoc` (行 1664-1667)
+
+- [ ] **Step 6: 删除不再需要的宏定义和静态函数**
+
+确认以下内容已从文件中删除：
+- `parse_json_array` 模板函数 (行 1336-1344)
+- `JsonValue2Float4` / `JsonValue2Float3` 宏 (行 217-218) — 如果 LoadNode 中已移除 JSON 版本的代码
+
+---
+
+### Task 11: 更新 gltf2.h — 枚举映射函数签名
+
+**Files:**
+- Modify: `engine/importer/gltf2.h`
+
+- [ ] **Step 1: 包含 cgltf.h 并更新函数签名**
+
+在文件开头添加 `#include "cgltf.h"`，删除与 cgltf 重复的 `#define` 宏（`GLTF_MODE_*`、`GLTF_COMPONENT_TYPE_*`、`GLTF_ELEMENT_TYPE_*`、`GLB_*`）。
+
+将函数签名改为接受 cgltf 枚举：
+
+```cpp
+// gltf2.h — 更新后
+#pragma once
+#include <map>
+#include <string>
+#include "cgltf.h"
+#include "components/animation_component.h"
+#include "components/light_component.h"
+
+SEEK_NAMESPACE_BEGIN
+
+namespace gltf
+{
+
+// 保留的常量（引擎内部使用）
+#define GLTF_INVALID_INTEGER        (-1)
+#define GLTF_INVALID_ENUM           (-1)
+#define GLTF_INVALID_ARRAY_INDEX    (-1)
+
+// --- 类型转换函数 ---
+
+inline MeshTopologyType ConvertToTopologyType(cgltf_primitive_type mode)
+{
+    switch (mode)
+    {
+    case cgltf_primitive_type_points:         return MeshTopologyType::Points;
+    case cgltf_primitive_type_lines:          return MeshTopologyType::Lines;
+    case cgltf_primitive_type_line_strip:     return MeshTopologyType::Line_Strip;
+    case cgltf_primitive_type_triangles:      return MeshTopologyType::Triangles;
+    case cgltf_primitive_type_triangle_strip: return MeshTopologyType::Triangle_Strip;
+    case cgltf_primitive_type_triangle_fan:   return MeshTopologyType::Triangle_Strip; // 近似
+    default:                                  return MeshTopologyType::Unknown;
+    }
+}
+
+inline IndexBufferType ConvertToIndexBufferType(int componentType)
+{
+    switch (componentType)
+    {
+    case cgltf_component_type_r_16u:  return IndexBufferType::UInt16;
+    case cgltf_component_type_r_32u:  return IndexBufferType::UInt32;
+    default:                          return IndexBufferType::Unknown;
+    }
+}
+
+// 保留：从 cgltf_type 获取元素分量数
+inline int ConvertToElementType(cgltf_type type)
+{
+    switch (type)
+    {
+    case cgltf_type_scalar: return 1;
+    case cgltf_type_vec2:   return 2;
+    case cgltf_type_vec3:   return 3;
+    case cgltf_type_vec4:   return 4;
+    case cgltf_type_mat2:   return 4;
+    case cgltf_type_mat3:   return 9;
+    case cgltf_type_mat4:   return 16;
+    default:                return 0;
+    }
+}
+
+// 注意：以下 ComponentNum 和 ComponentByteSize 函数需要改为接收 cgltf 枚举
+// cgltf_component_type 枚举值与 glTF 规范值相同（5120-5126），与原有计算兼容
+
+inline int ComponentByteSize(int componentType)
+{
+    switch (componentType)
+    {
+    case cgltf_component_type_r_8:    return 1;
+    case cgltf_component_type_r_8u:   return 1;
+    case cgltf_component_type_r_16:   return 2;
+    case cgltf_component_type_r_16u:  return 2;
+    case cgltf_component_type_r_32u:  return 4;
+    case cgltf_component_type_r_32f:  return 4;
+    default:                          return 0;
+    }
+}
+
+inline int ComponentNumOfElementType(int elementType)
+{
+    static const int component_num[] = {0, 1, 2, 3, 4, 4, 9, 16};
+    if (elementType < 1 || elementType > 7)
+        return 0;
+    return component_num[elementType];
+}
+
+inline int ElementSize(int componentType, int elementType)
+{
+    return ComponentNumOfElementType(elementType) * ComponentByteSize(componentType);
+}
+
+// vertex attribute 转换
+inline std::pair<VertexElementUsage, uint32_t> ConvertVertexAttribute(
+    uint32_t attr_index, cgltf_attribute_type attrType)
+{
+    // 返回 Index 为 attr_index（TEXCOORD_0=0, TEXCOORD_1=1 等）
+    switch (attrType)
+    {
+    case cgltf_attribute_type_position: return {VertexElementUsage::Position,   attr_index};
+    case cgltf_attribute_type_normal:   return {VertexElementUsage::Normal,     attr_index};
+    case cgltf_attribute_type_tangent:  return {VertexElementUsage::Tangent,    attr_index};
+    case cgltf_attribute_type_texcoord: return {VertexElementUsage::TexCoord,   attr_index};
+    case cgltf_attribute_type_color:    return {VertexElementUsage::Color,      attr_index};
+    case cgltf_attribute_type_joints:   return {VertexElementUsage::BlendIndex, attr_index};
+    case cgltf_attribute_type_weights:  return {VertexElementUsage::BlendWeight,attr_index};
+    default:                            return {VertexElementUsage::Position,   0};
+    }
+}
+
+// vertex format 映射表
+static const VertexFormat _vertex_format_map[8][7] = {
+    { VertexFormat::Unknown, VertexFormat::Unknown, VertexFormat::Unknown,
+      VertexFormat::Unknown, VertexFormat::Unknown, VertexFormat::Unknown,
+      VertexFormat::Unknown },
+    { VertexFormat::Unknown, VertexFormat::Unknown, VertexFormat::Unknown,
+      VertexFormat::Unknown, VertexFormat::Int, VertexFormat::UInt,
+      VertexFormat::Float },
+    { VertexFormat::Unknown, VertexFormat::Unknown, VertexFormat::Short2,
+      VertexFormat::UShort2, VertexFormat::Int2, VertexFormat::UInt2,
+      VertexFormat::Float2 },
+    { VertexFormat::Unknown, VertexFormat::Unknown, VertexFormat::Short3,
+      VertexFormat::UShort3, VertexFormat::Int3, VertexFormat::UInt3,
+      VertexFormat::Float3 },
+    { VertexFormat::Unknown, VertexFormat::Unknown, VertexFormat::Short4,
+      VertexFormat::UShort4, VertexFormat::Int4, VertexFormat::UInt4,
+      VertexFormat::Float4 },
+    { VertexFormat::Unknown, VertexFormat::Unknown, VertexFormat::Unknown,
+      VertexFormat::Unknown, VertexFormat::Unknown, VertexFormat::Unknown,
+      VertexFormat::Unknown },
+    { VertexFormat::Unknown, VertexFormat::Unknown, VertexFormat::Unknown,
+      VertexFormat::Unknown, VertexFormat::Unknown, VertexFormat::Unknown,
+      VertexFormat::Unknown },
+    { VertexFormat::Unknown, VertexFormat::Unknown, VertexFormat::Unknown,
+      VertexFormat::Unknown, VertexFormat::Unknown, VertexFormat::Unknown,
+      VertexFormat::Unknown },
+};
+
+inline VertexFormat ConvertToVertexFormat(int elementType, int componentType)
+{
+    return _vertex_format_map[elementType][componentType - cgltf_component_type_r_8];
+}
+
+// interpolation type
+inline InterpolationType ConvertToInterpolationType(
+    cgltf_interpolation_type interp)
+{
+    switch (interp)
+    {
+    case cgltf_interpolation_type_linear:      return InterpolationType::Linear;
+    case cgltf_interpolation_type_step:        return InterpolationType::Step;
+    case cgltf_interpolation_type_cubic_spline:return InterpolationType::CubicSpline;
+    default:                                   return InterpolationType::Linear;
+    }
+}
+
+} // namespace gltf
 
 SEEK_NAMESPACE_END
+```
 
-#undef SEEK_MACRO_FILE_UID     // this code is auto generated, don't touch it!!!
+注意：
+- `ConvertVertexAttribute` 函数从接收 string 改为接收 `cgltf_attribute_type` + index
+- 调用处（LoadPrimitive）需同时传递 `attr->index` 和 `attr->type`
+- 保留宏 `GLTF_INVALID_INTEGER/ENUM/ARRAY_INDEX`（引擎内部仍在使用）
+
+---
+
+### Task 12: 清理 CMakeLists.txt 中的 rapidjson 依赖
+
+**Files:**
+- Modify: `engine/CMakeLists.txt`
+
+- [ ] **Step 1: 从 engine 的 target_link_libraries 中移除 rapidjson**
+
+修改 `engine/CMakeLists.txt:249-256`：
+
+```cmake
+target_link_libraries(${SEEK_STATICLIB_NAME} PUBLIC
+    turbojpeg
+    libpng
+    eigen
+    zlib
+    ${SEEK_STATICLIB_DEPENDENT_LIBS}
+)
+```
+
+移除 `rapidjson` 行。rapidjson 库声明保留在 `third_party/CMakeLists.txt` 中（tools 和 samples 仍在使用）。
+
+---
+
+### Task 13: 构建验证
+
+- [ ] **Step 1: 检查 seek_engine.h 是否需要调整**
+
+`engine/seek_engine.h:25` 包含 `#include "importer/gltf2_loader.h"`，后者不再 include rapidjson，但接口不变。`seek_engine.h` 无需修改。
+
+- [ ] **Step 2: CMake 配置 & 构建**
+
+```powershell
+cmake --build build --config Debug --target seek_engine-static
+```
+
+- [ ] **Step 3: 修复编译错误**
+
+根据编译错误修复代码。常见可能问题：
+1. `cgltf.h` 版本间字段名差异（如 `cgltf_clearcoat` vs `cgltf_material_clearcoat`）——按实际 cgltf 版本调整字段名
+2. `primitive->targets_count` vs `primitive->targets` —— cgltf 中 morph targets 通过 `cgltf_primitive::targets` 和 `targets_count` 访问
+3. 跨模块的 rapidjson 引用 —— 如果 samples 通过 `seek_engine.h` 间接触发了 rapidjson，需检查
+
+---
+
+### Task 14: 功能验证（运行时）
+
+- [ ] **Step 1: 构建 samples**
+
+```powershell
+cmake --build build --config Debug --target 05.DeferredShading
+```
+
+- [ ] **Step 2: 运行 Sponza 场景**
+
+```powershell
+.\build\samples\05.DeferredShading\Debug\05.DeferredShading.exe
+```
+
+验证 Sponza.gltf 正常加载和渲染。观察 LOG 输出确认加载路径正常。
+
+- [ ] **Step 3: 运行 cube/room 等其他测试场景**
+
+运行其他已知使用 glTF 的 sample 确认兼容性。
