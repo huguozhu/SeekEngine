@@ -69,6 +69,18 @@ private:
 // ============================================================================
 // SceneParticles — 粒子系统场景（原 02.Particles）
 // ============================================================================
+static const char* g_szParticleFileNames[] = {
+    "fire_3x3",
+    "fire_4x4",
+    "wave_5x4",
+    "nine_birds_3x3",
+    "particle_3x3_reflect",
+    "particle_no_tex",
+    "particle_pos_over_time",
+    "particle_pos_over_time_tex",
+    "particle_pos_over_time_plus_size_over_life",
+};
+
 class SceneParticles : public IScene
 {
 public:
@@ -104,6 +116,30 @@ public:
 
     void OnDestroy(Context* ctx) override
     {
+        DestroyParticles();
+
+        if (m_pCameraEntity)
+            m_pCameraEntity->DeleteFromTopScene();
+        m_pCameraEntity = nullptr;
+    }
+
+    // ====================================================================
+    // IMGUI 粒子选择 UI（由 Tutorial::OnUpdate 中 IMGUI 帧内调用）
+    // ====================================================================
+    void ShowUI()
+    {
+        int current = (int)m_iParticleIndex;
+        if (ImGui::Combo("Particle", &current, g_szParticleFileNames, IM_ARRAYSIZE(g_szParticleFileNames)))
+        {
+            DestroyParticles();
+            m_iParticleIndex = (uint32_t)current;
+            CreateParticleEntities();
+        }
+    }
+
+private:
+    void DestroyParticles()
+    {
         for (auto& e : m_ParticleList)
         {
             if (e) e->DeleteFromTopScene();
@@ -111,26 +147,21 @@ public:
         m_ParticleList.clear();
         m_pParticleComponentList.clear();
         m_vBitmaps.clear();
-
-        if (m_pCameraEntity)
-            m_pCameraEntity->DeleteFromTopScene();
-        m_pCameraEntity = nullptr;
     }
 
-private:
     void CreateParticleEntities()
     {
-        const uint32_t file_index = 3;
+        const uint32_t file_index = m_iParticleIndex;
         std::string filepaths[] = {
-            AppFramework::FullPath("02.Particles/fire_3x3.json"),
-            AppFramework::FullPath("02.Particles/fire_4x4.json"),
-            AppFramework::FullPath("02.Particles/wave_5x4.json"),
-            AppFramework::FullPath("02.Particles/nine_birds_3x3.json"),
-            AppFramework::FullPath("02.Particles/particle_3x3_reflect.json"),
-            AppFramework::FullPath("02.Particles/particle_no_tex.json"),
-            AppFramework::FullPath("02.Particles/particle_pos_over_time.json"),
-            AppFramework::FullPath("02.Particles/particle_pos_over_time_tex.json"),
-            AppFramework::FullPath("02.Particles/particle_pos_over_time_plus_size_over_life.json"),
+            AppFramework::FullPath("asset/particles/fire_3x3.json"),
+            AppFramework::FullPath("asset/particles/fire_4x4.json"),
+            AppFramework::FullPath("asset/particles/wave_5x4.json"),
+            AppFramework::FullPath("asset/particles/nine_birds_3x3.json"),
+            AppFramework::FullPath("asset/particles/particle_3x3_reflect.json"),
+            AppFramework::FullPath("asset/particles/particle_no_tex.json"),
+            AppFramework::FullPath("asset/particles/particle_pos_over_time.json"),
+            AppFramework::FullPath("asset/particles/particle_pos_over_time_tex.json"),
+            AppFramework::FullPath("asset/particles/particle_pos_over_time_plus_size_over_life.json"),
         };
         std::ifstream inp(filepaths[file_index]);
         std::stringstream buffer;
@@ -269,6 +300,7 @@ private:
     std::vector<ParticleComponentPtr> m_pParticleComponentList;
     std::vector<BitmapBufferPtr> m_vBitmaps;
     FirstPersonCameraController m_CameraController;
+    uint32_t m_iParticleIndex = 5; // 默认选中 particle_no_tex
 };
 
 // ============================================================================
@@ -658,7 +690,7 @@ public:
         m_vScenes.push_back(MakeSharedPtr<SceneLighting>());
 
         // 直接创建首个场景，不经过 SwitchScene 的判等逻辑
-        m_iActiveSceneIndex = 3;
+        m_iActiveSceneIndex = 1;
         m_pCurScene = m_vScenes[m_iActiveSceneIndex];
         return m_pCurScene->OnCreate(m_pContext.get());
     }
@@ -676,6 +708,12 @@ public:
 
         IMGUI_Begin();
         ShowSceneSelector();
+        // 粒子场景显示粒子选择UI
+        if (m_iActiveSceneIndex == 1 && m_pCurScene)
+        {
+            auto* pParticles = static_cast<SceneParticles*>(m_pCurScene.get());
+            pParticles->ShowUI();
+        }
         // SDF 场景显示子场景UI
         if (m_iActiveSceneIndex == 2 && m_pCurScene)
         {

@@ -1,0 +1,36 @@
+[
+  {
+	"duration"	: -1,
+	"position": [0.0, 0.0, 0.0],
+	"emit_direction_type":2,
+	"direction": [1.0, 1.0, 0.1],
+	"direction_spread_percent": 20,
+	"emit_shape_type"	: 0,
+	"sphere_radius" : 0.0,
+	"box_size" : [0, 0, 0.0],
+	"particles_per_sec": 10000,	
+	"min_init_speed":1.00,
+	"max_init_speed":2.00,
+	"min_life_time":6.002,
+	"max_life_time":12.002,
+	
+	"gravity": [0.0, -0.50, 0.0],
+	"wind": [0.0, 0.0, 0.0],
+	"particle_size" : [0.0050, 0.0050],
+	"particle_color_over_life" : {
+		"0.0": [ 1.0, 0.0, 0.0, 1.0],
+		"0.2": [ 0.0, 1.0, 0.0, 1.0],
+		"0.4": [ 0.0, 0.0, 1.0, 1.0],
+		"0.6": [ 0.0, 1.0, 1.0, 1.0],
+		"0.8": [ 1.0, 0.0, 1.0, 1.0],
+		"1.0": [ 1.0, 1.0, 0.0, 1.0]
+	},
+	
+	"tex_rows":3,
+	"tex_cols":3,
+	"tex_frames_per_sec":6,
+	"tex_time_sampling_type":1,
+	"tex_path": ""
+  }
+  
+]
