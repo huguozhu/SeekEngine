@@ -25,11 +25,6 @@ enum class RHIType : uint32_t
     GLES,       // not supported yet
 };
 
-enum class LightingMode : uint32_t
-{
-    Phong,
-    PBR,
-};
 static const float PBR_INTENSITY_COEFF = 120000.0f;
 
 enum class AntiAliasingMode : uint32_t
@@ -64,7 +59,7 @@ struct RenderInitInfo
     RHIType                 rhi_type = RHIType::D3D11;
     uint32_t                num_samples = 1;
     int32_t                 preferred_adapter = 0;
-    LightingMode            lighting_mode = LightingMode::Phong;
+    bool                    lighting_mode = true; // 已废弃，保留兼容性
     RendererType            renderer_type = RendererType::Forward;
 
     AntiAliasingMode        anti_aliasing_mode = AntiAliasingMode::None;
@@ -102,8 +97,7 @@ public:
     uint32_t                GetNumSamples()             const { return m_InitInfo.num_samples; }
     bool                    IsHDR()                     const { return m_InitInfo.HDR; }
     RHIType                 GetRHIType()                const { return m_InitInfo.rhi_type; }
-    LightingMode            GetLightingMode()           const { return m_InitInfo.lighting_mode; }
-	RendererType            GetRendererType()           const { return m_InitInfo.renderer_type; }
+    RendererType            GetRendererType()           const { return m_InitInfo.renderer_type; }
     AntiAliasingMode        GetAntiAliasingMode()       const { return m_InitInfo.anti_aliasing_mode; }
     FPSLimitType            GetFpsLimitType()           const { return m_InitInfo.fps_limit_type; }
 	GlobalIlluminationMode  GetGlobalIlluminationMode() const { return m_InitInfo.gi_mode; }
@@ -113,7 +107,6 @@ public:
     double                  GetDeltaTime()              const { return m_dDeltaTime; }
 
     // For edit/debug mode
-    void                SetLightingMode(LightingMode lightMode) { m_InitInfo.lighting_mode = lightMode; }
     void                SetAntiAliasingMode(AntiAliasingMode mode) { m_InitInfo.anti_aliasing_mode = mode; }
     void                SetHDR(bool b) { m_InitInfo.HDR = b; }
     void                SetEnableTransparent(bool b) { m_InitInfo.enable_transparent = b; }

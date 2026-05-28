@@ -1,4 +1,3 @@
-//PREDEFINE:LIGHT_MODE=0,1
 //PREDEFINE:HAS_MATERIAL_ALBEDO=0,1
 //PREDEFINE:HAS_MATERIAL_NORMAL=0,1
 //PREDEFINE:HAS_MATERIAL_METALLIC_ROUGHNESS=0,1
@@ -89,11 +88,7 @@ float3 CalcLighting(MaterialParam materialParam, LightInfo lightInfo, float2 iTe
             float3 posToLight = lightInfo.posWorld - posWorld;
             lightAttenuation = GetDistanceAttenuation(posToLight, lightInfo.falloffRadius);
         }
-#if LIGHT_MODE == 1
         Lo = CalcLightingBRDF(materialParam, lightInfo, lightAttenuation, N, L, V, shadow);
-#else
-        Lo = CalcLightingPhong(materialParam, lightInfo, lightAttenuation, N, L, V, shadow);
-#endif
     }
     return Lo;
 }

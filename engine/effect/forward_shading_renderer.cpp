@@ -81,10 +81,6 @@ SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tech
 
         case RenderStage::RenderScene:
         {
-            EffectPredefine lightModePredefine;
-            lightModePredefine.name = "LIGHT_MODE";
-            lightModePredefine.value = std::to_string((int)m_pContext->GetLightingMode());
-
 			MaterialPtr pMaterial = mesh->GetMaterial();
             uint32_t has_tex_normal = pMaterial && pMaterial->normal_tex ? 1 : 0;
             EffectPredefine hasNormalTexPredefine;
@@ -93,7 +89,6 @@ SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tech
 
             predefines.push_back(jointBindSizePredefine);
             predefines.push_back(morphTypePredefine);
-            predefines.push_back(lightModePredefine);
             predefines.push_back(hasNormalTexPredefine);
 
             if (pMaterial && pMaterial->albedo_tex)

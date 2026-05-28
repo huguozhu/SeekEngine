@@ -25,8 +25,7 @@ int APP_RUN(AppFramework* app)
 SResult AppFramework::InitContext(void* device, void* native_wnd)
 {
     RenderInitInfo info;
-    info.enable_debug = true; 
-    info.lighting_mode = LightingMode::Phong;
+    info.enable_debug = true;
     info.preferred_adapter = 0;
     info.HDR = false;
 

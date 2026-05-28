@@ -202,9 +202,6 @@ SResult MeshComponent::OnRenderBegin(Technique* tech, RHIMeshPtr mesh)
     // TAA enabled from context
     tech->SetSpecializationConstant("g_EnableTAA", m_pContext->GetAntiAliasingMode() == AntiAliasingMode::TAA ? 1 : 0);
 
-    // Lighting mode from context
-    tech->SetSpecializationConstant("g_LightMode", m_pContext->GetLightingMode() == LightingMode::PBR ? 1 : 0);
-
     // Morph type
     int32_t morphType = 0;
     if (mesh->HasMorphTarget())

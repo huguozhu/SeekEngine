@@ -224,19 +224,6 @@ void IMGUI_ShowControl(Context* ctx, void* app_framework)
 {
     if (ImGui::CollapsingHeader("Control" UID, ImGuiTreeNodeFlags_DefaultOpen))
     {
-        // Light Mode
-        {
-            int lightingMode = (int)ctx->GetLightingMode();
-            ImGui::RadioButton("Phong", &lightingMode, 0); ImGui::SameLine();
-            ImGui::RadioButton("PBR",   &lightingMode, 1);
-            if (lightingMode != (int)ctx->GetLightingMode())
-            {
-                LightingMode lightMode = (LightingMode)lightingMode;
-//                bool hdr = lightMode == LightingMode::Phong ? false : true;
-//                ctx->SetHDR(hdr);
-                ctx->SetLightingMode(lightMode);
-            }
-        }
         // HDR
         {
             bool b = ctx->IsHDR();
@@ -390,21 +377,18 @@ void ShowMesh(Context* ctx, RHIMeshPtr mesh, int& uid)
     MaterialPtr material = mesh->GetMaterial();
     if (ImGui::TreeNodeEx(UID, 0, "[Mesh] %s", material->name.c_str()))
     {
-        if (ctx->GetLightingMode() == LightingMode::PBR)
+        ImGui::Text("");
+        if (mesh->HasMorphTarget())
         {
-            ImGui::Text("");
-            if (mesh->HasMorphTarget())
-            {
-                ImGui::SameLine(); ImGui::Text("[%lu Morphs]", mesh->GetMorphInfo().morph_target_names.size());
-            }
-            if (mesh->GetSkinningJointBindSize() != SkinningJointBindSize::None)
-            {
-                ImGui::SameLine(); ImGui::Text("[%d Skinging Joints]", (int)mesh->GetSkinningJointBindSize());
-            }
-
-            ImGui::SliderFloat("metallic_factor", &material->metallic_factor, 0., 1.);
-            ImGui::SliderFloat("roughness_factor", &material->roughness_factor, 0., 1.);
+            ImGui::SameLine(); ImGui::Text("[%lu Morphs]", mesh->GetMorphInfo().morph_target_names.size());
         }
+        if (mesh->GetSkinningJointBindSize() != SkinningJointBindSize::None)
+        {
+            ImGui::SameLine(); ImGui::Text("[%d Skinging Joints]", (int)mesh->GetSkinningJointBindSize());
+        }
+
+        ImGui::SliderFloat("metallic_factor", &material->metallic_factor, 0., 1.);
+        ImGui::SliderFloat("roughness_factor", &material->roughness_factor, 0., 1.);
         ImGui::TreePop();
     }
     ImGui::PopID();
@@ -496,12 +480,9 @@ void SceneRecursion(Context* ctx, SceneComponentPtr sc, int& uid)
                         if (ImGui::InputFloat3("Light Pos", lightPos.data()))
                             light->SetLightPos(lightPos);
 
-                        if (ctx->GetLightingMode() == LightingMode::PBR)
-                        {
-                            float falloffRadius = light->GetFalloffRadius();
-                            if (ImGui::InputFloat("Falloff Radius", &falloffRadius))
-                                light->SetFalloffRadius(falloffRadius);
-                        }
+                        float falloffRadius = light->GetFalloffRadius();
+                        if (ImGui::InputFloat("Falloff Radius", &falloffRadius))
+                            light->SetFalloffRadius(falloffRadius);
 
                         if (lightType == LightType::Spot)
                         {
@@ -520,24 +501,21 @@ void SceneRecursion(Context* ctx, SceneComponentPtr sc, int& uid)
             case ComponentType::Camera:
             {
                 ImGui::SameLine(); ImGui::Text("[Camera Component]");
-                if (ctx->GetLightingMode() == LightingMode::PBR)
+                CameraComponent* cc = ctx->SceneManagerInstance().GetActiveCamera();
+                if (cc)
                 {
-                    CameraComponent* cc = ctx->SceneManagerInstance().GetActiveCamera();
-                    if (cc)
-                    {
-                        float v1, v2, v3;
-                        v1 = cc->GetAperture();
-                        if (ImGui::SliderFloat("Aperture", &v1, MIN_APERTURE, MAX_APERTURE / 2))
-                            cc->SetAperture(v1);
+                    float v1, v2, v3;
+                    v1 = cc->GetAperture();
+                    if (ImGui::SliderFloat("Aperture", &v1, MIN_APERTURE, MAX_APERTURE / 2))
+                        cc->SetAperture(v1);
 
-                        v2 = cc->GetShutterSpeed();
-                        if (ImGui::SliderFloat("ShutterSpeed", &v2, MIN_SHUTTER_SPEED, MAX_SHUTTER_SPEED / 600))
-                            cc->SetShutterSpeed(v2);
+                    v2 = cc->GetShutterSpeed();
+                    if (ImGui::SliderFloat("ShutterSpeed", &v2, MIN_SHUTTER_SPEED, MAX_SHUTTER_SPEED / 600))
+                        cc->SetShutterSpeed(v2);
 
-                        v3 = cc->GetSensitivity();
-                        if (ImGui::SliderFloat("Sensitivity", &v3, MIN_SENSITIVITY, MAX_SENSITIVITY / 100))
-                            cc->SetSensitivity(v3);
-                    }
+                    v3 = cc->GetSensitivity();
+                    if (ImGui::SliderFloat("Sensitivity", &v3, MIN_SENSITIVITY, MAX_SENSITIVITY / 100))
+                        cc->SetSensitivity(v3);
                 }
                 break;
             }

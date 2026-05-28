@@ -95,9 +95,7 @@ SResult SceneRenderer::FillLightInfoByLightIndex(LightInfo& info, CameraComponen
     if (!light || !pCamera)
         return ERR_INVALID_ARG;
 
-    float exposure = 1.0;
-    if (m_pContext->GetLightingMode() == LightingMode::PBR)
-        exposure = pCamera->GetExposure() * PBR_INTENSITY_COEFF;
+    float exposure = pCamera->GetExposure() * PBR_INTENSITY_COEFF;
 
     LightType type = light->GetLightType();
     info.color = light->GetColor().ToFloat3();

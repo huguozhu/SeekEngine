@@ -19,22 +19,6 @@ float GetSpotAngleAttenuation(float3 L, float3 lightDirection, float2 lightInOut
 	return smoothstep(lightInOutCutoff.y, lightInOutCutoff.x, theta);
 }
 
-float3 CalcLightingPhong(MaterialParam materialParam, LightInfo lightInfo, float lightAttenuation,
-                           float3 N, float3 L, float3 V, float shadow)
-{
-    float3 albedo = materialParam.albedo;
-    float3 H = normalize(L + V);
-
-    // diffuse
-	float diffuse = max(dot(N, L), 0.0);
-	
-	// specular
-	float specular = pow(max(0.0, dot(H, N)), 16);
-
-    // 0.5 : specular strenght
-    return albedo * lightInfo.color * (diffuse + specular * 0.5) * (1.0 - shadow) * lightAttenuation * lightInfo.intensity;
-}
-
 // N, L, V must be normalized, and start point is fragment
 float3 CalcLightingBRDF(float3 albedo, float metallic, float roughness, float3 light_color, float light_intensity, float lightAttenuation, float3 N, float3 L, float3 V, float shadow)
 {

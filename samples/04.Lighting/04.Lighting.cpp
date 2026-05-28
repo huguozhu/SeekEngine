@@ -217,7 +217,6 @@ SResult Lighting::InitContext(void* device, void* native_wnd)
     RenderInitInfo info;
     info.enable_debug = true;
     info.renderer_type = RendererType::Forward;
-    info.lighting_mode = LightingMode::Phong;
     info.preferred_adapter = 0;
     info.HDR = true;
 
