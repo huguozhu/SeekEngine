@@ -41,10 +41,6 @@ target_link_libraries(turbojpeg INTERFACE ${SEEK_THIRDPARTY_DIR}/libjpeg-turbo/l
 add_library(rapidjson INTERFACE)
 target_include_directories(rapidjson INTERFACE ${SEEK_THIRDPARTY_DIR}/rapidjson/include)
 
-################################################ eigen ################################################
-add_library(eigen INTERFACE)
-target_include_directories(eigen INTERFACE ${SEEK_THIRDPARTY_DIR}/eigen/include)
-
 ################################################ zlib ################################################
 add_library(zlib INTERFACE)
 target_include_directories(zlib INTERFACE ${SEEK_THIRDPARTY_DIR}/zlib/include)

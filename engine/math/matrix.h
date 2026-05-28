@@ -2,8 +2,6 @@
 
 #include "kernel/kernel.h"
 #include "math/vector.h"
-//#include "Eigen/Dense"
-//using namespace Eigen;
 
 SEEK_NAMESPACE_BEGIN
 

@@ -248,7 +248,6 @@ target_link_libraries(${SEEK_STATICLIB_NAME} PUBLIC
     turbojpeg
     libpng
     rapidjson
-    eigen
     zlib
     ${SEEK_STATICLIB_DEPENDENT_LIBS}
 )

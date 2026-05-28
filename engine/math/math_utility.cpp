@@ -3,11 +3,6 @@
 #include <cmath>
 #include <random>
 
-//#ifndef SEEK_PLATFORM_ANDROID // TODO: not support ndk12
-//#include "Eigen/Dense"
-//using namespace Eigen;
-//#endif
-
 SEEK_NAMESPACE_BEGIN
 
 namespace Math {

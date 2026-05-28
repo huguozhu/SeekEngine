@@ -25,7 +25,6 @@ target_link_libraries(${SAMPLE_COMMON_PROJECT_NAME}
     PUBLIC
         IMGUI
         rapidjson
-        eigen
         #ovrAvatar2
         #openpnp_capture
         ${SAMPLE_DEPENDENT_LIBS}

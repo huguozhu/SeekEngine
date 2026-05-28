@@ -59,7 +59,6 @@ struct RenderInitInfo
     RHIType                 rhi_type = RHIType::D3D11;
     uint32_t                num_samples = 1;
     int32_t                 preferred_adapter = 0;
-    bool                    lighting_mode = true; // 已废弃，保留兼容性
     RendererType            renderer_type = RendererType::Forward;
 
     AntiAliasingMode        anti_aliasing_mode = AntiAliasingMode::None;
