@@ -48,7 +48,7 @@ protected:
     SResult                 InitGenRsm();
 
 protected:
-    // for RSM & LPV & VXGI
+    // for RSM & LPV
     RHITexturePtr           m_pRsmTexs[3] = { nullptr };    // 0:Normal     1:Position    2:Flux
     RHITexturePtr           m_pRsmDepthTex = nullptr;
     RHIFrameBufferPtr       m_pGenRsmFb = nullptr;
@@ -118,25 +118,5 @@ private:
     static const std::string TechName_LPVPropagation;
 };
 
-
-/******************************************************************************
- * VXGI : Voxel Cone Tracing 
- ******************************************************************************/
-class VXGI : public GlobalIllumination
-{
-public:
-    VXGI(Context* context);
-
-    virtual SResult OnBegin() override;
-    virtual SResult Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, RHITexturePtr const& gbuffer_depth);
-
-
-private:
-    RHITexturePtr   m_pTexVoxel3D = nullptr;
-    RHITexturePtr   m_pTexVoxel3D_Copy = nullptr;
-
-
-
-};
 
 SEEK_NAMESPACE_END

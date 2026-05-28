@@ -180,11 +180,6 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_window.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d11/d3d11_window.cpp
 
-    ## vulkan rhi
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_rhi_context.h
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_rhi_context.cpp
-    #${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_rhi_context_factory.cpp
-
     # resource
     ${SEEK_ENGINE_SOURCE_DIR}/resource/resource_mgr.h
     ${SEEK_ENGINE_SOURCE_DIR}/resource/resource_mgr.cpp

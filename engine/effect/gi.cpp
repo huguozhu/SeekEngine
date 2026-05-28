@@ -20,7 +20,6 @@ SEEK_NAMESPACE_BEGIN
 
 static const uint32_t RSM_MIPMAP_LEVELS = 5;
 static const uint32_t RSM_SIZE = 512;
-static const uint32_t VXGI_VOLUME_SIZE = 256;
 
 /******************************************************************************
  * GlobalIllumination
@@ -537,36 +536,6 @@ RendererReturnValue LPV::PostProcessReflectiveShadowMapJob(uint32_t light_index)
     this->LPVCalcIndirect(light_index);
     return RRV_NextJob;
 }
-
-/******************************************************************************
- * VXGI : Voxel Cone Tracing 
- ******************************************************************************/
-VXGI::VXGI(Context* context)
-    :GlobalIllumination(context)
-{
-    m_eMode = GlobalIlluminationMode::VXGI;
-}
-
-SResult VXGI::OnBegin()
-{
-    SEEK_RETIF_FAIL(GlobalIllumination::OnBegin());
-    return S_Success;
-}
-SResult VXGI::Init(RHITexturePtr const& gbuffer0, RHITexturePtr const& gbuffer1, RHITexturePtr const& gbuffer_depth)
-{
-    RHIContext& rc = m_pContext->RHIContextInstance();
-    RHITexture::Desc desc;
-    desc.type = TextureType::Tex3D;
-    desc.width = desc.height = desc.depth = VXGI_VOLUME_SIZE;
-    desc.num_mips = 1;
-    desc.num_samples = 1;
-    desc.flags = RESOURCE_FLAG_GPU_READ | RESOURCE_FLAG_GPU_WRITE;
-    desc.format = PixelFormat::R8G8B8A8_UNORM;
-    m_pTexVoxel3D = rc.CreateTexture3D(desc);
-    m_pTexVoxel3D_Copy = rc.CreateTexture3D(desc);
-    return S_Success;
-}
-
 
 SEEK_NAMESPACE_END
 

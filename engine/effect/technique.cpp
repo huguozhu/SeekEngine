@@ -375,49 +375,6 @@ SResult Technique::Render(RHIMeshPtr const& mesh)
         mesh->SetRenderState(state);
     }
 
-    if (m_pContext->GetRHIType() == RHIType::GLES && !m_bOpenGLAlreadyRemapBinding)
-    {
-        // OpenGL need to remap the binding point, it need to be unique in the whole program
-        uint32_t uboBinding = 0;
-        //uint32_t ssboBinding = 0;
-        uint32_t samplerBinding = 0;
-        for (auto& paramPair : m_params)
-        {
-            auto& param = paramPair.second;
-            for (size_t stage = 0; stage != SHADER_STAGE_COUNT; stage++)
-            {
-                if (param.bindings[stage] == INVALID_BINDING_POINT)
-                    continue;
-                switch (param.dataType)
-                {
-                case EffectDataType::ConstantBuffer:
-                {
-                    param.bindings[stage] = uboBinding++;
-                    break;
-                }
-                //case EffectDataType::Buffer:
-                //{
-                //    param.bindings[stage] = ssboBinding++;
-                //    break;
-                //}
-                //case EffectDataType::RWBuffer:
-                //{
-                //    param.bindings[stage] = ssboBinding++;
-                //    break;
-                //}
-                case EffectDataType::SampledTexture:
-                {
-                    param.bindings[stage] = samplerBinding++;
-                    break;
-                }
-                default:
-                    break;
-                }
-            }
-        }
-        m_bOpenGLAlreadyRemapBinding = true;
-    }
-
     rc.BindRHIProgram(m_pProgram.get());
     Commit();
     SResult ret = rc.Render(m_pProgram.get(), mesh);
@@ -501,58 +458,42 @@ SResult Technique::Commit()
             }
             default:
             {
-                if (m_pContext->GetRHIType() != RHIType::GLES)
+                switch (param.dataType)
                 {
-                    switch (param.dataType)
-                    {
-                    case EffectDataType::Texture:
-                    {
-                        RHITexturePtr tex;
-                        param.variable->Value(tex);
-                        if (tex)
-                            rc.BindTexture((ShaderType)stage, param.bindings[stage], tex.get(), param.name.c_str());
-                        else
-                            LOG_WARNING("param %s has no resource binding", param.name.c_str());
-                        break;
-                    }
-                    case EffectDataType::RWTexture:
-                    {
-                        RHITexturePtr tex;
-                        param.variable->Value(tex);
-                        if (tex)
-                            rc.BindRWTexture((ShaderType)stage, param.bindings[stage], tex.get(), param.name.c_str());
-                        else
-                            LOG_WARNING("param %s has no resource binding", param.name.c_str());
-                        break;
-                    }
-                    case EffectDataType::Sampler:
-                    {
-                        RHISamplerPtr sampler;
-                        param.variable->Value(sampler);
-                        if (!sampler)
-                        {
-                            sampler = rc.GetSampler(SamplerDesc::GetSamplerDescByName(param.name));
-                            *(param.variable) = sampler;
-                        }
-                        rc.BindSampler((ShaderType)stage, param.bindings[stage], sampler.get(), param.name.c_str());
-                        break;
-                    }
-                    default:
-                        break;
-                    }
+                case EffectDataType::Texture:
+                {
+                    RHITexturePtr tex;
+                    param.variable->Value(tex);
+                    if (tex)
+                        rc.BindTexture((ShaderType)stage, param.bindings[stage], tex.get(), param.name.c_str());
+                    else
+                        LOG_WARNING("param %s has no resource binding", param.name.c_str());
+                    break;
                 }
-                else
+                case EffectDataType::RWTexture:
                 {
-                    if (param.dataType == EffectDataType::SampledTexture)
+                    RHITexturePtr tex;
+                    param.variable->Value(tex);
+                    if (tex)
+                        rc.BindRWTexture((ShaderType)stage, param.bindings[stage], tex.get(), param.name.c_str());
+                    else
+                        LOG_WARNING("param %s has no resource binding", param.name.c_str());
+                    break;
+                }
+                case EffectDataType::Sampler:
+                {
+                    RHISamplerPtr sampler;
+                    param.variable->Value(sampler);
+                    if (!sampler)
                     {
-                        auto texIt = m_params.find(param.textureParamName);
-                        if (texIt != m_params.end())
-                        {
-                            RHITexturePtr tex = nullptr;
-                            texIt->second.variable->Value(tex);
-                            rc.BindTexture((ShaderType)stage, param.bindings[stage], tex.get(), param.name.c_str());
-                        }
+                        sampler = rc.GetSampler(SamplerDesc::GetSamplerDescByName(param.name));
+                        *(param.variable) = sampler;
                     }
+                    rc.BindSampler((ShaderType)stage, param.bindings[stage], sampler.get(), param.name.c_str());
+                    break;
+                }
+                default:
+                    break;
                 }
             }
             }
@@ -594,35 +535,25 @@ void Technique::Uncommit()
             }
             default:
             {
-                if (m_pContext->GetRHIType() != RHIType::GLES)
+                switch (param.dataType)
                 {
-                    switch (param.dataType)
-                    {
-                    case EffectDataType::Texture:
-                    {
-                        rc.BindTexture((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
-                        break;
-                    }
-                    case EffectDataType::RWTexture:
-                    {
-                        rc.BindRWTexture((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
-                        break;
-                    }
-                    case EffectDataType::Sampler:
-                    {
-                        rc.BindSampler((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
-                        break;
-                    }
-                    default:
-                        break;
-                    }
+                case EffectDataType::Texture:
+                {
+                    rc.BindTexture((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
+                    break;
                 }
-                else
+                case EffectDataType::RWTexture:
                 {
-                    if (param.dataType == EffectDataType::SampledTexture)
-                    {
-                        rc.BindTexture((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
-                    }
+                    rc.BindRWTexture((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
+                    break;
+                }
+                case EffectDataType::Sampler:
+                {
+                    rc.BindSampler((ShaderType)stage, param.bindings[stage], nullptr, nullptr);
+                    break;
+                }
+                default:
+                    break;
                 }
             }
             }

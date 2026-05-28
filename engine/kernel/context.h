@@ -21,8 +21,6 @@ enum class RHIType : uint32_t
 {
     Unknown,
     D3D11,
-    Metal,      // not supported yet
-    GLES,       // not supported yet
 };
 
 static const float PBR_INTENSITY_COEFF = 120000.0f;
@@ -45,16 +43,13 @@ enum class GlobalIlluminationMode : uint32_t
     None,
     RSM,
     LPV,        // Light Propagation Volumes Global Illumination
-    VXGI,       // Voxel Cone Tracing Global Illumination
 };
 struct RenderInitInfo
 {
-    uint32_t                is_full_screen = false;
     uint32_t                enable_debug = false;
     uint32_t                enable_profile = false;
     uint32_t                enable_transparent = false;
     uint32_t                enable_ambient_occlusion = false;
-    uint32_t                enable_capture = false;
     RHIType                 rhi_type = RHIType::D3D11;
     uint32_t                num_samples = 1;
     int32_t                 preferred_adapter = 0;
@@ -86,9 +81,8 @@ public:
     void                    SetClearColor(float4 color) { m_fClearColor = color; }
     float4                  GetClearColor() const { return m_fClearColor; }
 
-    bool                    IsFullScreen()              const { return m_InitInfo.is_full_screen; }
-    bool                    EnableProfile()             const { return m_InitInfo.enable_profile; }
     bool                    EnableDebug()               const { return m_InitInfo.enable_debug; }
+    bool                    EnableProfile()             const { return m_InitInfo.enable_profile; }
     bool                    EnableTransparent()         const { return m_InitInfo.enable_transparent; }
     bool                    EnableAmbientOcclusion()    const { return m_InitInfo.enable_ambient_occlusion;}  
     int32_t                 GetPreferredAdapter()       const { return m_InitInfo.preferred_adapter; }

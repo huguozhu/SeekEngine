@@ -268,8 +268,6 @@ private:
     std::array<ShaderResourcePtr, SHADER_STAGE_COUNT> m_shaderRes; // shader names which is actived
     RHIProgramPtr m_pProgram{ nullptr };
 
-    bool m_bOpenGLAlreadyRemapBinding = false;
-    
 private:
     friend class VirtualTechnique;
 };
