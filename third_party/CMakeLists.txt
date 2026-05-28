@@ -21,7 +21,6 @@ add_library(IMGUI STATIC ${IMGUI_FILES})
 target_include_directories(IMGUI PUBLIC
     ${SEEK_THIRDPARTY_DIR}/imgui/include
     ${SEEK_THIRDPARTY_DIR}/imgui/include/backends
-    ${SEEK_THIRDPARTY_DIR}/glfw/include
 )
 
 set_target_properties(IMGUI PROPERTIES
