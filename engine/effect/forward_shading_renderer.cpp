@@ -153,7 +153,7 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
 
     m_renderableMeshes = m_pContext->SceneManagerInstance().QueryMesh([](const MeshPair& mesh)->bool {
         const auto& mesh_ = mesh.first->GetMeshByIndex(mesh.second);
-        if (mesh_->IsVisible())
+        if (mesh_ && mesh_->IsVisible())
             return true;
         else
             return false;

@@ -706,6 +706,14 @@ public:
         SEEK_RETIF_FAIL(m_pContext->BeginRender());
         SEEK_RETIF_FAIL(m_pContext->RenderFrame());
 
+        // 延迟场景切换：在渲染循环开始前执行，确保与 Tick/RenderFrame 同步
+        if (m_iPendingSceneIndex >= 0)
+        {
+            int index = m_iPendingSceneIndex;
+            m_iPendingSceneIndex = -1;
+            SwitchScene(index);
+        }
+
         IMGUI_Begin();
         ShowSceneSelector();
         // 粒子场景显示粒子选择UI
@@ -766,7 +774,9 @@ private:
         {
             if (ImGui::Combo("Scene", &comboValue, g_szSceneNames, IM_ARRAYSIZE(g_szSceneNames)))
             {
-                SwitchScene(comboValue);
+                // 不直接切换，记录意图，在下一帧 OnUpdate 开头执行
+                if (comboValue != m_iActiveSceneIndex)
+                    m_iPendingSceneIndex = comboValue;
             }
             if (m_pCurScene)
                 ImGui::Text("Current: %s", m_pCurScene->GetName());
@@ -777,6 +787,7 @@ private:
     std::vector<std::shared_ptr<IScene>> m_vScenes;
     std::shared_ptr<IScene> m_pCurScene = nullptr;
     int m_iActiveSceneIndex = -1;
+    int m_iPendingSceneIndex = -1;
 };
 
 int main()
