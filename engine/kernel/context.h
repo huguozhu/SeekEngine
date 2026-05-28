@@ -38,7 +38,7 @@ enum class FPSLimitType : uint32_t
     NoLImit = 1000,
     FPS_30  = 30,
     FPS_60  = 60,
-    FPS_120 = 90,
+    FPS_120 = 120,
 };
 enum class GlobalIlluminationMode : uint32_t
 {
