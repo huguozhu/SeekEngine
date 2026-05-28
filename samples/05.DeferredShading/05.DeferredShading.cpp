@@ -27,7 +27,7 @@ private:
     EntityPtr m_pRotatingLights[NUM_LIGHTS] = { nullptr };
     EntityPtr m_pRotatingSphere[NUM_LIGHTS] = { nullptr };
 
-    bool m_bManyLights = true;
+    bool m_bManyLights = false;
     FirstPersonCameraController m_CameraController;
 };
 
@@ -97,13 +97,13 @@ SResult DeferredShading::OnCreate()
     pLight->SetColor(c);
     m_pLightEntity[0] = MakeSharedPtr<Entity>(m_pContext.get(), "Ambient Light");
     m_pLightEntity[0]->AddSceneComponent(pLight);
-    m_pLightEntity[0]->AddToTopScene();
+    //m_pLightEntity[0]->AddToTopScene();
 
     float p = 1.0;
     pLight = MakeSharedPtr<DirectionalLightComponent>(m_pContext.get());
     pLight->SetColor(Color::White);
     pLight->SetDirection(float3(p, -p, p));
-    pLight->SetIntensity(0.5);
+    pLight->SetIntensity(1.5);
     //pLight->CastShadow(1);
 	//pLight->SoftShadow(1);
 	pLight->SetWorldTranslation(float3(-p, p, -p));
@@ -125,7 +125,7 @@ SResult DeferredShading::OnCreate()
     pLight->CastShadow(1);
     m_pLightEntity[2] = MakeSharedPtr<Entity>(m_pContext.get(), "Spot Light");
     m_pLightEntity[2]->AddSceneComponent(pLight);
-    m_pLightEntity[2]->AddToTopScene();
+    //m_pLightEntity[2]->AddToTopScene();
 
     spot_pos = float3(p, p, -p);
     look_at = float3(0, 0, 0);
@@ -138,7 +138,7 @@ SResult DeferredShading::OnCreate()
     pLight->SetWorldTranslation(spot_pos);
     m_pLightEntity[3] = MakeSharedPtr<Entity>(m_pContext.get(), "Spot Light");
     m_pLightEntity[3]->AddSceneComponent(pLight);
-    m_pLightEntity[3]->AddToTopScene();
+    //m_pLightEntity[3]->AddToTopScene();
 
     float3 point_pos = float3(0, 3.0, 0);
     pLight = MakeSharedPtr<PointLightComponent>(m_pContext.get());
@@ -150,7 +150,7 @@ SResult DeferredShading::OnCreate()
 	pLight->SetWorldTranslation(point_pos);
     m_pLightEntity[4] = MakeSharedPtr<Entity>(m_pContext.get(), "Point Light");
     m_pLightEntity[4]->AddSceneComponent(pLight);
-    m_pLightEntity[4]->AddToTopScene();
+    //m_pLightEntity[4]->AddToTopScene();
 
     // Load gltf2 Mesh
     static std::vector<std::string> model_files = {

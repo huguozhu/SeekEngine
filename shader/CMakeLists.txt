@@ -108,142 +108,32 @@ set(generated_shader_depend_dir         ${SEEK_GENERATED_DEPEND_DIR})
 set(generated_shader_tag_depend_dir     ${SEEK_GENERATED_TAG_DIR}/${SHADER_DEPEND_FILE_SUFFIX})
 set(generated_shader_tag_compile_dir    ${SEEK_GENERATED_TAG_DIR}/${SHADER_COMPILE_FILE_SUFFIX})
 
-############################## depend ##############################
-set(all_generated_tag_depend_tagfiles)
-set(all_generated_depend_dependfiles)
-foreach(single_shader_sources_file ${shader_sources_files})
-    get_filename_component(single_shader_filename ${single_shader_sources_file} NAME)
-    get_filename_component(single_shader_basename ${single_shader_sources_file} NAME_WLE)
-    file(RELATIVE_PATH single_shader_relpath "${SEEK_SHADER_SOURCE_DIR}" "${single_shader_sources_file}")
+############################## 顺序着色器编译脚本 ##############################
+# ShaderCompiler.exe 多实例并行时存在 .tag/.meta 目录写入竞态
+# 用单一 CMake 脚本顺序调用，彻底避免并行冲突
+set(SHADER_BUILD_SCRIPT "${CMAKE_CURRENT_LIST_DIR}/build_shaders.cmake")
+set(SHADER_STAMP_FILE "${SEEK_GENERATED_TAG_DIR}/.shaders_complete${SHADER_TAG_FILE_SUFFIX}")
 
-    set(single_tag_depend_tagfile "${generated_shader_tag_depend_dir}/${single_shader_basename}${SHADER_TAG_FILE_SUFFIX}")
-    set(single_depend_dependfile  "${generated_shader_depend_dir}/${single_shader_basename}${SHADER_DEPEND_FILE_SUFFIX}")
-    add_custom_command(
-        OUTPUT ${single_tag_depend_tagfile} ${single_depend_dependfile}
-        COMMAND ${ShaderCompiler_bin} --input "${single_shader_relpath}" --depend
-        DEPENDS ${single_shader_sources_file} ${shader_header_files} ${shader_shared_files} # also depend on ${ShaderCompiler_bin}, but ShaderCompiler always been build which make incremental build no meaning
-        WORKING_DIRECTORY ${ShaderCompiler_working_dir}
-    )
-    list(APPEND all_generated_tag_depend_tagfiles ${single_tag_depend_tagfile})
-    list(APPEND all_generated_depend_dependfiles ${single_depend_dependfile})
-endforeach()
-############################## compile ##############################
-set(shader_compile_options)
-
-if (shader_target_platform STREQUAL "hlsl")
-    list(APPEND shader_compile_options "--define=\"SEEK_HLSL=1\"")
-elseif (shader_target_platform STREQUAL "dxil")
-    list(APPEND shader_compile_options "--define=\"SEEK_DXIL=1\"")  
-elseif (shader_target_platform STREQUAL "spirv")
-    list(APPEND shader_compile_options "--define=\"SEEK_SPIRV=1\"")
-elseif(shader_target_platform STREQUAL "essl")
-    list(APPEND shader_compile_options "--define=\"SEEK_GLSL_ES=1\"")
-elseif(shader_target_platform STREQUAL "msl_macos")
-    list(APPEND shader_compile_options "--define=\"SEEK_MSL_MACOS=1\"")
-elseif(shader_target_platform STREQUAL "msl_ios")
-    list(APPEND shader_compile_options "--define=\"SEEK_MSL_IOS=1\"")
-elseif(shader_target_platform STREQUAL "spriv")
-    list(APPEND shader_compile_options "--define=\"SEEK_SPRIV=1\"")
-endif()
-
-if (${SEEK_SHADER_GENERATE_DEBUG})
-    list(APPEND shader_compile_options "--debug")
-endif()
-
-if (SEEK_SHADER_GENERATE_BYTE_CODE)
-    list(APPEND shader_compile_options "--bytecode")
-endif()
-
-set(all_generated_tag_compile_tagfiles)
-foreach(single_shader_sources_file ${shader_sources_files})
-    get_filename_component(single_shader_filename ${single_shader_sources_file} NAME)
-    get_filename_component(single_shader_basename ${single_shader_sources_file} NAME_WLE)
-    file(RELATIVE_PATH single_shader_relpath "${SEEK_SHADER_SOURCE_DIR}" "${single_shader_sources_file}")
-
-    set(single_depend_dependfile  "${generated_shader_depend_dir}/${single_shader_basename}${SHADER_DEPEND_FILE_SUFFIX}")
-    set(single_tag_compile_tagfile "${generated_shader_tag_compile_dir}/${single_shader_basename}${SHADER_TAG_FILE_SUFFIX}")
-
-    add_custom_command(
-        OUTPUT ${single_tag_compile_tagfile}
-        COMMAND ${ShaderCompiler_bin} --input=${single_shader_relpath} --target=${shader_target_platform} ${shader_compile_options}
-        DEPENDS ${single_shader_sources_file} ${single_depend_dependfile} # also depend on ${ShaderCompiler_bin}, but ShaderCompiler always been build which make incremental build no meaning
-        WORKING_DIRECTORY ${ShaderCompiler_working_dir})
-
-    list(APPEND all_generated_tag_compile_tagfiles ${single_tag_compile_tagfile})
-endforeach()
-
-############################## 多入口点着色器 ##############################
-# 格式：每行 "源文件|输出名|stage|入口函数"
-# 同一源文件可有多行，分别编译为不同的输出名（如将 VS 和 PS 合并到一个 .slang 文件）
-set(multi_entry_shaders
-    # SkyBox VS + PS 合并
-    "SkyBoxRendering.slang|SkyBox_VS|vs|skybox_vs"
-    "SkyBoxRendering.slang|SkyBox_PS|ps|skybox_ps"
-    # Ssao VS + PS 合并
-    "SsaoRendering.slang|Ssao_VS|vs|ssao_vs"
-    "SsaoRendering.slang|Ssao_PS|ps|ssao_ps"
-    # LPV 注入 VS + PS 合并
-    "LPVInjectRendering.slang|LPV_Inject_VS|vs|lpvinject_vs"
-    "LPVInjectRendering.slang|LPV_Inject_PS|ps|lpvinject_ps"
-    # LPV 传播 VS + PS 合并
-    "LPVPropagationRendering.slang|LPV_Propagation_VS|vs|lpvpropagation_vs"
-    "LPVPropagationRendering.slang|LPV_Propagation_PS|ps|lpvpropagation_ps"
-    # 水印 VS + PS 合并
-    "WaterMarkRendering.slang|WaterMark_VS|vs|watermark_vs"
-    "WaterMarkRendering.slang|WaterMark_PS|ps|watermark_ps"
-    # 粒子渲染 VS + PS 合并（带 HAS_TEX 预定义变体）
-    "Particles/ParticleRender.slang|ParticleRender_VS|vs|particle_vs"
-    "Particles/ParticleRender.slang|ParticleRender_PS|ps|particle_ps"
+add_custom_command(
+    OUTPUT ${SHADER_STAMP_FILE}
+    COMMAND ${CMAKE_COMMAND} -P "${SHADER_BUILD_SCRIPT}" "${ShaderCompiler_bin}" "${shader_target_platform}" "${SEEK_SHADER_SOURCE_DIR}"
+    DEPENDS ${shader_sources_files} ${shader_header_files} ${shader_shared_files}
+    WORKING_DIRECTORY ${ShaderCompiler_working_dir}
 )
 
-set(multi_entry_output_names "")
-set(multi_depend_sources_processed "")
-
-foreach(multi_entry ${multi_entry_shaders})
-    string(REPLACE "|" ";" multi_parts "${multi_entry}")
-    list(GET multi_parts 0 multi_source)
-    list(GET multi_parts 1 multi_output)
-    list(GET multi_parts 2 multi_stage)
-    list(GET multi_parts 3 multi_entry_name)
-
-    get_filename_component(multi_source_basename "${multi_source}" NAME_WLE)
-
-    # 依赖分析：每个源文件只需生成一次
-    list(FIND multi_depend_sources_processed "${multi_source}" depend_done)
-    if(depend_done EQUAL -1)
-        set(single_tag_depend_tagfile "${generated_shader_tag_depend_dir}/${multi_source_basename}${SHADER_TAG_FILE_SUFFIX}")
-        set(single_depend_dependfile  "${generated_shader_depend_dir}/${multi_source_basename}${SHADER_DEPEND_FILE_SUFFIX}")
-        add_custom_command(
-            OUTPUT ${single_tag_depend_tagfile} ${single_depend_dependfile}
-            COMMAND ${ShaderCompiler_bin} --input "${multi_source}" --depend
-            DEPENDS "${SEEK_SHADER_SOURCE_DIR}/${multi_source}" ${shader_header_files} ${shader_shared_files}
-            WORKING_DIRECTORY ${ShaderCompiler_working_dir}
-        )
-        list(APPEND all_generated_tag_depend_tagfiles ${single_tag_depend_tagfile})
-        list(APPEND all_generated_depend_dependfiles ${single_depend_dependfile})
-        list(APPEND multi_depend_sources_processed "${multi_source}")
-    endif()
-
-    set(single_depend_dependfile "${generated_shader_depend_dir}/${multi_source_basename}${SHADER_DEPEND_FILE_SUFFIX}")
-
-    # 编译
-    set(single_tag_compile_tagfile "${generated_shader_tag_compile_dir}/${multi_output}${SHADER_TAG_FILE_SUFFIX}")
-    add_custom_command(
-        OUTPUT ${single_tag_compile_tagfile}
-        COMMAND ${ShaderCompiler_bin} --input="${multi_source}" --output="${multi_output}" --stage="${multi_stage}" --entry="${multi_entry_name}" --target=${shader_target_platform} ${shader_compile_options}
-        DEPENDS "${SEEK_SHADER_SOURCE_DIR}/${multi_source}" ${single_depend_dependfile}
-        WORKING_DIRECTORY ${ShaderCompiler_working_dir}
-    )
-    list(APPEND all_generated_tag_compile_tagfiles ${single_tag_compile_tagfile})
-    list(APPEND multi_entry_output_names ${multi_output})
-endforeach()
+# 多入口点着色器输出名列表（供 generate_header.cmake 使用）
+set(multi_entry_output_names
+    SkyBox_VS SkyBox_PS Ssao_VS Ssao_PS
+    LPV_Inject_VS LPV_Inject_PS LPV_Propagation_VS LPV_Propagation_PS
+    WaterMark_VS WaterMark_PS ParticleRender_VS ParticleRender_PS
+)
 
 message(STATUS ${CMAKE_CURRENT_LIST_DIR})
 include(${CMAKE_CURRENT_LIST_DIR}/CMakeListst.gnerate_header.cmake)
 
 # interface for engine
 add_custom_target(GenerateShaders
-    DEPENDS ${all_generated_tag_compile_tagfiles}
+    DEPENDS ${SHADER_STAMP_FILE}
     SOURCES ${shader_shared_files} ${shader_header_files} ${shader_sources_files}
 )
 add_dependencies(GenerateShaders ShaderCompiler)

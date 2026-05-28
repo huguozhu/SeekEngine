@@ -47,7 +47,7 @@ using ::cgltf_sheen;
 
 // ===== 辅助方法 =====
 
-const uint8_t* glTF2_Loader::AccessorData(const cgltf_accessor* accessor)
+const uint8_t* glTF2_Loader::AccessorData(const ::cgltf_accessor* accessor)
 {
     if (!accessor || !accessor->buffer_view)
         return nullptr;
@@ -56,7 +56,7 @@ const uint8_t* glTF2_Loader::AccessorData(const cgltf_accessor* accessor)
            + accessor->offset + bv->offset;
 }
 
-uint32_t glTF2_Loader::AccessorStride(const cgltf_accessor* accessor)
+uint32_t glTF2_Loader::AccessorStride(const ::cgltf_accessor* accessor)
 {
     if (!accessor)
         return 0;
@@ -93,7 +93,7 @@ SResult glTF2_Loader::LoadSceneFromFile(std::string const& filePath,
 
     TIMER_BEG(t0);
     cgltf_options options = {};
-    cgltf_data* data = nullptr;
+    ::cgltf_data* data = nullptr;
     cgltf_result cres = cgltf_parse_file(&options, filePath.c_str(), &data);
     if (cres != cgltf_result_success)
     {
@@ -146,7 +146,7 @@ SResult glTF2_Loader::LoadSceneFromFile(std::string const& filePath,
 
 // ===== 场景 / 节点 =====
 
-SceneComponentPtr glTF2_Loader::LoadDefaultScene(cgltf_data* data)
+SceneComponentPtr glTF2_Loader::LoadDefaultScene(::cgltf_data* data)
 {
     SceneComponentPtr rootSC = nullptr;
     if (data->scene)
@@ -158,7 +158,7 @@ SceneComponentPtr glTF2_Loader::LoadDefaultScene(cgltf_data* data)
     return rootSC;
 }
 
-SceneComponentPtr glTF2_Loader::LoadScene(cgltf_data* data, uint32_t index)
+SceneComponentPtr glTF2_Loader::LoadScene(::cgltf_data* data, uint32_t index)
 {
     SceneComponentPtr sc = nullptr;
     if (index < data->scenes_count)
@@ -184,7 +184,7 @@ SceneComponentPtr glTF2_Loader::LoadScene(cgltf_data* data, uint32_t index)
     return sc;
 }
 
-SceneComponentPtr glTF2_Loader::LoadNode(cgltf_data* data, uint32_t index)
+SceneComponentPtr glTF2_Loader::LoadNode(::cgltf_data* data, uint32_t index)
 {
     RETURN_IF_FOUND(m_Nodes, index);
     SceneComponentPtr sc = nullptr;
@@ -264,7 +264,7 @@ SceneComponentPtr glTF2_Loader::LoadNode(cgltf_data* data, uint32_t index)
 
 // ===== 网格 =====
 
-MeshComponentPtr glTF2_Loader::LoadMesh(cgltf_data* data, uint32_t mesh_index,
+MeshComponentPtr glTF2_Loader::LoadMesh(::cgltf_data* data, uint32_t mesh_index,
                                          bool has_skin, uint32_t skin_index)
 {
     RETURN_IF_FOUND(m_Meshes, mesh_index);
@@ -347,8 +347,8 @@ MeshComponentPtr glTF2_Loader::LoadMesh(cgltf_data* data, uint32_t mesh_index,
 
 // ===== 图元 / 顶点数据 =====
 
-RHIMeshPtr glTF2_Loader::LoadPrimitive(cgltf_data* data,
-                                        cgltf_primitive* primitive)
+RHIMeshPtr glTF2_Loader::LoadPrimitive(::cgltf_data* data,
+                                        ::cgltf_primitive* primitive)
 {
     RHIMeshPtr mesh = nullptr;
     if (primitive->attributes_count == 0)
@@ -376,7 +376,7 @@ RHIMeshPtr glTF2_Loader::LoadPrimitive(cgltf_data* data,
     for (size_t i = 0; i < primitive->attributes_count; i++)
     {
         cgltf_attribute* attr = &primitive->attributes[i];
-        cgltf_accessor* accessor = attr->data;
+        ::cgltf_accessor* accessor = attr->data;
         if (!accessor || !accessor->buffer_view)
             continue;
 
@@ -483,7 +483,7 @@ RHIMeshPtr glTF2_Loader::LoadPrimitive(cgltf_data* data,
     // 索引缓冲区
     if (primitive->indices)
     {
-        cgltf_accessor* indices_acc = primitive->indices;
+        ::cgltf_accessor* indices_acc = primitive->indices;
         const uint8_t* indexData = AccessorData(indices_acc);
         std::shared_ptr<VertexIndicesResource> indicesResource =
             MakeSharedPtr<VertexIndicesResource>();
@@ -534,7 +534,7 @@ RHIMeshPtr glTF2_Loader::LoadPrimitive(cgltf_data* data,
 // ===== 材质 =====
 
 std::shared_ptr<MaterialResource> glTF2_Loader::LoadMaterial(
-    cgltf_data* data, cgltf_material* mat, bool hasTangent)
+    ::cgltf_data* data, ::cgltf_material* mat, bool hasTangent)
 {
     uint32_t mat_index = (uint32_t)(mat - data->materials);
     RETURN_IF_FOUND(m_Materials, mat_index);
@@ -624,7 +624,7 @@ std::shared_ptr<MaterialResource> glTF2_Loader::LoadMaterial(
 // ===== PBR 扩展 =====
 
 bool glTF2_Loader::LoadMetallicRoughness(
-    cgltf_data* data, cgltf_pbr_metallic_roughness* pbr, MaterialResource& pMaterial)
+    ::cgltf_data* data, ::cgltf_pbr_metallic_roughness* pbr, MaterialResource& pMaterial)
 {
     pMaterial._albedoFactor = float4{pbr->base_color_factor[0],
                                      pbr->base_color_factor[1],
@@ -664,8 +664,8 @@ bool glTF2_Loader::LoadMetallicRoughness(
     return true;
 }
 
-bool glTF2_Loader::LoadClearcoat(cgltf_data* data,
-                                  cgltf_clearcoat* cc, MaterialResource& pMaterial)
+bool glTF2_Loader::LoadClearcoat(::cgltf_data* data,
+                                  ::cgltf_clearcoat* cc, MaterialResource& pMaterial)
 {
     pMaterial._clearcoatFactor = cc->clearcoat_factor;
     pMaterial._clearcoatRoughnessFactor = cc->clearcoat_roughness_factor;
@@ -701,8 +701,8 @@ bool glTF2_Loader::LoadClearcoat(cgltf_data* data,
     return true;
 }
 
-bool glTF2_Loader::LoadSheen(cgltf_data* data,
-                              cgltf_sheen* sheen, MaterialResource& pMaterial)
+bool glTF2_Loader::LoadSheen(::cgltf_data* data,
+                              ::cgltf_sheen* sheen, MaterialResource& pMaterial)
 {
     pMaterial._sheenColorFactor = float3{sheen->sheen_color_factor[0],
                                          sheen->sheen_color_factor[1],
@@ -742,7 +742,7 @@ bool glTF2_Loader::LoadSheen(cgltf_data* data,
 
 // ===== 光源 =====
 
-LightComponentPtr glTF2_Loader::LoadLight(cgltf_data* data, uint32_t light_index)
+LightComponentPtr glTF2_Loader::LoadLight(::cgltf_data* data, uint32_t light_index)
 {
     RETURN_IF_FOUND(m_Lights, light_index);
     LightComponentPtr lightComponent = nullptr;
@@ -782,8 +782,8 @@ LightComponentPtr glTF2_Loader::LoadLight(cgltf_data* data, uint32_t light_index
 
 // ===== 纹理 / 图片 =====
 
-LoaderTexturePtr glTF2_Loader::LoadTexture(cgltf_data* data, uint32_t tex_index,
-                                            cgltf_texture_view* tex_view)
+LoaderTexturePtr glTF2_Loader::LoadTexture(::cgltf_data* data, uint32_t tex_index,
+                                            ::cgltf_texture_view* tex_view)
 {
     RETURN_IF_FOUND(m_Textures, tex_index);
     LoaderTexturePtr tex = nullptr;
@@ -814,7 +814,7 @@ LoaderTexturePtr glTF2_Loader::LoadTexture(cgltf_data* data, uint32_t tex_index,
     return tex;
 }
 
-LoaderImagePtr glTF2_Loader::LoadImage(cgltf_data* data, uint32_t image_index,
+LoaderImagePtr glTF2_Loader::LoadImage(::cgltf_data* data, uint32_t image_index,
                                         bool bColor)
 {
     if (image_index >= data->images_count)
@@ -900,7 +900,7 @@ LoaderImagePtr glTF2_Loader::LoadImage(cgltf_data* data, uint32_t image_index,
 
 // ===== 骨骼 / 动画 =====
 
-LoaderSkinPtr glTF2_Loader::LoadSkin(cgltf_data* data, uint32_t skin_index)
+LoaderSkinPtr glTF2_Loader::LoadSkin(::cgltf_data* data, uint32_t skin_index)
 {
     RETURN_IF_FOUND(m_Skins, skin_index);
     LoaderSkinPtr skin = nullptr;
@@ -913,7 +913,7 @@ LoaderSkinPtr glTF2_Loader::LoadSkin(cgltf_data* data, uint32_t skin_index)
 
     if (cskin->inverse_bind_matrices)
     {
-        cgltf_accessor* accessor = cskin->inverse_bind_matrices;
+        ::cgltf_accessor* accessor = cskin->inverse_bind_matrices;
         if (accessor->type == cgltf_type_mat4)
         {
             const uint8_t* src = AccessorData(accessor);
@@ -949,7 +949,7 @@ LoaderSkinPtr glTF2_Loader::LoadSkin(cgltf_data* data, uint32_t skin_index)
     return skin;
 }
 
-void glTF2_Loader::LoadAnimation(cgltf_data* data,
+void glTF2_Loader::LoadAnimation(::cgltf_data* data,
                                   std::vector<AnimationComponentPtr>& animations)
 {
     float start_time = 0.0;
@@ -1015,8 +1015,8 @@ void glTF2_Loader::LoadAnimation(cgltf_data* data,
             animTrack->SetInterpolationType(
                 gltf::ConvertToInterpolationType((int)sampler->interpolation));
 
-            cgltf_accessor* input_acc = sampler->input;
-            cgltf_accessor* output_acc = sampler->output;
+            ::cgltf_accessor* input_acc = sampler->input;
+            ::cgltf_accessor* output_acc = sampler->output;
             if (!input_acc || !output_acc)
             {
                 LOG_ERROR("Animation sampler accessor error");
@@ -1109,14 +1109,14 @@ void glTF2_Loader::LoadAnimation(cgltf_data* data,
 // ===== Morph Target =====
 
 void glTF2_Loader::ConverterToMorphStreamUnitFromTargets(
-    RHIMeshPtr& mesh, cgltf_primitive* primitive, AABBox& targets_box)
+    RHIMeshPtr& mesh, ::cgltf_primitive* primitive, AABBox& targets_box)
 {
     size_t targetSize = primitive->targets_count;
     if (targetSize == 0)
         return;
 
     cgltf_morph_target* firstTarget = &primitive->targets[0];
-    cgltf_accessor* firstAcc = nullptr;
+    ::cgltf_accessor* firstAcc = nullptr;
     for (size_t a = 0; a < firstTarget->attributes_count; a++)
     {
         if (firstTarget->attributes[a].type == cgltf_attribute_type_position)
@@ -1148,7 +1148,7 @@ void glTF2_Loader::ConverterToMorphStreamUnitFromTargets(
         {
             if (target->attributes[a].type == cgltf_attribute_type_position)
             {
-                cgltf_accessor* accessor = target->attributes[a].data;
+                ::cgltf_accessor* accessor = target->attributes[a].data;
                 if (!accessor || accessor->count != (size_t)targetCount)
                     return;
 
