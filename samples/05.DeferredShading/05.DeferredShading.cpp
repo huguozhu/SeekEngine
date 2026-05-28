@@ -85,7 +85,8 @@ SResult DeferredShading::OnCreate()
     m_pCameraEntity = MakeSharedPtr<Entity>(m_pContext.get());
     CameraComponentPtr pCam = MakeSharedPtr<CameraComponent>(m_pContext.get());
     pCam->ProjPerspectiveParams(45.0 * Math::DEG2RAD, w / h, 0.01f, 200.0f);
-    pCam->SetLookAt(float3(-6.2, 2.8, -1.1), float3(-2.0, 3.0, -1.1), float3(0, 1, 0));
+    //pCam->SetLookAt(float3(-6.2, 2.8, -1.1), float3(-2.0, 3.0, -1.1), float3(0, 1, 0));
+    pCam->SetLookAt(float3(0, 0, -3), float3(0,0,0), float3(0, 1, 0));
     m_pCameraEntity->AddSceneComponent(pCam);
     m_pCameraEntity->AddToTopScene();
     m_CameraController.SetCamera(pCam.get());
@@ -154,7 +155,8 @@ SResult DeferredShading::OnCreate()
 
     // Load gltf2 Mesh
     static std::vector<std::string> model_files = {
-        FullPath("asset/gltf/Sponza/Sponza.gltf"),
+        FullPath("asset/gltf/cube/cube.gltf"),
+        //FullPath("asset/gltf/Sponza/Sponza.gltf"),
     };
     static int model_selected = 0;
 
@@ -175,35 +177,35 @@ SResult DeferredShading::OnCreate()
     }
 
     // Step4 add SkyBox Entity
-    RHITexture::Desc desc;
-    desc.type = TextureType::Cube;
-    desc.width = 1024;
-    desc.height = 1024;
-    desc.depth = 1;
-    desc.num_mips = 1;
-    desc.num_samples = 1;
-    desc.format = PixelFormat::R8G8B8A8_UNORM;
-    desc.flags = RESOURCE_FLAG_GPU_READ;
-    std::vector<BitmapBufferPtr> datas(6, nullptr);
-    std::string cube_files[6] = {
-        FullPath("asset/textures/skybox/daylight0.png"),
-        FullPath("asset/textures/skybox/daylight1.png"),
-        FullPath("asset/textures/skybox/daylight2.png"),
-        FullPath("asset/textures/skybox/daylight3.png"),
-        FullPath("asset/textures/skybox/daylight4.png"),
-        FullPath("asset/textures/skybox/daylight5.png"),
-    };
-    for (uint32_t i = 0; i < 6; i++)
-    {
-        BitmapBufferPtr bit = ImageDecodeFromFile(cube_files[i], ImageType::PNG);
-        datas[i] = bit;
-    }
-    RHITexturePtr tex_cube = rc.CreateTextureCube(desc, datas);
-    m_pSkyBoxEntity = MakeSharedPtr<Entity>(m_pContext.get());
-    SkyBoxComponentPtr pSkybox = MakeSharedPtr<SkyBoxComponent>(m_pContext.get());
-    pSkybox->SetSkyBoxTex(tex_cube);
-    m_pSkyBoxEntity->AddSceneComponent(pSkybox);
-    m_pSkyBoxEntity->AddToTopScene();
+    //RHITexture::Desc desc;
+    //desc.type = TextureType::Cube;
+    //desc.width = 1024;
+    //desc.height = 1024;
+    //desc.depth = 1;
+    //desc.num_mips = 1;
+    //desc.num_samples = 1;
+    //desc.format = PixelFormat::R8G8B8A8_UNORM;
+    //desc.flags = RESOURCE_FLAG_GPU_READ;
+    //std::vector<BitmapBufferPtr> datas(6, nullptr);
+    //std::string cube_files[6] = {
+    //    FullPath("asset/textures/skybox/daylight0.png"),
+    //    FullPath("asset/textures/skybox/daylight1.png"),
+    //    FullPath("asset/textures/skybox/daylight2.png"),
+    //    FullPath("asset/textures/skybox/daylight3.png"),
+    //    FullPath("asset/textures/skybox/daylight4.png"),
+    //    FullPath("asset/textures/skybox/daylight5.png"),
+    //};
+    //for (uint32_t i = 0; i < 6; i++)
+    //{
+    //    BitmapBufferPtr bit = ImageDecodeFromFile(cube_files[i], ImageType::PNG);
+    //    datas[i] = bit;
+    //}
+    //RHITexturePtr tex_cube = rc.CreateTextureCube(desc, datas);
+    //m_pSkyBoxEntity = MakeSharedPtr<Entity>(m_pContext.get());
+    //SkyBoxComponentPtr pSkybox = MakeSharedPtr<SkyBoxComponent>(m_pContext.get());
+    //pSkybox->SetSkyBoxTex(tex_cube);
+    //m_pSkyBoxEntity->AddSceneComponent(pSkybox);
+    //m_pSkyBoxEntity->AddToTopScene();
 
     return S_Success;
 }
@@ -227,7 +229,7 @@ SResult DeferredShading::InitContext(void* device, void* native_wnd)
     RenderInitInfo info;
     info.enable_debug = true;
     info.lighting_mode = LightingMode::PBR;
-    info.renderer_type = RendererType::Deferred;
+    info.renderer_type = RendererType::Forward;
     info.anti_aliasing_mode = AntiAliasingMode::TAA;
     info.preferred_adapter = 0;
     info.HDR = true;

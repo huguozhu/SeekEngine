@@ -116,7 +116,7 @@ set(SHADER_STAMP_FILE "${SEEK_GENERATED_TAG_DIR}/.shaders_complete${SHADER_TAG_F
 
 add_custom_command(
     OUTPUT ${SHADER_STAMP_FILE}
-    COMMAND ${CMAKE_COMMAND} -P "${SHADER_BUILD_SCRIPT}" "${ShaderCompiler_bin}" "${shader_target_platform}" "${SEEK_SHADER_SOURCE_DIR}"
+    COMMAND ${CMAKE_COMMAND} -P "${SHADER_BUILD_SCRIPT}" "${ShaderCompiler_bin}" "${shader_target_platform}" "${SEEK_SHADER_SOURCE_DIR}" "${SHADER_STAMP_FILE}"
     DEPENDS ${shader_sources_files} ${shader_header_files} ${shader_shared_files}
     WORKING_DIRECTORY ${ShaderCompiler_working_dir}
 )
