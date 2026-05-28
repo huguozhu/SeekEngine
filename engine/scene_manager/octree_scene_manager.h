@@ -4,13 +4,14 @@
 **
 **      Name                   : octree_scene_manager.h
 **
-**      Brief                     : octree scene manager base class
+**      Brief                  : 八叉树场景管理器，通过八叉树空间划分加速视锥剔除
 **
 **      Additional             : None
 **
 **------------------------------------------------------------------------------------------------
 **
 **      History                : 2022-07-13  Created by Anna Deng
+**                               2026-05-28  修复命名空间和编译错误，重构集成到 SEEK 架构
 **
 **************************************************************************************************/
 #pragma once
@@ -18,58 +19,56 @@
 #include "scene_manager.h"
 #include "math/frustum.h"
 
-DVF_NAMESPACE_BEGIN
+SEEK_NAMESPACE_BEGIN
 
-class OctreeSceneManager: public SceneManager
+class OctreeSceneManager : public SceneManager
 {
 public:
-    virtual                             ~OctreeSceneManager() {}
+    virtual ~OctreeSceneManager() {}
 
-    DVFResult                           RenderScene(uint32_t scope = (uint32_t)RenderScope::Opacity | (uint32_t)RenderScope::Transparent /*RenderScope*/);
-    
-protected:
-    friend class Context;
-    OctreeSceneManager(Context* context);
-    
-    void                        ClipScene(CameraComponent* camera);
-    void                        UpdateOctree();
-    
-    struct OctreeNode {
+    struct OctreeNode
+    {
         CLASS_PTR(OctreeNode);
-        
-        AABBox                          mBoundingBox;
-        OctreeNodePtr                   pChildren[8];
-        bool                            bIsLeaf;
-        std::vector<MeshComponent*>     vObjectList;
-        
+
+        AABBox                      mBoundingBox;
+        OctreeNodePtr               pChildren[8];
+        bool                        bIsLeaf;
+        std::vector<MeshComponent*> vObjectList;
+
         OctreeNode()
             : mBoundingBox(true)
             , bIsLeaf(true) {}
-        
+
         OctreeNode(float3 fMin, float3 fMax, bool isLeaf)
             : mBoundingBox(fMin, fMax)
             , bIsLeaf(isLeaf) {}
     };
-    CLASS_PTR(OctreeNode);
-    
-private:
 
+protected:
+    friend class Context;
+    OctreeSceneManager(Context* context);
+
+    void ClipScene(CameraComponent* camera) override;
+
+private:
+    using OctreeNodePtr = OctreeNode::OctreeNodePtr;
+
+    void                        UpdateOctree();
     OctreeNodePtr               ConstructOctree(AABBox aabb, uint32_t depth, const std::vector<MeshComponent*>& objectList);
     void                        DestructOctree(OctreeNodePtr node);
     void                        TraverseOctree(OctreeNodePtr node, Frustum const& frustum, std::vector<MeshPair>& visible_mesh_list);
-    
+
     std::vector<AABBox>         SubBoxDivision(AABBox& bbox);
-    void                        PrepareRootBox(std::vector<MeshComponent*> & meshComponentList);
-    
+    void                        PrepareRootBox(std::vector<MeshComponent*>& meshComponentList);
+
     OctreeNodePtr                   m_pOctree;
     uint32_t                        m_iMaxDepth;
     uint32_t                        m_iMaxNodeObj;
-    
+
     bool                            m_bTreeDrity;
-    
+
     AABBox                          m_cRootAABBox;
     std::vector<MeshComponent*>     m_vRootObjectList;
-    
 };
 
-DVF_NAMESPACE_END
+SEEK_NAMESPACE_END

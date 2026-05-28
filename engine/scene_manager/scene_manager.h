@@ -89,7 +89,8 @@ protected:
     void                                AddToEntityRecursion(SceneComponentPtr scene_component);
 
     void                                UpdateSkeletonMatrics();
-    void                                ClipScene(CameraComponent* camera);
+    void                                UpdateMeshWorldAABB();
+    virtual void                        ClipScene(CameraComponent* camera);
     void                                SortMeshList(CameraComponent* camera, std::vector<MeshPair>& opacity_list, std::vector<MeshPair>& transparent_list);
 
 protected:

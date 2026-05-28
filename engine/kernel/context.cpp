@@ -11,6 +11,8 @@
 #include "effect/forward_shading_renderer.h"
 #include "effect/deferred_shading_renderer.h"
 
+#include "scene_manager/octree_scene_manager.h"
+
 #include "utils/log.h"
 #include "utils/timer.h"
 #include "utils/error.h"
@@ -67,7 +69,10 @@ SResult Context::Init(void* device, void* native_wnd)
         }
         if (!m_pSceneManager)
         {
-            m_pSceneManager = MakeUniquePtrMacro(SceneManager, this);
+            if (m_InitInfo.use_octree_scene_manager)
+                m_pSceneManager = MakeUniquePtrMacro(OctreeSceneManager, this);
+            else
+                m_pSceneManager = MakeUniquePtrMacro(SceneManager, this);
         }
         
         if (!m_pEffect)

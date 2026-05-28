@@ -215,6 +215,8 @@ set(ENGINE_CODE
     # scene_manager
     ${SEEK_ENGINE_SOURCE_DIR}/scene_manager/scene_manager.h
     ${SEEK_ENGINE_SOURCE_DIR}/scene_manager/scene_manager.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/scene_manager/octree_scene_manager.h
+    ${SEEK_ENGINE_SOURCE_DIR}/scene_manager/octree_scene_manager.cpp
 
     # thread    
     ${SEEK_ENGINE_SOURCE_DIR}/thread/mutex.h

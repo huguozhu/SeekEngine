@@ -15,6 +15,7 @@
 #include "rhi/base/rhi_gpu_buffer.h"
 #include "utils/timer.h"
 #include <algorithm>
+#include <unordered_set>
 
 #define SEEK_MACRO_FILE_UID 39     // this code is auto generated, don't touch it!!!
 
@@ -236,7 +237,10 @@ SResult SceneManager::Tick(float delta_time)
     UpdateSkeletonMatrics();
     TIMER_FRAME_END("RenderScene UpdateSkeletonMatrics");
 
-    // step3, clip
+    // step3, update world AABBs for frustum culling
+    UpdateMeshWorldAABB();
+
+    // step4, clip
     CameraComponent* pActiveCamera = this->GetActiveCamera();
     ClipScene(pActiveCamera);
 
@@ -315,28 +319,54 @@ void SceneManager::UpdateSkeletonMatrics()
     }
 }
 
+void SceneManager::UpdateMeshWorldAABB()
+{
+    for (MeshComponent* mesh_component : m_vMeshComponentList)
+    {
+        Matrix4 world_mat = mesh_component->GetWorldMatrix();
+        for (auto& mesh : mesh_component->GetMeshes())
+        {
+            AABBox local_aabb = mesh->GetAABBox();
+            AABBox world_aabb = Math::TransformAABBox(local_aabb, world_mat);
+            mesh->SetAABBoxWorld(world_aabb);
+        }
+        // 同步更新 MeshComponent 级别的世界包围盒（取所有子 Mesh 的并集）
+        AABBox comp_world_aabb(false);
+        for (auto& mesh : mesh_component->GetMeshes())
+        {
+            comp_world_aabb |= mesh->GetAABBoxWorld();
+        }
+        mesh_component->SetAABBoxWorld(comp_world_aabb);
+    }
+}
+
 void SceneManager::ClipScene(CameraComponent* camera)
 {
     if (!m_mCachedVisibleMeshListByCamera[camera].empty())
         return;
 
-    // TODO: disable clip, enable again after we can get the right AABB
-    //       for skinned mesh, the initial AABB may have a large deviation, we need a better solution to calc the AABB
-    
-    //if (camera)
-    //{    
-    //    Frustum const& frustum = camera->GetFrustum();
-    //    for (MeshPair & mesh_i : m_vMeshList)
-    //    {
-    //        AABBox world_aabb = mesh_i.first->GetMeshByIndex(mesh_i.second)->GetAABBoxWorld();
-    //        if (frustum.Intersect(world_aabb) != VisibleMark::No)
-    //            m_mCachedVisibleMeshListByCamera[camera].push_back(mesh_i);
-    //    }
-    //}
-    //else
-    //{
+    if (camera)
+    {
+        Frustum const& frustum = camera->GetFrustum();
+        for (MeshPair& mesh_i : m_vMeshList)
+        {
+            MeshComponent* mesh_comp = mesh_i.first;
+            // 骨骼动画的静态 AABB 不能准确反映动画后的包围盒，保守处理：始终可见
+            if (mesh_comp->GetComponentType() == ComponentType::SkeletalMesh)
+            {
+                m_mCachedVisibleMeshListByCamera[camera].push_back(mesh_i);
+                continue;
+            }
+
+            AABBox world_aabb = mesh_comp->GetMeshByIndex(mesh_i.second)->GetAABBoxWorld();
+            if (frustum.Intersect(world_aabb) != VisibleMark::No)
+                m_mCachedVisibleMeshListByCamera[camera].push_back(mesh_i);
+        }
+    }
+    else
+    {
         m_mCachedVisibleMeshListByCamera[camera] = m_vMeshList;
-    //}
+    }
 }
 
 class SortMeshCompare

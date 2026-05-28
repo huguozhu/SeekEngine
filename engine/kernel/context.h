@@ -58,6 +58,7 @@ struct RenderInitInfo
     AntiAliasingMode        anti_aliasing_mode = AntiAliasingMode::None;
     FPSLimitType            fps_limit_type = FPSLimitType::FPS_60;
     GlobalIlluminationMode  gi_mode = GlobalIlluminationMode::None;
+    bool                    use_octree_scene_manager = false;
 
 };
 
