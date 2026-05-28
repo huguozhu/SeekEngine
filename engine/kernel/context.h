@@ -55,7 +55,6 @@ struct RenderInitInfo
     uint32_t                enable_transparent = false;
     uint32_t                enable_ambient_occlusion = false;
     uint32_t                enable_capture = false;
-    uint32_t                HDR = false;
     RHIType                 rhi_type = RHIType::D3D11;
     uint32_t                num_samples = 1;
     int32_t                 preferred_adapter = 0;
@@ -94,7 +93,6 @@ public:
     bool                    EnableAmbientOcclusion()    const { return m_InitInfo.enable_ambient_occlusion;}  
     int32_t                 GetPreferredAdapter()       const { return m_InitInfo.preferred_adapter; }
     uint32_t                GetNumSamples()             const { return m_InitInfo.num_samples; }
-    bool                    IsHDR()                     const { return m_InitInfo.HDR; }
     RHIType                 GetRHIType()                const { return m_InitInfo.rhi_type; }
     RendererType            GetRendererType()           const { return m_InitInfo.renderer_type; }
     AntiAliasingMode        GetAntiAliasingMode()       const { return m_InitInfo.anti_aliasing_mode; }
@@ -107,7 +105,6 @@ public:
 
     // For edit/debug mode
     void                SetAntiAliasingMode(AntiAliasingMode mode) { m_InitInfo.anti_aliasing_mode = mode; }
-    void                SetHDR(bool b) { m_InitInfo.HDR = b; }
     void                SetEnableTransparent(bool b) { m_InitInfo.enable_transparent = b; }
     void                SetEnableAmbientOcclusion(bool b) { m_InitInfo.enable_ambient_occlusion = b; }
     void                SetFpsLimitType(FPSLimitType b);

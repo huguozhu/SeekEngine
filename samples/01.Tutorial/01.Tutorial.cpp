@@ -694,7 +694,6 @@ public:
         info.enable_debug = true;
         info.renderer_type = RendererType::Forward;
         info.preferred_adapter = 0;
-        info.HDR = true;
 
         m_pContext = MakeSharedPtr<Context>(info);
         SEEK_RETIF_FAIL(m_pContext->Init(device, native_wnd));

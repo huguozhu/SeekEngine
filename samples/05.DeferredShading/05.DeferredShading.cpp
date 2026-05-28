@@ -231,7 +231,6 @@ SResult DeferredShading::InitContext(void* device, void* native_wnd)
     info.renderer_type = RendererType::Forward;
     info.anti_aliasing_mode = AntiAliasingMode::TAA;
     info.preferred_adapter = 0;
-    info.HDR = true;
 
     m_pContext = MakeSharedPtr<Context>(info);
     SEEK_RETIF_FAIL(m_pContext->Init(device, native_wnd));

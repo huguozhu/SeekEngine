@@ -194,8 +194,7 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
     
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderSceneJob, this)));
     
-    if (m_pContext->IsHDR())
-        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::ToneMappingJob, this)));    
+    m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::ToneMappingJob, this)));
 
     // the last job should be FinishJob()
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::FinishJob, this)));
@@ -274,57 +273,48 @@ SResult ForwardShadingRenderer::PrepareFrameBuffer()
 
     // TODO: need a better solution to handle the intermediate resources
     RHIContext& rc = m_pContext->RHIContextInstance();
-    if (m_pContext->IsHDR())
+    if (!m_pToneMappingPostProcess)
     {
-        if (!m_pToneMappingPostProcess)
-        {
-            m_pToneMappingPostProcess = MakeSharedPtr<PostProcess>(m_pContext, "ToneMapping");
-            m_pToneMappingPostProcess->Init("ToneMapping");
-        }
-        else
-        {
-            m_pToneMappingPostProcess->GetFrameBuffer()->Reset();
-        }
-        
-        RHITexture::Desc desc;
-        if (!m_pRenderSceneColorTex)
-        {
-            PixelFormat pf = PixelFormat::R16G16B16A16_FLOAT;
-            if (!rc.GetCapabilitySet().IsTextureSupport(pf, TextureFormatSupportType::RenderTarget))
-                pf = PixelFormat::R32G32B32A32_FLOAT;
-            
-            desc.type = TextureType::Tex2D;
-            desc.width = m_RenderViewport.width;
-            desc.height = m_RenderViewport.height;
-            desc.depth = 1;
-            desc.num_mips = 1;
-            desc.num_samples = 1;
-            desc.format = pf;
-            desc.flags = RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_GPU_READ;
-            m_pRenderSceneColorTex = rc.CreateTexture2D(desc);
-        }
-        
-        if (!m_pRenderSceneDepthTex)
-        {
-            desc.format = PixelFormat::D32F;
-            desc.flags = RESOURCE_FLAG_GPU_WRITE;
-            m_pRenderSceneDepthTex = rc.CreateTexture2D(desc);
-        }
-        
-        m_pRenderSceneFB->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.Create2DRenderTargetView(m_pRenderSceneColorTex));
-        m_pRenderSceneFB->AttachDepthStencilView(rc.Create2DDepthStencilView(m_pRenderSceneDepthTex));
-        
-        m_pToneMappingPostProcess->SetParam("src_rgba", m_pRenderSceneColorTex);
-        const RHIFrameBuffer* finalFB = rc.GetFinalRHIFrameBuffer().get();
-        m_pToneMappingPostProcess->SetOutput(0, finalFB->GetRenderTarget(RHIFrameBuffer::Attachment::Color0));
-        m_pToneMappingPostProcess->GetFrameBuffer()->SetViewport(m_RenderViewport);
-    }     
+        m_pToneMappingPostProcess = MakeSharedPtr<PostProcess>(m_pContext, "ToneMapping");
+        m_pToneMappingPostProcess->Init("ToneMapping");
+    }
     else
     {
-        const RHIFrameBuffer* finalFB = rc.GetFinalRHIFrameBuffer().get();
-        m_pRenderSceneFB->AttachTargetView(RHIFrameBuffer::Attachment::Color0, finalFB->GetRenderTarget(RHIFrameBuffer::Attachment::Color0));
-        m_pRenderSceneFB->AttachDepthStencilView(finalFB->GetDepthStencilView());
+        m_pToneMappingPostProcess->GetFrameBuffer()->Reset();
     }
+
+    RHITexture::Desc desc;
+    if (!m_pRenderSceneColorTex)
+    {
+        PixelFormat pf = PixelFormat::R16G16B16A16_FLOAT;
+        if (!rc.GetCapabilitySet().IsTextureSupport(pf, TextureFormatSupportType::RenderTarget))
+            pf = PixelFormat::R32G32B32A32_FLOAT;
+
+        desc.type = TextureType::Tex2D;
+        desc.width = m_RenderViewport.width;
+        desc.height = m_RenderViewport.height;
+        desc.depth = 1;
+        desc.num_mips = 1;
+        desc.num_samples = 1;
+        desc.format = pf;
+        desc.flags = RESOURCE_FLAG_GPU_WRITE | RESOURCE_FLAG_GPU_READ;
+        m_pRenderSceneColorTex = rc.CreateTexture2D(desc);
+    }
+
+    if (!m_pRenderSceneDepthTex)
+    {
+        desc.format = PixelFormat::D32F;
+        desc.flags = RESOURCE_FLAG_GPU_WRITE;
+        m_pRenderSceneDepthTex = rc.CreateTexture2D(desc);
+    }
+
+    m_pRenderSceneFB->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.Create2DRenderTargetView(m_pRenderSceneColorTex));
+    m_pRenderSceneFB->AttachDepthStencilView(rc.Create2DDepthStencilView(m_pRenderSceneDepthTex));
+
+    m_pToneMappingPostProcess->SetParam("src_rgba", m_pRenderSceneColorTex);
+    const RHIFrameBuffer* finalFB = rc.GetFinalRHIFrameBuffer().get();
+    m_pToneMappingPostProcess->SetOutput(0, finalFB->GetRenderTarget(RHIFrameBuffer::Attachment::Color0));
+    m_pToneMappingPostProcess->GetFrameBuffer()->SetViewport(m_RenderViewport);
     
     m_pRenderSceneFB->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, { m_pContext->GetClearColor() });
     m_pRenderSceneFB->SetColorStoreOption(RHIFrameBuffer::Attachment::Color0, { RHIFrameBuffer::StoreAction::Store });

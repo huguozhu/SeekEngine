@@ -27,7 +27,6 @@ SResult AppFramework::InitContext(void* device, void* native_wnd)
     RenderInitInfo info;
     info.enable_debug = true;
     info.preferred_adapter = 0;
-    info.HDR = false;
 
     m_pContext = MakeSharedPtr<Context>(info);
     SEEK_RETIF_FAIL(m_pContext->Init(device, native_wnd));

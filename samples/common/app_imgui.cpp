@@ -224,13 +224,6 @@ void IMGUI_ShowControl(Context* ctx, void* app_framework)
 {
     if (ImGui::CollapsingHeader("Control" UID, ImGuiTreeNodeFlags_DefaultOpen))
     {
-        // HDR
-        {
-            bool b = ctx->IsHDR();
-            ImGui::SameLine();
-            if (ImGui::Checkbox("HDR", &b))
-                ctx->SetHDR(b);
-        }
         // AO
         {
             bool b = ctx->EnableAmbientOcclusion();
