@@ -59,9 +59,7 @@ function(add_sample_project sample_name)
     # property
     set_target_properties(${sample_name} PROPERTIES FOLDER "samples")
 
-    if (WIN32)
-        set_target_properties(${sample_name}    PROPERTIES LINK_FLAGS "/ignore:4099")
-    endif()
+    set_target_properties(${sample_name} PROPERTIES LINK_FLAGS "/ignore:4099")
 
     target_include_directories(${sample_name} PUBLIC 
         ${SEEK_ENGINE_SOURCE_DIR}

@@ -84,17 +84,7 @@ set(shader_sources_files
 )
 
 ################## shader_target_platform ##################
-if(TARGET_PLATFORM_WINDOWS)
-    set(shader_target_platform "hlsl")
-elseif(TARGET_PLATFORM_MACOS)
-    set(shader_target_platform "msl_macos")
-elseif(TARGET_PLATFORM_IOS)
-    set(shader_target_platform "msl_ios")
-elseif(TARGET_PLATFORM_LINUX)
-    set(shader_target_platform "essl")
-elseif(TARGET_PLATFORM_ANDROID OR TARGET_PLATFORM_WEB)
-    set(shader_target_platform "essl")
-endif()
+set(shader_target_platform "hlsl")
 
 message(STATUS "generated target platform: ${shader_target_platform}")
 

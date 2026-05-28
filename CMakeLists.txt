@@ -12,44 +12,10 @@ set(SHADER_COMPILE_FILE_SUFFIX ".compile")
 set(SHADER_DEBUG_DIR_SUFFIX "_debug")
 
 ########################### target platform & arch ######################
-if(WIN32)
-    set(TARGET_PLATFORM_WINDOWS 1)
-    set(TARGET_PLATFORM "windows")
-elseif(APPLE)
-    set(TARGET_PLATFORM_APPLE 1)
-    if(NOT IOS)
-        set(TARGET_PLATFORM_MACOS 1)
-        set(TARGET_PLATFORM "macos")
-    else()
-        set(TARGET_PLATFORM_IOS 1)
-        set(TARGET_PLATFORM "ios")
-    endif()
-elseif(ANDROID)
-    set(TARGET_PLATFORM_ANDROID 1)
-    set(TARGET_PLATFORM "android")
-elseif(EMSCRIPTEN)
-    set(TARGET_PLATFORM_WEB 1)
-    set(TARGET_PLATFORM "web")
-else()
-    set(TARGET_PLATFORM_LINUX 1)
-    set(TARGET_PLATFORM "linux")
-endif()
+set(TARGET_PLATFORM "windows")
 
-
-if(TARGET_PLATFORM_WINDOWS)
-    add_definitions(-DSEEK_PLATFORM_WINDOWS)
-    add_definitions(-DNOMINMAX) # disable macro min/max in Windows.h
-elseif(TARGET_PLATFORM_MACOS)
-    add_definitions(-DSEEK_PLATFORM_MAC -DSEEK_PLATFORM_MACOS)
-elseif(TARGET_PLATFORM_IOS)
-    add_definitions(-DSEEK_PLATFORM_IOS)
-elseif(TARGET_PLATFORM_LINUX)
-    add_definitions(-DSEEK_PLATFORM_LINUX)
-elseif(TARGET_PLATFORM_ANDROID)
-    add_definitions(-DSEEK_PLATFORM_ANDROID)
-elseif(TARGET_PLATFORM_WEB)
-    add_definitions(-DSEEK_PLATFORM_WEB)
-endif()
+add_definitions(-DSEEK_PLATFORM_WINDOWS)
+add_definitions(-DNOMINMAX) # 禁用 Windows.h 中的 min/max 宏
 
 
 # code path

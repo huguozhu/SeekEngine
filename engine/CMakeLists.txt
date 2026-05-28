@@ -237,10 +237,8 @@ source_group(TREE ${SEEK_ENGINE_SOURCE_DIR}/ FILES ${ENGINE_CODE})
 set(SEEK_SHAREDLIB_NAME ${PROJECT_NAME} CACHE STRING "" FORCE)
 set(SEEK_STATICLIB_NAME ${PROJECT_NAME}-static CACHE STRING "" FORCE)
 
-if(TARGET_PLATFORM_WINDOWS)
-    set(SEEK_BUILD_SHAREDLIB TRUE)
-    set(SEEK_STATICLIB_DEPENDENT_LIBS dxgi d3d11 d3dcompiler dxguid Windowscodecs Ws2_32 Winmm)
-endif()    
+set(SEEK_BUILD_SHAREDLIB TRUE)
+set(SEEK_STATICLIB_DEPENDENT_LIBS dxgi d3d11 d3dcompiler dxguid Windowscodecs Ws2_32 Winmm)
 
 
 ############################################ seek_engine static lib ############################################

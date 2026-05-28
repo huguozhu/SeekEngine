@@ -30,19 +30,14 @@ target_include_directories(ShaderCompiler PRIVATE
     ${RAPIDJSON_INCLUDE_DIR}
 )
 
-target_link_libraries(ShaderCompiler PRIVATE ${SEEK_THIRDPARTY_DIR}/slang/libs/${TARGET_PLATFORM}/slang.lib)
-
-if(WIN32)
-    target_link_libraries(ShaderCompiler PRIVATE d3dcompiler)
-endif()
+target_link_libraries(ShaderCompiler PRIVATE ${SEEK_THIRDPARTY_DIR}/slang/libs/windows/slang.lib)
+target_link_libraries(ShaderCompiler PRIVATE d3dcompiler)
 
 set_target_properties(ShaderCompiler PROPERTIES
     RUNTIME_OUTPUT_DIRECTORY_DEBUG   ${CMAKE_CURRENT_BINARY_DIR}
     RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-if(WIN32)
-    add_custom_command(TARGET ShaderCompiler POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SEEK_THIRDPARTY_DIR}/slang/libs/${TARGET_PLATFORM}/slang.dll $<TARGET_FILE_DIR:ShaderCompiler>
-    )
-endif()
+add_custom_command(TARGET ShaderCompiler POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${SEEK_THIRDPARTY_DIR}/slang/libs/windows/slang.dll $<TARGET_FILE_DIR:ShaderCompiler>
+)
