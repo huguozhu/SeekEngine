@@ -39,19 +39,4 @@ private:
     RHIGpuBufferPtr     m_pParamCbBuffer = nullptr;
 };
 
-/******************************************************************************
- * Metaball3DComponent
- ******************************************************************************/
-class Metaball3DComponent : public SceneComponent
-{
-public:
-    Metaball3DComponent(Context* context)
-        :SceneComponent(context)
-    {
-    }
-    ~Metaball3DComponent() {}
-	SResult             Render() { return S_Success; }
-	virtual SResult     Tick(float delta_time) override { return S_Success; }
-};
-
 SEEK_NAMESPACE_END

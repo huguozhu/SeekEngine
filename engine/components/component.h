@@ -23,7 +23,6 @@ enum class ComponentType : uint8_t
     Image,
     Animation,
     ParticleSystem,
-    Metaball,
 };
 
 class Component

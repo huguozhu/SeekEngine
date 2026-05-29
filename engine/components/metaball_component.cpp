@@ -57,7 +57,7 @@ void Metaball2DComponent::InitRandomBall(uint32_t init_count)
         Metaball ball;
         ball.position = {
             posDist(gen)+100,
-            posDist(gen), // 从上方开始
+            posDist(gen), // 锟斤拷锟较凤拷锟斤拷始
             0
         };
         ball.radius = radiusDist(gen);
@@ -133,10 +133,6 @@ SResult Metaball2DComponent::InitShaders()
     m_pMetaballTech->SetParam("cb_Sprite2DInfo", m_pMvpCbBuffer);
     return S_Success;
 }
-
-/******************************************************************************
- * Metaball3DComponent
- ******************************************************************************/
 
 SEEK_NAMESPACE_END
 

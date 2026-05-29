@@ -296,10 +296,6 @@ void SceneManager::AddToEntityRecursion(SceneComponentPtr scene_component)
     {
         m_vParticleComponents.push_back((ParticleComponent*)scene_component.get());
     }
-    if (scene_component->GetComponentType() == ComponentType::Metaball)
-    {
-        m_vMetaball3DComponents.push_back((Metaball3DComponent*)scene_component.get());
-	}
     size_t child_num = scene_component->NumChildren();
     for (size_t i = 0; i < child_num; i++)
     {
