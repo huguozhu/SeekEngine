@@ -181,7 +181,6 @@ SResult SceneManager::Tick(float delta_time)
         m_vLightList.clear();
         m_pSkyBoxComponent = nullptr;
         m_vParticleComponents.clear();
-		m_vParticleComponents.clear();
         m_vMeshComponentList.clear();
         m_vMeshList.clear();
         m_mCachedVisibleMeshListByCamera.clear();
