@@ -85,6 +85,7 @@ SResult DeferredShading::OnCreate()
     // Step2: add Camera
     m_pCameraEntity = MakeSharedPtr<Entity>(m_pContext.get());
     CameraComponentPtr pCam = MakeSharedPtr<CameraComponent>(m_pContext.get());
+    // 必须设置透视投影参数，否则投影矩阵保持单位矩阵，场景无法正常显示
     pCam->ProjPerspectiveParams(45.0 * Math::DEG2RAD, w / h, 0.01f, 200.0f);
     //pCam->SetLookAt(float3(-6.2, 2.8, -1.1), float3(-2.0, 3.0, -1.1), float3(0, 1, 0));
     pCam->SetLookAt(float3(0, 2, -15), float3(0,0,0), float3(0, 1, 0));
@@ -156,8 +157,8 @@ SResult DeferredShading::OnCreate()
 
     // Load gltf2 Mesh
     static std::vector<std::string> model_files = {
-        FullPath("asset/gltf/cube/cube.gltf"),
-        //FullPath("asset/gltf/Sponza/Sponza.gltf"),
+        //FullPath("asset/gltf/cube/cube.gltf"),
+        FullPath("asset/gltf/Sponza/Sponza.gltf"),
     };
     static int model_selected = 0;
 
@@ -173,19 +174,8 @@ SResult DeferredShading::OnCreate()
             return -1;
         }
         m_pMeshEntity->AddToTopScene();
-        // 递归重置所有模型节点变换到原点（校正 assimp 导出时残留的场景偏移）
-        SceneComponent* root = m_pMeshEntity->GetRootComponent().get();
-        if (root)
-        {
-            std::function<void(SceneComponent*)> resetTransform =
-                [&](SceneComponent* comp)
-            {
-                comp->SetLocalTransform(Matrix4::Identity());
-                for (auto& child : comp->GetChildren())
-                    resetTransform(child.get());
-            };
-            resetTransform(root);
-        }
+        // 保留 glTF 模型自身的节点变换（例如 Sponza 节点带有 0.008 缩放，
+        // 用于将原始大尺度几何缩放到合适的场景尺寸），不再强制重置为单位矩阵
         m_pContext->SceneManagerInstance().PrintTree();
         model_selected = -1;
     }

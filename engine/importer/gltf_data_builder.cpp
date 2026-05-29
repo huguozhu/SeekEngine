@@ -410,8 +410,19 @@ GltfPrimitive GltfDataBuilder::ExtractPrimitive(::cgltf_data* data,
         else
         {
             cgltf_buffer_view* bv = &data->buffer_views[pair.first];
+            // 深拷贝顶点数据到 IR 自有内存，确保 cgltf_free 后仍然有效
+            // （GPU 缓冲区在渲染时才惰性创建，此时 cgltf 已被释放）
+            std::shared_ptr<uint8_t> ownedData{
+                new uint8_t[bv->size], default_array_deleter<uint8_t>()
+            };
+            memcpy(ownedData.get(),
+                   static_cast<uint8_t*>(bv->buffer->data) + bv->offset,
+                   bv->size);
             auto bufRes = MakeSharedPtr<BufferResource>();
-            bufRes->_data = static_cast<uint8_t*>(bv->buffer->data) + bv->offset;
+            bufRes->_uninitializer = [ownedData](IResource*) mutable {
+                ownedData.reset();
+            };
+            bufRes->_data = ownedData.get();
             bufRes->_size = bv->size;
             gp.vertexBuffers.push_back(std::move(bufRes));
         }
@@ -426,10 +437,19 @@ GltfPrimitive GltfDataBuilder::ExtractPrimitive(::cgltf_data* data,
         indicesResource->_indexBufferType = gltf::ConvertToIndexBufferType(
             gltf::CgltfToGltfComponentType((int)indices_acc->component_type));
         indicesResource->_indexCount = (uint32_t)indices_acc->count;
-        indicesResource->_data = const_cast<uint8_t*>(indexData);
-        indicesResource->_size = (size_t)indices_acc->count *
+        size_t indexSize = (size_t)indices_acc->count *
             (size_t)gltf::ComponentByteSize(
                 gltf::CgltfToGltfComponentType((int)indices_acc->component_type));
+        // 深拷贝索引数据到 IR 自有内存，确保 cgltf_free 后仍然有效
+        std::shared_ptr<uint8_t> ownedIndexData{
+            new uint8_t[indexSize], default_array_deleter<uint8_t>()
+        };
+        memcpy(ownedIndexData.get(), indexData, indexSize);
+        indicesResource->_uninitializer = [ownedIndexData](IResource*) mutable {
+            ownedIndexData.reset();
+        };
+        indicesResource->_data = ownedIndexData.get();
+        indicesResource->_size = indexSize;
         gp.indexResource = indicesResource;
     }
 
