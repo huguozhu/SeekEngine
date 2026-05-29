@@ -1,10 +1,10 @@
 #pragma once
 
-#include "kernel/kernel.h"
+#include "seek_engine.h"
+#include "resource/resource_mgr.h"
 #include "components/mesh_component.h"
 #include "components/light_component.h"
 #include "components/animation_component.h"
-#include "resource/resource_mgr.h"
 #include "math/matrix.h"
 #include "math/aabbox.h"
 #include "rhi/base/rhi_mesh.h"
@@ -13,7 +13,6 @@ SEEK_NAMESPACE_BEGIN
 
 struct BufferResource;
 
-// 原始二进制数据，shared_ptr 管理生命周期
 struct GltfBuffer
 {
     std::shared_ptr<BufferResource> resource;
@@ -21,7 +20,6 @@ struct GltfBuffer
     size_t   size = 0;
 };
 
-// 图片（Phase 1 已完成解码）
 struct GltfImage
 {
     std::string    mimeType;
@@ -29,7 +27,6 @@ struct GltfImage
     BitmapBufferPtr bitmapData;
 };
 
-// 采样器
 struct GltfSampler
 {
     int32_t magFilter = -1;
@@ -38,7 +35,6 @@ struct GltfSampler
     int32_t wrapT = -1;
 };
 
-// 纹理引用
 struct GltfTexture
 {
     uint32_t imageIndex   = UINT32_MAX;
@@ -47,7 +43,6 @@ struct GltfTexture
     float    scale        = 1.0f;
 };
 
-// 材质
 struct GltfMaterial
 {
     std::string name;
@@ -82,7 +77,6 @@ struct GltfMaterial
     uint32_t sheenRoughnessTextureIndex = UINT32_MAX;
 };
 
-// 图元（顶点/索引/morph 数据已提取完毕）
 struct GltfPrimitive
 {
     MeshTopologyType topology = MeshTopologyType::Triangles;
@@ -100,16 +94,14 @@ struct GltfPrimitive
     bool hasTangent  = false;
 };
 
-// 网格
 struct GltfMesh
 {
     std::string                   name;
     std::vector<GltfPrimitive>    primitives;
-    std::vector<float>            weights;       // morph weights
-    std::vector<std::string>      targetNames;   // morph target names
+    std::vector<float>            weights;
+    std::vector<std::string>      targetNames;
 };
 
-// 蒙皮
 struct GltfSkin
 {
     std::vector<Matrix4>    inverseBindMatrices;
@@ -117,12 +109,10 @@ struct GltfSkin
     uint32_t                skeletonNodeIndex = UINT32_MAX;
 };
 
-// 场景节点
 struct GltfNode
 {
     std::string name;
 
-    // Transform
     bool     hasMatrix      = false;
     Matrix4  matrix         = Matrix4::Identity();
     bool     hasTranslation = false;
@@ -132,36 +122,31 @@ struct GltfNode
     bool     hasScale       = false;
     float3   scale          = float3(1.0f);
 
-    // 数据引用（索引）
     uint32_t meshIndex  = UINT32_MAX;
     uint32_t skinIndex  = UINT32_MAX;
     uint32_t lightIndex = UINT32_MAX;
 
-    // 层级关系
     std::vector<uint32_t> childIndices;
 };
 
-// 动画 channel（关键帧数据已展开）
 struct GltfAnimationChannel
 {
     uint32_t            targetNodeIndex;
-    TransformType       transformType;    // Translate/Rotate/Scale
-    bool                isMorphTarget = false; // morph target weights channel
+    TransformType       transformType;
+    bool                isMorphTarget = false;
     InterpolationType   interpolation;
-    std::vector<float>  inputTimes;       // 关键帧时间戳
-    std::vector<float>  outputData;       // 关键帧输出数据（分量展开）
-    uint32_t            outputStride;     // 每帧输出数据分量数
-    uint32_t            outputCount;      // 输出数据总帧数
+    std::vector<float>  inputTimes;
+    std::vector<float>  outputData;
+    uint32_t            outputStride;
+    uint32_t            outputCount;
 };
 
-// 动画
 struct GltfAnimation
 {
     std::string                        name;
     std::vector<GltfAnimationChannel>  channels;
 };
 
-// 灯光（KHR_lights_punctual）
 struct GltfLight
 {
     std::string name;
@@ -170,14 +155,12 @@ struct GltfLight
     float       intensity;
 };
 
-// 场景
 struct GltfScene
 {
     std::string                     name;
     std::vector<uint32_t>           rootNodeIndices;
 };
 
-// 顶层 IR 容器
 struct GltfData
 {
     std::vector<GltfImage>      images;
@@ -192,7 +175,7 @@ struct GltfData
     std::vector<GltfScene>      scenes;
 
     uint32_t                    defaultSceneIndex = UINT32_MAX;
-    std::vector<GltfBuffer>     buffers;            // 保证原始 buffer 数据生命周期
+    std::vector<GltfBuffer>     buffers;
 };
 
 SEEK_NAMESPACE_END

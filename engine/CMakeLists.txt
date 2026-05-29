@@ -71,6 +71,11 @@ set(ENGINE_CODE
 
     # importer
     ${SEEK_ENGINE_SOURCE_DIR}/importer/gltf2.h
+    ${SEEK_ENGINE_SOURCE_DIR}/importer/gltf_data.h
+    ${SEEK_ENGINE_SOURCE_DIR}/importer/gltf_data_builder.h
+    ${SEEK_ENGINE_SOURCE_DIR}/importer/gltf_data_builder.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/importer/gltf_scene_assembler.h
+    ${SEEK_ENGINE_SOURCE_DIR}/importer/gltf_scene_assembler.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/importer/gltf2_loader.h
     ${SEEK_ENGINE_SOURCE_DIR}/importer/gltf2_loader.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/importer/loader.h
