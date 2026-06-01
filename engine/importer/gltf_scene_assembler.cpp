@@ -270,6 +270,12 @@ SceneComponentPtr GltfSceneAssembler::BuildNode(const GltfData& data, uint32_t i
             }
 
             sc = sklMeshComp;
+
+            // Copy meshes from pre-built MeshComponent to SkeletalMeshComponent
+            MeshComponentPtr meshComp = m_meshes[gn.meshIndex];
+            auto& meshes = meshComp->GetMeshes();
+            for (auto& m : meshes)
+                sklMeshComp->AddMesh(m);
         }
         else
         {
