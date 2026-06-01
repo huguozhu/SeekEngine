@@ -355,7 +355,7 @@ static RHITexturePtr CreateTextureFromBitmap(RHIContext& rc, BitmapBufferPtr& bm
         bool suc = GenerateMipBuffers(bm, mips);
         if (suc)
         {
-            tex_desc.flags = RESOURCE_FLAG_GENERATE_MIPS;
+            tex_desc.flags |= RESOURCE_FLAG_GENERATE_MIPS;
             tex_desc.num_mips = CalcNumMips(tex_desc.width, tex_desc.height);
             return rc.CreateTexture2D(tex_desc, mips);
         }
@@ -370,48 +370,44 @@ MaterialPtr& RHIMesh::GetMaterial()
         m_pMaterial = MakeSharedPtr<Material>();
         if (m_materialRes->_albedoImage)
         {
-            bool generate_mips = false;
-#if defined(SEEK_PLATFORM_WINDOWS)
-            generate_mips = false;
-#endif
-            m_pMaterial->albedo_tex = CreateTextureFromBitmap(rc, m_materialRes->_albedoImage, true, generate_mips);
+            m_pMaterial->albedo_tex = CreateTextureFromBitmap(rc, m_materialRes->_albedoImage, true, true);
         }
         m_pMaterial->albedo_factor = m_materialRes->_albedoFactor;
         
         if (m_materialRes->_normalImage)
-            m_pMaterial->normal_tex = CreateTextureFromBitmap(rc, m_materialRes->_normalImage, false);
+            m_pMaterial->normal_tex = CreateTextureFromBitmap(rc, m_materialRes->_normalImage, false, true);
         m_pMaterial->normal_scale = m_materialRes->_normalScale;
 
         if (m_materialRes->_normalMaskImage)
-            m_pMaterial->normal_mask_tex = CreateTextureFromBitmap(rc, m_materialRes->_normalMaskImage, false);
+            m_pMaterial->normal_mask_tex = CreateTextureFromBitmap(rc, m_materialRes->_normalMaskImage, false, true);
         m_pMaterial->normal_mask_weights = m_materialRes->_normalMaskWeights;
         
         if (m_materialRes->_occlusionImage)
-            m_pMaterial->occlusion_tex = CreateTextureFromBitmap(rc, m_materialRes->_occlusionImage, false);
+            m_pMaterial->occlusion_tex = CreateTextureFromBitmap(rc, m_materialRes->_occlusionImage, false, true);
         
         if (m_materialRes->_metallicRoughnessImage)
-            m_pMaterial->metallic_roughness_tex = CreateTextureFromBitmap(rc, m_materialRes->_metallicRoughnessImage, false);
+            m_pMaterial->metallic_roughness_tex = CreateTextureFromBitmap(rc, m_materialRes->_metallicRoughnessImage, false, true);
         m_pMaterial->metallic_factor = m_materialRes->_metallicFactor;
         m_pMaterial->roughness_factor = m_materialRes->_roughnessFactor;
         
         if (m_materialRes->_emmissiveImage)
-            m_pMaterial->emissive_tex = CreateTextureFromBitmap(rc, m_materialRes->_emmissiveImage, true);
+            m_pMaterial->emissive_tex = CreateTextureFromBitmap(rc, m_materialRes->_emmissiveImage, true, true);
         m_pMaterial->emissive_factor = m_materialRes->_emissiveFactor;
         
         if (m_materialRes->_clearcoatImage)
-            m_pMaterial->clearcoat_tex = CreateTextureFromBitmap(rc, m_materialRes->_clearcoatImage, false);
+            m_pMaterial->clearcoat_tex = CreateTextureFromBitmap(rc, m_materialRes->_clearcoatImage, false, true);
         m_pMaterial->clearcoat_factor = m_materialRes->_clearcoatFactor;
         
         if (m_materialRes->_clearcoatRoughnessImage)
-            m_pMaterial->clearcoat_roughness_tex = CreateTextureFromBitmap(rc, m_materialRes->_clearcoatRoughnessImage, false);
+            m_pMaterial->clearcoat_roughness_tex = CreateTextureFromBitmap(rc, m_materialRes->_clearcoatRoughnessImage, false, true);
         m_pMaterial->clearcoat_roughness_factor = m_materialRes->_clearcoatRoughnessFactor;
         
         if (m_materialRes->_sheenColorImage)
-            m_pMaterial->sheen_color_tex = CreateTextureFromBitmap(rc, m_materialRes->_sheenColorImage, true);
+            m_pMaterial->sheen_color_tex = CreateTextureFromBitmap(rc, m_materialRes->_sheenColorImage, true, true);
         m_pMaterial->sheen_color_factor = m_materialRes->_sheenColorFactor;
         
         if (m_materialRes->_sheenRoughnessImage)
-            m_pMaterial->sheen_roughness_tex = CreateTextureFromBitmap(rc, m_materialRes->_sheenRoughnessImage, false);
+            m_pMaterial->sheen_roughness_tex = CreateTextureFromBitmap(rc, m_materialRes->_sheenRoughnessImage, false, true);
         m_pMaterial->sheen_roughness_factor = m_materialRes->_sheenRoughnessFactor;
         
         m_pMaterial->alpha_mode = m_materialRes->_alphaMode;

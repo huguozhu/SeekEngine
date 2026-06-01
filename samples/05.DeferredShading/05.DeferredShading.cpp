@@ -87,12 +87,11 @@ SResult DeferredShading::OnCreate()
     CameraComponentPtr pCam = MakeSharedPtr<CameraComponent>(m_pContext.get());
     // 必须设置透视投影参数，否则投影矩阵保持单位矩阵，场景无法正常显示
     pCam->ProjPerspectiveParams(45.0 * Math::DEG2RAD, w / h, 0.01f, 200.0f);
-    //pCam->SetLookAt(float3(-6.2, 2.8, -1.1), float3(-2.0, 3.0, -1.1), float3(0, 1, 0));
-    pCam->SetLookAt(float3(0, 2, -15), float3(0,0,0), float3(0, 1, 0));
+    pCam->SetLookAt(float3(-6.2, 2.8, -1.1), float3(-2.0, 3.0, -1.1), float3(0, 1, 0));
+    //pCam->SetLookAt(float3(0, 2, -15), float3(0,0,0), float3(0, 1, 0));
     m_pCameraEntity->AddSceneComponent(pCam);
     m_pCameraEntity->AddToTopScene();
     m_CameraController.SetCamera(pCam.get());
-    m_CameraController.SetMoveSpeed(0.1);
 
     // Step3: add Light Entity
     Color c = Color::DefaultAmbientColor;
