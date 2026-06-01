@@ -463,7 +463,6 @@ SResult DeferredShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tec
     {
         uint32_t has_tex_normal = mesh->GetMaterial()->normal_tex ? 1 : 0;
         predefines.push_back({ "HAS_MATERIAL_NORMAL" , std::to_string(has_tex_normal) });
-        predefines.push_back({ "ENABLE_TAA" , m_pContext->GetAntiAliasingMode() == AntiAliasingMode::TAA ? "1" : "0" });
 
         if (m_eCurRenderStage == RenderStage::GenerateGBuffer)
             *tech = effect.GetTechnique(szTechName_GenerateGBuffer, predefines);        
@@ -475,7 +474,6 @@ SResult DeferredShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tec
     {
         uint32_t has_tex_normal = mesh->GetMaterial()->normal_tex ? 1 : 0;
         predefines.push_back({ "HAS_MATERIAL_NORMAL", std::to_string(has_tex_normal) });
-        predefines.push_back({ "ENABLE_TAA", "0" });
         *tech = effect.GetTechnique(szTechName_GenerateRsm, predefines);
         break;
     }

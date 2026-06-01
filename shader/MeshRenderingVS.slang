@@ -1,6 +1,5 @@
 //PREDEFINE:JOINT_BIND_SIZE=0,4,8
 //PREDEFINE:HAS_MATERIAL_NORMAL=0,1
-//PREDEFINE:ENABLE_TAA=0,1
 //PREDEFINE:MORPH_TYPE=0,1
 //STAGE=vs
 #include "Common.slangh"
@@ -41,10 +40,8 @@ struct VSOutput
     float4 tangent      : TANGENT;
 #endif // HAS_MATERIAL_NORMAL
     float3 posWorld     : POSITION0;
-#if ENABLE_TAA
     float4 prePos       : POSITION1;
     float4 unjitterPos  : POSITION2;
-#endif // ENABLE_TAA
     float4 pos          : SV_POSITION;
 };
 
@@ -61,25 +58,19 @@ VSOutput main(VSInput input)
     CalcMorphTargetPosition(input.vertex_id, pos);
     CalcMorphTargetNormal(input.vertex_id, normal);
 
-#if ENABLE_TAA
     CalcPrevMorphTarget(input.vertex_id, prev_pos, normal);
-#endif
 
 #if JOINT_BIND_SIZE > 4
     float4x4 skin_mat = CalcSkeletonMatrixEx(input.blendWeight, input.blendIndex, input.blendWeight1, input.blendIndex1);
     pos = mul(pos, skin_mat);
-#if ENABLE_TAA
     float4x4 prev_skin_mat = CalcPrevSkeletonMatrixEx(input.blendWeight, input.blendIndex, input.blendWeight1, input.blendIndex1);
     prev_pos = mul(prev_pos, prev_skin_mat);
-#endif
     normal_trans = transpose(MatrixInverse(mul(skin_mat, modelInfo.modelMatrix)));
 #elif JOINT_BIND_SIZE > 0
     float4x4 skin_mat = CalcSkeletonMatrix(input.blendWeight, input.blendIndex);
     pos = mul(pos, skin_mat);
-#if ENABLE_TAA
     float4x4 prev_skin_mat = CalcPrevSkeletonMatrix(input.blendWeight, input.blendIndex);
     prev_pos = mul(prev_pos, prev_skin_mat);
-#endif
     normal_trans = transpose(MatrixInverse(mul(skin_mat, modelInfo.modelMatrix)));
 #endif
 
@@ -96,9 +87,7 @@ VSOutput main(VSInput input)
     output.pos = mul(pos, modelInfo.mvpMatrix);
     output.posWorld = mul(pos, modelInfo.modelMatrix).xyz;
 
-#if ENABLE_TAA
     output.unjitterPos = mul(pos, modelInfo.unjitterMVP);
     output.prePos = mul(prev_pos, modelInfo.preMVP);
-#endif
     return output;
 }

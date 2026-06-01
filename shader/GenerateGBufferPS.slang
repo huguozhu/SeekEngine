@@ -1,5 +1,4 @@
 //PREDEFINE:HAS_MATERIAL_NORMAL=0,1
-//PREDEFINE:ENABLE_TAA=0,1
 //STAGE:ps
 #include "Common.slangh"
 
@@ -22,12 +21,10 @@ struct GBuffer
 	float3 	albedo;
 	float 	metallic;
 
-#if ENABLE_TAA
 	// RT2 R8G8B8A8_UNORM
 	float2 velocity;
 	float occlusion;
 	float UNUSED1;
-#endif
 };
 
 float3x3 CalcTBN(float3 normal, float4 tangent)
@@ -47,10 +44,8 @@ void main(
     in float4 tangent		: TANGENT,
 #endif
     in float3 posWorld		: POSITION0,
-#if ENABLE_TAA
     in float4 prePos       	: POSITION1,
     in float4 unjitterPos  	: POSITION2,
-#endif
 	out float4 rt0			: SV_Target0,
 	out float4 rt1			: SV_Target1,
 	out float4 rt2			: SV_Target2)
@@ -92,16 +87,12 @@ void main(
     }
 #endif
 
-#if ENABLE_TAA
     float4 pre_pos = prePos / prePos.w;
     float4 unjitter_pos = unjitterPos / unjitterPos.w;
     pre_pos.xy = pre_pos.xy / float2(2.0f, -2.0f) + float2(0.5f, 0.5f);
     unjitter_pos.xy = unjitter_pos.xy / float2(2.0f, -2.0f) + float2(0.5f, 0.5f);
     float2 velocity = float2(unjitter_pos.x - pre_pos.x, unjitter_pos.y - pre_pos.y);
-#endif
 	rt0 = float4(BestFitNormal_Encode(normalize(gbuffer.normal)), gbuffer.roughness);
 	rt1 = float4(gbuffer.albedo, gbuffer.metallic);
-#if ENABLE_TAA
 	rt2 = float4(velocity, 0.0, posWorld.x);
-#endif
 }

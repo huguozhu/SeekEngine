@@ -2,7 +2,6 @@
 //PREDEFINE:HAS_MATERIAL_NORMAL=0,1
 //PREDEFINE:HAS_MATERIAL_METALLIC_ROUGHNESS=0,1
 //PREDEFINE:HAS_MATERIAL_NORMAL_MASK=0,1
-//PREDEFINE:ENABLE_TAA=0,1
 //STAGE:ps
 #include "Common.slangh"
 #include "Lighting.slangh"
@@ -101,10 +100,8 @@ struct VSOutput
     float4 tangent      : TANGENT;
 #endif // HAS_MATERIAL_NORMAL
     float3 posWorld     : POSITION0;
-#if ENABLE_TAA
     float4 prePos       : POSITION1;
     float4 unjitterPos  : POSITION2;
-#endif // ENABLE_TAA
     float4 pos          : SV_POSITION;
 };
 

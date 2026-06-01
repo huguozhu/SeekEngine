@@ -56,8 +56,6 @@ SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tech
     jointBindSizePredefine.name = "JOINT_BIND_SIZE";
     jointBindSizePredefine.value = std::to_string((int)mesh->GetSkinningJointBindSize());
 
-    predefines.push_back({ "ENABLE_TAA" , m_pContext->GetAntiAliasingMode() == AntiAliasingMode::TAA ? "1" : "0" });
-
     VirtualTechnique* virtualTech = nullptr;
 
     switch (m_eCurRenderStage)
