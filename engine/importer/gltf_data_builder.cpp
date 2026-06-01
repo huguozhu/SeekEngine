@@ -311,6 +311,7 @@ GltfPrimitive GltfDataBuilder::ExtractPrimitive(::cgltf_data* data,
     // Vertex attribute extraction
     std::map<uint32_t, VertexStream> vertexStreams;
     std::map<uint32_t, std::shared_ptr<BufferResource>> blendIndexBufferRes;
+    uint32_t positionVertexCount = 0;
 
     for (size_t i = 0; i < prim->attributes_count; i++)
     {
@@ -384,6 +385,7 @@ GltfPrimitive GltfDataBuilder::ExtractPrimitive(::cgltf_data* data,
 
         if (vertexAttribute.first == VertexElementUsage::Position)
         {
+            positionVertexCount = (uint32_t)accessor->count;
             if (accessor->has_min && accessor->has_max)
             {
                 gp.boundingBox.Max(float3{accessor->max[0], accessor->max[1], accessor->max[2]});
@@ -398,6 +400,32 @@ GltfPrimitive GltfDataBuilder::ExtractPrimitive(::cgltf_data* data,
             gp.jointBindSize = (SkinningJointBindSize)((vertexAttribute.second + 1) * 4);
         else if (vertexAttribute.first == VertexElementUsage::Tangent)
             gp.hasTangent = true;
+    }
+
+    // Fallback: ensure TEXCOORD0 exists (shader always expects it)
+    if (!gp.hasTexcoord)
+    {
+        uint32_t vertexCount = positionVertexCount;
+        size_t texSize = vertexCount * sizeof(float) * 2;
+        std::shared_ptr<float> texData{new float[vertexCount * 2], default_array_deleter<float>()};
+        memset(texData.get(), 0, texSize);
+
+        VertexStream texStream;
+        texStream.stride = sizeof(float) * 2;
+        VertexStreamLayout texLayout;
+        texLayout.buffer_offset = 0;
+        texLayout.format = VertexFormat::Float2;
+        texLayout.usage = VertexElementUsage::TexCoord;
+        texLayout.usage_index = 0;
+        texStream.layouts.push_back(texLayout);
+
+        auto bufRes = MakeSharedPtr<BufferResource>();
+        bufRes->_uninitializer = [texData](IResource*) mutable { texData.reset(); };
+        bufRes->_data = (uint8_t*)texData.get();
+        bufRes->_size = texSize;
+
+        gp.vertexStreams.push_back(std::move(texStream));
+        gp.vertexBuffers.push_back(std::move(bufRes));
     }
 
     // Assemble vertex streams and buffer references
