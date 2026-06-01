@@ -127,17 +127,14 @@ SResult SkeletalMeshComponent::OnRenderBegin(Technique* tech, RHIMeshPtr pMesh)
 
     RenderStage stage = m_pContext->SceneRendererInstance().GetCurRenderStage();
 
-    // Create and bind joint matrices CB (all stages that use skinning)
+    // Create and bind joint matrices CB
     RHIContext& rc = m_pContext->RHIContextInstance();
     if (!m_JointsCBuffer)
     {
         m_JointsCBuffer = rc.CreateConstantBuffer(sizeof(m_JointFinalMatricesToGPU), RESOURCE_FLAG_CPU_WRITE);
-        m_JointsNormalCBuffer = rc.CreateConstantBuffer(sizeof(m_JointNormalMatricesToGPU), RESOURCE_FLAG_CPU_WRITE);
     }
     m_JointsCBuffer->Update(&m_JointFinalMatricesToGPU, sizeof(m_JointFinalMatricesToGPU));
-    m_JointsNormalCBuffer->Update(&m_JointNormalMatricesToGPU, sizeof(m_JointNormalMatricesToGPU));
     tech->SetParam("joints", m_JointsCBuffer);
-    tech->SetParam("joints_normal", m_JointsNormalCBuffer);
 
     return S_Success;
 }

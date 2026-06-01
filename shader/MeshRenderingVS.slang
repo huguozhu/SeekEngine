@@ -72,8 +72,7 @@ VSOutput main(VSInput input)
     float4x4 prev_skin_mat = CalcPrevSkeletonMatrixEx(input.blendWeight, input.blendIndex, input.blendWeight1, input.blendIndex1);
     prev_pos = mul(prev_pos, prev_skin_mat);
 #endif
-    float4x4 skin_normal_mat = CalcSkeletonNormalMatrixEx(input.blendWeight, input.blendIndex, input.blendWeight1, input.blendIndex1);
-    normal_trans = mul(skin_normal_mat, modelInfo.normalMatrix);
+    normal_trans = transpose(MatrixInverse(mul(skin_mat, modelInfo.modelMatrix)));
 #elif JOINT_BIND_SIZE > 0
     float4x4 skin_mat = CalcSkeletonMatrix(input.blendWeight, input.blendIndex);
     pos = mul(pos, skin_mat);
@@ -81,8 +80,7 @@ VSOutput main(VSInput input)
     float4x4 prev_skin_mat = CalcPrevSkeletonMatrix(input.blendWeight, input.blendIndex);
     prev_pos = mul(prev_pos, prev_skin_mat);
 #endif
-    float4x4 skin_normal_mat = CalcSkeletonNormalMatrix(input.blendWeight, input.blendIndex);
-    normal_trans = mul(skin_normal_mat, modelInfo.normalMatrix);
+    normal_trans = transpose(MatrixInverse(mul(skin_mat, modelInfo.modelMatrix)));
 #endif
 
     normal = mul(normal, normal_trans);
