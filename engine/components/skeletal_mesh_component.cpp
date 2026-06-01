@@ -110,52 +110,51 @@ void SkeletalMeshComponent::UpdateJointFinalMatrices()
     }
 }
 
-//SResult SkeletalMeshComponent::OnRenderBegin(Technique* tech, MeshPtr pMesh)
-//{
-//    if (!pMesh)
-//        return ERR_INVALID_ARG;
-//
-//    SEEK_RETIF_FAIL(MeshComponent::OnRenderBegin(tech, pMesh));
-//
-//    if (m_vInverseBindMatrices.empty() && m_vJointFinalMatrices.empty())
-//        return SEEK_Success;
-//    if (m_vInverseBindMatrices.size() > JOINT_MAX_COUNT)
-//    {
-//        LOG_ERROR("SkeletalMeshComponent::OnRenderBegin(), the number of joints %d exceeds MAX_JOINT %d", m_vInverseBindMatrices.size(), JOINT_MAX_COUNT);
-//        return ERR_NOT_SUPPORT;
-//    }
-//
-//    RenderStage stage = m_pContext->SceneRendererInstance().GetCurRenderStage();
-//    SResult ret = S_Success;
-//
-//    switch (stage)
-//    {
-//    case RenderStage::RenderScene:
-//    {
-//        if (!m_JointsCBuffer)
-//        {
-//            m_JointsCBuffer = m_pContext->RenderContextInstance().CreateConstantBuffer(sizeof(m_JointFinalMatricesToGPU), RESOURCE_FLAG_CPU_WRITE);
-//            m_JointsNormalCBuffer = m_pContext->RenderContextInstance().CreateConstantBuffer(sizeof(m_JointNormalMatricesToGPU), RESOURCE_FLAG_CPU_WRITE);
-//            m_PrevJointsNormalCBuffer = m_pContext->RenderContextInstance().CreateConstantBuffer(sizeof(m_PrevJointNormalMatricesToGPU), RESOURCE_FLAG_CPU_WRITE);
-//        }
-//        m_JointsCBuffer->Update(m_JointFinalMatricesToGPU.joint_mat[0].begin(), sizeof(m_JointFinalMatricesToGPU));
-//        m_JointsNormalCBuffer->Update(&m_JointNormalMatricesToGPU, sizeof(m_JointNormalMatricesToGPU));
-//        tech->SetParam("joints", m_JointsCBuffer);
-//        tech->SetParam("joints_normal", m_JointsNormalCBuffer);
-//        // For TAA history: tech->SetParam("prev_joints", ...); tech->SetParam("prev_joints_normal", ...);
-//        break;
-//    }
-//    default:
-//        break;
-//    }
-//
-//    return S_Success;
-//}
-//
-//SResult SkeletalMeshComponent::OnRenderEnd()
-//{
-//    return MeshComponent::OnRenderEnd();
-//}
+SResult SkeletalMeshComponent::OnRenderBegin(Technique* tech, RHIMeshPtr pMesh)
+{
+    if (!pMesh)
+        return ERR_INVALID_ARG;
+
+    SEEK_RETIF_FAIL(MeshComponent::OnRenderBegin(tech, pMesh));
+
+    if (m_vInverseBindMatrices.empty() && m_vJointFinalMatrices.empty())
+        return S_Success;
+    if (m_vInverseBindMatrices.size() > JOINT_MAX_COUNT)
+    {
+        LOG_ERROR("SkeletalMeshComponent::OnRenderBegin(), the number of joints %d exceeds MAX_JOINT %d", m_vInverseBindMatrices.size(), JOINT_MAX_COUNT);
+        return ERR_NOT_SUPPORT;
+    }
+
+    RenderStage stage = m_pContext->SceneRendererInstance().GetCurRenderStage();
+    SResult ret = S_Success;
+
+    switch (stage)
+    {
+    case RenderStage::RenderScene:
+    {
+        RHIContext& rc = m_pContext->RHIContextInstance();
+        if (!m_JointsCBuffer)
+        {
+            m_JointsCBuffer = rc.CreateConstantBuffer(sizeof(m_JointFinalMatricesToGPU), RESOURCE_FLAG_CPU_WRITE);
+            m_JointsNormalCBuffer = rc.CreateConstantBuffer(sizeof(m_JointNormalMatricesToGPU), RESOURCE_FLAG_CPU_WRITE);
+        }
+        m_JointsCBuffer->Update(&m_JointFinalMatricesToGPU, sizeof(m_JointFinalMatricesToGPU));
+        m_JointsNormalCBuffer->Update(&m_JointNormalMatricesToGPU, sizeof(m_JointNormalMatricesToGPU));
+        tech->SetParam("joints", m_JointsCBuffer);
+        tech->SetParam("joints_normal", m_JointsNormalCBuffer);
+        break;
+    }
+    default:
+        break;
+    }
+
+    return S_Success;
+}
+
+SResult SkeletalMeshComponent::OnRenderEnd()
+{
+    return MeshComponent::OnRenderEnd();
+}
 
 SEEK_NAMESPACE_END
 

@@ -89,4 +89,5 @@ endfunction(add_sample_project)
 
 add_sample_project(01.Tutorial)
 add_sample_project(05.DeferredShading)
+add_sample_project(06.SkeletalAnimation)
 

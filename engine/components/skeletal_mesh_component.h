@@ -45,8 +45,8 @@ public:
     void                    SetMeshTransformFlag(bool flag) { m_bMeshTransformFlag = flag; };
     void                    SetMeshTransformMatrix(Matrix4 mat) { m_MeshTransformMatrix = mat; };
 
-    //virtual SResult         OnRenderBegin(Technique* tech, RHIMeshPtr pMesh) override;
-    //virtual SResult         OnRenderEnd() override;
+    virtual SResult         OnRenderBegin(Technique* tech, RHIMeshPtr pMesh) override;
+    virtual SResult         OnRenderEnd() override;
 protected:
     std::vector<Matrix4>            m_vInverseBindMatrices;
     std::vector<SceneComponentPtr>  m_vJoints;
