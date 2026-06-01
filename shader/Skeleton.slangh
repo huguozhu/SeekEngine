@@ -9,6 +9,14 @@ cbuffer prev_joints
 {
 	SkeletalJointMat prev_joints;
 }
+cbuffer joints_normal
+{
+	SkeletalJointNormalMat joints_normal;
+}
+cbuffer prev_joints_normal
+{
+	SkeletalJointNormalMat prev_joints_normal;
+}
 
 float4x4 CalcSkeletonMatrix(float4 blend_weight, uint4 blend_index)
 {	
@@ -58,4 +66,52 @@ float4x4 CalcPrevSkeletonMatrixEx(float4 blend_weight, uint4 blend_index, float4
 	skin_mat += blend_weight1.w * prev_joints.joint_mat[blend_index1.w];
 	
 	return skin_mat;
+}
+
+// ============================================================================
+// Normal matrix blending — CPU-precomputed inverse-transpose per joint
+// Eliminates per-vertex MatrixInverse() in VS (80+ scalar ops → 16 mads)
+// ============================================================================
+float4x4 CalcSkeletonNormalMatrix(float4 blend_weight, uint4 blend_index)
+{	
+	float4x4 m = blend_weight.x * joints_normal.joint_normal_mat[blend_index.x];
+	m += blend_weight.y * joints_normal.joint_normal_mat[blend_index.y];
+	m += blend_weight.z * joints_normal.joint_normal_mat[blend_index.z];
+	m += blend_weight.w * joints_normal.joint_normal_mat[blend_index.w];
+	return m;
+}
+
+float4x4 CalcSkeletonNormalMatrixEx(float4 blend_weight, uint4 blend_index, float4 blend_weight1, uint4 blend_index1)
+{	
+	float4x4 m = blend_weight.x * joints_normal.joint_normal_mat[blend_index.x];
+	m += blend_weight.y * joints_normal.joint_normal_mat[blend_index.y];
+	m += blend_weight.z * joints_normal.joint_normal_mat[blend_index.z];
+	m += blend_weight.w * joints_normal.joint_normal_mat[blend_index.w];
+	m += blend_weight1.x * joints_normal.joint_normal_mat[blend_index1.x];
+	m += blend_weight1.y * joints_normal.joint_normal_mat[blend_index1.y];
+	m += blend_weight1.z * joints_normal.joint_normal_mat[blend_index1.z];
+	m += blend_weight1.w * joints_normal.joint_normal_mat[blend_index1.w];
+	return m;
+}
+
+float4x4 CalcPrevSkeletonNormalMatrix(float4 blend_weight, uint4 blend_index)
+{	
+	float4x4 m = blend_weight.x * prev_joints_normal.joint_normal_mat[blend_index.x];
+	m += blend_weight.y * prev_joints_normal.joint_normal_mat[blend_index.y];
+	m += blend_weight.z * prev_joints_normal.joint_normal_mat[blend_index.z];
+	m += blend_weight.w * prev_joints_normal.joint_normal_mat[blend_index.w];
+	return m;
+}
+
+float4x4 CalcPrevSkeletonNormalMatrixEx(float4 blend_weight, uint4 blend_index, float4 blend_weight1, uint4 blend_index1)
+{	
+	float4x4 m = blend_weight.x * prev_joints_normal.joint_normal_mat[blend_index.x];
+	m += blend_weight.y * prev_joints_normal.joint_normal_mat[blend_index.y];
+	m += blend_weight.z * prev_joints_normal.joint_normal_mat[blend_index.z];
+	m += blend_weight.w * prev_joints_normal.joint_normal_mat[blend_index.w];
+	m += blend_weight1.x * prev_joints_normal.joint_normal_mat[blend_index1.x];
+	m += blend_weight1.y * prev_joints_normal.joint_normal_mat[blend_index1.y];
+	m += blend_weight1.z * prev_joints_normal.joint_normal_mat[blend_index1.z];
+	m += blend_weight1.w * prev_joints_normal.joint_normal_mat[blend_index1.w];
+	return m;
 }

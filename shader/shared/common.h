@@ -55,6 +55,11 @@ struct SkeletalJointMat
     float4x4 joint_mat[JOINT_MAX_COUNT];
 };
 
+struct SkeletalJointNormalMat
+{
+    float4x4 joint_normal_mat[JOINT_MAX_COUNT];
+};
+
 struct CameraInfo
 {
     float3 posWorld;

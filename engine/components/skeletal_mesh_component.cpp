@@ -76,7 +76,12 @@ void SkeletalMeshComponent::UpdateJointFinalMatrices()
     if (count == 0 && !m_vJointFinalMatrices.empty())
     {
         for (size_t i=0; i<m_vJointFinalMatrices.size(); i++)
+        {
             m_JointFinalMatricesToGPU.joint_mat[i] = (m_vJointFinalMatrices[i]).Transpose();
+            // Precompute inverse-transpose for normal transformation
+            Matrix4 jointNormalMat = m_vJointFinalMatrices[i].Inverse().Transpose();
+            m_JointNormalMatricesToGPU.joint_normal_mat[i] = jointNormalMat.Transpose();
+        }
         return;
     }
 
@@ -89,6 +94,8 @@ void SkeletalMeshComponent::UpdateJointFinalMatrices()
         {
             m_vJointFinalMatrices[i] = m_MeshTransformMatrix * m_vInverseBindMatrices[i] * m_vJoints[i]->GetWorldMatrix() * GetWorldMatrixInv();
             m_JointFinalMatricesToGPU.joint_mat[i] = (m_vJointFinalMatrices[i]).Transpose();
+            Matrix4 jointNormalMat = m_vJointFinalMatrices[i].Inverse().Transpose();
+            m_JointNormalMatricesToGPU.joint_normal_mat[i] = jointNormalMat.Transpose();
         }
     }
     else
@@ -97,6 +104,8 @@ void SkeletalMeshComponent::UpdateJointFinalMatrices()
         {
             m_vJointFinalMatrices[i] = m_vInverseBindMatrices[i] * m_vJoints[i]->GetWorldMatrix() * GetWorldMatrixInv();
             m_JointFinalMatricesToGPU.joint_mat[i] = (m_vJointFinalMatrices[i]).Transpose();
+            Matrix4 jointNormalMat = m_vJointFinalMatrices[i].Inverse().Transpose();
+            m_JointNormalMatricesToGPU.joint_normal_mat[i] = jointNormalMat.Transpose();
         }
     }
 }
@@ -126,9 +135,14 @@ void SkeletalMeshComponent::UpdateJointFinalMatrices()
 //        if (!m_JointsCBuffer)
 //        {
 //            m_JointsCBuffer = m_pContext->RenderContextInstance().CreateConstantBuffer(sizeof(m_JointFinalMatricesToGPU), RESOURCE_FLAG_CPU_WRITE);
+//            m_JointsNormalCBuffer = m_pContext->RenderContextInstance().CreateConstantBuffer(sizeof(m_JointNormalMatricesToGPU), RESOURCE_FLAG_CPU_WRITE);
+//            m_PrevJointsNormalCBuffer = m_pContext->RenderContextInstance().CreateConstantBuffer(sizeof(m_PrevJointNormalMatricesToGPU), RESOURCE_FLAG_CPU_WRITE);
 //        }
 //        m_JointsCBuffer->Update(m_JointFinalMatricesToGPU.joint_mat[0].begin(), sizeof(m_JointFinalMatricesToGPU));
+//        m_JointsNormalCBuffer->Update(&m_JointNormalMatricesToGPU, sizeof(m_JointNormalMatricesToGPU));
 //        tech->SetParam("joints", m_JointsCBuffer);
+//        tech->SetParam("joints_normal", m_JointsNormalCBuffer);
+//        // For TAA history: tech->SetParam("prev_joints", ...); tech->SetParam("prev_joints_normal", ...);
 //        break;
 //    }
 //    default:

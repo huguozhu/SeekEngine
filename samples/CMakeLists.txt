@@ -38,6 +38,26 @@ target_include_directories(${SAMPLE_COMMON_PROJECT_NAME} PUBLIC
 )
 
 
+###############################  glTF 模型下载  ######################################
+set(GLTF_ASSET_DIR "${SEEK_SAMPLES_DIR}/asset/gltf")
+
+# BrainStem (Khronos glTF 官方示例模型)
+set(BRAINSTEM_DIR "${GLTF_ASSET_DIR}/BrainStem")
+if(NOT EXISTS "${BRAINSTEM_DIR}")
+    file(MAKE_DIRECTORY "${BRAINSTEM_DIR}")
+    set(BRAINSTEM_URL "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/BrainStem/glTF-Binary/BrainStem.glb")
+    file(DOWNLOAD "${BRAINSTEM_URL}" "${BRAINSTEM_DIR}/BrainStem.glb"
+         STATUS download_status
+         SHOW_PROGRESS)
+    list(GET download_status 0 status_code)
+    if(NOT status_code EQUAL 0)
+        message(WARNING "BrainStem 模型下载失败，请手动下载到 ${BRAINSTEM_DIR}")
+    else()
+        message(STATUS "BrainStem 模型下载完成: ${BRAINSTEM_DIR}")
+    endif()
+endif()
+
+
 ##################################  sample  ##########################################
 function(add_sample_project sample_name)
     # source code

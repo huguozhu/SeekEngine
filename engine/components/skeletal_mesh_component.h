@@ -54,11 +54,15 @@ protected:
 
     std::vector<Matrix4>            m_vJointFinalMatrices;
     SkeletalJointMat                m_JointFinalMatricesToGPU;
+    SkeletalJointNormalMat          m_JointNormalMatricesToGPU;
+    SkeletalJointNormalMat          m_PrevJointNormalMatricesToGPU;
 
     bool                            m_bMeshTransformFlag = false;
     Matrix4                         m_MeshTransformMatrix = Matrix4::Identity();
 
     RHIGpuBufferPtr              m_JointsCBuffer;
+    RHIGpuBufferPtr              m_JointsNormalCBuffer;
+    RHIGpuBufferPtr              m_PrevJointsNormalCBuffer;
 };
 
 SEEK_NAMESPACE_END
