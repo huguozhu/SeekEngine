@@ -32,13 +32,13 @@ SResult SkeletalAnimation::OnCreate()
     float h = vp.height;
 
     // Step1: Load Sponza (known to work) as scene ground
-    std::string sponzaPath = FullPath("asset/gltf/Sponza/Sponza.gltf");
-    m_pMeshEntity = this->CreateEntityFromFile(sponzaPath);
-    if (m_pMeshEntity)
-    {
-        m_pMeshEntity->AddToTopScene();
-        LOG_INFO("Sponza loaded");
-    }
+    //std::string sponzaPath = FullPath("asset/gltf/Sponza/Sponza.gltf");
+    //m_pMeshEntity = this->CreateEntityFromFile(sponzaPath);
+    //if (m_pMeshEntity)
+    //{
+    //    m_pMeshEntity->AddToTopScene();
+    //    LOG_INFO("Sponza loaded");
+    //}
 
     // Step2: Load BrainStem with skeletal animation
     std::string bsPath = FullPath("asset/gltf/BrainStem/BrainStem.glb");
