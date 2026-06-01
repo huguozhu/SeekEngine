@@ -176,8 +176,6 @@ SResult DeferredShadingRenderer::Init()
     m_pLightingFb->AttachDepthStencilView(ds_view);
 
     m_pLDRFb = rc.CreateRHIFrameBuffer();
-    m_pHDRFb = rc.CreateRHIFrameBuffer();    
-    m_pSceneFb = m_pHDRFb;
 
     m_pLDRFb->AttachTargetView(RHIFrameBuffer::Attachment::Color0, rc.Create2DRenderTargetView(m_pLDRColor));
 

@@ -77,8 +77,6 @@ protected:
     RHIFrameBufferPtr       m_pGBufferFb = nullptr;
     RHIFrameBufferPtr       m_pLightingFb = nullptr;
     RHIFrameBufferPtr       m_pLDRFb = nullptr;
-    RHIFrameBufferPtr       m_pHDRFb = nullptr;
-    RHIFrameBufferPtr       m_pSceneFb = nullptr;
     RHIFrameBufferPtr       m_pShadowingFb = nullptr;
     RHIFrameBufferPtr       m_pSsaoFb = nullptr;
 
