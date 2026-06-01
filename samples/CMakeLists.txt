@@ -45,7 +45,7 @@ set(GLTF_ASSET_DIR "${SEEK_SAMPLES_DIR}/asset/gltf")
 set(BRAINSTEM_DIR "${GLTF_ASSET_DIR}/BrainStem")
 if(NOT EXISTS "${BRAINSTEM_DIR}")
     file(MAKE_DIRECTORY "${BRAINSTEM_DIR}")
-    set(BRAINSTEM_URL "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/main/Models/BrainStem/glTF-Binary/BrainStem.glb")
+    set(BRAINSTEM_URL "https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Assets@main/Models/BrainStem/glTF-Binary/BrainStem.glb")
     file(DOWNLOAD "${BRAINSTEM_URL}" "${BRAINSTEM_DIR}/BrainStem.glb"
          STATUS download_status
          SHOW_PROGRESS)
