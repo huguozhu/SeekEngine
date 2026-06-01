@@ -92,7 +92,7 @@ void SkeletalMeshComponent::UpdateJointFinalMatrices()
     {
         for (uint32_t i = 0; i < count; i++)
         {
-            m_vJointFinalMatrices[i] = m_MeshTransformMatrix * m_vInverseBindMatrices[i] * m_vJoints[i]->GetWorldMatrix() * GetWorldMatrixInv();
+            m_vJointFinalMatrices[i] = m_MeshTransformMatrix * m_vInverseBindMatrices[i] * m_vJoints[i]->GetWorldMatrix();
             m_JointFinalMatricesToGPU.joint_mat[i] = (m_vJointFinalMatrices[i]).Transpose();
             Matrix4 jointNormalMat = m_vJointFinalMatrices[i].Inverse().Transpose();
             m_JointNormalMatricesToGPU.joint_normal_mat[i] = jointNormalMat.Transpose();
@@ -102,7 +102,7 @@ void SkeletalMeshComponent::UpdateJointFinalMatrices()
     {
         for (uint32_t i = 0; i < count; i++)
         {
-            m_vJointFinalMatrices[i] = m_vInverseBindMatrices[i] * m_vJoints[i]->GetWorldMatrix() * GetWorldMatrixInv();
+            m_vJointFinalMatrices[i] = m_vInverseBindMatrices[i] * m_vJoints[i]->GetWorldMatrix();
             m_JointFinalMatricesToGPU.joint_mat[i] = (m_vJointFinalMatrices[i]).Transpose();
             Matrix4 jointNormalMat = m_vJointFinalMatrices[i].Inverse().Transpose();
             m_JointNormalMatricesToGPU.joint_normal_mat[i] = jointNormalMat.Transpose();

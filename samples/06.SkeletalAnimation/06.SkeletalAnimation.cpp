@@ -50,7 +50,7 @@ SResult SkeletalAnimation::OnCreate()
     }
     m_pBrainStemEntity->AddToTopScene();
     // Position BrainStem in the center, slightly above ground
-    m_pBrainStemEntity->SetWorldTranslation(float3(0, 0.5, 0));
+    m_pBrainStemEntity->SetWorldTranslation(float3(0, 0, 0));
 
     // Log animation info
     Component* comp = m_pBrainStemEntity->GetComponent(ComponentType::Animation);
