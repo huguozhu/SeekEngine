@@ -40,17 +40,12 @@ SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tech
         return ERR_INVALID_ARG;
 
     MorphInfo&      morph_info = mesh->GetMorphInfo();
-    MorphTargetType morph_target_type = morph_info.morph_target_type;
     uint32_t        morph_count = (uint32_t)morph_info.morph_target_weights.size();
 
     auto& effect = m_pContext->EffectInstance();
 
     // Predefines
     std::vector<EffectPredefine> predefines;
-
-    EffectPredefine morphTypePredefine;
-    morphTypePredefine.name = "MORPH_TYPE";
-    morphTypePredefine.value = std::to_string((int)morph_target_type);
 
     EffectPredefine jointBindSizePredefine;
     jointBindSizePredefine.name = "JOINT_BIND_SIZE";
@@ -65,7 +60,6 @@ SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tech
         case RenderStage::GenerateCascadedShadowMap:
         {
             predefines.push_back(jointBindSizePredefine);
-            predefines.push_back(morphTypePredefine);
             
             if (m_eCurRenderStage == RenderStage::GenerateShadowMap)
                 virtualTech = effect.GetVirtualTechnique("GenerateShadowMap");
@@ -85,7 +79,6 @@ SResult ForwardShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tech
             hasNormalTexPredefine.value = std::to_string(has_tex_normal);
 
             predefines.push_back(jointBindSizePredefine);
-            predefines.push_back(morphTypePredefine);
             predefines.push_back(hasNormalTexPredefine);
 
             if (pMaterial && pMaterial->albedo_tex)

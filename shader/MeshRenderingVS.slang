@@ -1,6 +1,5 @@
 //PREDEFINE:JOINT_BIND_SIZE=0,4,8
 //PREDEFINE:HAS_MATERIAL_NORMAL=0,1
-//PREDEFINE:MORPH_TYPE=0,1
 //STAGE=vs
 #include "Common.slangh"
 #include "MorphTarget.slangh"

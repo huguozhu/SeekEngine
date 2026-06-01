@@ -443,7 +443,6 @@ void DeferredShadingRenderer::AppendShadowMapJobs(uint32_t light_index)
 SResult DeferredShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Technique** tech)
 {
     MorphInfo& morph_info = mesh->GetMorphInfo();
-    MorphTargetType morph_target_type = morph_info.morph_target_type;
     uint32_t        morph_count = (uint32_t)morph_info.morph_target_weights.size();
     
     Effect& effect = m_pContext->EffectInstance();
@@ -451,7 +450,6 @@ SResult DeferredShadingRenderer::GetEffectTechniqueToRender(RHIMeshPtr mesh, Tec
     // Predefines
     std::vector<EffectPredefine> predefines;
     predefines.push_back({ "JOINT_BIND_SIZE",  std::to_string((int)mesh->GetSkinningJointBindSize()) });
-    predefines.push_back({ "MORPH_TYPE",  std::to_string((int)morph_target_type) });
 
     switch (m_eCurRenderStage)
     {

@@ -1,7 +1,10 @@
 #pragma once
 
-//PREDEFINE:MORPH_TYPE=0,1
 #include "Common.slangh"
+
+// 引擎侧通过 SetSpecializationConstant("g_MorphType", ...) 设置
+// 0 = 无 morph，1 = 仅位置 morph，3 = 位置+法线 morph
+[SpecializationConstant] int g_MorphType = 0;
 
 StructuredBuffer<float4> morph_input;
 
@@ -20,53 +23,49 @@ cbuffer MORPH_SIZE
     uint MORPH_SIZE;
 }
 
+// 计算 Morph Target 位置偏移（MORPH_SIZE=0 时循环自动跳过，无开销）
 void CalcMorphTargetPosition(uint vertex_id, inout float4 pos)
 {
-#if MORPH_TYPE & MORPH_COMPONENT_POS
     int startIdx = (int) vertex_id * MORPH_SIZE;
     int i;
-    
     for (i = 0; i < MORPH_SIZE; i++)
     {
         pos += morph_input[startIdx + i] * morph_weights[i].x;
     }
-#endif
 }
 
+// 计算 Morph Target 法线偏移（需 g_MorphType 包含 MORPH_COMPONENT_NORMAL 位）
 void CalcMorphTargetNormal(uint vertex_id, inout float4 normal)
 {
-#if MORPH_TYPE & MORPH_COMPONENT_NORMAL
-    int startIdx = (int)vertex_id * MORPH_SIZE * 2;
-    int i;
-    
-    for (i = 0; i < MORPH_SIZE; i++)
+    if (g_MorphType & MORPH_COMPONENT_NORMAL)
     {
-        normal += morph_input[startIdx + i] * morph_weights[i].x;
+        int startIdx = (int)vertex_id * MORPH_SIZE * 2;
+        int i;
+        for (i = 0; i < MORPH_SIZE; i++)
+        {
+            normal += morph_input[startIdx + i] * morph_weights[i].x;
+        }
     }
-#endif
 }
 
+// 计算前一帧 Morph Target 用于运动向量（MORPH_SIZE=0 时循环自动跳过）
 void CalcPrevMorphTarget(uint vertex_id, inout float4 pos, inout float4 normal)
 {
-#if MORPH_TYPE != MORPH_COMPONENT_NONE
-
     int startIdx = (int)vertex_id * MORPH_SIZE;
     int i;
 
-#if MORPH_TYPE & MORPH_COMPONENT_POS
     for (i = 0; i < MORPH_SIZE; i++)
     {
         pos += morph_input[startIdx + i] * prev_morph_weights[i].x;
     }
-#endif
 
-#if MORPH_TYPE & MORPH_COMPONENT_NORMAL
-    startIdx = vertex_id * MORPH_SIZE * 2;
-    for (i = 0; i < MORPH_SIZE; i++)
+    // 仅当 g_MorphType 包含法线分量时才处理法线 morph
+    if (g_MorphType & MORPH_COMPONENT_NORMAL)
     {
-        normal += morph_input[startIdx + i] * prev_morph_weights[i].x;
+        startIdx = vertex_id * MORPH_SIZE * 2;
+        for (i = 0; i < MORPH_SIZE; i++)
+        {
+            normal += morph_input[startIdx + i] * prev_morph_weights[i].x;
+        }
     }
-#endif
-
-#endif
 }
