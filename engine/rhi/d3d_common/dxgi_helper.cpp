@@ -200,6 +200,8 @@ void DxgiHelper::Uninit()
     m_vAdapterList.clear();
     m_iCurAdapterNo = INVALID_ADAPTER_INDEX;
     m_iDxgiSubVer = 0;
+    // 先释放 debug 分析接口（持有 DXGI 引用），再释放工厂
+    m_pGraphicsAnalysis.Reset();
     m_pDxgiFactory.Reset();
     m_pDxgiFactory1.Reset();
     m_pDxgiFactory2.Reset();
@@ -268,6 +270,8 @@ void OutputD3DCommonDebugInfo()
         }
     }
     s_dxgiInfoQueue->ClearStoredMessages(DXGI_DEBUG_ALL);
+    // 释放静态 Debug 接口，避免其持有的 DXGI 引用导致 ReportLiveObjects 误报
+    s_dxgiInfoQueue.Reset();
 }
 
 SEEK_NAMESPACE_END

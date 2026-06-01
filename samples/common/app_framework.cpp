@@ -153,6 +153,12 @@ SResult AppFramework::Run()
     }
 
     this->OnDestroy();
+
+    // 释放 ImGui 的 D3D11 资源（字体纹理、Shader、Buffer、状态对象等），避免泄露
+    ImGui_ImplDX11_Shutdown();
+    ImGui_ImplWin32_Shutdown();
+    ImGui::DestroyContext();
+
     DestroyWindow(wnd);
     CoUninitialize();
     return S_Success;

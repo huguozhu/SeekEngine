@@ -38,6 +38,8 @@ Context::Context(const RenderInitInfo& init_info)
 }
 Context::~Context()
 {
+    // 先释放所有 GPU 资源，再检查泄露
+    Uninit();
 #if defined(SEEK_PLATFORM_WINDOWS)
     if (EnableDebug())
         OutputD3DCommonDebugInfo();
@@ -113,11 +115,14 @@ SResult Context::Init(void* device, void* native_wnd)
 }
 void Context::Uninit()
 {
-    m_pRHIContext.reset();
+    // 先释放依赖 GPU 设备的上层对象（纹理/缓冲区/Shader等），
+    // 最后再释放 RHIContext（D3D11 Device），避免 Device 先销毁导致泄露
     m_pSceneManager.reset();
+    m_pSprite2DRenderer.reset();
     m_pSceneRenderer.reset();
     m_pResourceManager.reset();
     m_pEffect.reset();
+    m_pRHIContext.reset();
 }
 void Context::SetViewport(Viewport vp)
 {

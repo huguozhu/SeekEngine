@@ -185,6 +185,19 @@ void D3D11Context::Uninit()
         m_pDeviceContext->ClearState();
         m_pDeviceContext->Flush();
     }
+    // 在释放 D3D11 Device 之前清空缓存，避免状态对象泄露
+    m_Samplers.clear();
+    m_RenderStates.clear();
+
+    // 先释放持有 SwapChain 的 Framebuffer（内部引用 DXGI Factory），
+    // 再释放 DXGI Factory，避免 SwapChain Release 时 Factory 已销毁
+    m_pCurrentRHIFrameBuffer = nullptr;
+    m_pScreenRHIFrameBuffer.reset();
+    m_pFinalRHIFrameBuffer.reset();
+    m_pCurRHIFrameBuffer.reset();
+    m_pCubeMesh.reset();
+    m_pConeMesh.reset();
+
     m_pDeviceContext.Reset();
     m_pDevice.Reset();
     DxgiHelper::Uninit();

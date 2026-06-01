@@ -28,7 +28,7 @@ private:
     EntityPtr m_pRotatingLights[NUM_LIGHTS] = { nullptr };
     EntityPtr m_pRotatingSphere[NUM_LIGHTS] = { nullptr };
 
-    bool m_bManyLights = false;
+    bool m_bManyLights = true;
     FirstPersonCameraController m_CameraController;
 };
 
@@ -231,7 +231,7 @@ SResult DeferredShading::InitContext(void* device, void* native_wnd)
 {
     RenderInitInfo info;
     info.enable_debug = true;
-    info.renderer_type = RendererType::Forward;
+    info.renderer_type = RendererType::Deferred;
     info.anti_aliasing_mode = AntiAliasingMode::TAA;
     info.preferred_adapter = 0;
 
