@@ -49,7 +49,9 @@ float4 main(
 
 	float3 V = normalize(cameraInfo.posWorld - pos_world);
 	float3 N = normalize(normal);
-	float3 Lo = 0;
+	// 间接光照在循环外读取一次，避免重复累加和冗余采样
+	float4 indirect_lighting = indirect_lighting_tex.SampleLevel(point_sampler, iTc, 0);
+	float3 Lo = indirect_lighting.rgb;
 
 #if TILE_CULLING == 1
 	float width, height;
@@ -98,8 +100,7 @@ float4 main(
 		[branch]
 		if (NoL > 0.0)
 		{
-			float4 indirect_lighting = indirect_lighting_tex.SampleLevel(point_sampler, iTc, 0);
-			Lo += indirect_lighting.rgb + CalcLightingBRDF(albedo, metallic, roughness, lightInfo.color, lightInfo.intensity, lightAttenuation, N, L, V, shadow);
+				Lo += CalcLightingBRDF(albedo, metallic, roughness, lightInfo.color, lightInfo.intensity, lightAttenuation, N, L, V, shadow);
 		}
 	}
 	return float4(Lo, 1.0);
