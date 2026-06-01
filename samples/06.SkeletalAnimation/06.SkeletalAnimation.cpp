@@ -17,13 +17,11 @@ public:
 
 private:
     EntityPtr m_pMeshEntity = nullptr;
+    EntityPtr m_pBrainStemEntity = nullptr;
     EntityPtr m_pCameraEntity = nullptr;
-    EntityPtr m_pLightEntity[3] = { nullptr };
+    EntityPtr m_pLightEntity[4] = { nullptr };
 
     FirstPersonCameraController m_CameraController;
-
-    AnimationComponent* m_pAnimComponent = nullptr;
-    float m_AnimDuration = 0.0f;
 };
 
 SResult SkeletalAnimation::OnCreate()
@@ -33,64 +31,64 @@ SResult SkeletalAnimation::OnCreate()
     float w = vp.width;
     float h = vp.height;
 
-    // Step1: Load BrainStem with skeletal animation (animation auto-plays)
-    std::string modelPath = FullPath("asset/gltf/BrainStem/BrainStem.glb");
-    m_pMeshEntity = this->CreateEntityFromFile(modelPath);
-    if (!m_pMeshEntity)
+    // Step1: Load Sponza (known to work) as scene ground
+    std::string sponzaPath = FullPath("asset/gltf/Sponza/Sponza.gltf");
+    m_pMeshEntity = this->CreateEntityFromFile(sponzaPath);
+    if (m_pMeshEntity)
     {
-        LOG_ERROR("Failed to load BrainStem model!");
+        m_pMeshEntity->AddToTopScene();
+        LOG_INFO("Sponza loaded");
+    }
+
+    // Step2: Load BrainStem with skeletal animation
+    std::string bsPath = FullPath("asset/gltf/BrainStem/BrainStem.glb");
+    m_pBrainStemEntity = this->CreateEntityFromFile(bsPath);
+    if (!m_pBrainStemEntity)
+    {
+        LOG_ERROR("Failed to load BrainStem!");
         return -1;
     }
-    m_pMeshEntity->AddToTopScene();
-    m_pMeshEntity->SetLocalScale(0.5);
+    m_pBrainStemEntity->AddToTopScene();
+    // Position BrainStem in the center, slightly above ground
+    m_pBrainStemEntity->SetWorldTranslation(float3(0, 0.5, 0));
 
-    // Get animation component (already auto-playing from CreateEntityFromFile)
-    Component* comp = m_pMeshEntity->GetComponent(ComponentType::Animation);
+    // Log animation info
+    Component* comp = m_pBrainStemEntity->GetComponent(ComponentType::Animation);
     if (comp)
     {
-        m_pAnimComponent = static_cast<AnimationComponent*>(comp);
-        auto& sections = m_pAnimComponent->GetAnimSectionInfo();
-        if (!sections.empty())
-            m_AnimDuration = sections[0].endTime;
-        LOG_INFO("Animation loaded: %.2fs, joints: %d",
-                 m_AnimDuration,
-                 m_pAnimComponent->GetTransformAnimationTracks().size());
+        auto* anim = static_cast<AnimationComponent*>(comp);
+        auto& sec = anim->GetAnimSectionInfo();
+        LOG_INFO("BrainStem animation: %.1fs, %d tracks",
+                 sec.empty() ? 0.0f : sec[0].endTime,
+                 (int)anim->GetTransformAnimationTracks().size());
     }
 
-    // Step2: Camera
+    // Step3: Camera (same as Sample5)
     m_pCameraEntity = MakeSharedPtr<Entity>(m_pContext.get());
     CameraComponentPtr pCam = MakeSharedPtr<CameraComponent>(m_pContext.get());
     pCam->ProjPerspectiveParams(45.0 * Math::DEG2RAD, w / h, 0.01f, 200.0f);
-    pCam->SetLookAt(float3(0, 0.5, -1.5), float3(0, 0.3, 0), float3(0, 1, 0));
+    pCam->SetLookAt(float3(0, 2, -15), float3(0, 0, 0), float3(0, 1, 0));
     m_pCameraEntity->AddSceneComponent(pCam);
     m_pCameraEntity->AddToTopScene();
     m_CameraController.SetCamera(pCam.get());
-    m_CameraController.SetMoveSpeed(0.05);
+    m_CameraController.SetMoveSpeed(0.5);
 
-    // Step3: Ambient Light
+    // Step4: Lighting (same as Sample5)
+    Color c = Color::DefaultAmbientColor;
     LightComponentPtr pLight = MakeSharedPtr<AmbientLightComponent>(m_pContext.get());
-    pLight->SetColor(Color(0.15f, 0.15f, 0.15f));
+    pLight->SetColor(c);
     m_pLightEntity[0] = MakeSharedPtr<Entity>(m_pContext.get(), "Ambient Light");
     m_pLightEntity[0]->AddSceneComponent(pLight);
 
-    // Step4: Directional Light
+    float p = 1.0;
     pLight = MakeSharedPtr<DirectionalLightComponent>(m_pContext.get());
     pLight->SetColor(Color::White);
-    pLight->SetDirection(float3(0.5, -1, -0.5));
-    pLight->SetIntensity(2.0);
+    pLight->SetDirection(float3(p, -p, p));
+    pLight->SetIntensity(1.5);
+    pLight->SetWorldTranslation(float3(-p, p, -p));
     m_pLightEntity[1] = MakeSharedPtr<Entity>(m_pContext.get(), "Directional Light");
     m_pLightEntity[1]->AddSceneComponent(pLight);
     m_pLightEntity[1]->AddToTopScene();
-
-    // Step5: Point Light (warm fill)
-    pLight = MakeSharedPtr<PointLightComponent>(m_pContext.get());
-    pLight->SetColor(Color(0.8f, 0.6f, 0.3f));
-    pLight->SetIntensity(15);
-    pLight->SetFalloffRadius(10);
-    pLight->SetWorldTranslation(float3(2, 1, 2));
-    m_pLightEntity[2] = MakeSharedPtr<Entity>(m_pContext.get(), "Point Light");
-    m_pLightEntity[2]->AddSceneComponent(pLight);
-    m_pLightEntity[2]->AddToTopScene();
 
     m_pContext->SceneManagerInstance().PrintTree();
     return S_Success;
