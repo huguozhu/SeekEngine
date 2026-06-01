@@ -275,11 +275,7 @@ SceneComponentPtr GltfSceneAssembler::BuildNode(const GltfData& data, uint32_t i
             MeshComponentPtr meshComp = m_meshes[gn.meshIndex];
             auto& meshes = meshComp->GetMeshes();
             for (auto& m : meshes)
-            {
-                // TODO: remove when joints CB binding is working
-                m->SetSkinningJointBindSize(SkinningJointBindSize::None);
                 sklMeshComp->AddMesh(m);
-            }
         }
         else
         {
