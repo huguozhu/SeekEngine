@@ -86,6 +86,7 @@ public:
     SResult             Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z) override;
     SResult             DispatchIndirect(RHIProgram* program, RHIGpuBufferPtr indirectBuf) override;
     SResult             DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIGpuBufferPtr indirectBuf, MeshTopologyType type) override;
+    SResult             DrawIndexedIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIMeshPtr const& mesh, RHIGpuBufferPtr indirectBuf, uint32_t argsOffset = 0) override;
     SResult             DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, MeshTopologyType type, uint32_t vertexCountPerInstance, uint32_t instanceCount, uint32_t startVertexLocation, uint32_t startInstanceLocation) override;
     void                EndComputePass() override;
 

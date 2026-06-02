@@ -542,6 +542,29 @@ SResult D3D11Context::DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RH
     ((D3D11Program*)program)->Deactive();
     return res;
 }
+SResult D3D11Context::DrawIndexedIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIMeshPtr const& mesh, RHIGpuBufferPtr indirectBuf, uint32_t argsOffset)
+{
+    if (!m_pCurrentRHIFrameBuffer)
+    {
+        LOG_ERROR("no RHIFrameBuffer is bound, call DrawIndexedIndirect between BeginRenderPass/EndRenderPass");
+        return ERR_INVALID_INVOKE_FLOW;
+    }
+
+    SResult res = S_Success;
+    SEEK_RETIF_FAIL(((D3D11RenderState*)(rs.get()))->Active());
+    SEEK_RETIF_FAIL(((D3D11Program*)(program))->Active());
+
+    // 绑定 mesh 的顶点/索引缓冲和输入布局
+    D3D11Mesh& d3d_mesh = static_cast<D3D11Mesh&>(*mesh);
+    SEEK_RETIF_FAIL(d3d_mesh.Active(program));
+
+    D3D11GpuBuffer* pD3DBuf = (D3D11GpuBuffer*)indirectBuf.get();
+    m_pDeviceContext->DrawIndexedInstancedIndirect(pD3DBuf->GetD3DBuffer(), argsOffset);
+
+    SEEK_RETIF_FAIL(d3d_mesh.Deactive());
+    ((D3D11Program*)program)->Deactive();
+    return res;
+}
 SResult D3D11Context::DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, MeshTopologyType type, uint32_t vertexCountPerInstance, uint32_t instanceCount, uint32_t startVertexLocation, uint32_t startInstanceLocation)
 {
     SResult res = S_Success;

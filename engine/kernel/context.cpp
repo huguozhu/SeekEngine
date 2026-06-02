@@ -82,6 +82,10 @@ SResult Context::Init(void* device, void* native_wnd)
             m_pEffect = MakeUniquePtr<Effect>(this);
             m_pEffect->Initialize();
         }
+        if (!m_pGpuMeshRegistry)
+        {
+            m_pGpuMeshRegistry = MakeUniquePtr<GpuMeshRegistry>(this);
+        }
         
         if (!m_pSceneRenderer)
         {
@@ -120,6 +124,7 @@ void Context::Uninit()
     m_pSceneManager.reset();
     m_pSprite2DRenderer.reset();
     m_pSceneRenderer.reset();
+    m_pGpuMeshRegistry.reset();
     m_pResourceManager.reset();
     m_pEffect.reset();
     m_pRHIContext.reset();

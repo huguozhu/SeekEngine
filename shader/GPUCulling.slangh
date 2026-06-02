@@ -1,0 +1,105 @@
+#pragma once
+
+// ============================================================================
+// GPU Driven Rendering — 共享数据结构
+// 用于 Compute Shader 视锥体剔除和 Indirect Draw 参数生成
+// ============================================================================
+
+// GPU 端静态网格元数据（从 UnifiedVB/IB 中索引子网格的范围）
+struct GPUMeshData
+{
+    uint   indexOffset;        // 统一索引缓冲中的起始位置（字节偏移）
+    uint   vertexOffset;       // baseVertexLocation（顶点元素偏移）
+    uint   indexCount;         // 索引数量
+    uint   vertexCount;        // 顶点数量
+    uint   materialIndex;      // 材质索引（用于按材质分组批量绘制）
+    uint   topologyType;       // 图元类型：0=Points, 1=Lines, 2=LineStrip, 3=Triangles, 4=TriangleStrip
+    uint   indexBufferType;    // 索引格式：0=UInt16, 1=UInt32
+    uint   vertexStride;       // 顶点步长（字节），用于验证格式匹配
+    float4 aabbMinLocal;       // 本地空间包围盒最小值
+    float4 aabbMaxLocal;       // 本地空间包围盒最大值
+
+#ifdef SEEK_CPP
+    GPUMeshData()
+    {
+        indexOffset      = 0;
+        vertexOffset     = 0;
+        indexCount       = 0;
+        vertexCount      = 0;
+        materialIndex    = 0;
+        topologyType     = 0;
+        indexBufferType  = 0;
+        vertexStride     = 0;
+        aabbMinLocal     = float4(0, 0, 0, 0);
+        aabbMaxLocal     = float4(0, 0, 0, 0);
+    }
+#endif
+};
+
+// GPU 端每对象动态数据（每帧由 CPU 刷新）
+struct GPUObjectData
+{
+    float4x4 worldMatrix;      // 世界变换矩阵
+    float4x4 normalMatrix;     // 法线变换矩阵（worldMatrix 的逆转置）
+    float4   aabbMinWorld;     // 世界空间包围盒最小值（CPU 预计算）
+    float4   aabbMaxWorld;     // 世界空间包围盒最大值（CPU 预计算）
+    uint     meshDataIndex;    // 指向 GPUMeshData buffer 的索引
+    uint     visible;          // CS 写入：1=可见，0=被视锥体裁剪
+    uint     padding[2];
+
+#ifdef SEEK_CPP
+    GPUObjectData()
+    {
+        worldMatrix    = float4x4::Identity();
+        normalMatrix   = float4x4::Identity();
+        aabbMinWorld   = float4(0, 0, 0, 0);
+        aabbMaxWorld   = float4(0, 0, 0, 0);
+        meshDataIndex  = 0;
+        visible        = 0;
+        padding[0]     = 0;
+        padding[1]     = 0;
+    }
+#endif
+};
+
+// 间接绘制参数（与 D3D11_DRAW_INDEXED_INSTANCED_INDIRECT_ARGS 布局兼容，20 字节）
+struct DrawIndexedIndirectArgs
+{
+    uint indexCountPerInstance;
+    uint instanceCount;
+    uint startIndexLocation;
+    int  baseVertexLocation;
+    uint startInstanceLocation;
+
+#ifdef SEEK_CPP
+    DrawIndexedIndirectArgs()
+    {
+        indexCountPerInstance = 0;
+        instanceCount         = 0;
+        startIndexLocation    = 0;
+        baseVertexLocation    = 0;
+        startInstanceLocation = 0;
+    }
+#endif
+};
+
+// 视锥体剔除常量（每帧 Dispatch 前上传）
+struct FrustumCullingParams
+{
+    uint   objectCount;
+    uint   totalVisibleCount;
+    uint   padding[2];
+    float4 frustumPlanes[6];
+
+#ifdef SEEK_CPP
+    FrustumCullingParams()
+    {
+        objectCount       = 0;
+        totalVisibleCount = 0;
+        padding[0]        = 0;
+        padding[1]        = 0;
+        for (int i = 0; i < 6; ++i)
+            frustumPlanes[i] = float4(0, 0, 0, 0);
+    }
+#endif
+};

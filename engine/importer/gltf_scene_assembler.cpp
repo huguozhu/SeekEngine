@@ -1,4 +1,4 @@
-#include "importer/gltf_scene_assembler.h"
+﻿#include "importer/gltf_scene_assembler.h"
 #include "importer/gltf2.h"
 #include "utils/image_decode.h"
 #include "utils/log.h"
@@ -7,6 +7,7 @@
 #include "rhi/base/rhi_context.h"
 #include "rhi/base/rhi_mesh.h"
 #include "rhi/base/rhi_gpu_buffer.h"
+#include "effect/gpu_mesh_registry.h"
 #include "components/scene_component.h"
 #include "components/mesh_component.h"
 #include "components/skeletal_mesh_component.h"
@@ -37,6 +38,10 @@ SResult GltfSceneAssembler::Assemble(const GltfData& data,
     BuildSkins(data);
     BuildAnimations(data, outAnimations);
     outScene = BuildScene(data);
+
+    // 静态 Mesh 注册完毕后，构建 GPU 合并缓冲区和 MeshData
+    m_pContext->GpuMeshRegistryInstance().Build();
+
     TIMER_END(t0, "GltfSceneAssembler: assemble");
 
     return S_Success;
@@ -209,6 +214,12 @@ RHIMeshPtr GltfSceneAssembler::BuildPrimitive(const GltfData& data,
     {
         MaterialPtr material = MakeSharedPtr<Material>();
         mesh->SetMaterial(material);
+    }
+
+    // 静态 Mesh 注册到 GPU Mesh Registry（供后续 GPU Driven Rendering 使用）
+    if (prim.jointBindSize == SkinningJointBindSize::None && !prim.morphTargets)
+    {
+        m_pContext->GpuMeshRegistryInstance().RegisterStaticMesh(mesh);
     }
 
     return mesh;

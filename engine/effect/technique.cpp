@@ -403,6 +403,15 @@ void Technique::DrawIndirect(RHIGpuBufferPtr indirectBuf, MeshTopologyType type)
     rc.DrawIndirect(m_pProgram.get(), rs, indirectBuf, type);
     Uncommit();
 }
+void Technique::DrawIndexedIndirect(RHIGpuBufferPtr indirectBuf, RHIMeshPtr mesh, uint32_t argsOffset)
+{
+    RHIContext& rc = m_pContext->RHIContextInstance();
+    RHIRenderStatePtr rs = this->GetRenderState();
+
+    Commit();
+    rc.DrawIndexedIndirect(m_pProgram.get(), rs, mesh, indirectBuf, argsOffset);
+    Uncommit();
+}
 void Technique::DrawInstanced(MeshTopologyType type, uint32_t vertexCountPerInstance, uint32_t instanceCount, uint32_t startVertexLocation, uint32_t startInstanceLocation)
 {
     RHIContext& rc = m_pContext->RHIContextInstance();

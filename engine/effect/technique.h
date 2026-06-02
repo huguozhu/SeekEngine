@@ -245,6 +245,7 @@ public:
     void Dispatch(uint32_t x, uint32_t y, uint32_t z);
     void DispatchIndirect(RHIGpuBufferPtr indirectBuf);
     void DrawIndirect(RHIGpuBufferPtr indirectBuf, MeshTopologyType type);
+    void DrawIndexedIndirect(RHIGpuBufferPtr indirectBuf, RHIMeshPtr mesh, uint32_t argsOffset = 0);
     void DrawInstanced(MeshTopologyType type, uint32_t vertexCountPerInstance, uint32_t instanceCount, uint32_t startVertexLocation, uint32_t startInstanceLocation);
 
     SResult Commit();

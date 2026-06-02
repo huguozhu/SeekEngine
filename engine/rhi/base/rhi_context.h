@@ -89,7 +89,10 @@ public: // virutal factory
     virtual SResult                 Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z) = 0;
     virtual SResult                 DispatchIndirect(RHIProgram* program, RHIGpuBufferPtr indirectBuf) { return 0; }
     virtual SResult                 DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIGpuBufferPtr indirectBuf, MeshTopologyType type) { return 0; }
-    virtual SResult                 DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, MeshTopologyType type, uint32_t vertexCountPerInstance, 
+    // 带索引缓冲的间接绘制：由 GPU 填充 D3D11_DRAW_INDEXED_INSTANCED_INDIRECT_ARGS，
+    // CPU 发起一次调用即可绘制多个物体（需要先绑定 mesh 的 VB/IB/InputLayout）
+    virtual SResult                 DrawIndexedIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIMeshPtr const& mesh, RHIGpuBufferPtr indirectBuf, uint32_t argsOffset = 0) { return ERR_NOT_IMPLEMENTED; }
+    virtual SResult                 DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, MeshTopologyType type, uint32_t vertexCountPerInstance,
                                                     uint32_t instanceCount, uint32_t startVertexLocation, uint32_t startInstanceLocation) { return 0; }
     
     virtual void                    EndComputePass() = 0;

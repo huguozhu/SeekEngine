@@ -5,6 +5,7 @@
 #include "scene_manager/scene_manager.h"
 #include "rhi/base/viewport.h"
 #include "resource/resource_mgr.h"
+#include "effect/gpu_mesh_registry.h"
 #include "utils/timer.h"
 
 
@@ -110,7 +111,8 @@ public:
     SceneRenderer&      Sprite2DRendererInstance() { return *m_pSprite2DRenderer; }
     ResourceManager&    ResourceManagerInstance() { return *m_pResourceManager; }
     Effect&             EffectInstance() { return *(m_pEffect.get()); }
-    
+    GpuMeshRegistry&    GpuMeshRegistryInstance() { return *m_pGpuMeshRegistry; }
+
     const RHITexturePtr& GetIBLDiffuseTexture() { return m_pIBLDiffuseTex; }
     const RHITexturePtr& GetIBLSpecularTexture() { return m_pIBLSpecularTex; }
     const RHITexturePtr& GetIBLBrdfTex() { return m_pIBLBrdfTex; }
@@ -128,6 +130,7 @@ private:
     SceneRendererPtrUnique      m_pSceneRenderer;
     ResourceManagerPtrUnique    m_pResourceManager;
     EffectPtrUnique             m_pEffect;
+    GpuMeshRegistryPtrUnique    m_pGpuMeshRegistry;
 
     uint32_t                    m_FrameCount = 0;
 
