@@ -181,9 +181,9 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderParticlesJob, this)));
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderSceneJob, this)));
 
-    // GPU Driven Rendering Job — 暂时禁用，待 Phase 8 修复 DrawIndexedIndirect 稳定性
-    // if (m_pContext->GpuMeshRegistryInstance().IsBuilt())
-    //     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderGpuDrivenJob, this)));
+    // GPU Driven Rendering Job
+    if (m_pContext->GpuMeshRegistryInstance().IsBuilt())
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderGpuDrivenJob, this)));
     
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::ToneMappingJob, this)));
 

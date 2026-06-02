@@ -52,8 +52,10 @@ set(shader_sources_files
     ${SEEK_SHADER_SOURCE_DIR}/GiLpvPS.slang
     ${SEEK_SHADER_SOURCE_DIR}/GiVS.slang
     ${SEEK_SHADER_SOURCE_DIR}/IrradianceConvolutionPS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/FrustumCullingCS.slang
+    ${SEEK_SHADER_SOURCE_DIR}/GenerateIndirectArgsCS.slang
     ${SEEK_SHADER_SOURCE_DIR}/LightCullingCS.slang
-    ${SEEK_SHADER_SOURCE_DIR}/LiquidGlassPS.slang    
+    ${SEEK_SHADER_SOURCE_DIR}/LiquidGlassPS.slang
     ${SEEK_SHADER_SOURCE_DIR}/MeshRenderingVS.slang
 
     ${SEEK_SHADER_SOURCE_DIR}/PostProcessVS.slang
