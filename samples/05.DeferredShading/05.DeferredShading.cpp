@@ -231,7 +231,7 @@ SResult DeferredShading::InitContext(void* device, void* native_wnd)
 {
     RenderInitInfo info;
     info.enable_debug = true;
-    info.renderer_type = RendererType::Deferred;
+    info.renderer_type = RendererType::Forward;
     info.anti_aliasing_mode = AntiAliasingMode::TAA;
     info.preferred_adapter = 0;
 
