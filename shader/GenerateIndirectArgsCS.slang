@@ -7,8 +7,9 @@
 cbuffer cb_IndirectArgsParams : register(b6)
 {
     uint   g_ObjectCount;   // 对象总数
-    uint   g_IndexStride;   // 索引步长（2=UInt16, 4=UInt32），用于将字节偏移转换为元素偏移
-    uint   g_padding[2];
+    uint   g_Pad0;
+    uint   g_Pad1;
+    uint   g_Pad2;
 };
 
 // 输入：每对象动态数据（含 FrustumCullingCS 写入的 visible 标志）
@@ -33,6 +34,9 @@ void main(uint3 dtid : SV_DispatchThreadID)
     // 读取网格元数据
     GPUMeshData meshData = meshDataBuffer[objData.meshDataIndex];
 
+    // 索引步长取每个 mesh 自带的 indexBufferType（0=UInt16=2字节, 1=UInt32=4字节）
+    uint indexStride = (meshData.indexBufferType == 1) ? 4 : 2;
+
     DrawIndexedIndirectArgs args;
 
     if (objData.visible != 0)
@@ -40,7 +44,7 @@ void main(uint3 dtid : SV_DispatchThreadID)
         // 可见对象：填充正常的绘制参数
         args.indexCountPerInstance = meshData.indexCount;
         args.instanceCount         = 1;
-        args.startIndexLocation    = meshData.indexOffset / g_IndexStride;
+        args.startIndexLocation    = meshData.indexOffset / indexStride;
         args.baseVertexLocation    = (int)meshData.vertexOffset;
         args.startInstanceLocation = objIndex;
     }

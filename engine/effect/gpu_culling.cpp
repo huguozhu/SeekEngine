@@ -242,17 +242,15 @@ void GpuCullingManager::GenerateIndirectArgs()
         m_cachedMeshDataBuffer = meshBuf;
     }
 
-    // 上传常量（g_ObjectCount + g_IndexStride）到 GPU 常量缓冲区
-    // 修复：之前 argsParams 只在 CPU 栈上填充但从未上传到 GPU，导致 CS 中 g_ObjectCount=0 全部线程跳过
+    // 上传常量到 GPU 常量缓冲区（仅 g_ObjectCount，indexStride 改为 per-mesh 从 GPUMeshData 读取）
     struct {
         uint32_t objectCount;
-        uint32_t indexStride;
-        uint32_t padding[2];
+        uint32_t padding[3];
     } argsParams;
     argsParams.objectCount = m_objectCount;
-    argsParams.indexStride = indexStride;
     argsParams.padding[0] = 0;
     argsParams.padding[1] = 0;
+    argsParams.padding[2] = 0;
     m_indirectArgsCB->Update(&argsParams, sizeof(argsParams));
 
     // 绑定参数（使用正确的 SRV / UAV 视图类型，而非 RHIGpuBufferPtr）
@@ -318,6 +316,9 @@ void GpuCullingManager::ExecuteIndirectDraws()
     if (entries.empty())
         return;
 
+    // Step 3: 将已注册 mesh 的 VB/IB 临时替换为统一缓冲区（绘制后恢复，不影响传统渲染路径）
+    registry.SwapToUnifiedBuffers();
+
     // Step 3: 按 Technique 指针排序，将相同 Shader/Material 的对象聚集为批次
     // VirtualTechnique::Concrete 对相同 predefines 返回同一指针，天然分组
     std::sort(entries.begin(), entries.end(),
@@ -347,6 +348,9 @@ void GpuCullingManager::ExecuteIndirectDraws()
         uint32_t argsOffset = entry.objIdx * sizeof(DrawIndexedIndirectArgs);
         currentTech->DrawIndexedIndirect(m_drawIndirectBuffer, entry.mesh, argsOffset);
     }
+
+    // Step 5: 恢复原始 VB/IB，保证传统渲染路径后续正确
+    registry.RestoreOriginalBuffers();
 }
 
 SEEK_NAMESPACE_END

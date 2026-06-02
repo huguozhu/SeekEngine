@@ -27,6 +27,11 @@ struct GpuMeshEntry
     MeshTopologyType topologyType = MeshTopologyType::Triangles;
     IndexBufferType  indexType = IndexBufferType::UInt16;
     AABBox          aabbLocal;
+
+    // 为临时替换统一 VB/IB 保存原始引用（ExecuteIndirectDraws 结束时恢复）
+    std::vector<RHIGpuBufferPtr> savedVBs;
+    RHIGpuBufferPtr              savedIB;
+    IndexBufferType              savedIBType = IndexBufferType::UInt16;
 };
 
 // ============================================================================
@@ -91,6 +96,11 @@ public:
 
     // 检查是否已构建
     bool IsBuilt() const { return m_built; }
+
+    // GPU Driven 路径：临时将所有已注册 mesh 的 VB/IB 替换为统一缓冲区
+    void SwapToUnifiedBuffers();
+    // 恢复为原始 VB/IB（传统渲染路径使用）
+    void RestoreOriginalBuffers();
 
 private:
     // 计算顶点格式哈希（基于 VertexStream 的 layout 描述）

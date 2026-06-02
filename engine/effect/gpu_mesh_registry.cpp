@@ -198,6 +198,16 @@ void GpuMeshRegistry::Build()
             VertexIndicesResource& indicesRes = mesh->GetVertexIndicesResource();
             uint32_t ibSize = static_cast<uint32_t>(indicesRes._size);
             std::memcpy(stagingIB.data() + entry.indexByteOffset, indicesRes._data, ibSize);
+
+            // 保存原始 VB/IB 引用（ExecuteIndirectDraws 结束时恢复，避免影响传统渲染路径）
+            auto& vertexStreams = mesh->GetVertexStreams();
+            entry.savedVBs.resize(streamCount);
+            for (uint32_t s = 0; s < streamCount; s++)
+            {
+                entry.savedVBs[s] = vertexStreams[s].render_buffer;
+            }
+            entry.savedIB = mesh->GetIndexBuffer();
+            entry.savedIBType = mesh->GetIndexBufferType();
         }
 
         // 创建合并后的 GPU buffer：每个流一个统一 VB
@@ -213,28 +223,10 @@ void GpuMeshRegistry::Build()
             group.unifiedIB = rc.CreateIndexBuffer(group.totalIndexBytes, &ibData);
         }
 
-        // 将每个注册 mesh 的 VB/IB 引用替换为统一缓冲区（供 ExecuteIndirectDraws 绑定）
+        // 保存格式分组 index 到 GpuMeshEntry（ExecuteIndirectDraws 中查找统一 VB/IB 用）
         for (uint32_t entryIdx : group.entryIndices)
         {
-            GpuMeshEntry& entry = m_entries[entryIdx];
-            RHIMesh* mesh = entry.mesh;
-            VertexAttributeResource& attrRes = mesh->GetVertexAttributeResource();
-
-            for (uint32_t s = 0; s < streamCount; s++)
-            {
-                // 替换 mesh 的 VB 引用为统一 VB（offset 保持 0，由 baseVertexLocation 控制偏移）
-                attrRes._vertexBuffers[s] = std::make_shared<BufferResource>();
-                attrRes._vertexBuffers[s]->_size = group.totalVertexBytesPerStream[s];
-                attrRes._vertexBuffers[s]->_data = nullptr;
-                // 更新 render_buffer 指向统一 VB
-                attrRes._vertexStreams[s].render_buffer = group.unifiedVBs[s];
-            }
-
-            // 替换 IB 引用为统一索引缓冲
-            mesh->SetIndexBuffer(group.unifiedIB, entry.indexType);
-
-            // 标记 mesh 的 D3D11 InputAssembly 缓存失效，下次 Active() 重新读取 VB/IB 指针
-            mesh->MarkDataDirty();
+            m_entries[entryIdx].formatGroup = static_cast<uint32_t>(&group - &m_formatGroups[0]);
         }
 
         LOG_INFO("GpuMeshRegistry: format group %zu built — %u streams, IB=%u bytes, %zu meshes",
@@ -282,14 +274,47 @@ void GpuMeshRegistry::Build()
     m_built = true;
 }
 
-void GpuMeshRegistry::Clear()
+void GpuMeshRegistry::SwapToUnifiedBuffers()
 {
-    m_entries.clear();
-    m_formatGroups.clear();
-    m_meshToIndex.clear();
-    m_hashToGroup.clear();
-    m_meshDataBuffer.reset();
-    m_built = false;
+    for (auto& entry : m_entries)
+    {
+        if (!entry.mesh || entry.formatGroup >= m_formatGroups.size())
+            continue;
+
+        GpuFormatGroup& group = m_formatGroups[entry.formatGroup];
+        auto& vertexStreams = entry.mesh->GetVertexStreams();
+
+        for (uint32_t s = 0; s < entry.vertexStreamCount && s < vertexStreams.size() && s < group.unifiedVBs.size(); s++)
+        {
+            vertexStreams[s].render_buffer = group.unifiedVBs[s];
+            vertexStreams[s].offset = 0;
+        }
+
+        entry.mesh->SetIndexBuffer(group.unifiedIB, entry.indexType);
+        entry.mesh->MarkDataDirty();
+    }
+}
+
+void GpuMeshRegistry::RestoreOriginalBuffers()
+{
+    for (auto& entry : m_entries)
+    {
+        if (!entry.mesh)
+            continue;
+
+        auto& vertexStreams = entry.mesh->GetVertexStreams();
+
+        for (uint32_t s = 0; s < entry.vertexStreamCount && s < entry.savedVBs.size() && s < vertexStreams.size(); s++)
+        {
+            vertexStreams[s].render_buffer = entry.savedVBs[s];
+            vertexStreams[s].offset = 0;
+        }
+
+        if (entry.savedIB)
+            entry.mesh->SetIndexBuffer(entry.savedIB, entry.savedIBType);
+
+        entry.mesh->MarkDataDirty();
+    }
 }
 
 uint32_t GpuMeshRegistry::GetMeshRegistryIndex(RHIMesh* mesh) const
