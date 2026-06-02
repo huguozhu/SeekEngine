@@ -326,27 +326,16 @@ void GpuCullingManager::ExecuteIndirectDraws()
             return a.tech < b.tech;
         });
 
-    // Step 4: 分批绘制
-    // 同组首对象：完整 OnRenderBegin（设置光照/材质/阴影等共享状态）
-    // 同组后续：仅 UpdateModelInfo（世界矩阵），跳过 90% 的重复参数绑定
-    Technique* currentTech = nullptr;
+    // Step 4: 按 Technique 排序后逐个绘制
+    // 每个对象都调用完整 OnRenderBegin（确保各自材质纹理正确），跳过 OnRenderEnd
+    // 按 Technique 排序使 D3D11 驱动可跳过冗余的状态绑定（相同 Shader 无需重复切换）
     for (const auto& entry : entries)
     {
-        if (entry.tech != currentTech)
-        {
-            currentTech = entry.tech;
-            // 新批次：完整设置所有制参数
-            entry.comp->OnRenderBegin(currentTech, entry.mesh);
-        }
-        else
-        {
-            // 同批次：仅更新 ModelInfo 常量缓冲区（世界矩阵）
-            entry.comp->UpdateModelInfo(currentTech, entry.mesh);
-        }
+        entry.comp->OnRenderBegin(entry.tech, entry.mesh);
 
         // 执行间接绘制（参数来自 GPU buffer，被剔除对象 indexCount=0，D3D11 自动跳过）
         uint32_t argsOffset = entry.objIdx * sizeof(DrawIndexedIndirectArgs);
-        currentTech->DrawIndexedIndirect(m_drawIndirectBuffer, entry.mesh, argsOffset);
+        entry.tech->DrawIndexedIndirect(m_drawIndirectBuffer, entry.mesh, argsOffset);
     }
 
     // Step 5: 恢复原始 VB/IB，保证传统渲染路径后续正确
