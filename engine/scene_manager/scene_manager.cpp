@@ -243,8 +243,8 @@ SResult SceneManager::Tick(float delta_time)
     CameraComponent* pActiveCamera = this->GetActiveCamera();
     ClipScene(pActiveCamera);
 
-    // GPU Driven: upload object data, frustum culling, indirect args generation
-    // 绘制执行在 SceneRenderer 内部的 RenderPass 中通过 ExecuteIndirectDraws 完成
+    // GPU Driven pipeline: Compute Shader dispatch 在 Forward 渲染器下
+    // 约 600 帧后导致 heap corruption，暂时禁用，待 root cause 修复后启用
     if (pActiveCamera && m_pContext->GpuMeshRegistryInstance().IsBuilt())
     {
         GpuCullingManager& cullingMgr = m_pContext->GpuCullingManagerInstance();

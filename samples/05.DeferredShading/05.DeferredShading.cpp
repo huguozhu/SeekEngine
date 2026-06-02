@@ -28,7 +28,7 @@ private:
     EntityPtr m_pRotatingLights[NUM_LIGHTS] = { nullptr };
     EntityPtr m_pRotatingSphere[NUM_LIGHTS] = { nullptr };
 
-    bool m_bManyLights = true;
+    bool m_bManyLights = false;
     FirstPersonCameraController m_CameraController;
 };
 
@@ -85,10 +85,10 @@ SResult DeferredShading::OnCreate()
     // Step2: add Camera
     m_pCameraEntity = MakeSharedPtr<Entity>(m_pContext.get());
     CameraComponentPtr pCam = MakeSharedPtr<CameraComponent>(m_pContext.get());
-    // å¿…é¡»è®¾ç½®é€è§†æŠ•å½±å‚æ•°ï¼Œå¦åˆ™æŠ•å½±çŸ©é˜µä¿æŒå•ä½çŸ©é˜µï¼Œåœºæ™¯æ— æ³•æ­£å¸¸æ˜¾ç¤º
+    // ±ØÐëÉèÖÃÍ¸ÊÓÍ¶Ó°²ÎÊý£¬·ñÔòÍ¶Ó°¾ØÕó±£³Öµ¥Î»¾ØÕó£¬³¡¾°ÎÞ·¨Õý³£ÏÔÊ¾
     pCam->ProjPerspectiveParams(45.0 * Math::DEG2RAD, w / h, 0.01f, 200.0f);
     pCam->SetLookAt(float3(-6.2, 2.8, -1.1), float3(-2.0, 3.0, -1.1), float3(0, 1, 0));
-    //pCam->SetLookAt(float3(0, 2, -15), float3(0,0,0), float3(0, 1, 0));
+    //pCam->SetLookAt(float3(0, 12, -15), float3(0,0,0), float3(0, 1, 0));
     m_pCameraEntity->AddSceneComponent(pCam);
     m_pCameraEntity->AddToTopScene();
     m_CameraController.SetCamera(pCam.get());
@@ -173,8 +173,8 @@ SResult DeferredShading::OnCreate()
             return -1;
         }
         m_pMeshEntity->AddToTopScene();
-        // ä¿ç•™ glTF æ¨¡åž‹è‡ªèº«çš„èŠ‚ç‚¹å˜æ¢ï¼ˆä¾‹å¦‚ Sponza èŠ‚ç‚¹å¸¦æœ‰ 0.008 ç¼©æ”¾ï¼Œ
-        // ç”¨äºŽå°†åŽŸå§‹å¤§å°ºåº¦å‡ ä½•ç¼©æ”¾åˆ°åˆé€‚çš„åœºæ™¯å°ºå¯¸ï¼‰ï¼Œä¸å†å¼ºåˆ¶é‡ç½®ä¸ºå•ä½çŸ©é˜µ
+        // ±£Áô glTF Ä£ÐÍ×ÔÉíµÄ½Úµã±ä»»£¨ÀýÈç Sponza ½Úµã´øÓÐ 0.008 Ëõ·Å£¬
+        // ÓÃÓÚ½«Ô­Ê¼´ó³ß¶È¼¸ºÎËõ·Åµ½ºÏÊÊµÄ³¡¾°³ß´ç£©£¬²»ÔÙÇ¿ÖÆÖØÖÃÎªµ¥Î»¾ØÕó
         m_pContext->SceneManagerInstance().PrintTree();
         model_selected = -1;
     }

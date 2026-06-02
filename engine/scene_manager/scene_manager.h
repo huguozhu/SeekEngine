@@ -55,12 +55,11 @@ public:
 
     // RHIQuery = std::function<bool(const MeshPair&)>
     template<typename Query>
-    std::vector<MeshPair> QueryMesh(Query query)
-    {
-        std::vector<MeshPair> outMeshes;
+    void QueryMesh(Query query, std::vector<MeshPair>& outMeshes)
+    {   
         CameraComponent* pActiveCamera = GetActiveCamera();
         if (!pActiveCamera)
-            return outMeshes;
+            return;
 
         std::vector<MeshPair>& allMeshes = m_mCachedVisibleMeshListByCamera[pActiveCamera];
         for (auto& mesh : allMeshes)
@@ -71,7 +70,7 @@ public:
                 outMeshes.emplace_back(mesh);
             }
         }
-        return outMeshes;
+        return;
     }
 
     const std::vector<MeshPair>& GetVisableMeshes()

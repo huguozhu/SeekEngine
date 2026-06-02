@@ -320,13 +320,14 @@ SResult DeferredShadingRenderer::BuildRenderJobList()
     if (light_count == 0)
         return S_Success;
 
-    m_renderableMeshes = m_pContext->SceneManagerInstance().QueryMesh([](const MeshPair& mesh)->bool {
+    m_renderableMeshes.clear();
+    m_pContext->SceneManagerInstance().QueryMesh([](const MeshPair& mesh)->bool {
         const auto& mesh_ = mesh.first->GetMeshByIndex(mesh.second);
         if (mesh_->IsVisible())
             return true;
         else
             return false;
-        });
+        }, m_renderableMeshes);
     if (m_renderableMeshes.empty() &&
         m_pContext->SceneManagerInstance().GetSkyBoxComponent() == nullptr &&
         m_pContext->SceneManagerInstance().GetParticleComponents().size() == 0)

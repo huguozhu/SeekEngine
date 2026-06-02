@@ -141,13 +141,14 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
 {
     m_vRenderingJobs.clear();
 
-    m_renderableMeshes = m_pContext->SceneManagerInstance().QueryMesh([](const MeshPair& mesh)->bool {
-        const auto& mesh_ = mesh.first->GetMeshByIndex(mesh.second);
-        if (mesh_ && mesh_->IsVisible())
-            return true;
-        else
-            return false;
-    });
+    m_renderableMeshes.clear();
+    m_pContext->SceneManagerInstance().QueryMesh([](const MeshPair& mesh)->bool {
+            const auto& mesh_ = mesh.first->GetMeshByIndex(mesh.second);
+            if (mesh_ && mesh_->IsVisible())
+                return true;
+            else
+                return false;
+        }, m_renderableMeshes);
 	SceneManager& sm = m_pContext->SceneManagerInstance();
     if (m_renderableMeshes.empty() &&
         sm.GetSkyBoxComponent() == nullptr &&
