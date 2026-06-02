@@ -94,6 +94,9 @@ public:
     void                                SetTechnique(Technique* tech) { m_pTechnique = tech; }
     Technique*                          GetTechnique() const { return m_pTechnique; }
     
+    // GPU Driven 替换 VB/IB 后需要标记 dirty，使 D3D11Mesh::Active 重新构建 InputAssembly
+    void                                MarkDataDirty() { m_bDataDirty = true; }
+
     bool                                m_bFrontFaceCCW = false;
     bool                                m_bUpdateFrontFaceCCW = true;
 

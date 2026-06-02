@@ -25,7 +25,7 @@ RWStructuredBuffer<uint> visibleCounter : register(u2);
 // 返回 true 表示可见（与 Frustum::Intersect 算法一致）
 bool TestAABBVisible(float4 aabbMin, float4 aabbMax)
 {
-    [unroll]
+    // 视锥体6个面检测（不含[unroll]，让D3D编译器自行决定优化策略）
     for (int p = 0; p < 6; p++)
     {
         float4 plane = g_FrustumPlanes[p];

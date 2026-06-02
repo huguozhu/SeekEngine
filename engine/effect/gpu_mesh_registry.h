@@ -14,32 +14,34 @@ SEEK_NAMESPACE_BEGIN
 // ============================================================================
 struct GpuMeshEntry
 {
-    RHIMesh*        mesh = nullptr;        // 原始 RHIMesh 指针（用于绑定时查找）
-    uint32_t        formatGroup = 0;       // 所属顶点格式分组
-    uint32_t        vertexByteOffset = 0;  // 统一 VB 中的字节偏移
-    uint32_t        indexByteOffset = 0;   // 统一 IB 中的字节偏移
-    uint32_t        vertexCount = 0;       // 顶点数量
-    uint32_t        indexCount = 0;        // 索引数量
-    uint32_t        vertexStride = 0;      // 顶点步长（字节）
-    uint32_t        indexStride = 0;       // 索引步长（2=UInt16, 4=UInt32）
-    uint32_t        materialIndex = 0;     // 材质索引
+    RHIMesh*        mesh = nullptr;           // 原始 RHIMesh 指针
+    uint32_t        formatGroup = 0;          // 所属顶点格式分组
+    uint32_t        vertexStreamCount = 0;    // 顶点流数量
+    std::vector<uint32_t> vertexByteOffsets;  // 每个流在对应统一 VB 中的字节偏移
+    uint32_t        indexByteOffset = 0;      // 统一 IB 中的字节偏移
+    uint32_t        vertexCount = 0;          // 顶点数量
+    uint32_t        indexCount = 0;           // 索引数量
+    std::vector<uint32_t> vertexStrides;      // 每个流的顶点步长（字节）
+    uint32_t        indexStride = 0;          // 索引步长（2=UInt16, 4=UInt32）
+    uint32_t        materialIndex = 0;        // 材质索引
     MeshTopologyType topologyType = MeshTopologyType::Triangles;
     IndexBufferType  indexType = IndexBufferType::UInt16;
     AABBox          aabbLocal;
 };
 
 // ============================================================================
-// GpuFormatGroup — 共享同一顶点格式的一组 Mesh 的合并缓冲区
+// GpuFormatGroup — 共享同一顶点格式的一组 Mesh 的合并缓冲区（支持多顶点流）
 // ============================================================================
 struct GpuFormatGroup
 {
-    uint64_t        formatHash = 0;         // 顶点格式哈希
-    uint32_t        totalVertexBytes = 0;   // 合并 VB 的总字节数
-    uint32_t        totalIndexBytes = 0;    // 合并 IB 的总字节数
-    uint32_t        indexStride = 0;        // 索引步长（2 或 4）
-    RHIGpuBufferPtr unifiedVB = nullptr;    // 合并后的顶点缓冲
-    RHIGpuBufferPtr unifiedIB = nullptr;    // 合并后的索引缓冲
-    std::vector<uint32_t> entryIndices;     // 该分组中的 GpuMeshEntry 索引
+    uint64_t        formatHash = 0;               // 顶点格式哈希
+    uint32_t        vertexStreamCount = 0;        // 顶点流数量
+    std::vector<uint32_t> totalVertexBytesPerStream;  // 每个流的合并 VB 总字节数
+    uint32_t        totalIndexBytes = 0;          // 合并 IB 的总字节数
+    uint32_t        indexStride = 0;              // 索引步长（2 或 4）
+    std::vector<RHIGpuBufferPtr> unifiedVBs;      // 每个流一个合并后的顶点缓冲
+    RHIGpuBufferPtr unifiedIB = nullptr;          // 合并后的索引缓冲
+    std::vector<uint32_t> entryIndices;           // 该分组中的 GpuMeshEntry 索引
 };
 
 // ============================================================================

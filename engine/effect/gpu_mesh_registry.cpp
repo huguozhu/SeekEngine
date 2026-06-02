@@ -59,12 +59,11 @@ uint32_t GpuMeshRegistry::RegisterStaticMesh(RHIMeshPtr mesh)
         return UINT32_MAX;
     }
 
-    // 只支持单顶点流的静态 mesh（多流 mesh 走传统渲染路径）
     VertexAttributeResource& attrRes = mesh->GetVertexAttributeResource();
-    if (attrRes._vertexStreams.size() != 1)
+    uint32_t streamCount = static_cast<uint32_t>(attrRes._vertexStreams.size());
+    if (streamCount == 0)
     {
-        LOG_WARNING("GpuMeshRegistry::RegisterStaticMesh: mesh has %zu vertex streams, only 1 is supported for GPU-driven path",
-            attrRes._vertexStreams.size());
+        LOG_WARNING("GpuMeshRegistry::RegisterStaticMesh: mesh has no vertex streams");
         return UINT32_MAX;
     }
 
@@ -78,7 +77,7 @@ uint32_t GpuMeshRegistry::RegisterStaticMesh(RHIMeshPtr mesh)
         groupIndex = static_cast<uint32_t>(m_formatGroups.size());
         GpuFormatGroup group;
         group.formatHash = formatHash;
-        group.totalVertexBytes = 0;
+        group.totalVertexBytesPerStream.resize(1, 0);
         group.totalIndexBytes = 0;
 
         // 确定索引步长
@@ -95,42 +94,60 @@ uint32_t GpuMeshRegistry::RegisterStaticMesh(RHIMeshPtr mesh)
 
     GpuFormatGroup& group = m_formatGroups[groupIndex];
 
-    // 计算该 mesh 在当前分组中的偏移
-    VertexStream& vs = attrRes._vertexStreams[0];
-    BufferResource& vbBuf = *attrRes._vertexBuffers[0];
-    uint32_t vertexByteSize = static_cast<uint32_t>(vbBuf._size);
-    uint32_t vertexCount = vertexByteSize / vs.stride;
+    // 初始化分组的流数量（首次注册时）
+    if (group.vertexStreamCount == 0)
+    {
+        group.vertexStreamCount = streamCount;
+        group.totalVertexBytesPerStream.resize(streamCount, 0);
+    }
 
+    // 计算该 mesh 在各个流中的字节偏移
     VertexIndicesResource& indicesRes = mesh->GetVertexIndicesResource();
     uint32_t indexByteSize = static_cast<uint32_t>(indicesRes._size);
     uint32_t indexCount = indicesRes._indexCount;
+    uint32_t vertexCount = 0;
 
     // 创建 entry
     GpuMeshEntry entry;
-    entry.mesh             = mesh.get();
-    entry.formatGroup      = groupIndex;
-    entry.vertexByteOffset = group.totalVertexBytes;
-    entry.indexByteOffset  = group.totalIndexBytes;
-    entry.vertexCount      = vertexCount;
-    entry.indexCount       = indexCount;
-    entry.vertexStride     = vs.stride;
-    entry.indexStride      = group.indexStride;
-    entry.materialIndex    = 0;  // 后续阶段填充
-    entry.topologyType     = mesh->GetTopologyType();
-    entry.indexType        = mesh->GetIndexBufferType();
-    entry.aabbLocal        = mesh->GetAABBox();
+    entry.mesh              = mesh.get();
+    entry.formatGroup       = groupIndex;
+    entry.vertexStreamCount = streamCount;
+    entry.vertexByteOffsets.resize(streamCount);
+    entry.vertexStrides.resize(streamCount);
+    entry.indexByteOffset   = group.totalIndexBytes;
+    entry.indexCount        = indexCount;
+    entry.indexStride       = group.indexStride;
+    entry.materialIndex     = 0;
+    entry.topologyType      = mesh->GetTopologyType();
+    entry.indexType         = mesh->GetIndexBufferType();
+    entry.aabbLocal         = mesh->GetAABBox();
+
+    for (uint32_t s = 0; s < streamCount; s++)
+    {
+        VertexStream& vs = attrRes._vertexStreams[s];
+        BufferResource& vbBuf = *attrRes._vertexBuffers[s];
+        uint32_t vertexByteSize = static_cast<uint32_t>(vbBuf._size);
+
+        entry.vertexByteOffsets[s] = group.totalVertexBytesPerStream[s];
+        entry.vertexStrides[s]     = vs.stride;
+        group.totalVertexBytesPerStream[s] += vertexByteSize;
+
+        // 用第一个流的顶点数作为 vertexCount（所有流顶点数应一致）
+        if (s == 0)
+            vertexCount = vertexByteSize / vs.stride;
+    }
+    entry.vertexCount = vertexCount;
 
     uint32_t entryIndex = static_cast<uint32_t>(m_entries.size());
     m_entries.push_back(entry);
     m_meshToIndex[mesh.get()] = entryIndex;
     group.entryIndices.push_back(entryIndex);
 
-    // 累加分组总大小
-    group.totalVertexBytes += vertexByteSize;
-    group.totalIndexBytes  += indexByteSize;
+    // 累加索引总大小
+    group.totalIndexBytes += indexByteSize;
 
-    LOG_INFO("GpuMeshRegistry: registered mesh [%u] in format group %u (hash=0x%llX), vtx=%u idx=%u",
-        entryIndex, groupIndex, formatHash, vertexCount, indexCount);
+    LOG_INFO("GpuMeshRegistry: registered mesh [%u] in format group %u (hash=0x%llX, %u streams), vtx=%u idx=%u",
+        entryIndex, groupIndex, formatHash, streamCount, vertexCount, indexCount);
 
     return entryIndex;
 }
@@ -146,14 +163,20 @@ void GpuMeshRegistry::Build()
 
     RHIContext& rc = m_pContext->RHIContextInstance();
 
-    // === Step 1: 为每个格式分组构建合并后的 VB 和 IB ===
+    // === Step 1: 为每个格式分组构建合并后的 VB（多流）和 IB ===
     for (auto& group : m_formatGroups)
     {
         if (group.entryIndices.empty())
             continue;
 
-        // 分配 CPU 暂存内存
-        std::vector<uint8_t> stagingVB(group.totalVertexBytes);
+        uint32_t streamCount = group.vertexStreamCount;
+
+        // 分配 CPU 暂存内存：每个流一个暂存 VB，外加一个暂存 IB
+        std::vector<std::vector<uint8_t>> stagingVBs(streamCount);
+        for (uint32_t s = 0; s < streamCount; s++)
+        {
+            stagingVBs[s].resize(group.totalVertexBytesPerStream[s]);
+        }
         std::vector<uint8_t> stagingIB(group.totalIndexBytes);
 
         // 逐个复制每个 mesh 的数据到暂存缓冲区
@@ -161,12 +184,15 @@ void GpuMeshRegistry::Build()
         {
             GpuMeshEntry& entry = m_entries[entryIdx];
             RHIMesh* mesh = entry.mesh;
-
-            // 复制顶点数据
             VertexAttributeResource& attrRes = mesh->GetVertexAttributeResource();
-            BufferResource& vbBuf = *attrRes._vertexBuffers[0];
-            uint32_t vbSize = static_cast<uint32_t>(vbBuf._size);
-            std::memcpy(stagingVB.data() + entry.vertexByteOffset, vbBuf._data, vbSize);
+
+            // 复制每个流的顶点数据
+            for (uint32_t s = 0; s < streamCount; s++)
+            {
+                BufferResource& vbBuf = *attrRes._vertexBuffers[s];
+                uint32_t vbSize = static_cast<uint32_t>(vbBuf._size);
+                std::memcpy(stagingVBs[s].data() + entry.vertexByteOffsets[s], vbBuf._data, vbSize);
+            }
 
             // 复制索引数据
             VertexIndicesResource& indicesRes = mesh->GetVertexIndicesResource();
@@ -174,18 +200,45 @@ void GpuMeshRegistry::Build()
             std::memcpy(stagingIB.data() + entry.indexByteOffset, indicesRes._data, ibSize);
         }
 
-        // 创建合并后的 GPU buffer
+        // 创建合并后的 GPU buffer：每个流一个统一 VB
+        group.unifiedVBs.resize(streamCount);
+        for (uint32_t s = 0; s < streamCount; s++)
         {
-            RHIGpuBufferData vbData(group.totalVertexBytes, stagingVB.data());
-            group.unifiedVB = rc.CreateVertexBuffer(group.totalVertexBytes, &vbData);
+            RHIGpuBufferData vbData(group.totalVertexBytesPerStream[s], stagingVBs[s].data());
+            group.unifiedVBs[s] = rc.CreateVertexBuffer(group.totalVertexBytesPerStream[s], &vbData);
         }
+        // 创建合并后的索引缓冲
         {
             RHIGpuBufferData ibData(group.totalIndexBytes, stagingIB.data());
             group.unifiedIB = rc.CreateIndexBuffer(group.totalIndexBytes, &ibData);
         }
 
-        LOG_INFO("GpuMeshRegistry: format group %zu built — VB=%u bytes, IB=%u bytes, %zu meshes",
-            &group - &m_formatGroups[0], group.totalVertexBytes, group.totalIndexBytes, group.entryIndices.size());
+        // 将每个注册 mesh 的 VB/IB 引用替换为统一缓冲区（供 ExecuteIndirectDraws 绑定）
+        for (uint32_t entryIdx : group.entryIndices)
+        {
+            GpuMeshEntry& entry = m_entries[entryIdx];
+            RHIMesh* mesh = entry.mesh;
+            VertexAttributeResource& attrRes = mesh->GetVertexAttributeResource();
+
+            for (uint32_t s = 0; s < streamCount; s++)
+            {
+                // 替换 mesh 的 VB 引用为统一 VB（offset 保持 0，由 baseVertexLocation 控制偏移）
+                attrRes._vertexBuffers[s] = std::make_shared<BufferResource>();
+                attrRes._vertexBuffers[s]->_size = group.totalVertexBytesPerStream[s];
+                attrRes._vertexBuffers[s]->_data = nullptr;
+                // 更新 render_buffer 指向统一 VB
+                attrRes._vertexStreams[s].render_buffer = group.unifiedVBs[s];
+            }
+
+            // 替换 IB 引用为统一索引缓冲
+            mesh->SetIndexBuffer(group.unifiedIB, entry.indexType);
+
+            // 标记 mesh 的 D3D11 InputAssembly 缓存失效，下次 Active() 重新读取 VB/IB 指针
+            mesh->MarkDataDirty();
+        }
+
+        LOG_INFO("GpuMeshRegistry: format group %zu built — %u streams, IB=%u bytes, %zu meshes",
+            &group - &m_formatGroups[0], streamCount, group.totalIndexBytes, group.entryIndices.size());
     }
 
     // === Step 2: 填充并上传 GPUMeshData buffer ===
@@ -196,14 +249,18 @@ void GpuMeshRegistry::Build()
             GpuMeshEntry& entry = m_entries[i];
             GPUMeshData& gpuData = meshDataVec[i];
 
+            // baseVertexLocation = 顶点偏移（元素单位），使用流0的字节偏移/步长，所有流顶点数一致
+            uint32_t baseVertex = (entry.vertexStrides[0] > 0)
+                ? entry.vertexByteOffsets[0] / entry.vertexStrides[0] : 0;
+
             gpuData.indexOffset      = entry.indexByteOffset;
-            gpuData.vertexOffset     = entry.vertexByteOffset / entry.vertexStride;  // 转换为元素偏移
+            gpuData.vertexOffset     = baseVertex;
             gpuData.indexCount       = entry.indexCount;
             gpuData.vertexCount      = entry.vertexCount;
             gpuData.materialIndex    = entry.materialIndex;
             gpuData.topologyType     = static_cast<uint32_t>(entry.topologyType);
             gpuData.indexBufferType  = (entry.indexType == IndexBufferType::UInt32) ? 1U : 0U;
-            gpuData.vertexStride     = entry.vertexStride;
+            gpuData.vertexStride     = entry.vertexStrides[0];
             gpuData.aabbMinLocal     = float4(entry.aabbLocal.Min().x(), entry.aabbLocal.Min().y(),
                                                entry.aabbLocal.Min().z(), 0.0f);
             gpuData.aabbMaxLocal     = float4(entry.aabbLocal.Max().x(), entry.aabbLocal.Max().y(),

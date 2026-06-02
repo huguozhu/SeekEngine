@@ -46,6 +46,8 @@ public:
 
     virtual SResult             OnRenderBegin(Technique* tech, RHIMeshPtr mesh);
     virtual SResult             OnRenderEnd();
+    // GPU Driven 合批优化：仅更新 ModelInfo（世界矩阵），跳过材质/光照等重复设置
+    void                        UpdateModelInfo(Technique* tech, RHIMeshPtr mesh);
     virtual SResult             Render();
     virtual SResult             RenderMesh(uint32_t i);
 

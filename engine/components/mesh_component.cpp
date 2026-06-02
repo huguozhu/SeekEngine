@@ -223,6 +223,34 @@ SResult MeshComponent::OnRenderEnd()
     }
     return S_Success;
 }
+void MeshComponent::UpdateModelInfo(Technique* tech, RHIMeshPtr mesh)
+{
+    if (!tech->HasParam("modelInfo"))
+        return;
+
+    if (!m_ModelInfoCBuffer)
+    {
+        m_ModelInfoCBuffer = m_pContext->RHIContextInstance().CreateConstantBuffer(sizeof(ModelInfo), RESOURCE_FLAG_CPU_WRITE);
+    }
+
+    CameraComponent* cam = m_pContext->SceneManagerInstance().GetActiveCamera();
+    Matrix4 m = GetWorldMatrix();
+    Matrix4 view = cam ? cam->GetViewMatrix() : Matrix4::Identity();
+    Matrix4 proj = cam ? cam->GetProjMatrix() : Matrix4::Identity();
+    Matrix4 mv = m * view;
+    Matrix4 mvp = mv * proj;
+    ModelInfo modelInfo;
+    modelInfo.mvpMatrix = mvp.Transpose();
+    modelInfo.modelMatrix = m.Transpose();
+    modelInfo.modelViewMatrix = mv.Transpose();
+    modelInfo.normalMatrix = m.Inverse();
+    m_ModelInfoCBuffer->Update(&modelInfo, sizeof(modelInfo));
+    tech->SetParam("modelInfo", m_ModelInfoCBuffer);
+
+    // TAA 运动矢量需要前一帧的世界矩阵
+    SaveToPrevWorldMatrix();
+    mesh->SaveToPrevMorphTargetWeights();
+}
 SResult MeshComponent::Render()
 {
     for (uint32_t i = 0; i < m_vMeshes.size(); i++)

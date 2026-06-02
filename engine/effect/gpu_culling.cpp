@@ -8,6 +8,7 @@
 #include "math/frustum.h"
 #include "math/plane.h"
 #include "utils/log.h"
+#include <algorithm>
 #include <cstring>
 
 #include "rhi/d3d11/d3d11_gpu_buffer.h"
@@ -287,9 +288,17 @@ void GpuCullingManager::ExecuteIndirectDraws()
         d3dCtx->CopyResource(dst->GetD3DBuffer(), src->GetD3DBuffer());
     }
 
-    // Step 2: 遍历所有对象，逐个执行 DrawIndexedInstancedIndirect
-    // 被 GPU 剔除的对象 args.indexCountPerInstance=0，D3D11 自动跳过该绘制调用
-    uint32_t drawCount = 0;
+    // Step 2: 收集所有有效对象的绘制信息并解析 Technique
+    struct DrawEntry
+    {
+        uint32_t        objIdx;
+        Technique*      tech;
+        MeshComponent*  comp;
+        RHIMeshPtr      mesh;
+    };
+    std::vector<DrawEntry> entries;
+    entries.reserve(m_objectCount);
+
     for (uint32_t objIdx = 0; objIdx < m_objectCount; objIdx++)
     {
         MeshComponent* comp = m_objectMeshPairs[objIdx].first;
@@ -298,23 +307,46 @@ void GpuCullingManager::ExecuteIndirectDraws()
         if (!mesh)
             continue;
 
-        // 获取渲染技术
         Technique* tech = nullptr;
         SResult ret = sceneRenderer.GetEffectTechniqueToRender(mesh, &tech);
         if (SEEK_CHECKFAILED(ret) || !tech)
             continue;
 
-        // 设置 per-object 数据（ModelInfo cbuffer 等）
-        comp->OnRenderBegin(tech, mesh);
-
-        // 执行间接绘制（参数来自 GPU buffer）
-        uint32_t argsOffset = objIdx * sizeof(DrawIndexedIndirectArgs);
-        tech->DrawIndexedIndirect(m_drawIndirectBuffer, mesh, argsOffset);
-
-        comp->OnRenderEnd();
-        drawCount++;
+        entries.push_back({ objIdx, tech, comp, mesh });
     }
 
+    if (entries.empty())
+        return;
+
+    // Step 3: 按 Technique 指针排序，将相同 Shader/Material 的对象聚集为批次
+    // VirtualTechnique::Concrete 对相同 predefines 返回同一指针，天然分组
+    std::sort(entries.begin(), entries.end(),
+        [](const DrawEntry& a, const DrawEntry& b) {
+            return a.tech < b.tech;
+        });
+
+    // Step 4: 分批绘制
+    // 同组首对象：完整 OnRenderBegin（设置光照/材质/阴影等共享状态）
+    // 同组后续：仅 UpdateModelInfo（世界矩阵），跳过 90% 的重复参数绑定
+    Technique* currentTech = nullptr;
+    for (const auto& entry : entries)
+    {
+        if (entry.tech != currentTech)
+        {
+            currentTech = entry.tech;
+            // 新批次：完整设置所有制参数
+            entry.comp->OnRenderBegin(currentTech, entry.mesh);
+        }
+        else
+        {
+            // 同批次：仅更新 ModelInfo 常量缓冲区（世界矩阵）
+            entry.comp->UpdateModelInfo(currentTech, entry.mesh);
+        }
+
+        // 执行间接绘制（参数来自 GPU buffer，被剔除对象 indexCount=0，D3D11 自动跳过）
+        uint32_t argsOffset = entry.objIdx * sizeof(DrawIndexedIndirectArgs);
+        currentTech->DrawIndexedIndirect(m_drawIndirectBuffer, entry.mesh, argsOffset);
+    }
 }
 
 SEEK_NAMESPACE_END
