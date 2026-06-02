@@ -214,7 +214,7 @@ SResult DeferredShading::OnCreate()
     SkyBoxComponentPtr pSkybox = MakeSharedPtr<SkyBoxComponent>(m_pContext.get());
     pSkybox->SetSkyBoxTex(tex_cube);
     m_pSkyBoxEntity->AddSceneComponent(pSkybox);
-    m_pSkyBoxEntity->AddToTopScene();
+    //m_pSkyBoxEntity->AddToTopScene();
 
     return S_Success;
 }

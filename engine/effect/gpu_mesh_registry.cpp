@@ -140,7 +140,7 @@ void GpuMeshRegistry::Build()
     if (m_entries.empty())
     {
         LOG_WARNING("GpuMeshRegistry::Build: no meshes registered");
-        m_built = true;
+        m_built = false;  // 没有注册任何 mesh，标记为未构建，避免后续 GPU Driven 路径使用空指针
         return;
     }
 

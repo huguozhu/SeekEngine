@@ -4,6 +4,7 @@
 #include "rhi/base/rhi_gpu_buffer.h"
 #include "rhi/base/rhi_shader.h"
 #include "rhi/base/rhi_program.h"
+#include "rhi/base/rhi_render_view.h"
 #include "effect/technique.h"
 #include "components/camera_component.h"
 #include "scene_manager/scene_manager.h"
@@ -67,6 +68,16 @@ private:
     RHIGpuBufferPtr m_frustumParamsCB;       // FrustumCullingParams constant buffer
     RHIGpuBufferPtr m_indirectArgsBuffer;    // CS 写入：StructuredBuffer<DrawIndexedIndirectArgs>
     RHIGpuBufferPtr m_drawIndirectBuffer;    // 实际绘制：带 DRAW_INDIRECT_ARGS 标志的 buffer
+    RHIGpuBufferPtr m_indirectArgsCB;        // GenerateIndirectArgsCS 的常量缓冲区（g_ObjectCount + g_IndexStride）
+
+    // UAV / SRV 视图（不能直接传 RHIGpuBufferPtr 给 SetParam，类型不匹配会导致静默失败）
+    RHIUnorderedAccessViewPtr   m_objectDataBufferUav;     // FrustumCullingCS u0
+    RHIUnorderedAccessViewPtr   m_visibleIndexBufferUav;   // FrustumCullingCS u1
+    RHIUnorderedAccessViewPtr   m_visibleCounterBufferUav; // FrustumCullingCS u2
+    RHIUnorderedAccessViewPtr   m_indirectArgsBufferUav;   // GenerateIndirectArgsCS u0
+    RHIShaderResourceViewPtr    m_objectDataBufferSrv;     // GenerateIndirectArgsCS t0
+    RHIShaderResourceViewPtr    m_meshDataBufferSrv;       // GenerateIndirectArgsCS t1（从 GpuMeshRegistry 的 buffer 创建）
+    RHIGpuBufferPtr             m_cachedMeshDataBuffer;     // 用于检测 meshDataBuffer 是否已更新，避免每帧重建 SRV
 
     // Shader / Technique
     VirtualTechnique*  m_pCullingVirtualTech = nullptr;

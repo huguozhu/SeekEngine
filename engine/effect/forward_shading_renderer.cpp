@@ -179,11 +179,12 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderSkyBoxJob, this)));
     if (sm.GetParticleComponents().size() > 0)
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderParticlesJob, this)));
-    m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderSceneJob, this)));
-
-    // GPU Driven Rendering Job
+    // 根据 GPU Driven 开关选择渲染路径，避免双重绘制导致帧率下降
+    // GPU Driven 开启时使用 Compute Shader 剔除 + Indirect Draw，否则使用传统逐物体渲染路径
     if (m_pContext->IsGpuDrivenEnabled() && m_pContext->GpuMeshRegistryInstance().IsBuilt())
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderGpuDrivenJob, this)));
+    else
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderSceneJob, this)));
     
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::ToneMappingJob, this)));
 

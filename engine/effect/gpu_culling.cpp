@@ -115,6 +115,15 @@ void GpuCullingManager::UploadObjectData(const std::vector<MeshPair>& meshPairs)
             static_cast<uint32_t>(sizeof(DrawIndexedIndirectArgs) * m_objectCount),
             RESOURCE_FLAG_DRAW_INDIRECT_ARGS | RESOURCE_FLAG_UAV,
             0);
+        // GenerateIndirectArgsCS 的常量缓冲区：g_ObjectCount + g_IndexStride
+        m_indirectArgsCB = rc.CreateConstantBuffer(16, RESOURCE_FLAG_CPU_WRITE);
+
+        // 创建 UAV / SRV 视图（SetParam 需要正确的类型，直接传 RHIGpuBufferPtr 会静默失败）
+        m_objectDataBufferUav = rc.CreateBufferUav(m_objectDataBuffer, PixelFormat::Unknown, 0, m_objectCount);
+        m_visibleIndexBufferUav = rc.CreateBufferUav(m_visibleIndexBuffer, PixelFormat::Unknown, 0, m_objectCount);
+        m_visibleCounterBufferUav = rc.CreateBufferUav(m_visibleCounterBuffer, PixelFormat::Unknown, 0, 1);
+        m_objectDataBufferSrv = rc.CreateBufferSrv(m_objectDataBuffer, PixelFormat::Unknown, 0, m_objectCount);
+        m_indirectArgsBufferUav = rc.CreateBufferUav(m_indirectArgsBuffer, PixelFormat::Unknown, 0, m_objectCount);
     }
 
     // CPU 侧填充 ObjectData
@@ -194,9 +203,9 @@ void GpuCullingManager::Cull(CameraComponent* camera)
     ExtractFrustumPlanes(camera, params.frustumPlanes);
     m_frustumParamsCB->Update(&params, sizeof(FrustumCullingParams));
 
-    m_pCullingTechnique->SetParam("objectDataBuffer", m_objectDataBuffer);
-    m_pCullingTechnique->SetParam("visibleIndexBuffer", m_visibleIndexBuffer);
-    m_pCullingTechnique->SetParam("visibleCounter", m_visibleCounterBuffer);
+    m_pCullingTechnique->SetParam("objectDataBuffer", m_objectDataBufferUav);
+    m_pCullingTechnique->SetParam("visibleIndexBuffer", m_visibleIndexBufferUav);
+    m_pCullingTechnique->SetParam("visibleCounter", m_visibleCounterBufferUav);
     m_pCullingTechnique->SetParam("cb_FrustumCullingParams", m_frustumParamsCB);
 
     uint32_t threadGroups = (m_objectCount + 63) / 64;
@@ -209,6 +218,7 @@ void GpuCullingManager::GenerateIndirectArgs()
         return;
 
     GpuMeshRegistry& registry = m_pContext->GpuMeshRegistryInstance();
+    RHIContext& rc = m_pContext->RHIContextInstance();
 
     // 获取索引步长
     uint32_t indexStride = 4;
@@ -217,7 +227,22 @@ void GpuCullingManager::GenerateIndirectArgs()
         indexStride = registry.GetFormatGroup(0).indexStride;
     }
 
-    // 上传常量（g_ObjectCount + g_IndexStride）
+    // 为 GpuMeshRegistry 的 meshDataBuffer 创建 SRV（如果尚未创建或 buffer 已更新）
+    RHIGpuBufferPtr meshBuf = registry.GetMeshDataBuffer();
+    if (!meshBuf)
+    {
+        LOG_ERROR("GpuCullingManager::GenerateIndirectArgs: meshDataBuffer is null, skip");
+        return;
+    }
+    if (!m_meshDataBufferSrv || meshBuf != m_cachedMeshDataBuffer)
+    {
+        m_meshDataBufferSrv = rc.CreateBufferSrv(meshBuf, PixelFormat::Unknown, 0,
+            static_cast<uint32_t>(meshBuf->GetSize() / sizeof(GPUMeshData)));
+        m_cachedMeshDataBuffer = meshBuf;
+    }
+
+    // 上传常量（g_ObjectCount + g_IndexStride）到 GPU 常量缓冲区
+    // 修复：之前 argsParams 只在 CPU 栈上填充但从未上传到 GPU，导致 CS 中 g_ObjectCount=0 全部线程跳过
     struct {
         uint32_t objectCount;
         uint32_t indexStride;
@@ -225,17 +250,20 @@ void GpuCullingManager::GenerateIndirectArgs()
     } argsParams;
     argsParams.objectCount = m_objectCount;
     argsParams.indexStride = indexStride;
+    argsParams.padding[0] = 0;
+    argsParams.padding[1] = 0;
+    m_indirectArgsCB->Update(&argsParams, sizeof(argsParams));
 
-    // 绑定参数
-    m_pIndirectArgsTechnique->SetParam("objectDataBuffer", m_objectDataBuffer);
-    m_pIndirectArgsTechnique->SetParam("meshDataBuffer", registry.GetMeshDataBuffer());
-    m_pIndirectArgsTechnique->SetParam("indirectArgsBuffer", m_indirectArgsBuffer);
+    // 绑定参数（使用正确的 SRV / UAV 视图类型，而非 RHIGpuBufferPtr）
+    m_pIndirectArgsTechnique->SetParam("objectDataBuffer", m_objectDataBufferSrv);
+    m_pIndirectArgsTechnique->SetParam("meshDataBuffer", m_meshDataBufferSrv);
+    m_pIndirectArgsTechnique->SetParam("indirectArgsBuffer", m_indirectArgsBufferUav);
+    m_pIndirectArgsTechnique->SetParam("cb_IndirectArgsParams", m_indirectArgsCB);
 
     // 每个线程处理一个对象，64 线程一组
     uint32_t groupCount = (m_objectCount + 63) / 64;
     m_pIndirectArgsTechnique->Dispatch(groupCount, 1, 1);
 
-    LOG_INFO("GpuCullingManager::GenerateIndirectArgs: dispatched %u groups for %u objects", groupCount, m_objectCount);
 }
 
 void GpuCullingManager::ExecuteIndirectDraws()
@@ -287,8 +315,6 @@ void GpuCullingManager::ExecuteIndirectDraws()
         drawCount++;
     }
 
-    LOG_INFO("GpuCullingManager::ExecuteIndirectDraws: %u indirect draws issued for %u objects",
-        drawCount, m_objectCount);
 }
 
 SEEK_NAMESPACE_END
