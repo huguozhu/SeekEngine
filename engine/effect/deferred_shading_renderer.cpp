@@ -1,4 +1,5 @@
 #include "effect/deferred_shading_renderer.h"
+#include "effect/gpu_culling.h"
 #include "effect/technique.h"
 #include "effect/postprocess.h"
 #include "effect/effect.h"
@@ -334,7 +335,13 @@ SResult DeferredShadingRenderer::BuildRenderJobList()
         return S_Success;
 
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::RenderPrepareJob, this)));
-    m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::RenderPreZJob, this)));
+
+    // PreZ 阶段：根据 GPU Driven 开关选择渲染路径
+    bool bGpuDriven = m_pContext->IsGpuDrivenEnabled() && m_pContext->GpuMeshRegistryInstance().IsBuilt();
+    if (bGpuDriven)
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::RenderGpuDrivenPreZJob, this)));
+    else
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::RenderPreZJob, this)));
 
     // Shadow Map job
     BEGIN_TIMEQUERY(m_pTimeQueryGenShadowMap);
@@ -359,7 +366,10 @@ SResult DeferredShadingRenderer::BuildRenderJobList()
     END_TIMEQUERY(m_pTimeQueryGI);
     
     BEGIN_TIMEQUERY(m_pTimeQueryGenGBuffer);
-    m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::GenerateGBufferJob, this)));
+    if (bGpuDriven)
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::RenderGpuDrivenGBufferJob, this)));
+    else
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&DeferredShadingRenderer::GenerateGBufferJob, this)));
     END_TIMEQUERY(m_pTimeQueryGenGBuffer);
 
     BEGIN_TIMEQUERY(m_pTimeQuerySSAO);
@@ -580,14 +590,24 @@ RendererReturnValue DeferredShadingRenderer::RenderPreZJob()
     }
     m_eCurRenderStage = RenderStage::None;
     m_pContext->RHIContextInstance().EndRenderPass();
-#if 0
-    static int draw = 0;
-    if (draw)
+    return RRV_NextJob;
+}
+RendererReturnValue DeferredShadingRenderer::RenderGpuDrivenPreZJob()
+{
+    m_eCurRenderStage = RenderStage::PreZ;
+    m_pPreZFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, { float4(0.0) });
+    m_pPreZFb->SetDepthLoadOption({ 1.0f });
+    SResult res = m_pContext->RHIContextInstance().BeginRenderPass({ "RenderGpuDrivenPreZ", m_pPreZFb.get() });
+    if (res != S_Success)
     {
-        m_pSceneDepthStencil->DumpToFile("d:\\dump\\depth_map.g16l");
-        draw--;
+        LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::RenderGpuDrivenPreZJob() BindFrameBuffer failed.");
     }
-#endif
+
+    GpuCullingManager& cullingMgr = m_pContext->GpuCullingManagerInstance();
+    cullingMgr.ExecuteIndirectDraws();
+
+    m_eCurRenderStage = RenderStage::None;
+    m_pContext->RHIContextInstance().EndRenderPass();
     return RRV_NextJob;
 }
 RendererReturnValue DeferredShadingRenderer::GenerateGBufferJob()
@@ -616,18 +636,32 @@ RendererReturnValue DeferredShadingRenderer::GenerateGBufferJob()
         LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::GenerateGBufferJob() CopyTexture failed.");
     }
     m_pContext->RHIContextInstance().EndRenderPass();
-#if 0
-    static int draw = 1;
-    if (draw)
+    return RRV_NextJob;
+}
+RendererReturnValue DeferredShadingRenderer::RenderGpuDrivenGBufferJob()
+{
+    m_eCurRenderStage = RenderStage::GenerateGBuffer;
+    m_pGBufferFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, { float4(0.0) });
+    m_pGBufferFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color1, { float4(0.0) });
+    m_pGBufferFb->SetColorLoadOption(RHIFrameBuffer::Attachment::Color2, { float4(0.0) });
+    m_pGBufferFb->SetDepthLoadOption(RHIFrameBuffer::LoadAction::Load);
+    SResult res = m_pContext->RHIContextInstance().BeginRenderPass({ "RenderGpuDrivenGBuffer", m_pGBufferFb.get() });
+    if (res != S_Success)
     {
-        m_pGBufferColor0->DumpToFile("d:\\dump\\GBuffer_RT0.rgba");
-        m_pGBufferColor1->DumpToFile("d:\\dump\\GBuffer_RT1.rgba");
-        m_pGBufferColor2->DumpToFile("d:\\dump\\GBuffer_RT2.rgba");
-        m_pSceneDepthStencil->DumpToFile("d:\\dump\\GBuffer_DS.g16l");
-        m_pSceneDepthCopy->DumpToFile("d:\\dump\\GBuffer_Depth_Copy.g16l");
-        draw--;
+        LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::RenderGpuDrivenGBufferJob() BindFrameBuffer failed.");
     }
-#endif
+
+    GpuCullingManager& cullingMgr = m_pContext->GpuCullingManagerInstance();
+    cullingMgr.ExecuteIndirectDraws();
+
+    m_eCurRenderStage = RenderStage::None;
+
+    res = m_pContext->RHIContextInstance().CopyTexture(m_pSceneDepthStencil, m_pSceneDepthCopy);
+    if (res != S_Success)
+    {
+        LOG_ERROR_PRIERR(res, "DeferredShadingRenderer::RenderGpuDrivenGBufferJob() CopyTexture failed.");
+    }
+    m_pContext->RHIContextInstance().EndRenderPass();
     return RRV_NextJob;
 }
 RendererReturnValue DeferredShadingRenderer::SSAOJob()

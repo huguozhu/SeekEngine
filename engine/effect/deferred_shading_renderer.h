@@ -21,7 +21,9 @@ public:
 
     RendererReturnValue         RenderPrepareJob();
     RendererReturnValue         RenderPreZJob();
+    RendererReturnValue         RenderGpuDrivenPreZJob();
     RendererReturnValue         GenerateGBufferJob();
+    RendererReturnValue         RenderGpuDrivenGBufferJob();
     RendererReturnValue         SSAOJob();
     RendererReturnValue         LightingTileCullingJob();
     RendererReturnValue         LightingJob();

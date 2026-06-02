@@ -30,7 +30,7 @@ private:
     EntityPtr m_pRotatingLights[NUM_LIGHTS] = { nullptr };
     EntityPtr m_pRotatingSphere[NUM_LIGHTS] = { nullptr };
 
-    bool m_bManyLights = false;
+    bool m_bManyLights = true;
     FirstPersonCameraController m_CameraController;
 
     // 性能统计
@@ -214,7 +214,7 @@ SResult DeferredShading::OnCreate()
     SkyBoxComponentPtr pSkybox = MakeSharedPtr<SkyBoxComponent>(m_pContext.get());
     pSkybox->SetSkyBoxTex(tex_cube);
     m_pSkyBoxEntity->AddSceneComponent(pSkybox);
-    //m_pSkyBoxEntity->AddToTopScene();
+    m_pSkyBoxEntity->AddToTopScene();
 
     return S_Success;
 }
@@ -288,7 +288,7 @@ SResult DeferredShading::InitContext(void* device, void* native_wnd)
 {
     RenderInitInfo info;
     info.enable_debug = true;
-    info.renderer_type = RendererType::Forward;
+    info.renderer_type = RendererType::Deferred;
     info.anti_aliasing_mode = AntiAliasingMode::TAA;
     info.preferred_adapter = 0;
 
