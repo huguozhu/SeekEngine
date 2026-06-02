@@ -5,6 +5,10 @@
 #include "math/aabbox.h"
 #include <cstring>
 
+#include "effect/gpu_culling_types.h"
+
+#define SEEK_MACRO_FILE_UID 85     // this code is auto generated, don't touch it!!!
+
 SEEK_NAMESPACE_BEGIN
 
 GpuMeshRegistry::GpuMeshRegistry(Context* context)

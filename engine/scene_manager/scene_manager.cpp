@@ -243,6 +243,17 @@ SResult SceneManager::Tick(float delta_time)
     CameraComponent* pActiveCamera = this->GetActiveCamera();
     ClipScene(pActiveCamera);
 
+    // GPU Driven: upload object data, frustum culling, indirect args generation, and draw execution
+    if (pActiveCamera && m_pContext->GpuMeshRegistryInstance().IsBuilt())
+    {
+        GpuCullingManager& cullingMgr = m_pContext->GpuCullingManagerInstance();
+        cullingMgr.UploadObjectData(m_vMeshList);
+        cullingMgr.Cull(pActiveCamera);
+        cullingMgr.GenerateIndirectArgs();
+        // Phase 5: ExecuteIndirectDraws 当前执行 CopyResource + 分组遍历验证，
+        // 实际的 DrawIndexedInstancedIndirect 调用待 Phase 6 完成
+    }
+
     return S_Success;
 }
 

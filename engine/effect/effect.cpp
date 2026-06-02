@@ -1,4 +1,4 @@
-#include "effect/effect.h"
+﻿#include "effect/effect.h"
 #include "kernel/context.h"
 #include "rhi/base/rhi_render_state.h"
 #include "rhi/base/rhi_context.h"
@@ -23,6 +23,8 @@ void Effect::LoadDefaultVirtualTechniques()
     LoadTechnique("GenerateShadowMap", &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "EmptyPS", nullptr);
     LoadTechnique("GenerateCubeShadowMap", &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "GenerateCubeShadowMapPS", nullptr);
     LoadTechnique("GenerateCascadedShadowMap", &RenderStateDesc::Default3D(), "PreZMeshRenderingVS", "GenerateCascadedShadowMapPS", nullptr);
+    LoadTechnique("FrustumCulling", nullptr, nullptr, nullptr, "FrustumCullingCS");
+    LoadTechnique("GenerateIndirectArgs", nullptr, nullptr, nullptr, "GenerateIndirectArgsCS");
 
 }
 

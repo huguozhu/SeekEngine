@@ -6,6 +6,7 @@
 #include "rhi/base/viewport.h"
 #include "resource/resource_mgr.h"
 #include "effect/gpu_mesh_registry.h"
+#include "effect/gpu_culling.h"
 #include "utils/timer.h"
 
 
@@ -112,6 +113,7 @@ public:
     ResourceManager&    ResourceManagerInstance() { return *m_pResourceManager; }
     Effect&             EffectInstance() { return *(m_pEffect.get()); }
     GpuMeshRegistry&    GpuMeshRegistryInstance() { return *m_pGpuMeshRegistry; }
+    GpuCullingManager&  GpuCullingManagerInstance() { return *m_pGpuCullingManager; }
 
     const RHITexturePtr& GetIBLDiffuseTexture() { return m_pIBLDiffuseTex; }
     const RHITexturePtr& GetIBLSpecularTexture() { return m_pIBLSpecularTex; }
@@ -131,6 +133,7 @@ private:
     ResourceManagerPtrUnique    m_pResourceManager;
     EffectPtrUnique             m_pEffect;
     GpuMeshRegistryPtrUnique    m_pGpuMeshRegistry;
+    GpuCullingManagerPtrUnique  m_pGpuCullingManager;
 
     uint32_t                    m_FrameCount = 0;
 

@@ -86,7 +86,12 @@ SResult Context::Init(void* device, void* native_wnd)
         {
             m_pGpuMeshRegistry = MakeUniquePtr<GpuMeshRegistry>(this);
         }
-        
+        if (!m_pGpuCullingManager)
+        {
+            m_pGpuCullingManager = MakeUniquePtr<GpuCullingManager>(this);
+            m_pGpuCullingManager->Init();
+        }
+
         if (!m_pSceneRenderer)
         {
             RendererType type = this->GetRendererType();
@@ -124,6 +129,7 @@ void Context::Uninit()
     m_pSceneManager.reset();
     m_pSprite2DRenderer.reset();
     m_pSceneRenderer.reset();
+    m_pGpuCullingManager.reset();
     m_pGpuMeshRegistry.reset();
     m_pResourceManager.reset();
     m_pEffect.reset();

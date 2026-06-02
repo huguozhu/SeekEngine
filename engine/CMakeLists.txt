@@ -1,4 +1,4 @@
-############################################ SeekEngin source files ############################################
+﻿############################################ SeekEngin source files ############################################
 set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/seek_engine.h
     
@@ -47,6 +47,11 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/effect/forward_shading_renderer.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/gi.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/gi.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/gpu_mesh_registry.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/gpu_mesh_registry.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/gpu_culling_types.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/gpu_culling.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/gpu_culling.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/hdr_postprocess.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/hdr_postprocess.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/ibl.h
@@ -245,6 +250,8 @@ set(SEEK_STATICLIB_DEPENDENT_LIBS dxgi d3d11 d3dcompiler dxguid Windowscodecs Ws
 
 ############################################ seek_engine static lib ############################################
 add_library(${SEEK_STATICLIB_NAME} STATIC ${ENGINE_CODE})
+# 使用 /Z7 将调试信息嵌入 .obj 文件，避免静态库 PDB 路径不一致导致的 LNK4099 警告
+target_compile_options(${SEEK_STATICLIB_NAME} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/Z7>)
 add_dependencies(${SEEK_STATICLIB_NAME} GenerateShaders)
 target_link_libraries(${SEEK_STATICLIB_NAME} PUBLIC
     turbojpeg

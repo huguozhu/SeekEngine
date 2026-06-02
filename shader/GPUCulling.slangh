@@ -1,5 +1,9 @@
 #pragma once
 
+#ifdef SEEK_CPP
+typedef uint32_t uint;
+#endif
+
 // ============================================================================
 // GPU Driven Rendering — 共享数据结构
 // 用于 Compute Shader 视锥体剔除和 Indirect Draw 参数生成

@@ -51,19 +51,23 @@ SResult D3D11GpuBuffer::Create(RHIGpuBufferData* buffer_data)
 
 SResult D3D11GpuBuffer::Update(RHIGpuBufferData* buffer_data)
 {
-    if (!(m_iFlags & RESOURCE_FLAG_CPU_WRITE))
-        return ERR_INVALID_ARG;
-
     D3D11Context& rc = static_cast<D3D11Context&>(m_pContext->RHIContextInstance());
     ID3D11DeviceContext* pDeviceContext = rc.GetD3D11DeviceContext();
-    ID3D11Device* pDevice = rc.GetD3D11Device();
 
-    D3D11_MAPPED_SUBRESOURCE mapped_data = { 0 };
-    if (FAILED(pDeviceContext->Map(m_pD3DBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped_data)))
-        return ERR_INVALID_ARG;
-
-    memcpy_s(mapped_data.pData, mapped_data.RowPitch, buffer_data->m_pData, buffer_data->m_iDataSize);
-    pDeviceContext->Unmap(m_pD3DBuffer.Get(), 0);
+    if (m_iFlags & RESOURCE_FLAG_CPU_WRITE)
+    {
+        // DYNAMIC 或 STAGING 用法：通过 Map/Unmap 写入
+        D3D11_MAPPED_SUBRESOURCE mapped_data = { 0 };
+        if (FAILED(pDeviceContext->Map(m_pD3DBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped_data)))
+            return ERR_INVALID_ARG;
+        memcpy_s(mapped_data.pData, mapped_data.RowPitch, buffer_data->m_pData, buffer_data->m_iDataSize);
+        pDeviceContext->Unmap(m_pD3DBuffer.Get(), 0);
+    }
+    else
+    {
+        // DEFAULT 用法（如 UAV buffer）：通过 UpdateSubresource 写入整个 buffer
+        pDeviceContext->UpdateSubresource(m_pD3DBuffer.Get(), 0, nullptr, buffer_data->m_pData, 0, 0);
+    }
     return S_Success;
 }
 
@@ -203,7 +207,7 @@ SResult D3D11GpuBuffer::FillBufferDesc(D3D11_BUFFER_DESC& desc)
 
     if ((RESOURCE_FLAG_CPU_WRITE & m_iFlags) && (RESOURCE_FLAG_GPU_WRITE & m_iFlags))
         usage = D3D11_USAGE_STAGING;
-    else if (!(RESOURCE_FLAG_CPU_WRITE & m_iFlags) && !(RESOURCE_FLAG_GPU_WRITE & m_iFlags))
+    else if (!(RESOURCE_FLAG_CPU_WRITE & m_iFlags) && !(RESOURCE_FLAG_GPU_WRITE & m_iFlags) && !(RESOURCE_FLAG_UAV & m_iFlags))
         usage = D3D11_USAGE_IMMUTABLE;
     else if (RESOURCE_FLAG_CPU_WRITE & m_iFlags)
         usage = D3D11_USAGE_DYNAMIC;
