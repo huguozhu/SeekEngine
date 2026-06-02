@@ -182,7 +182,7 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderSceneJob, this)));
 
     // GPU Driven Rendering Job
-    if (m_pContext->GpuMeshRegistryInstance().IsBuilt())
+    if (m_pContext->IsGpuDrivenEnabled() && m_pContext->GpuMeshRegistryInstance().IsBuilt())
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderGpuDrivenJob, this)));
     
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::ToneMappingJob, this)));

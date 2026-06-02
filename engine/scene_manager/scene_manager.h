@@ -34,6 +34,7 @@ public:
     void                                SetActiveLightIndex(int32_t index) { m_iActiveLightIndex = index; }
 
     size_t                              NumLightComponent() const { return m_vLightList.size(); }
+    size_t                              NumTotalMeshes() const { return m_vMeshList.size(); }
     LightComponent*                     GetLightComponentByIndex(size_t index);
 
     SkyBoxComponent*                    GetSkyBoxComponent() { return m_pSkyBoxComponent;}

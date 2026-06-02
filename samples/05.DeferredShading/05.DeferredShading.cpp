@@ -1,6 +1,7 @@
 #include "app_framework.h"
 #include "seek_engine.h"
 #include "common/first_person_camera_controller.h"
+#include "imgui.h"
 #include <functional>
 
 USING_NAMESPACE_SEEK
@@ -18,6 +19,7 @@ public:
 
     void    InitRotatingLights();
     void    UpdateRotatingLights();
+    void    ShowPerformancePanel();
 
 private:
     EntityPtr m_pMeshEntity = nullptr;
@@ -30,6 +32,10 @@ private:
 
     bool m_bManyLights = false;
     FirstPersonCameraController m_CameraController;
+
+    // æ€§èƒ½ç»Ÿè®¡
+    float m_fSmoothedFps = 0.0f;
+    float m_fSmoothedFrameTime = 0.0f;
 };
 
 void DeferredShading::InitRotatingLights()
@@ -85,7 +91,7 @@ SResult DeferredShading::OnCreate()
     // Step2: add Camera
     m_pCameraEntity = MakeSharedPtr<Entity>(m_pContext.get());
     CameraComponentPtr pCam = MakeSharedPtr<CameraComponent>(m_pContext.get());
-    // ±ØĞëÉèÖÃÍ¸ÊÓÍ¶Ó°²ÎÊı£¬·ñÔòÍ¶Ó°¾ØÕó±£³Öµ¥Î»¾ØÕó£¬³¡¾°ÎŞ·¨Õı³£ÏÔÊ¾
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ï¿½Í¶Ó°ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¶Ó°ï¿½ï¿½ï¿½ó±£³Öµï¿½Î»ï¿½ï¿½ï¿½ó£¬³ï¿½ï¿½ï¿½ï¿½Ş·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê¾
     pCam->ProjPerspectiveParams(45.0 * Math::DEG2RAD, w / h, 0.01f, 200.0f);
     pCam->SetLookAt(float3(-6.2, 2.8, -1.1), float3(-2.0, 3.0, -1.1), float3(0, 1, 0));
     //pCam->SetLookAt(float3(0, 12, -15), float3(0,0,0), float3(0, 1, 0));
@@ -173,8 +179,8 @@ SResult DeferredShading::OnCreate()
             return -1;
         }
         m_pMeshEntity->AddToTopScene();
-        // ±£Áô glTF Ä£ĞÍ×ÔÉíµÄ½Úµã±ä»»£¨ÀıÈç Sponza ½Úµã´øÓĞ 0.008 Ëõ·Å£¬
-        // ÓÃÓÚ½«Ô­Ê¼´ó³ß¶È¼¸ºÎËõ·Åµ½ºÏÊÊµÄ³¡¾°³ß´ç£©£¬²»ÔÙÇ¿ÖÆÖØÖÃÎªµ¥Î»¾ØÕó
+        // ï¿½ï¿½ï¿½ï¿½ glTF Ä£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä½Úµï¿½ä»»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Sponza ï¿½Úµï¿½ï¿½ï¿½ï¿½ 0.008 ï¿½ï¿½ï¿½Å£ï¿½
+        // ï¿½ï¿½ï¿½Ú½ï¿½Ô­Ê¼ï¿½ï¿½ß¶È¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Åµï¿½ï¿½ï¿½ï¿½ÊµÄ³ï¿½ï¿½ï¿½ï¿½ß´ç£©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îªï¿½ï¿½Î»ï¿½ï¿½ï¿½ï¿½
         m_pContext->SceneManagerInstance().PrintTree();
         model_selected = -1;
     }
@@ -223,10 +229,61 @@ SResult DeferredShading::OnUpdate()
     SEEK_RETIF_FAIL(m_pContext->BeginRender());
     SEEK_RETIF_FAIL(m_pContext->RenderFrame());
     IMGUI_Begin();
+    ShowPerformancePanel();
     IMGUI_Rendering();
     SEEK_RETIF_FAIL(m_pContext->EndRender());
     return S_Success;
 }
+void DeferredShading::ShowPerformancePanel()
+{
+    SceneManager& sm = m_pContext->SceneManagerInstance();
+
+    // å¹³æ»‘ FPS
+    float deltaTime = (float)m_pContext->GetDeltaTime();
+    float instantFps = (deltaTime > 0.0001f) ? (1.0f / deltaTime) : 0.0f;
+    float alpha = 0.05f;
+    if (m_fSmoothedFps < 0.01f)
+    {
+        m_fSmoothedFps = instantFps;
+        m_fSmoothedFrameTime = deltaTime * 1000.0f;
+    }
+    else
+    {
+        m_fSmoothedFps = m_fSmoothedFps * (1.0f - alpha) + instantFps * alpha;
+        m_fSmoothedFrameTime = m_fSmoothedFrameTime * (1.0f - alpha) + deltaTime * 1000.0f * alpha;
+    }
+
+    // Mesh ç»Ÿè®¡
+    size_t totalMeshes = sm.NumTotalMeshes();
+    size_t visibleMeshes = sm.GetVisableMeshes().size();
+    size_t culledMeshes = (totalMeshes > visibleMeshes) ? (totalMeshes - visibleMeshes) : 0;
+
+    // GPU Driven å¼€å…³
+    bool bGpuDriven = m_pContext->IsGpuDrivenEnabled();
+
+    ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowSize(ImVec2(280, 220), ImGuiCond_FirstUseEver);
+    ImGui::Begin("Performance");
+
+    ImGui::Text("FPS:          %.1f", m_fSmoothedFps);
+    ImGui::Text("Frame Time:   %.2f ms", m_fSmoothedFrameTime);
+    ImGui::Separator();
+    ImGui::Text("Draw Calls:   %zu", bGpuDriven ? m_pContext->GpuCullingManagerInstance().GetObjectCount() : visibleMeshes);
+    ImGui::Text("Total Meshes:    %zu", totalMeshes);
+    ImGui::Text("Visible Meshes:  %zu", visibleMeshes);
+    ImGui::Text("Culled Meshes:   %zu", culledMeshes);
+    ImGui::Separator();
+
+    if (ImGui::Checkbox("GPU Driven Rendering", &bGpuDriven))
+    {
+        m_pContext->SetGpuDrivenEnabled(bGpuDriven);
+        // åˆ‡æ¢åæ ‡è®°åœºæ™¯ä¸ºè„ï¼Œå¼ºåˆ¶é‡å»º mesh åˆ—è¡¨
+        sm.SetSceneDirty(true);
+    }
+
+    ImGui::End();
+}
+
 SResult DeferredShading::InitContext(void* device, void* native_wnd)
 {
     RenderInitInfo info;

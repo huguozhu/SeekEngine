@@ -105,6 +105,8 @@ public:
     void                SetEnableTransparent(bool b) { m_InitInfo.enable_transparent = b; }
     void                SetEnableAmbientOcclusion(bool b) { m_InitInfo.enable_ambient_occlusion = b; }
     void                SetFpsLimitType(FPSLimitType b);
+    void                SetGpuDrivenEnabled(bool v) { m_bGpuDrivenEnabled = v; }
+    bool                IsGpuDrivenEnabled() const { return m_bGpuDrivenEnabled; }
 
     RHIContext&         RHIContextInstance() { return *m_pRHIContext; }
     SceneManager&       SceneManagerInstance() { return *m_pSceneManager;}
@@ -152,6 +154,7 @@ private:
     RHITexturePtr               m_pIBLBrdfTex = nullptr;
 
     float                       m_fMinFrameTime = 0.0;
+    bool                        m_bGpuDrivenEnabled = true;
 
 };
 

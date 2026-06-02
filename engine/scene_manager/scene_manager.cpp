@@ -244,7 +244,7 @@ SResult SceneManager::Tick(float delta_time)
     ClipScene(pActiveCamera);
 
     // GPU Driven pipeline: Compute Shader Culling 和 Indirect Args 生成
-    if (pActiveCamera && m_pContext->GpuMeshRegistryInstance().IsBuilt())
+    if (m_pContext->IsGpuDrivenEnabled() && pActiveCamera && m_pContext->GpuMeshRegistryInstance().IsBuilt())
     {
         GpuCullingManager& cullingMgr = m_pContext->GpuCullingManagerInstance();
         cullingMgr.UploadObjectData(m_vMeshList);
