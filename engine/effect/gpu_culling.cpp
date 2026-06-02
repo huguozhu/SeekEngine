@@ -12,6 +12,7 @@
 
 #include "rhi/d3d11/d3d11_gpu_buffer.h"
 #include "rhi/d3d11/d3d11_context.h"
+#include "effect/scene_renderer.h"
 
 #include "effect/gpu_culling_types.h"
 
@@ -82,8 +83,9 @@ void GpuCullingManager::UploadObjectData(const std::vector<MeshPair>& meshPairs)
 
     m_objectCount = static_cast<uint32_t>(meshPairs.size());
 
-    // 更新 CPU 侧对象→Registry 映射
+    // 更新 CPU 侧映射
     m_objectRegIndices.resize(m_objectCount);
+    m_objectMeshPairs = meshPairs;  // 保存副本供 ExecuteIndirectDraws 使用
 
     // 分配/扩容 GPUObjectData buffer
     uint32_t bufferSize = static_cast<uint32_t>(sizeof(GPUObjectData) * m_objectCount);
@@ -246,6 +248,7 @@ void GpuCullingManager::ExecuteIndirectDraws()
         return;
 
     RHIContext& rc = m_pContext->RHIContextInstance();
+    SceneRenderer& sceneRenderer = m_pContext->SceneRendererInstance();
 
     // Step 1: CopyResource — 将 CS 生成的 args 复制到带 DRAW_INDIRECT_ARGS 标志的 buffer
     {
@@ -256,43 +259,36 @@ void GpuCullingManager::ExecuteIndirectDraws()
         d3dCtx->CopyResource(dst->GetD3DBuffer(), src->GetD3DBuffer());
     }
 
-    // Step 2: 按格式分组绘制
-    // 每个格式分组绑定其统一的 VB/IB，然后对组内所有对象执行 DrawIndexedInstancedIndirect
-    // 被 GPU 剔除的对象 args.indexCountPerInstance=0，D3D11 自动跳过
-    uint32_t formatGroupCount = registry.GetFormatGroupCount();
-
-    for (uint32_t fgIdx = 0; fgIdx < formatGroupCount; fgIdx++)
+    // Step 2: 遍历所有对象，逐个执行 DrawIndexedInstancedIndirect
+    // 被 GPU 剔除的对象 args.indexCountPerInstance=0，D3D11 自动跳过该绘制调用
+    uint32_t drawCount = 0;
+    for (uint32_t objIdx = 0; objIdx < m_objectCount; objIdx++)
     {
-        const GpuFormatGroup& group = registry.GetFormatGroup(fgIdx);
-        if (!group.unifiedVB || !group.unifiedIB)
+        MeshComponent* comp = m_objectMeshPairs[objIdx].first;
+        uint32_t meshIdx = m_objectMeshPairs[objIdx].second;
+        RHIMeshPtr mesh = comp->GetMeshByIndex(meshIdx);
+        if (!mesh)
             continue;
 
-        // 绑定该格式分组的统一 VB/IB
-        // TODO: 需要通过 D3D11Mesh 设置 InputLayout，Phase 6 实现
-        // 当前仅验证 pipeline 完整性
+        // 获取渲染技术
+        Technique* tech = nullptr;
+        SResult ret = sceneRenderer.GetEffectTechniqueToRender(mesh, &tech);
+        if (SEEK_CHECKFAILED(ret) || !tech)
+            continue;
 
-        // 遍历组内所有 mesh entry，对应查找对象
-        for (uint32_t entryIdx : group.entryIndices)
-        {
-            const GpuMeshEntry& meshEntry = registry.GetMeshEntry(entryIdx);
+        // 设置 per-object 数据（ModelInfo cbuffer 等）
+        comp->OnRenderBegin(tech, mesh);
 
-            // 在 m_objectRegIndices 中查找使用此 mesh 的对象
-            for (uint32_t objIdx = 0; objIdx < m_objectCount; objIdx++)
-            {
-                if (m_objectRegIndices[objIdx] != entryIdx)
-                    continue;
+        // 执行间接绘制（参数来自 GPU buffer）
+        uint32_t argsOffset = objIdx * sizeof(DrawIndexedIndirectArgs);
+        tech->DrawIndexedIndirect(m_drawIndirectBuffer, mesh, argsOffset);
 
-                // 执行单个对象的间接绘制
-                uint32_t argsOffset = objIdx * sizeof(DrawIndexedIndirectArgs);
-                // D3D11 的 DrawIndexedInstancedIndirect 需要 VB/IB/InputLayout 已绑定
-                // Phase 6: 通过 Technique 绑定完整的渲染状态
-                (void)argsOffset; // 抑制未使用警告
-            }
-        }
+        comp->OnRenderEnd();
+        drawCount++;
     }
 
-    LOG_INFO("GpuCullingManager::ExecuteIndirectDraws: processed %u format groups, %u objects",
-        formatGroupCount, m_objectCount);
+    LOG_INFO("GpuCullingManager::ExecuteIndirectDraws: %u indirect draws issued for %u objects",
+        drawCount, m_objectCount);
 }
 
 SEEK_NAMESPACE_END

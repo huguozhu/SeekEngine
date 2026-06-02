@@ -76,6 +76,8 @@ private:
 
     // CPU 侧映射：objectIndex → registryIndex（UploadObjectData 时填充）
     std::vector<uint32_t> m_objectRegIndices;
+    // CPU 侧映射：objectIndex → MeshPair（供 ExecuteIndirectDraws 访问 MeshComponent 和 mesh）
+    std::vector<MeshPair> m_objectMeshPairs;
 
     uint32_t m_objectCount = 0;
 };

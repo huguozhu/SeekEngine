@@ -16,6 +16,7 @@ public:
 
     // Rendering Jobs
     RendererReturnValue RenderSceneJob();
+    RendererReturnValue RenderGpuDrivenJob();
     RendererReturnValue RenderSkyBoxJob();
     RendererReturnValue RenderParticlesJob();
 

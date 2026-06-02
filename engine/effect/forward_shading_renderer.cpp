@@ -179,6 +179,10 @@ SResult ForwardShadingRenderer::BuildRenderJobList()
     if (sm.GetParticleComponents().size() > 0)
         m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderParticlesJob, this)));
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderSceneJob, this)));
+
+    // GPU Driven Rendering Job
+    if (m_pContext->GpuMeshRegistryInstance().IsBuilt())
+        m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&ForwardShadingRenderer::RenderGpuDrivenJob, this)));
     
     m_vRenderingJobs.push_back(MakeUniquePtr<RenderingJob>(std::bind(&SceneRenderer::ToneMappingJob, this)));
 
@@ -193,6 +197,18 @@ RendererReturnValue ForwardShadingRenderer::RenderSceneJob()
     m_eCurRenderStage = RenderStage::RenderScene;
     m_pContext->RHIContextInstance().BeginRenderPass({"RenderScene" , m_pRenderSceneFB.get()});
     this->RenderScene();
+    m_pContext->RHIContextInstance().EndRenderPass();
+    m_eCurRenderStage = RenderStage::None;
+    m_pRenderSceneFB->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, RHIFrameBuffer::LoadAction::Load);
+    m_pRenderSceneFB->SetDepthLoadOption(RHIFrameBuffer::LoadAction::Load);
+    return RRV_NextJob;
+}
+RendererReturnValue ForwardShadingRenderer::RenderGpuDrivenJob()
+{
+    m_eCurRenderStage = RenderStage::RenderScene;
+    m_pContext->RHIContextInstance().BeginRenderPass({"RenderGpuDriven", m_pRenderSceneFB.get()});
+    GpuCullingManager& cullingMgr = m_pContext->GpuCullingManagerInstance();
+    cullingMgr.ExecuteIndirectDraws();
     m_pContext->RHIContextInstance().EndRenderPass();
     m_eCurRenderStage = RenderStage::None;
     m_pRenderSceneFB->SetColorLoadOption(RHIFrameBuffer::Attachment::Color0, RHIFrameBuffer::LoadAction::Load);
