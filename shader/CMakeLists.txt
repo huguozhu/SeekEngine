@@ -87,8 +87,9 @@ set(shader_sources_files
 
 ################## shader_target_platform ##################
 set(shader_target_platform "hlsl")
+set(shader_target_platform_spirv "spirv")
 
-message(STATUS "generated target platform: ${shader_target_platform}")
+message(STATUS "generated target platform: ${shader_target_platform} ${shader_target_platform_spirv}")
 
 if(NOT DEFINED ShaderCompiler_bin)
     message(FATAL_ERROR "ShaderCompiler_bin not defined")
@@ -99,10 +100,20 @@ endif()
 # 用单一 CMake 脚本顺序调用，彻底避免并行冲突
 set(SHADER_BUILD_SCRIPT "${CMAKE_CURRENT_LIST_DIR}/build_shaders.cmake")
 set(SHADER_STAMP_FILE "${SEEK_GENERATED_TAG_DIR}/.shaders_complete${SHADER_TAG_FILE_SUFFIX}")
+set(SHADER_SPIRV_STAMP_FILE "${SEEK_GENERATED_TAG_DIR}/.shaders_spirv_complete${SHADER_TAG_FILE_SUFFIX}")
 
+# HLSL 着色器编译
 add_custom_command(
     OUTPUT ${SHADER_STAMP_FILE}
     COMMAND ${CMAKE_COMMAND} -P "${SHADER_BUILD_SCRIPT}" "${ShaderCompiler_bin}" "${shader_target_platform}" "${SEEK_SHADER_SOURCE_DIR}" "${SHADER_STAMP_FILE}"
+    DEPENDS ${shader_sources_files} ${shader_header_files} ${shader_shared_files}
+    WORKING_DIRECTORY ${SEEK_SHADER_SOURCE_DIR}
+)
+
+# SPIR-V 着色器编译（用于 Vulkan 后端）
+add_custom_command(
+    OUTPUT ${SHADER_SPIRV_STAMP_FILE}
+    COMMAND ${CMAKE_COMMAND} -P "${SHADER_BUILD_SCRIPT}" "${ShaderCompiler_bin}" "${shader_target_platform_spirv}" "${SEEK_SHADER_SOURCE_DIR}" "${SHADER_SPIRV_STAMP_FILE}"
     DEPENDS ${shader_sources_files} ${shader_header_files} ${shader_shared_files}
     WORKING_DIRECTORY ${SEEK_SHADER_SOURCE_DIR}
 )
@@ -119,7 +130,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/CMakeLists.generate_header.cmake)
 
 # interface for engine
 add_custom_target(GenerateShaders
-    DEPENDS ${SHADER_STAMP_FILE}
+    DEPENDS ${SHADER_STAMP_FILE} ${SHADER_SPIRV_STAMP_FILE}
     SOURCES ${shader_shared_files} ${shader_header_files} ${shader_sources_files}
 )
 add_dependencies(GenerateShaders ShaderCompiler)

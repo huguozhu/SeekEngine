@@ -11,6 +11,7 @@ create_directory(${SEEK_GENERATED_TAG_DIR}/${SHADER_COMPILE_FILE_SUFFIX})
 create_directory(${SEEK_GENERATED_TAG_DIR}/${SHADER_DEPEND_FILE_SUFFIX})
 
 create_directory(${SEEK_GENERATED_SHADER_DIR}/hlsl)
+create_directory(${SEEK_GENERATED_SHADER_DIR}/spirv)
 if (SEEK_SHADER_GENERATE_DEBUG)
     create_directory(${SEEK_GENERATED_SHADER_DIR}/hlsl${SHADER_DEBUG_DIR_SUFFIX})
 endif()
@@ -36,8 +37,13 @@ string(APPEND GENERATED_SHADER_CONTENT_PART1 "#include \"${SEEK_GENERATED_SHADER
 string(APPEND GENERATED_SHADER_CONTENT_PART2 "FUNC_QueryShaderCodeContent(hlsl,)\n")
 string(APPEND GENERATED_SHADER_CONTENT_PART1 "#include \"${SEEK_GENERATED_SHADER_DIR}/hlsl/${GENERATED_SHADER_REFLECT_CONTENT_FILE}\"\n")
 string(APPEND GENERATED_SHADER_CONTENT_PART2 "FUNC_QueryShaderReflectContent(hlsl,)\n")
-string(APPEND GENERATED_SHADER_CONTENT_PART3 "    QueryShaderCodeContent_Member(hlsl,)\n")
-string(APPEND GENERATED_SHADER_CONTENT_PART5 "    QueryShaderReflectContent_Member(hlsl,)\n")
+# SPIR-V (Vulkan)
+string(APPEND GENERATED_SHADER_CONTENT_PART1 "#include \"${SEEK_GENERATED_SHADER_DIR}/spirv/${GENERATED_SHADER_CODE_CONTENT_FILE}\"\n")
+string(APPEND GENERATED_SHADER_CONTENT_PART2 "FUNC_QueryShaderCodeContent(spriv,)\n")
+string(APPEND GENERATED_SHADER_CONTENT_PART1 "#include \"${SEEK_GENERATED_SHADER_DIR}/spirv/${GENERATED_SHADER_REFLECT_CONTENT_FILE}\"\n")
+string(APPEND GENERATED_SHADER_CONTENT_PART2 "FUNC_QueryShaderReflectContent(spriv,)\n")
+string(APPEND GENERATED_SHADER_CONTENT_PART3 "    QueryShaderCodeContent_Member(hlsl,)\n    QueryShaderCodeContent_Member(spriv,)\n")
+string(APPEND GENERATED_SHADER_CONTENT_PART5 "    QueryShaderReflectContent_Member(hlsl,)\n    QueryShaderReflectContent_Member(spriv,)\n")
 if (SEEK_SHADER_GENERATE_DEBUG)
     string(APPEND GENERATED_SHADER_CONTENT_PART1 "#include \"${SEEK_GENERATED_SHADER_DIR}/hlsl${SHADER_DEBUG_DIR_SUFFIX}/${GENERATED_SHADER_CODE_CONTENT_FILE}\"\n")
     string(APPEND GENERATED_SHADER_CONTENT_PART2 "FUNC_QueryShaderCodeContent(hlsl,${SHADER_DEBUG_DIR_SUFFIX})\n")
@@ -177,4 +183,47 @@ if (SEEK_SHADER_GENERATE_DEBUG)
         ${GENERATED_SHADER_REFLECT_CONTENT_PART2}
     )
 endif()
+
+# GENERATED_SHADER_CODE_CONTENT_FILE (spirv for Vulkan)
+set(GENERATED_SHADER_CODE_SPIRV_PART1 "")
+set(GENERATED_SHADER_CODE_SPIRV_PART2 "static const ShaderContentMap SHADER_CODE_MAP_NAME(spriv,) =\n{\n")
+foreach(single_shader_sources_file ${shader_sources_files})
+    get_filename_component(single_shader_basename ${single_shader_sources_file} NAME_WLE)
+    string(APPEND GENERATED_SHADER_CODE_SPIRV_PART1 "#include \"${single_shader_basename}.h\"\n")
+    string(APPEND GENERATED_SHADER_CODE_SPIRV_PART2 "    SHADER_CODE_MAP_GROUP(${single_shader_basename},spriv,)\n")
+endforeach()
+foreach(multi_output ${multi_entry_output_names})
+    string(APPEND GENERATED_SHADER_CODE_SPIRV_PART1 "#include \"${multi_output}.h\"\n")
+    string(APPEND GENERATED_SHADER_CODE_SPIRV_PART2 "    SHADER_CODE_MAP_GROUP(${multi_output},spriv,)\n")
+endforeach()
+string(APPEND GENERATED_SHADER_CODE_SPIRV_PART2 "}\;\n")
+file(WRITE ${SEEK_GENERATED_SHADER_DIR}/spirv/${GENERATED_SHADER_CODE_CONTENT_FILE}
+    "#pragma once\n"
+    "#include \"shader_content_def.h\"\n"
+    ${GENERATED_SHADER_CODE_SPIRV_PART1}
+    "\n"
+    ${GENERATED_SHADER_CODE_SPIRV_PART2}
+)
+
+# GENERATED_SHADER_REFLECT_CONTENT_FILE (spirv for Vulkan)
+set(GENERATED_SHADER_REFLECT_SPIRV_PART1 "")
+set(GENERATED_SHADER_REFLECT_SPIRV_PART2 "static const ShaderContentMap SHADER_REFLECT_MAP_NAME(spriv,) =\n{\n")
+foreach(single_shader_sources_file ${shader_sources_files})
+    get_filename_component(single_shader_basename ${single_shader_sources_file} NAME_WLE)
+    string(APPEND GENERATED_SHADER_REFLECT_SPIRV_PART1 "#include \"${single_shader_basename}.h\"\n")
+    string(APPEND GENERATED_SHADER_REFLECT_SPIRV_PART2 "    SHADER_REFLECT_MAP_GROUP(${single_shader_basename},spriv,)\n")
+endforeach()
+foreach(multi_output ${multi_entry_output_names})
+    string(APPEND GENERATED_SHADER_REFLECT_SPIRV_PART1 "#include \"${multi_output}.h\"\n")
+    string(APPEND GENERATED_SHADER_REFLECT_SPIRV_PART2 "    SHADER_REFLECT_MAP_GROUP(${multi_output},spriv,)\n")
+endforeach()
+string(APPEND GENERATED_SHADER_REFLECT_SPIRV_PART2 "}\;\n")
+file(WRITE ${SEEK_GENERATED_SHADER_DIR}/spirv/${GENERATED_SHADER_REFLECT_CONTENT_FILE}
+    "#pragma once\n"
+    "#include \"shader_content_def.h\"\n"
+    ${GENERATED_SHADER_REFLECT_SPIRV_PART1}
+    "\n"
+    ${GENERATED_SHADER_REFLECT_SPIRV_PART2}
+)
+
 ###################################### 生成着色器内容头文件 ######################################
