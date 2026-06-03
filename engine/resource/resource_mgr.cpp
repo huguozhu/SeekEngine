@@ -79,8 +79,11 @@ std::string ResourceManager::GetShaderReflectPath(const std::string& shaderName)
 
 const std::string& ResourceManager::GetShaderLanguageStr()
 {
-    static const std::string d3d11_shaderlanguage = "hlsl";
-    return d3d11_shaderlanguage;
+    static const std::string hlsl = "hlsl";
+    static const std::string spriv = "spriv";
+    if (m_pContext && m_pContext->GetRHIType() == RHIType::Vulkan)
+        return spriv;
+    return hlsl;
 }
 
 ResourceManager::ResourceManager(Context* context)
