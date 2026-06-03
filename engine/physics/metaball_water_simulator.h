@@ -18,7 +18,7 @@ public:
 
     void Tick(float delta_time);
 
-    // ÎïÀí²ÎÊı
+    // è®¾ç½®å‚æ•°
     void SetMetaballs(std::vector<Metaball>* balls) { m_pMetaballs = balls; }
     void SetGravity(float gravity) { m_gravity = gravity; }
     void SetDamping(float damping) { m_damping = damping; }
@@ -35,12 +35,12 @@ private:
 private:
     std::vector<Metaball>* m_pMetaballs = nullptr;
 
-    // ÎïÀí²ÎÊı
+    // ç‰©ç†å‚æ•°
     float m_gravity = -1.0f;
     float m_damping = 1.0;
     float m_surfaceTension = 1.5f;
-    float m_fusionThreshold = 1.5f; // ÈÚºÏ¾àÀëãĞÖµ
-	float m_CollisionDamping = 1.0f; // Åö×²·´µ¯×èÄáÏµÊı(=1.0:ÎŞ×èÄá)
+    float m_fusionThreshold = 1.5f; // èåˆè·ç¦»é˜ˆå€¼
+	float m_CollisionDamping = 1.0f; // ç¢°æ’é˜»å°¼ç³»æ•°(=1.0:å®Œå…¨å¼¹æ€§)
 
     float3 m_boundaryMin = { -3.0f, -3.0f, -3.0f };
     float3 m_boundaryMax = { 3.0f, 3.0f, 3.0f };

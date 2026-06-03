@@ -15,7 +15,7 @@ MetaballWaterSimulator::~MetaballWaterSimulator()
 void MetaballWaterSimulator::Tick(float delta_time)
 {
     if (delta_time > 0.03)
-		delta_time = 0.03f; // ·ÀÖ¹´óÊ±¼ä²½³¤µ¼ÖÂµÄÊıÖµ²»ÎÈ¶¨
+		delta_time = 0.03f; // é˜²æ­¢å¤§æ—¶é—´æ­¥é•¿å¯¼è‡´çš„æ•°å€¼ä¸ç¨³å®š
 
     if (!m_pMetaballs)
         return;
@@ -28,19 +28,19 @@ void MetaballWaterSimulator::ApplyPhysics(float delta_time)
 {
     for (auto& ball : *m_pMetaballs)
     {
-        // Ó¦ÓÃÖØÁ¦
+        // åº”ç”¨é‡åŠ›
         ball.velocity.y() += m_gravity * delta_time;
 
-        // Ó¦ÓÃ×èÄá
+        // åº”ç”¨é˜»å°¼
         ball.velocity.x() *= m_damping;
         ball.velocity.z() *= m_damping;
 
-        // ¸üĞÂÎ»ÖÃ
+        // æ›´æ–°ä½ç½®
         ball.position.x() += ball.velocity.x() * delta_time;
         ball.position.y() += ball.velocity.y() * delta_time;
         ball.position.z() += ball.velocity.z() * delta_time;
 
-        // Metaball Ö®¼äµÄÅÅ³âÁ¦£¨Ä£Äâ±íÃæÕÅÁ¦£©
+        // Metaball ä¹‹é—´çš„æ’æ–¥åŠ›ï¼ˆæ¨¡æ‹Ÿè¡¨é¢å¼ åŠ›ï¼‰
         for (auto& other : *m_pMetaballs)
         {
             if (&ball != &other)
@@ -62,7 +62,7 @@ float3 MetaballWaterSimulator::CalculateRepulsionForce(const Metaball& a, const 
     float3 delta = posA - posB;
     float distance = Math::Distance(posA, posB);
 
-    // Èç¹û¾àÀëÌ«Ğ¡£¬¼ÆËãÅÅ³âÁ¦
+    // å¦‚æœè·ç¦»å¤ªè¿‘ï¼Œè®¡ç®—æ’æ–¥åŠ›
     float minDistance = a.radius + b.radius;
     if (distance < minDistance * 1.5f && distance > 0.001f)
     {
@@ -77,7 +77,7 @@ void MetaballWaterSimulator::HandleCollisions()
 {
     for (auto& ball : *m_pMetaballs)
     {
-        // ±ß½çÅö×²
+        // è¾¹ç•Œç¢°æ’
         if (ball.position.x() - ball.radius < m_boundaryMin.x())
         {
             ball.position.x() = m_boundaryMin.x() + ball.radius;
@@ -94,7 +94,7 @@ void MetaballWaterSimulator::HandleCollisions()
             ball.position.y() = m_boundaryMin.y() + ball.radius;
             ball.velocity.y() = -ball.velocity.y() * m_CollisionDamping;
 
-            //ball.velocity.x() *= 0.9; // µØÃæÄ¦²Á
+            //ball.velocity.x() *= 0.9; // åœ°é¢æ‘©æ“¦
             //ball.velocity.z() *= 0.9;
         }
         else if (ball.position.y() + ball.radius > m_boundaryMax.y())
@@ -133,11 +133,11 @@ void MetaballWaterSimulator::HandleMetaballFusion()
 
             if (distance < fusionDistance)
             {
-                // ÈÚºÏÁ½¸ö Metaball - ´´½¨¸ü´óµÄÇò
+            // èåˆä¸¤ä¸ª Metaball â€” è´¨é‡åŠ æƒåˆå¹¶
                 Metaball newBall;
                 newBall.radius = sqrtf(ball1.radius * ball1.radius + ball2.radius * ball2.radius);
 
-                // ÖÊÁ¿¼ÓÈ¨Æ½¾ùÎ»ÖÃ
+            // è´¨é‡åŠ æƒå¹³å‡ä½ç½®
                 float mass1 = ball1.radius * ball1.radius;
                 float mass2 = ball2.radius * ball2.radius;
                 float totalMass = mass1 + mass2;
@@ -146,19 +146,19 @@ void MetaballWaterSimulator::HandleMetaballFusion()
 
                 newBall.position = newPos;
 
-                // ¶¯Á¿ÊØºã
+            // åŠ¨é‡å®ˆæ’
                 float3 newVel = (ball1.velocity * mass1 / totalMass) +(ball2.velocity * mass2 / totalMass);
                 newBall.velocity = newVel;
 
                 newBall.intensity = 1.0f;
 
-                // ÒÆ³ı¾ÉÇò£¬Ìí¼ÓĞÂÇò
+            // ç§»é™¤åŸæœ‰å°çƒï¼ŒåŠ å…¥æ–°çƒ
 
                 (*m_pMetaballs).erase((*m_pMetaballs).begin() + j);
                 (*m_pMetaballs).erase((*m_pMetaballs).begin() + i);
                 (*m_pMetaballs).push_back(newBall);
 
-                return; // Ò»´ÎÖ»´¦ÀíÒ»¶ÔÈÚºÏ
+            return; // ä¸€å¸§åªå¤„ç†ä¸€æ¬¡èåˆ
             }
         }
     }

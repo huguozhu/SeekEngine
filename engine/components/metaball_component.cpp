@@ -57,7 +57,7 @@ void Metaball2DComponent::InitRandomBall(uint32_t init_count)
         Metaball ball;
         ball.position = {
             posDist(gen)+100,
-            posDist(gen), // ���Ϸ���ʼ
+        posDist(gen), // 从上方初始
             0
         };
         ball.radius = radiusDist(gen);

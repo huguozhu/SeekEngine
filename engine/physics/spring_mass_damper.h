@@ -12,9 +12,9 @@ class SpringMassDamper
 public:
     SpringMassDamper(double mass, double damping, double stiffness, double3 center, double3 x0, double3 v0);
 
-    // ¼ÆËãÔÚÊ±¼ätÊ±µÄÎ»ÒÆ
+    // è®¡ç®—åœ¨æ—¶é—´ t æ—¶çš„ä½ç§»
     double3 CalculatePosition(double t);
-    // ¼ÆËãÔÚÊ±¼ätÊ±µÄËÙ¶È
+    // è®¡ç®—åœ¨æ—¶é—´ t æ—¶çš„é€Ÿåº¦
     double3 CalculateVelocity(double t);
 
     void Tick(double delta_time);
@@ -26,56 +26,56 @@ public:
     double GetNaturalFrequency() const { return m_OmegaN; }
 
     double CalculateAdaptiveTimeStep() {
-        // »ùÓÚÏµÍ³¶¯Á¦Ñ§ÌØÕ÷Ê±¼ä³ß¶È
+        // åŸºäºç³»ç»ŸåŠ¨åŠ›å­¦ä¼°è®¡æ—¶é—´å°ºåº¦
         double characteristic_time = 1.0 / this->GetNaturalFrequency();
 
-        // Ê±¼ä²½³¤Ó¦ÎªÌØÕ÷Ê±¼äµÄ 1/10 µ½ 1/100
+        // æ—¶é—´æ­¥é•¿åº”ä¸ºç‰¹å¾æ—¶é—´çš„ 1/10 åˆ° 1/100
         return characteristic_time / 50.0;
     }
 
 
 private:
-    // Ç·×èÄáÎ»ÒÆ¼ÆËã
+    // æ¬ é˜»å°¼ä½ç§»è®¡ç®—
     double3 UnderdampedPosition(double t);
-	// Ç·×èÄáËÙ¶È¼ÆËã(¾«È·¼ÆËã)
+	// æ¬ é˜»å°¼ä½ç§»è®¡ç®—(ç²¾ç¡®æ–¹æ³•)
     double3 UnderdampedPosition_Exact(double t);
-    // Ç·×èÄáËÙ¶È¼ÆËã
+    // æ¬ é˜»å°¼é€Ÿåº¦è®¡ç®—
     double3 UnderdampedVelocity(double t);
 
-    // ÁÙ½ç×èÄáÎ»ÒÆ¼ÆËã
+    // ä¸´ç•Œé˜»å°¼ä½ç§»è®¡ç®—
     double3 CriticallyDampedPosition(double t);
-    // ÁÙ½ç×èÄáËÙ¶È¼ÆËã
+    // ä¸´ç•Œé˜»å°¼é€Ÿåº¦è®¡ç®—
     double3 CriticallyDampedVelocity(double t);
 
-    // ¹ı×èÄáÎ»ÒÆ¼ÆËã
+    // è¿‡é˜»å°¼ä½ç§»è®¡ç®—
     double3 OverdampedPosition(double t);
-    // ¹ı×èÄáËÙ¶È¼ÆËã
+    // è¿‡é˜»å°¼é€Ÿåº¦è®¡ç®—
     double3 OverdampedVelocity(double t);
 
 private:
-	// ÊäÈë²ÎÊı
-	double m_mass;      // ÖÊÁ¿,µ¥Î»£ºkg Ç§¿Ë
-	double m_damping;   // ×èÄáÏµÊı,µ¥Î»£ºN¡¤s/m Å£¶Ù¡¤Ãë/Ã×
-	double m_stiffness; // µ¯»É¸Õ¶È,µ¥Î»£ºN/m Å£¶Ù/Ã×
-    double3 m_center;   // µ¯»ÉÖĞĞÄ
-    double3 m_x0;   // ³õÊ¼Î»ÒÆ
-    double3 m_v0;   // ³õÊ¼ËÙ¶È
+	// ç‰©ç†å‚æ•°
+		double m_mass;      // è´¨é‡, å•ä½: kg åƒå…‹
+		double m_damping;   // é˜»å°¼ç³»æ•°, å•ä½: NÂ·s/m ç‰›é¡¿Â·ç§’/ç±³
+		double m_stiffness; // å¼¹ç°§åˆšåº¦, å•ä½: N/m ç‰›é¡¿/ç±³
+    double3 m_center;   // å¼¹ç°§ä¸­å¿ƒä½ç½®
+    double3 m_x0;   // åˆå§‹ä½ç½®
+    double3 m_v0;   // åˆå§‹é€Ÿåº¦
 
 
-    // ¼ÆËãµÃµ½µÄ²ÎÊı
-    double m_OmegaN; // ÎŞ×èÄá×ÔÈ»ÆµÂÊ, µ¥Î»£ºrad/s  »¡¶È/Ãë
+    // æ´¾ç”Ÿå¾—åˆ°çš„å‚æ•°
+    double m_OmegaN; // æ— é˜»å°¼è‡ªç„¶é¢‘ç‡, å•ä½: rad/s å¼§åº¦/ç§’
     /*
-     * ×èÄá±È:
-	 *      [0, 1): Ç·×èÄá, ÏµÍ³»á·¢ÉúÕñµ´£¬Õñ·ùÖğ½¥¼õĞ¡Ö±ÖÁÍ£Ö¹
-	 *       = 1:   ÁÙ½ç×èÄá, ÏµÍ³ÔÚ×î¶ÌÊ±¼äÄÚ·µ»ØÆ½ºâÎ»ÖÃ£¬²»·¢ÉúÕñµ´
-	 *       > 1:   ¹ı×èÄá, ÏµÍ³·µ»ØÆ½ºâÎ»ÖÃµÄËÙ¶È½ÏÂı£¬²»·¢ÉúÕñµ´
+     * é˜»å°¼æ¯”:
+		 *      [0, 1): æ¬ é˜»å°¼, ç³»ç»Ÿä¼šå‘ç”ŸæŒ¯è¡ï¼ŒæŒ¯å¹…é€æ¸å‡å°ç›´è‡³åœæ­¢
+		 *       = 1:   ä¸´ç•Œé˜»å°¼, ç³»ç»Ÿä»¥æœ€å¿«æ—¶é—´è¿”å›å¹³è¡¡ä½ç½®ï¼Œä¸æŒ¯è¡
+		 *       > 1:   è¿‡é˜»å°¼, ç³»ç»Ÿè¿”å›å¹³è¡¡ä½ç½®çš„é€Ÿåº¦è¾ƒæ…¢ï¼Œä¸æŒ¯è¡
      */
 	double m_Zeta;
 
-    // ¾«È·µÄÈı½Çº¯Êı¼ÆËã£¨´¦Àí´ó½Ç¶È£©
+    // ç²¾ç¡®ä¸‰è§’å‡½æ•°è®¡ç®—ï¼ˆé¿å…è§’åº¦ç´¯ç§¯è¯¯å·®ï¼‰
     void PreciseCosSin(double angle, double& cos_val, double& sin_val) const;
 
-    // ÅĞ¶Ï×èÄáÀàĞÍ
+    // åˆ¤æ–­é˜»å°¼ç±»å‹
     bool IsUnderdamped() const { return m_Zeta < 1.0 - Math::FOLAT_EPSILON; }
     bool IsCriticallyDamped() const { return std::abs(m_Zeta - 1.0) < Math::FOLAT_EPSILON; }
     bool IsOverdamped() const { return m_Zeta > 1.0 + Math::FOLAT_EPSILON; }

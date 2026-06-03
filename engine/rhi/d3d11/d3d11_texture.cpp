@@ -362,14 +362,14 @@ ID3D11UnorderedAccessViewPtr const& D3D11Texture::GetD3DUav(PixelFormat pf, uint
     }
 }
 
-/*
-D3D11_USAGE	            CPU¶Á	CPUÐ´	GPU¶Á	GPUÐ´
-D3D11_USAGE_DEFAULT 			        ¡Ì	    ¡Ì
-D3D11_USAGE_IMMUTABLE			        ¡Ì
-D3D11_USAGE_DYNAMIC	    	    ¡Ì	    ¡Ì
-D3D11_USAGE_STAGING	    ¡Ì	    ¡Ì	    ¡Ì	    ¡Ì
-D3D11_USAGE_STAGING: ÔòÍêÈ«ÔÊÐíÔÚCPUºÍGPUÖ®¼äµÄÊý¾Ý´«Êä£¬µ«ËüÖ»ÄÜ×÷ÎªÒ»¸öÀàËÆÖÐ×ªÕ¾µÄ×ÊÔ´£¬¶ø²»ÄÜ°ó¶¨µ½äÖÈ¾¹ÜÏßÉÏ£¬¼´ÄãÒ²²»ÄÜÓÃ¸ÃÎÆÀíÉú³Émipmaps
-*/
+	/*
+	D3D11_USAGE	            CPUè¯»	CPUå†™	GPUè¯»	GPUå†™
+	D3D11_USAGE_DEFAULT 			        æ˜¯	    æ˜¯
+	D3D11_USAGE_IMMUTABLE			        æ˜¯
+	D3D11_USAGE_DYNAMIC	        æ˜¯	    æ˜¯
+	D3D11_USAGE_STAGING	    æ˜¯	    æ˜¯	    æ˜¯	    æ˜¯
+	D3D11_USAGE_STAGING: å®Œå…¨ç”¨äºŽCPUä¸ŽGPUä¹‹é—´çš„æ•°æ®ä¼ è¾“ï¼Œåªèƒ½ä½œä¸ºä¸€ä¸ªæ•°æ®ä¸­è½¬ç«™ï¼Œèµ„æºæœ¬èº«ä¸èƒ½ç»‘å®šåˆ°æ¸²æŸ“ç®¡çº¿ä¸Šï¼Œè€Œä¸”ä¹Ÿä¸èƒ½ç”¨è¯¥æ ¼å¼ç”Ÿæˆmipmaps
+	*/
 void D3D11Texture::FillD3DTextureFlags(D3D11_USAGE& usage, UINT& bind_flags, UINT& cpu_access_flags, UINT& misc_flags)
 {
     bool cpu_read       = m_desc.flags & RESOURCE_FLAG_CPU_READ;
