@@ -27,10 +27,11 @@
 SEEK_NAMESPACE_BEGIN
 
 // ============================================================================
-// 闈欐€佸彉閲?鈥?Vulkan 鍔ㄦ€佸姞杞?// ============================================================================
+// 静态变量 — Vulkan 动态加载
+// ============================================================================
 static DllLoader s_vulkan("vulkan-1.dll");
 
-// 璋冭瘯鍥炶皟
+// 调试回调
 static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
     VkDebugUtilsMessageSeverityFlagBitsEXT severity,
     VkDebugUtilsMessageTypeFlagsEXT type,
@@ -46,7 +47,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
 }
 
 // ============================================================================
-// VkContext 鏋勯€?鏋愭瀯
+// VkContext 构造/析构
 // ============================================================================
 VkContext::VkContext(Context* context)
     : RHIContext(context)
@@ -59,11 +60,11 @@ VkContext::~VkContext()
 }
 
 // ============================================================================
-// Vulkan Instance 鍒涘缓
+// Vulkan Instance 创建
 // ============================================================================
 bool VkContext::CreateVulkanInstance()
 {
-    // 妫€鏌?Vulkan API 鐗堟湰
+    // 检查 Vulkan API 版本
     uint32_t apiVersion = VK_API_VERSION_1_3;
     {
         uint32_t supportedVersion;
@@ -88,7 +89,7 @@ bool VkContext::CreateVulkanInstance()
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = apiVersion;
 
-    // 鏀堕泦闇€瑕佺殑鎵╁睍
+    // 收集需要的扩展
     std::vector<const char*> extensions;
     extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
     extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
@@ -96,7 +97,8 @@ bool VkContext::CreateVulkanInstance()
     {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
-    // Vulkan 1.2+ portability enumeration 鍦ㄦ煇浜涘钩鍙帮紙濡?MoltenVK锛夐渶瑕?    // 涓嶅仛寮哄埗瑕佹眰锛屽厛鏌ユ槸鍚︽敮鎸?    extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+    // Vulkan 1.2+ portability 枚举在某些平台（如 MoltenVK）需要，先查询是否支持
+    extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
     VkInstanceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -108,7 +110,7 @@ bool VkContext::CreateVulkanInstance()
     const char* validationLayer = "VK_LAYER_KHRONOS_validation";
     if (m_bEnableDebug)
     {
-        // 妫€鏌?validation layer 鏄惁鍙敤
+        // 检查 validation layer 是否可用
         uint32_t layerCount;
         vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
         std::vector<VkLayerProperties> availableLayers(layerCount);
@@ -141,7 +143,7 @@ bool VkContext::CreateVulkanInstance()
         return false;
     }
 
-    // 璁剧疆璋冭瘯鍥炶皟
+    // 设置调试回调
     if (m_bEnableDebug)
     {
         SetupValidationLayers();
@@ -172,10 +174,11 @@ void VkContext::SetupValidationLayers()
 }
 
 // ============================================================================
-// Vulkan Device 鍒涘缓锛堥€夋嫨鐗╃悊璁惧銆佸垱寤洪€昏緫璁惧锛?// ============================================================================
+// Vulkan Device 创建（选择物理设备、创建逻辑设备）
+// ============================================================================
 bool VkContext::CreateVulkanDevice()
 {
-    // 鏋氫妇鐗╃悊璁惧
+    // 枚举物理设备
     uint32_t deviceCount = 0;
     vkEnumeratePhysicalDevices(m_vkInstance, &deviceCount, nullptr);
     if (deviceCount == 0)
@@ -187,18 +190,20 @@ bool VkContext::CreateVulkanDevice()
     std::vector<VkPhysicalDevice> devices(deviceCount);
     vkEnumeratePhysicalDevices(m_vkInstance, &deviceCount, devices.data());
 
-    // 鏍规嵁 m_pContext->GetPreferredAdapter() 閫夋嫨璁惧
+    // 根据 m_pContext->GetPreferredAdapter() 选择设备
     int32_t preferredIndex = m_pContext->GetPreferredAdapter();
     if (preferredIndex < 0 || preferredIndex >= static_cast<int32_t>(deviceCount))
         preferredIndex = 0;
 
     m_vkPhysicalDevice = devices[preferredIndex];
 
-    // 鑾峰彇璁惧灞炴€?    VkPhysicalDeviceProperties deviceProps;
+    // 获取设备属性
+    VkPhysicalDeviceProperties deviceProps;
     vkGetPhysicalDeviceProperties(m_vkPhysicalDevice, &deviceProps);
     LOG_INFO("Selected Vulkan GPU: %s", deviceProps.deviceName);
 
-    // 鏌ユ壘闃熷垪鏃?    uint32_t queueFamilyCount = 0;
+    // 查找队列族
+    uint32_t queueFamilyCount = 0;
     vkGetPhysicalDeviceQueueFamilyProperties(m_vkPhysicalDevice, &queueFamilyCount, nullptr);
     std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
     vkGetPhysicalDeviceQueueFamilyProperties(m_vkPhysicalDevice, &queueFamilyCount, queueFamilies.data());
@@ -216,17 +221,17 @@ bool VkContext::CreateVulkanDevice()
         }
         if (queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
         {
-            // 浼樺厛閫夋嫨浠?compute 鐨勯槦鍒楁棌
+            // 优先选择支持 compute 的队列族
             if (m_uComputeQueueFamily == UINT32_MAX || !(queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT))
                 m_uComputeQueueFamily = i;
         }
     }
 
-    // 濡傛灉娌℃壘鍒扮嫭绔嬬殑 compute 闃熷垪锛屽鐢?graphics 闃熷垪
+    // 如果没找到独立的 compute 队列，复用 graphics 队列
     if (m_uComputeQueueFamily == UINT32_MAX)
         m_uComputeQueueFamily = m_uGraphicsQueueFamily;
 
-    // Present 鏀寔锛堝欢杩熸鏌?鈥?闇€瑕?surface锛屽湪 AttachNativeWindow 涓鐞嗭級
+    // Present 支持（延迟检测 — 需要 surface，在 AttachNativeWindow 中处理）
 
     if (m_uGraphicsQueueFamily == UINT32_MAX)
     {
@@ -234,7 +239,7 @@ bool VkContext::CreateVulkanDevice()
         return false;
     }
 
-    // 鍒涘缓閫昏緫璁惧
+    // 创建逻辑设备
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
     float queuePriority = 1.0f;
 
@@ -245,7 +250,8 @@ bool VkContext::CreateVulkanDevice()
     gfxQueueInfo.pQueuePriorities = &queuePriority;
     queueCreateInfos.push_back(gfxQueueInfo);
 
-    // 濡傛灉 compute 闃熷垪鏃忎笌 graphics 涓嶅悓锛屽崟鐙垱寤?    if (m_uComputeQueueFamily != m_uGraphicsQueueFamily)
+    // 如果 compute 队列族与 graphics 不同，单独创建
+    if (m_uComputeQueueFamily != m_uGraphicsQueueFamily)
     {
         VkDeviceQueueCreateInfo compQueueInfo = {};
         compQueueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -255,7 +261,7 @@ bool VkContext::CreateVulkanDevice()
         queueCreateInfos.push_back(compQueueInfo);
     }
 
-    // 璁惧鎵╁睍
+    // 设备扩展
     std::vector<const char*> deviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
     };
@@ -264,7 +270,8 @@ bool VkContext::CreateVulkanDevice()
         deviceExtensions.push_back(VK_KHR_DYNAMIC_RENDERING_EXTENSION_NAME);
     }
 
-    // Vulkan 1.2/1.3 鐗规€?    VkPhysicalDeviceVulkan12Features features12 = {};
+    // Vulkan 1.2/1.3 特性
+    VkPhysicalDeviceVulkan12Features features12 = {};
     features12.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
     features12.bufferDeviceAddress = VK_TRUE;
     features12.descriptorIndexing = VK_TRUE;
@@ -302,11 +309,11 @@ bool VkContext::CreateVulkanDevice()
         return false;
     }
 
-    // 鑾峰彇闃熷垪鍙ユ焺
+    // 获取队列句柄
     vkGetDeviceQueue(m_vkDevice, m_uGraphicsQueueFamily, 0, &m_vkGraphicsQueue);
     vkGetDeviceQueue(m_vkDevice, m_uComputeQueueFamily, 0, &m_vkComputeQueue);
 
-    // 鍒涘缓 VMA Allocator
+    // 创建 VMA Allocator
     VmaAllocatorCreateInfo allocatorInfo = {};
     allocatorInfo.physicalDevice = m_vkPhysicalDevice;
     allocatorInfo.device = m_vkDevice;
@@ -339,7 +346,8 @@ SResult VkContext::Init()
     if (!CreateVulkanDevice())
         return ERR_SYSTEM_ERROR;
 
-    // 鍒涘缓鍛戒护姹?    VkCommandPoolCreateInfo poolInfo = {};
+    // 创建命令池
+    VkCommandPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
     poolInfo.queueFamilyIndex = m_uGraphicsQueueFamily;
     poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
@@ -350,12 +358,12 @@ SResult VkContext::Init()
         return ERR_SYSTEM_ERROR;
     }
 
-    // 鍒涘缓 Pipeline Cache
+    // 创建 Pipeline Cache
     VkPipelineCacheCreateInfo cacheInfo = {};
     cacheInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_CACHE_CREATE_INFO;
     vkCreatePipelineCache(m_vkDevice, &cacheInfo, nullptr, &m_vkPipelineCache);
 
-    // 鍒涘缓鍏ㄥ眬 descriptor pool
+    // 创建全局 descriptor pool
     VkDescriptorPoolSize poolSizes[] = {
         { VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER,         1024 },
         { VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,         1024 },
@@ -377,7 +385,7 @@ SResult VkContext::Init()
         return ERR_SYSTEM_ERROR;
     }
 
-    // 鍒涘缓 per-frame 璧勬簮
+    // 创建 per-frame 资源
     for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         VkCommandPoolCreateInfo cmdPoolInfo = {};
@@ -422,13 +430,13 @@ SResult VkContext::Init()
 
 void VkContext::Uninit()
 {
-    // 绛夊緟璁惧绌洪棽
+    // 等待设备空闲
     if (m_vkDevice != VK_NULL_HANDLE)
     {
         vkDeviceWaitIdle(m_vkDevice);
     }
 
-    // 娓呯悊 per-frame 璧勬簮
+    // 清理 per-frame 资源
     for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
         if (m_perFrame[i].fence != VK_NULL_HANDLE)
@@ -441,11 +449,11 @@ void VkContext::Uninit()
             vkDestroyCommandPool(m_vkDevice, m_perFrame[i].commandPool, nullptr);
     }
 
-    // 娓呯悊缂撳瓨
+    // 清理缓存
     m_Samplers.clear();
     m_RenderStates.clear();
 
-    // 娓呯悊鍏叡璧勬簮
+    // 清理公共资源
     if (m_vkDescriptorPool != VK_NULL_HANDLE)
         vkDestroyDescriptorPool(m_vkDevice, m_vkDescriptorPool, nullptr);
     if (m_vkPipelineCache != VK_NULL_HANDLE)
@@ -453,15 +461,15 @@ void VkContext::Uninit()
     if (m_vkCommandPool != VK_NULL_HANDLE)
         vkDestroyCommandPool(m_vkDevice, m_vkCommandPool, nullptr);
 
-    // 娓呯悊 VMA
+    // 清理 VMA
     if (m_vmaAllocator != VK_NULL_HANDLE)
         vmaDestroyAllocator(m_vmaAllocator);
 
-    // 娓呯悊璁惧
+    // 清理设备
     if (m_vkDevice != VK_NULL_HANDLE)
         vkDestroyDevice(m_vkDevice, nullptr);
 
-    // 娓呯悊璋冭瘯
+    // 清理调试
     if (m_vkDebugMessenger != VK_NULL_HANDLE && m_vkInstance != VK_NULL_HANDLE)
     {
         auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_vkInstance, "vkDestroyDebugUtilsMessengerEXT");
@@ -474,12 +482,14 @@ void VkContext::Uninit()
 }
 
 // ============================================================================
-// 鑳藉姏妫€娴?// ============================================================================
+// 能力检测
+// ============================================================================
 SResult VkContext::CheckCapabilitySetSupport()
 {
     CapabilitySet& cap = m_CapabilitySet;
 
-    // MSAA 閲囨牱鏁版敮鎸佹娴?    VkPhysicalDeviceProperties props;
+    // MSAA 采样数支持检测
+    VkPhysicalDeviceProperties props;
     vkGetPhysicalDeviceProperties(m_vkPhysicalDevice, &props);
 
     VkSampleCountFlags supportedSamples =
@@ -491,10 +501,12 @@ SResult VkContext::CheckCapabilitySetSupport()
         cap.TextureSampleCountSupport[i] = (supportedSamples & (1 << (i - 1))) != 0 || i <= 1;
     }
 
-    // 鏈€澶?RenderTarget 鏁?    cap.maxRenderTargetCount = static_cast<uint8_t>(
+    // 最大 RenderTarget 数目
+    cap.maxRenderTargetCount = static_cast<uint8_t>(
         std::min(props.limits.maxColorAttachments, 8u));
 
-    // 绾圭悊鏍煎紡鏀寔妫€娴?    for (uint32_t fmt = 0; fmt < to_underlying(PixelFormat::Num); fmt++)
+    // 纹理格式支持检测
+    for (uint32_t fmt = 0; fmt < to_underlying(PixelFormat::Num); fmt++)
     {
         VkFormat vkFmt = VkTranslate::PixelFormatToVkFormat(static_cast<PixelFormat>(fmt));
         if (vkFmt == VK_FORMAT_UNDEFINED)
@@ -517,7 +529,7 @@ SResult VkContext::CheckCapabilitySetSupport()
 }
 
 // ============================================================================
-// AttachNativeWindow 鈥?鍒涘缓 VkWindow
+// AttachNativeWindow — 创建 VkWindow
 // ============================================================================
 SResult VkContext::AttachNativeWindow(std::string const& name, void* native_wnd)
 {
@@ -534,7 +546,7 @@ SResult VkContext::AttachNativeWindow(std::string const& name, void* native_wnd)
 }
 
 // ============================================================================
-// 杈呭姪鍑芥暟 鈥?鍗曟鍛戒护鎻愪氦
+// 辅助函数 — 单次命令提交
 // ============================================================================
 VkCommandBuffer VkContext::BeginSingleTimeCommands()
 {
@@ -572,7 +584,8 @@ void VkContext::EndSingleTimeCommands(VkCommandBuffer cmdBuf)
 
 SResult VkContext::WaitForCommandBuffer(VkCommandBuffer cmdBuf)
 {
-    // 鍚屾绛夊緟锛堢畝鍖栧疄鐜帮紝鐢熶骇鐜搴旂敤 fence 寮傛绛夊緟锛?    vkEndCommandBuffer(cmdBuf);
+    // 同步等待（简化实现，生产环境应用 fence 异步等待）
+    vkEndCommandBuffer(cmdBuf);
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     submitInfo.commandBufferCount = 1;
@@ -583,16 +596,17 @@ SResult VkContext::WaitForCommandBuffer(VkCommandBuffer cmdBuf)
 }
 
 // ============================================================================
-// 娓叉煋寰幆
+// 渲染循环
 // ============================================================================
 SResult VkContext::BeginFrame()
 {
     PerFrameResources& frame = m_perFrame[m_uCurrentFrame];
 
-    // 绛夊緟涓婁竴甯у畬鎴?    vkWaitForFences(m_vkDevice, 1, &frame.fence, VK_TRUE, UINT64_MAX);
+    // 等待上一帧完成
+    vkWaitForFences(m_vkDevice, 1, &frame.fence, VK_TRUE, UINT64_MAX);
     vkResetFences(m_vkDevice, 1, &frame.fence);
 
-    // 鑾峰彇 swapchain image
+    // 获取 swapchain image
     if (m_pCurrentVkFrameBuffer)
     {
         SResult ret = m_pCurrentVkFrameBuffer->AcquireNextImage(
@@ -601,7 +615,8 @@ SResult VkContext::BeginFrame()
             return ret;
     }
 
-    // 寮€濮嬪綍鍒跺懡浠ょ紦鍐?    vkResetCommandBuffer(frame.commandBuffer, 0);
+    // 开始录制命令缓冲
+    vkResetCommandBuffer(frame.commandBuffer, 0);
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
@@ -621,7 +636,7 @@ SResult VkContext::EndFrame()
 
     vkEndCommandBuffer(frame.commandBuffer);
 
-    // 鎻愪氦
+    // 提交
     VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -679,7 +694,7 @@ SResult VkContext::BeginRenderPass(const RenderPassInfo& renderPassInfo)
         colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
         colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         float4 clearColor = m_pContext->GetClearColor();
-        colorAttachment.clearValue.color = { clearColor.x, clearColor.y, clearColor.z, clearColor.w };
+        colorAttachment.clearValue.color = { clearColor.x(), clearColor.y(), clearColor.z(), clearColor.w() };
 
         VkRenderingAttachmentInfo depthAttachment = {};
         depthAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
@@ -701,7 +716,7 @@ SResult VkContext::BeginRenderPass(const RenderPassInfo& renderPassInfo)
     }
     else
     {
-        // 浼犵粺 render pass
+        // 传统 render pass
         VkRenderPassBeginInfo rpBegin = {};
         rpBegin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         rpBegin.renderPass = window->GetVkRenderPass();
@@ -710,7 +725,7 @@ SResult VkContext::BeginRenderPass(const RenderPassInfo& renderPassInfo)
 
         VkClearValue clearValues[2];
         float4 clearColor = m_pContext->GetClearColor();
-        clearValues[0].color = { clearColor.x, clearColor.y, clearColor.z, clearColor.w };
+        clearValues[0].color = { clearColor.x(), clearColor.y(), clearColor.z(), clearColor.w() };
         clearValues[1].depthStencil = { 1.0f, 0 };
 
         rpBegin.clearValueCount = 2;
@@ -719,20 +734,20 @@ SResult VkContext::BeginRenderPass(const RenderPassInfo& renderPassInfo)
         vkCmdBeginRenderPass(cmdBuf, &rpBegin, VK_SUBPASS_CONTENTS_INLINE);
     }
 
-    // 璁剧疆 viewport + scissor
+    // 设置 viewport + scissor
     Viewport const& vp = fb->GetViewport();
     VkViewport viewport = {};
-    viewport.x = vp.x;
-    viewport.y = vp.y + vp.height;
-    viewport.width = vp.width;
-    viewport.height = -vp.height;
+    viewport.x = static_cast<float>(vp.left);
+    viewport.y = static_cast<float>(vp.top + vp.height);
+    viewport.width = static_cast<float>(vp.width);
+    viewport.height = -static_cast<float>(vp.height);
     viewport.minDepth = 0.0f;
     viewport.maxDepth = 1.0f;
     vkCmdSetViewport(cmdBuf, 0, 1, &viewport);
 
     VkRect2D scissor = {};
-    scissor.offset = { (int32_t)vp.x, (int32_t)vp.y };
-    scissor.extent = { (uint32_t)vp.width, (uint32_t)vp.height };
+    scissor.offset = { vp.left, vp.top };
+    scissor.extent = { vp.width, vp.height };
     vkCmdSetScissor(cmdBuf, 0, 1, &scissor);
 
     return S_Success;
@@ -747,14 +762,14 @@ SResult VkContext::Render(RHIProgram* program, RHIMeshPtr const& mesh)
     if (!vkProgram || !vkMesh)
         return ERR_SYSTEM_ERROR;
 
-    // 缁戝畾绠＄嚎
+    // 绑定管线
     VkPipeline pipeline = vkProgram->GetOrCreatePipeline(m_pCurrentVkFrameBuffer, vkMesh->GetVertexInputState(), m_vkPipelineCache);
     if (pipeline == VK_NULL_HANDLE)
         return ERR_SYSTEM_ERROR;
 
     vkCmdBindPipeline(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline);
 
-    // 缁戝畾椤剁偣缂撳啿
+    // 绑定顶点缓冲
     VkDeviceSize offsets[] = { 0 };
     for (uint32_t i = 0; i < vkMesh->GetVertexBufferCount(); i++)
     {
@@ -763,7 +778,7 @@ SResult VkContext::Render(RHIProgram* program, RHIMeshPtr const& mesh)
             vkCmdBindVertexBuffers(cmdBuf, i, 1, &vb, offsets);
     }
 
-    // 缁戝畾绱㈠紩缂撳啿
+    // 绑定索引缓冲
     VkBuffer ib = vkMesh->GetIndexBuffer();
     VkIndexType ibType = vkMesh->GetIndexType();
     if (ib != VK_NULL_HANDLE)
@@ -772,7 +787,7 @@ SResult VkContext::Render(RHIProgram* program, RHIMeshPtr const& mesh)
     // Flush descriptor bindings collected during Commit phase
     FlushBindings(cmdBuf, VK_PIPELINE_BIND_POINT_GRAPHICS);
 
-    // 缁樺埗
+    // 绘制
     if (ib != VK_NULL_HANDLE)
     {
         vkCmdDrawIndexed(cmdBuf, vkMesh->GetIndexCount(), vkMesh->GetInstanceCount(), 0, 0, 0);
@@ -803,7 +818,8 @@ SResult VkContext::EndRenderPass()
 
 void VkContext::BeginComputePass(const ComputePassInfo& computePassInfo)
 {
-    // 璁＄畻閫氶亾璧峰 鈥?Vulkan 涓€氬父鍦ㄥ悓涓€涓?render pass 澶栨墽琛?}
+    // 计算通道起始 — Vulkan 中通常不在 render pass 内执行
+    }
 
 SResult VkContext::Dispatch(RHIProgram* program, uint32_t x, uint32_t y, uint32_t z)
 {
@@ -845,7 +861,7 @@ void VkContext::EndComputePass()
 
 SResult VkContext::DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIGpuBufferPtr indirectBuf, MeshTopologyType type)
 {
-    // 闈炵储寮曢棿鎺ョ粯鍒?鈥?Vulkan 鐗堟湰
+    // 非索引间接绘制 — Vulkan 版本
     VkCommandBuffer cmdBuf = m_perFrame[m_uCurrentFrame].commandBuffer;
     VkProgram* vkProgram = static_cast<VkProgram*>(program);
     if (!vkProgram || !indirectBuf) return ERR_SYSTEM_ERROR;
@@ -908,7 +924,7 @@ SResult VkContext::DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, Mesh
 }
 
 // ============================================================================
-// 绾圭悊鎿嶄綔
+// 纹理操作
 // ============================================================================
 SResult VkContext::CopyTexture(RHITexturePtr tex_src, RHITexturePtr tex_dst)
 {
@@ -917,7 +933,7 @@ SResult VkContext::CopyTexture(RHITexturePtr tex_src, RHITexturePtr tex_dst)
 
 SResult VkContext::CopyTextureRegion(RHITexturePtr tex_src, RHITexturePtr tex_dst, int32_t dst_x, int32_t dst_y, int32_t dst_z)
 {
-    // 绠€鍖栧疄鐜?鈥?閫氳繃 command buffer 杩涜 blit 鎴?copy
+    // 简化实现 — 通过 command buffer 进行 blit 或 copy
     VkCommandBuffer cmdBuf = m_perFrame[m_uCurrentFrame].commandBuffer;
 
     VkTexture2D* srcTex = static_cast<VkTexture2D*>(tex_src.get());
@@ -943,7 +959,7 @@ SResult VkContext::CopyTextureRegion(RHITexturePtr tex_src, RHITexturePtr tex_ds
 }
 
 // ============================================================================
-// 璧勬簮缁戝畾 鈥?寤惰繜鏀堕泦妯″紡
+// 资源绑定 — 延迟收集模式
 // ============================================================================
 void VkContext::BindRHIProgram(RHIProgram* program)
 {

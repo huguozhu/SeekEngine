@@ -13,36 +13,38 @@ class VkWindow;
 class VkRenderState;
 
 // ============================================================================
-// VkProgram 鈥?Vulkan 鐫€鑹插櫒绋嬪簭锛圖escriptorSetLayout + PipelineLayout 绠＄悊锛?// ============================================================================
+// VkProgram — Vulkan 着色器程序（DescriptorSetLayout + PipelineLayout 管理）
+// ============================================================================
 class VkProgram : public RHIProgram
 {
 public:
     VkProgram(Context* context);
     ~VkProgram() override;
 
-    // 鍒涘缓 DescriptorSetLayout 鍜?PipelineLayout
+    // 创建 DescriptorSetLayout 和 PipelineLayout
     SResult Build(VkDevice device);
 
-    // 鑾峰彇鎴栧垱寤?Graphics Pipeline
+    // 获取或创建 Graphics Pipeline
     VkPipeline GetOrCreatePipeline(VkWindow* window, const VkPipelineVertexInputStateCreateInfo* vertexInput, VkPipelineCache pipelineCache);
     VkPipeline GetOrCreatePipeline(VkWindow* window, const VkPipelineVertexInputStateCreateInfo* vertexInput, VkPipelineCache pipelineCache, const RenderStateDesc& renderStateDesc);
     VkPipeline GetOrCreateComputePipeline(VkPipelineCache pipelineCache);
 
-    // 缁戝畾 Descriptor Sets
+    // 绑定 Descriptor Sets
     void BindDescriptorSets(VkCommandBuffer cmdBuf, VkPipelineBindPoint bindPoint);
 
     VkPipelineLayout         GetVkPipelineLayout() const { return m_vkPipelineLayout; }
     VkDescriptorSetLayout    GetVkDescriptorSetLayout() const { return m_vkDescriptorSetLayout; }
     const std::vector<VkDescriptorSet>& GetDescriptorSets() const { return m_vkDescriptorSets; }
 
-    // 鏇存柊 descriptor set锛堢敱 ShaderParamAssignHelper 璋冪敤锛?    void UploadDescriptorSets(VkDevice device, VkDescriptorPool pool);
+    // 更新 descriptor set（由 ShaderParamAssignHelper 调用）
+    void UploadDescriptorSets(VkDevice device, VkDescriptorPool pool);
 
 protected:
     VkPipelineLayout        m_vkPipelineLayout = VK_NULL_HANDLE;
     VkDescriptorSetLayout   m_vkDescriptorSetLayout = VK_NULL_HANDLE;
     std::vector<VkDescriptorSet> m_vkDescriptorSets;
 
-    // 鍚堝苟鎵€鏈?stage 鐨?descriptor bindings
+    // 合并所有 stage 的 descriptor bindings
     struct MergedBinding
     {
         uint32_t            binding;
@@ -52,7 +54,7 @@ protected:
     };
     std::vector<MergedBinding> m_MergedBindings;
 
-    // Graphics pipeline 缂撳瓨
+    // Graphics pipeline 缓存
     std::unordered_map<uint64_t, VkPipeline> m_GraphicsPipelineCache;
     VkPipeline m_vkComputePipeline = VK_NULL_HANDLE;
 

@@ -13,7 +13,7 @@ class VkContext;
 class VkWindow;
 
 // ============================================================================
-// PipelineKey 鈥?VkPipeline 缂撳瓨鐨勯敭
+// PipelineKey — VkPipeline 缓存的键
 // ============================================================================
 struct PipelineKey
 {
@@ -35,14 +35,15 @@ struct PipelineKeyHash
 };
 
 // ============================================================================
-// VkRenderState 鈥?Vulkan 娓叉煋鐘舵€侊紙寤惰繜鍒涘缓 Pipeline锛?// ============================================================================
+// VkRenderState — Vulkan 渲染状态（延迟创建 Pipeline）
+// ============================================================================
 class VkRenderState : public RHIRenderState
 {
 public:
     VkRenderState(Context* context, RenderStateDesc const& desc);
     ~VkRenderState() override;
 
-    // 鍒涘缓 Graphics Pipeline锛堜笉缂撳瓨锛岃皟鐢ㄨ€呰礋璐ｇ鐞嗙敓鍛藉懆鏈燂級
+    // 创建 Graphics Pipeline（不缓存，调用者负责管理生命周期）
     VkPipeline CreateGraphicsPipeline(
         VkDevice device,
         VkPipelineCache pipelineCache,
@@ -59,7 +60,8 @@ public:
 using VkRenderStatePtr = std::shared_ptr<VkRenderState>;
 
 // ============================================================================
-// VkRHISampler 鈥?Vulkan 閲囨牱鍣?// ============================================================================
+// VkRHISampler — Vulkan 采样器
+// ============================================================================
 class VkRHISampler : public RHISampler
 {
 public:

@@ -8,8 +8,18 @@ set(STAMP_FILE "${CMAKE_ARGV6}")
 get_filename_component(TAG_BASE_DIR "${STAMP_FILE}" DIRECTORY)
 get_filename_component(GENERATED_DIR "${TAG_BASE_DIR}" DIRECTORY)
 set(TAG_COMPILE_DIR "${TAG_BASE_DIR}/.compile")
+set(TAG_DEPEND_DIR "${TAG_BASE_DIR}/.depend")
+set(DEPEND_DIR "${GENERATED_DIR}/.depend")
 set(META_DIR "${GENERATED_DIR}/.meta")
 set(TARGET_DIR "${GENERATED_DIR}/${TARGET}")
+
+# 确保所有输出目录存在（configure 时由 generate_header.cmake 创建，
+# 但直接 cmake --build 时可能尚未创建）
+file(MAKE_DIRECTORY "${DEPEND_DIR}")
+file(MAKE_DIRECTORY "${META_DIR}")
+file(MAKE_DIRECTORY "${TAG_COMPILE_DIR}")
+file(MAKE_DIRECTORY "${TAG_DEPEND_DIR}")
+file(MAKE_DIRECTORY "${TARGET_DIR}")
 
 # 辅助函数：验证着色器输出文件是否存在（元信息头 + 目标聚合头）
 function(verify_shader_output name)

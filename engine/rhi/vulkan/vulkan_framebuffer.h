@@ -10,7 +10,8 @@ SEEK_NAMESPACE_BEGIN
 class VkContext;
 
 // ============================================================================
-// VkFrameBuffer 鈥?Vulkan 绂诲睆 FrameBuffer锛堥潪绐楀彛锛?// ============================================================================
+// VkFrameBuffer — Vulkan 离屏 FrameBuffer（非窗口）
+// ============================================================================
 class VkFrameBuffer : public RHIFrameBuffer
 {
 public:

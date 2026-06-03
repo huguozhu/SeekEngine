@@ -63,7 +63,7 @@ SResult VkTexture2D::Create(std::span<BitmapBufferPtr> const& init_datas)
     if (SEEK_CHECKFAILED(ret))
         return ret;
 
-    // 涓婁紶鍒濆鏁版嵁
+    // 上传初始数据
     if (!init_datas.empty() && init_datas[0])
     {
         VkContext* vkCtx = GetVkContext();
@@ -111,7 +111,7 @@ SResult VkTexture2D::Create(std::span<BitmapBufferPtr> const& init_datas)
         }
     }
 
-    // 鍒涘缓榛樿 image view
+    // 创建默认 image view
     VkImageViewCreateInfo viewInfo = {};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     viewInfo.image = m_vkImage;
@@ -213,18 +213,18 @@ void VkTexture2D::TransitionLayout(VkCommandBuffer cmdBuf, VkImageLayout oldLayo
 
 SResult VkTexture2D::Update(std::span<BitmapBufferPtr> const& bitmap_datas)
 {
-    // 绠€鍖栧疄鐜帮細staging buffer 涓婁紶
+    // 简化实现：staging buffer 上传
     if (bitmap_datas.empty() || !bitmap_datas[0]) return S_Success;
     VkContext* vkCtx = GetVkContext();
     VkCommandBuffer cmdBuf = vkCtx->BeginSingleTimeCommands();
-    // 涓婁紶鏁版嵁...
+        // 上传数据...
     vkCtx->EndSingleTimeCommands(cmdBuf);
     return S_Success;
 }
 
 SResult VkTexture2D::DumpSubResource2D(BitmapBufferPtr bitmap_data, uint32_t array_index, uint32_t mip_level, Rect<uint32_t>* rect)
 {
-    // TODO: 浠?GPU 璇诲洖绾圭悊鏁版嵁
+    // TODO: 从 GPU 读回纹理数据
     return S_Success;
 }
 

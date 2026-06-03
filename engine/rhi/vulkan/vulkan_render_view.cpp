@@ -13,8 +13,12 @@ SEEK_NAMESPACE_BEGIN
 // ============================================================================
 VkTexture2DCubeRtv::VkTexture2DCubeRtv(Context* context, RHITexturePtr const& tex,
     uint32_t first_array, uint32_t array_size, uint32_t mip)
-    : RHIRenderTargetView(context, tex, first_array, array_size, mip)
+    : RHIRenderTargetView(context)
 {
+    m_Param.texture = tex;
+    m_Param.first_array_index = first_array;
+    m_Param.num_arrays = array_size;
+    m_Param.mip_level = mip;
     VkTexture2D* vkTex = static_cast<VkTexture2D*>(tex.get());
     VkContext* vkCtx = static_cast<VkContext*>(&context->RHIContextInstance());
 
@@ -40,11 +44,16 @@ VkTexture2DCubeRtv::VkTexture2DCubeRtv(Context* context, RHITexturePtr const& te
 // ============================================================================
 VkTextureCubeFaceRtv::VkTextureCubeFaceRtv(Context* context, RHITexturePtr const& tex,
     uint32_t array_index, CubeFaceType face, uint32_t mip)
-    : RHIRenderTargetView(context, tex, array_index, mip)
+    : RHIRenderTargetView(context)
 {
+    m_Param.texture = tex;
+    m_Param.first_array_index = array_index;
+    m_Param.first_face = face;
+    m_Param.num_faces = 1;
+    m_Param.mip_level = mip;
+
     VkTextureCube* vkTex = static_cast<VkTextureCube*>(tex.get());
     VkContext* vkCtx = static_cast<VkContext*>(&context->RHIContextInstance());
-    m_iNumMips = 1;
 
     if (vkTex && vkTex->GetVkImage() != VK_NULL_HANDLE)
     {
@@ -68,11 +77,16 @@ VkTextureCubeFaceRtv::VkTextureCubeFaceRtv(Context* context, RHITexturePtr const
 // ============================================================================
 VkTexture3DRtv::VkTexture3DRtv(Context* context, RHITexturePtr const& tex,
     uint32_t array_index, uint32_t first_slice, uint32_t num_slices, uint32_t mip)
-    : RHIRenderTargetView(context, tex, array_index, mip)
+    : RHIRenderTargetView(context)
 {
+    m_Param.texture = tex;
+    m_Param.first_array_index = array_index;
+    m_Param.first_slice = first_slice;
+    m_Param.num_slices = num_slices;
+    m_Param.mip_level = mip;
+
     VkTexture3D* vkTex = static_cast<VkTexture3D*>(tex.get());
     VkContext* vkCtx = static_cast<VkContext*>(&context->RHIContextInstance());
-    m_iNumMips = 1;
 
     if (vkTex && vkTex->GetVkImage() != VK_NULL_HANDLE)
     {
@@ -96,11 +110,15 @@ VkTexture3DRtv::VkTexture3DRtv(Context* context, RHITexturePtr const& tex,
 // ============================================================================
 VkTexture2DDsv::VkTexture2DDsv(Context* context, RHITexturePtr const& tex,
     uint32_t first_array, uint32_t array_size, uint32_t mip)
-    : RHIDepthStencilView(context, tex, first_array, array_size, mip)
+    : RHIDepthStencilView(context)
 {
+    m_Param.texture = tex;
+    m_Param.first_array_index = first_array;
+    m_Param.num_arrays = array_size;
+    m_Param.mip_level = mip;
+
     VkTexture2D* vkTex = static_cast<VkTexture2D*>(tex.get());
     VkContext* vkCtx = static_cast<VkContext*>(&context->RHIContextInstance());
-    m_iNumMips = 1;
 
     if (vkTex && vkTex->GetVkImage() != VK_NULL_HANDLE)
     {
@@ -124,11 +142,16 @@ VkTexture2DDsv::VkTexture2DDsv(Context* context, RHITexturePtr const& tex,
 // ============================================================================
 VkTextureCubeFaceDsv::VkTextureCubeFaceDsv(Context* context, RHITexturePtr const& tex,
     uint32_t array_index, CubeFaceType face, uint32_t mip)
-    : RHIDepthStencilView(context, tex, array_index, mip)
+    : RHIDepthStencilView(context)
 {
+    m_Param.texture = tex;
+    m_Param.first_array_index = array_index;
+    m_Param.first_face = face;
+    m_Param.num_faces = 1;
+    m_Param.mip_level = mip;
+
     VkTextureCube* vkTex = static_cast<VkTextureCube*>(tex.get());
     VkContext* vkCtx = static_cast<VkContext*>(&context->RHIContextInstance());
-    m_iNumMips = 1;
 
     if (vkTex && vkTex->GetVkImage() != VK_NULL_HANDLE)
     {
@@ -152,8 +175,13 @@ VkTextureCubeFaceDsv::VkTextureCubeFaceDsv(Context* context, RHITexturePtr const
 // ============================================================================
 VkBufferShaderResourceView::VkBufferShaderResourceView(Context* context,
     RHIGpuBufferPtr const& buffer, PixelFormat format, uint32_t first_elem, uint32_t num_elems)
-    : RHIShaderResourceView(context, buffer, format, first_elem, num_elems)
+    : RHIShaderResourceView(context)
 {
+    m_Param.buffer = buffer;
+    m_Param.pixel_format = format;
+    m_Param.first_elem = first_elem;
+    m_Param.num_elem = num_elems;
+
     VkGpuBuffer* vkBuf = static_cast<VkGpuBuffer*>(buffer.get());
     VkContext* vkCtx = static_cast<VkContext*>(&context->RHIContextInstance());
     VkFormat vkFormat = VkTranslate::PixelFormatToVkFormat(format);
@@ -177,8 +205,13 @@ VkBufferShaderResourceView::VkBufferShaderResourceView(Context* context,
 // ============================================================================
 VkBufferUnorderedAccessView::VkBufferUnorderedAccessView(Context* context,
     RHIGpuBufferPtr const& buffer, PixelFormat format, uint32_t first_elem, uint32_t num_elems)
-    : RHIUnorderedAccessView(context, buffer, format, first_elem, num_elems)
+    : RHIUnorderedAccessView(context)
 {
+    m_Param.buffer = buffer;
+    m_Param.pixel_format = format;
+    m_Param.first_elem = first_elem;
+    m_Param.num_elem = num_elems;
+
     VkGpuBuffer* vkBuf = static_cast<VkGpuBuffer*>(buffer.get());
     VkContext* vkCtx = static_cast<VkContext*>(&context->RHIContextInstance());
     VkFormat vkFormat = VkTranslate::PixelFormatToVkFormat(format);

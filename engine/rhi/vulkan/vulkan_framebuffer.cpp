@@ -39,13 +39,13 @@ void VkFrameBuffer::Destroy()
 
 SResult VkFrameBuffer::OnBind()
 {
-    // 缁戝畾 framebuffer 鏃剁殑鎿嶄綔
+    // 绑定 framebuffer 时的操作
     return S_Success;
 }
 
 SResult VkFrameBuffer::OnUnbind()
 {
-    // 瑙ｇ粦 framebuffer 鏃剁殑鎿嶄綔
+    // 解绑 framebuffer 时的操作
     return S_Success;
 }
 

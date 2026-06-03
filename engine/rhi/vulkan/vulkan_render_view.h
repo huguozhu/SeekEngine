@@ -8,7 +8,7 @@
 SEEK_NAMESPACE_BEGIN
 
 // ============================================================================
-// VkRenderTargetView 鈥?Vulkan RTV
+// VkRenderTargetView — Vulkan RTV
 // ============================================================================
 class VkTexture2DCubeRtv : public RHIRenderTargetView
 {
@@ -41,7 +41,7 @@ private:
 };
 
 // ============================================================================
-// VkDepthStencilView 鈥?Vulkan DSV
+// VkDepthStencilView — Vulkan DSV
 // ============================================================================
 class VkTexture2DDsv : public RHIDepthStencilView
 {
@@ -64,7 +64,7 @@ private:
 };
 
 // ============================================================================
-// VkShaderResourceView 鈥?Vulkan SRV
+// VkShaderResourceView — Vulkan SRV
 // ============================================================================
 class VkBufferShaderResourceView : public RHIShaderResourceView
 {
@@ -77,7 +77,7 @@ private:
 };
 
 // ============================================================================
-// VkUnorderedAccessView 鈥?Vulkan UAV
+// VkUnorderedAccessView — Vulkan UAV
 // ============================================================================
 class VkBufferUnorderedAccessView : public RHIUnorderedAccessView
 {

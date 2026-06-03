@@ -7,7 +7,7 @@
 SEEK_NAMESPACE_BEGIN
 
 // ============================================================================
-// VkTimeQuery 鈥?Vulkan GPU 鏃堕棿鏌ヨ
+// VkTimeQuery — Vulkan GPU 时间查询
 // ============================================================================
 class VkTimeQuery : public RHITimeQuery
 {

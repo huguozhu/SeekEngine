@@ -41,7 +41,7 @@ SResult VkGpuBuffer::Create(RHIGpuBufferData* pData)
     VmaMemoryUsage memUsage = VMA_MEMORY_USAGE_GPU_ONLY;
     VmaAllocationCreateFlags allocFlags = 0;
 
-    // 鏍规嵁 buffer 绫诲瀷璋冩暣浣跨敤鏂瑰紡
+    // 根据 buffer 类型调整使用方式
     switch (m_eType)
     {
     case GpuBufferType_Vk::COMMON_BUFFER:
@@ -88,12 +88,13 @@ SResult VkGpuBuffer::Create(RHIGpuBufferData* pData)
 
     m_vkBufferSize = m_iSize;
 
-    // 濡傛灉闇€瑕?CPU 璁块棶锛屾槧灏勫唴瀛?    if (memUsage == VMA_MEMORY_USAGE_CPU_TO_GPU || memUsage == VMA_MEMORY_USAGE_CPU_ONLY)
+    // 如果需要 CPU 访问，映射内存
+    if (memUsage == VMA_MEMORY_USAGE_CPU_TO_GPU || memUsage == VMA_MEMORY_USAGE_CPU_ONLY)
     {
         m_bIsMapped = true;
     }
 
-    // 涓婁紶鍒濆鏁版嵁
+    // 上传初始数据
     if (pData && pData->m_pData && pData->m_iDataSize > 0)
     {
         if (m_bIsMapped)
@@ -105,7 +106,7 @@ SResult VkGpuBuffer::Create(RHIGpuBufferData* pData)
         }
         else
         {
-            // 閫氳繃 staging buffer 涓婁紶
+            // 通过 staging buffer 上传
             VkBuffer stagingBuffer;
             VmaAllocation stagingAlloc;
             VmaAllocationCreateInfo stagingAllocInfo = {};
@@ -155,7 +156,7 @@ SResult VkGpuBuffer::Update(RHIGpuBufferData* pData)
         return S_Success;
     }
 
-    // 鍚﹀垯閫氳繃 staging buffer
+    // 否则通过 staging buffer
     VkContext* vkCtx = GetVkContext();
     VkCommandBuffer cmdBuf = vkCtx->BeginSingleTimeCommands();
 
@@ -190,7 +191,7 @@ SResult VkGpuBuffer::Update(RHIGpuBufferData* pData)
 
 SResult VkGpuBuffer::CopyBack(BufferPtr buffer, int start, int length)
 {
-    // GPU 鈫?CPU readback锛堢畝鍖栧疄鐜帮級
+    // GPU → CPU readback（简化实现）
     return ERR_NOT_IMPLEMENTED;
 }
 

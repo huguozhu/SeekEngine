@@ -14,6 +14,9 @@ set(SHADER_DEBUG_DIR_SUFFIX "_debug")
 
 add_compile_definitions(SEEK_PLATFORM_WINDOWS NOMINMAX SEEK_CPP)
 
+# MSVC: 设置源文件和执行字符集为 UTF-8，消除 C4819 编码警告
+add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/utf-8>)
+
 
 # code path
 set(SEEK_ROOT_DIR                "${CMAKE_CURRENT_LIST_DIR}")

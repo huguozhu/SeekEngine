@@ -31,7 +31,7 @@ VkProgram::~VkProgram()
         m_vkDescriptorSetLayout = VK_NULL_HANDLE;
     }
 
-    // 娓呯悊缂撳瓨鐨?pipelines
+    // 清理缓存的 pipelines
     for (auto& [key, pipeline] : m_GraphicsPipelineCache)
     {
         vkDestroyPipeline(device, pipeline, nullptr);
@@ -47,10 +47,10 @@ VkProgram::~VkProgram()
 
 SResult VkProgram::Build(VkDevice device)
 {
-    // 鏀堕泦鎵€鏈?stage 鐨?descriptor bindings锛屽悎骞跺悗鍒涘缓 DescriptorSetLayout
+    // 收集所有 stage 的 descriptor bindings，合并后创建 DescriptorSetLayout
     std::vector<VkDescriptorSetLayoutBinding> bindings;
 
-    // 浠?VkShader 鑾峰彇姣忎釜 stage 鐨?bindings
+    // 从 VkShader 获取每个 stage 的 bindings
     for (int i = 0; i < static_cast<int>(ShaderType::Num); i++)
     {
         VkShader* shader = static_cast<VkShader*>(m_vShaders[i]);
@@ -67,7 +67,7 @@ SResult VkProgram::Build(VkDevice device)
         }
     }
 
-    // 鍒涘缓 DescriptorSetLayout
+    // 创建 DescriptorSetLayout
     if (!bindings.empty())
     {
         VkDescriptorSetLayoutCreateInfo layoutInfo = {};
@@ -82,7 +82,7 @@ SResult VkProgram::Build(VkDevice device)
         }
     }
 
-    // 鍒涘缓 PipelineLayout
+    // 创建 PipelineLayout
     VkPipelineLayoutCreateInfo pipelineLayoutInfo = {};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     pipelineLayoutInfo.setLayoutCount = m_vkDescriptorSetLayout ? 1 : 0;
@@ -112,7 +112,7 @@ VkPipeline VkProgram::GetOrCreatePipeline(VkWindow* window,
     VkContext* vkCtx = static_cast<VkContext*>(&m_pContext->RHIContextInstance());
     VkDevice device = vkCtx->GetVkDevice();
 
-    // 鏋勫缓 pipeline key锛堢敤浜庣紦瀛橈級
+    // 构建 pipeline key（用于缓存）
     uint64_t key = 0;
     if (vertexInput)
     {
@@ -183,13 +183,13 @@ VkPipeline VkProgram::GetOrCreateComputePipeline(VkPipelineCache pipelineCache)
 
 void VkProgram::BindDescriptorSets(VkCommandBuffer cmdBuf, VkPipelineBindPoint bindPoint)
 {
-    // 绠€鍖栧疄鐜帮細鍒嗛厤骞剁粦瀹?descriptor set
+    // 简化实现：分配并绑定 descriptor set
     VkContext* vkCtx = static_cast<VkContext*>(&m_pContext->RHIContextInstance());
 
     if (m_vkDescriptorSetLayout == VK_NULL_HANDLE)
         return;
 
-    // 鍒嗛厤鏂扮殑 descriptor set
+    // 分配新的 descriptor set
     VkDescriptorSetAllocateInfo allocInfo = {};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = vkCtx->GetVkDescriptorPool();

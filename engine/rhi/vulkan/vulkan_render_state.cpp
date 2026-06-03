@@ -117,18 +117,18 @@ VkPipeline VkRenderState::CreateGraphicsPipeline(
     defaultVertexInput.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
     if (!vertexInput) vertexInput = &defaultVertexInput;
 
-    // 杈撳叆瑁呴厤
+    // 输入装配
     VkPipelineInputAssemblyStateCreateInfo inputAssembly = {};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
 
-    // Viewport锛堝姩鎬侊級
+    // Viewport（动态）
     VkPipelineViewportStateCreateInfo viewportState = {};
     viewportState.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
     viewportState.viewportCount = 1;
     viewportState.scissorCount = 1;
 
-    // 澶氶噸閲囨牱
+    // 多重采样
     VkPipelineMultisampleStateCreateInfo multisampling = {};
     multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     multisampling.rasterizationSamples = samples;
@@ -149,7 +149,7 @@ VkPipeline VkRenderState::CreateGraphicsPipeline(
 
     if (bUseDynamicRendering)
     {
-        // Vulkan 1.3 dynamic rendering 鈥?pipeline 涓嶇粦瀹?render pass
+        // Vulkan 1.3 dynamic rendering — pipeline 不绑定 render pass
         VkPipelineRenderingCreateInfo renderingInfo = {};
         renderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
         renderingInfo.colorAttachmentCount = 1;

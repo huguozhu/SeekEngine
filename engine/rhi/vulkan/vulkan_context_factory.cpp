@@ -7,6 +7,7 @@
 #include "rhi/vulkan/vulkan_shader.h"
 #include "rhi/vulkan/vulkan_mesh.h"
 #include "rhi/vulkan/vulkan_render_view.h"
+#include "rhi/vulkan/vulkan_framebuffer.h"
 #include "rhi/vulkan/vulkan_fence.h"
 #include "rhi/vulkan/vulkan_query.h"
 
@@ -60,7 +61,7 @@ RHITexturePtr VkContext::CreateTextureCube(const RHITexture::Desc& tex_desc, std
 
 RHIGpuBufferPtr VkContext::CreateGpuBuffer(uint32_t size, ResourceFlags flags, uint32_t structure_stride, RHIGpuBufferData* pData)
 {
-    auto buf = MakeSharedPtr<VkGpuBuffer>(m_pContext, size, flags, GpuBufferType::COMMON_BUFFER, structure_stride);
+    auto buf = MakeSharedPtr<VkGpuBuffer>(m_pContext, size, flags, GpuBufferType_Vk::COMMON_BUFFER, structure_stride);
     buf->Create(pData);
     return buf;
 }
@@ -148,7 +149,7 @@ RHIRenderStatePtr VkContext::CreateRenderState(RenderStateDesc const& desc)
 
 RHISamplerPtr VkContext::CreateSampler(SamplerDesc const& desc)
 {
-    return MakeSharedPtr<VkSampler>(m_pContext, desc);
+    return MakeSharedPtr<VkRHISampler>(m_pContext, desc);
 }
 
 SEEK_NAMESPACE_END

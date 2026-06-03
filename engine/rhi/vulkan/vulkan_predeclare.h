@@ -9,9 +9,10 @@
 
 SEEK_NAMESPACE_BEGIN
 
-// Vulkan 璁惧鐩稿叧瀵硅薄鏅鸿兘鎸囬拡锛堜娇鐢?shared_ptr + 鑷畾涔?deleter锛?// VkInstance / VkDevice / VkQueue 绛夐潪 dispatchable 瀵硅薄閫氳繃 Context 鎴愬憳绠＄悊
+// Vulkan 设备相关对象智能指针（使用 shared_ptr + 自定义 deleter）
+// VkInstance / VkDevice / VkQueue 等非 dispatchable 对象通过 Context 成员管理
 
-// VkImageView / VkSampler 绛?dispatchable 灏忓璞＄敤 shared_ptr 鍖呰
+// VkImageView / VkSampler 等 dispatchable 小对象用 shared_ptr 包装
 
 struct VkImageDeleter { void operator()(VkImage* p) const; };
 struct VkImageViewDeleter { void operator()(VkImageView* p) const; };

@@ -9,7 +9,7 @@
 SEEK_NAMESPACE_BEGIN
 
 // ============================================================================
-// VkMesh 鈥?Vulkan 缃戞牸
+// VkMesh — Vulkan 网格
 // ============================================================================
 class VkMesh : public RHIMesh
 {
@@ -20,13 +20,13 @@ public:
     // Get vertex input state for pipeline creation
     const VkPipelineVertexInputStateCreateInfo* GetVertexInputState();
 
-    // 椤剁偣/绱㈠紩缂撳啿
+    // 顶点/索引缓冲
     uint32_t     GetVertexBufferCount() const;
     VkBuffer     GetVertexBuffer(uint32_t index) const;
     VkBuffer     GetIndexBuffer() const;
     VkIndexType  GetIndexType() const;
 
-    // 缁樺埗鍙傛暟
+    // 绘制参数
     uint32_t GetIndexCount() const;
     uint32_t GetVertexCount() const;
     uint32_t GetInstanceCount() const;

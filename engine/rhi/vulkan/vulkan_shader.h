@@ -9,7 +9,8 @@
 SEEK_NAMESPACE_BEGIN
 
 // ============================================================================
-// VkShader 鈥?Vulkan 鐫€鑹插櫒锛圚LSL 鈫?SPIR-V 缂栬瘧锛?// ============================================================================
+// VkShader — Vulkan 着色器（HLSL → SPIR-V 编译）
+// ============================================================================
 class VkShader : public RHIShader
 {
 public:
@@ -23,7 +24,7 @@ public:
     VkShaderStageFlagBits GetVkStage() const { return m_vkStage; }
     const std::vector<uint32_t>& GetSPIRVCode() const { return m_SPIRV; }
 
-    // 鍙嶅皠淇℃伅
+    // 反射信息
     struct DescriptorBinding
     {
         uint32_t                binding;

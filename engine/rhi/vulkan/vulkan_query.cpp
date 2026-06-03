@@ -24,7 +24,7 @@ bool VkTimeQuery::Create(VkDevice device, VkPhysicalDevice physicalDevice)
 {
     VkPhysicalDeviceProperties props;
     vkGetPhysicalDeviceProperties(physicalDevice, &props);
-    m_fTimestampPeriod = props.limits.timestampPeriod / 1e6f; // 绾崇 鈫?姣
+    m_fTimestampPeriod = props.limits.timestampPeriod / 1e6f; // 纳秒 → 毫秒
 
     VkQueryPoolCreateInfo poolInfo = {};
     poolInfo.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;

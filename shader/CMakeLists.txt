@@ -103,18 +103,21 @@ set(SHADER_STAMP_FILE "${SEEK_GENERATED_TAG_DIR}/.shaders_complete${SHADER_TAG_F
 set(SHADER_SPIRV_STAMP_FILE "${SEEK_GENERATED_TAG_DIR}/.shaders_spirv_complete${SHADER_TAG_FILE_SUFFIX}")
 
 # HLSL 着色器编译
+# 使用 $<TARGET_FILE:ShaderCompiler> 确保多配置生成器（如 VS）下路径包含配置子目录
 add_custom_command(
     OUTPUT ${SHADER_STAMP_FILE}
-    COMMAND ${CMAKE_COMMAND} -P "${SHADER_BUILD_SCRIPT}" "${ShaderCompiler_bin}" "${shader_target_platform}" "${SEEK_SHADER_SOURCE_DIR}" "${SHADER_STAMP_FILE}"
-    DEPENDS ${shader_sources_files} ${shader_header_files} ${shader_shared_files}
+    COMMAND ${CMAKE_COMMAND} -P "${SHADER_BUILD_SCRIPT}" "$<TARGET_FILE:ShaderCompiler>" "${shader_target_platform}" "${SEEK_SHADER_SOURCE_DIR}" "${SHADER_STAMP_FILE}"
+    DEPENDS ${shader_sources_files} ${shader_header_files} ${shader_shared_files} ShaderCompiler
     WORKING_DIRECTORY ${SEEK_SHADER_SOURCE_DIR}
 )
 
 # SPIR-V 着色器编译（用于 Vulkan 后端）
+# 依赖 HLSL stamp 以确保串行执行，避免两个 ShaderCompiler 实例并行时
+# 争抢 .meta/.tag/.depend 共享目录导致文件写入冲突
 add_custom_command(
     OUTPUT ${SHADER_SPIRV_STAMP_FILE}
-    COMMAND ${CMAKE_COMMAND} -P "${SHADER_BUILD_SCRIPT}" "${ShaderCompiler_bin}" "${shader_target_platform_spirv}" "${SEEK_SHADER_SOURCE_DIR}" "${SHADER_SPIRV_STAMP_FILE}"
-    DEPENDS ${shader_sources_files} ${shader_header_files} ${shader_shared_files}
+    COMMAND ${CMAKE_COMMAND} -P "${SHADER_BUILD_SCRIPT}" "$<TARGET_FILE:ShaderCompiler>" "${shader_target_platform_spirv}" "${SEEK_SHADER_SOURCE_DIR}" "${SHADER_SPIRV_STAMP_FILE}"
+    DEPENDS ${shader_sources_files} ${shader_header_files} ${shader_shared_files} ShaderCompiler ${SHADER_STAMP_FILE}
     WORKING_DIRECTORY ${SEEK_SHADER_SOURCE_DIR}
 )
 

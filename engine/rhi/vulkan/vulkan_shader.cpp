@@ -81,7 +81,7 @@ SResult VkShader::OnCompile()
     }
     else
     {
-        // Compile HLSL 鈫?SPIR-V using DXC
+        // Compile HLSL → SPIR-V using DXC
         if (!s_dxcompiler.IsLoaded())
         {
             if (!s_dxcompiler.Load())
