@@ -1,1 +1,0 @@
-- [D3D11 leak fix: ImGui shutdown + Sprite2DRenderer cleanup](d3d11-leak-fix-imgui-sprite2d.md) — 修复 ImGui D3D11 资源泄露和 Sprite2DRenderer 未清理问题
