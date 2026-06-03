@@ -1,4 +1,9 @@
-
+set(VULKAN_SDK_DIR "C:/VulkanSDK/1.4.313.2")
+if(NOT EXISTS "${VULKAN_SDK_DIR}")
+    if(DEFINED ENV{VULKAN_SDK})
+        set(VULKAN_SDK_DIR "$ENV{VULKAN_SDK}")
+    endif()
+endif()
 
 ################################################ IMGUI ################################################
 set(IMGUI_FILES
@@ -16,11 +21,13 @@ set(IMGUI_FILES
 )
 list(APPEND IMGUI_FILES ${SEEK_THIRDPARTY_DIR}/imgui/include/backends/imgui_impl_win32.cpp)
 list(APPEND IMGUI_FILES ${SEEK_THIRDPARTY_DIR}/imgui/include/backends/imgui_impl_dx11.cpp)
+list(APPEND IMGUI_FILES ${SEEK_THIRDPARTY_DIR}/imgui/include/backends/imgui_impl_vulkan.cpp)
 
 add_library(IMGUI STATIC ${IMGUI_FILES})
 target_include_directories(IMGUI PUBLIC
     ${SEEK_THIRDPARTY_DIR}/imgui/include
     ${SEEK_THIRDPARTY_DIR}/imgui/include/backends
+    "${VULKAN_SDK_DIR}/Include"
 )
 
 set_target_properties(IMGUI PROPERTIES

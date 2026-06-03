@@ -21,6 +21,7 @@ enum class RendererType : uint32_t
 enum class RHIType : uint32_t
 {
     D3D11,
+    Vulkan,
 };
 
 static const float PBR_INTENSITY_COEFF = 120000.0f;

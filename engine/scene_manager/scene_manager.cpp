@@ -243,14 +243,14 @@ SResult SceneManager::Tick(float delta_time)
     CameraComponent* pActiveCamera = this->GetActiveCamera();
     ClipScene(pActiveCamera);
 
-    // GPU Driven pipeline: Compute Shader Culling 和 Indirect Args 生成
-    if (m_pContext->IsGpuDrivenEnabled() && pActiveCamera && m_pContext->GpuMeshRegistryInstance().IsBuilt())
-    {
-        GpuCullingManager& cullingMgr = m_pContext->GpuCullingManagerInstance();
-        cullingMgr.UploadObjectData(m_vMeshList);
-        cullingMgr.Cull(pActiveCamera);
-        cullingMgr.GenerateIndirectArgs();
-    }
+    // TEST: 全部禁用，基线测试
+    // if (pActiveCamera && m_pContext->GpuMeshRegistryInstance().IsBuilt())
+    // {
+    //     GpuCullingManager& cullingMgr = m_pContext->GpuCullingManagerInstance();
+    //     cullingMgr.UploadObjectData(m_vMeshList);
+    //     cullingMgr.Cull(pActiveCamera);
+    //     cullingMgr.GenerateIndirectArgs();
+    // }
 
     return S_Success;
 }

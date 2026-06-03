@@ -24,11 +24,22 @@ target_link_libraries(${SAMPLE_COMMON_PROJECT_NAME}
         rapidjson
 )
 
+# Vulkan SDK path (same as engine)
+set(VULKAN_SDK_DIR "C:/VulkanSDK/1.4.313.2")
+if(NOT EXISTS "${VULKAN_SDK_DIR}")
+    if(DEFINED ENV{VULKAN_SDK})
+        set(VULKAN_SDK_DIR "$ENV{VULKAN_SDK}")
+    endif()
+endif()
+
 # include
 target_include_directories(${SAMPLE_COMMON_PROJECT_NAME} PUBLIC
     ${SEEK_THIRDPARTY_DIR}/imgui/include
     ${SEEK_ENGINE_SOURCE_DIR}
     ${SEEK_SAMPLES_DIR}
+    "${VULKAN_SDK_DIR}/Include"
+    "${VULKAN_SDK_DIR}/Include/vma"
+    "${VULKAN_SDK_DIR}/Include/dxc"
 )
 
 
@@ -44,14 +55,23 @@ function(add_sample_project sample_name)
     # execute
     add_executable(${sample_name} ${SAMPLE_CODE})
     target_compile_definitions(${sample_name} PRIVATE _CRT_SECURE_NO_WARNINGS)
-    target_link_libraries(${sample_name} PUBLIC ${SAMPLE_COMMON_PROJECT_NAME})
+    target_link_libraries(${sample_name} PUBLIC ${SAMPLE_COMMON_PROJECT_NAME} ${SEEK_STATICLIB_NAME} turbojpeg libpng zlib meshoptimizer vulkan-1 dxcompiler dxgi d3d11 d3dcompiler dxguid)
+    set_target_properties(${sample_name} PROPERTIES LINK_LIBRARY_DEPENDENCIES TRUE)
+    set_target_properties(${sample_name} PROPERTIES VS_LINK_LIBRARY_DEPENDENCIES TRUE)
     # property
     set_target_properties(${sample_name} PROPERTIES FOLDER "samples")
 
-    target_include_directories(${sample_name} PUBLIC 
+    target_include_directories(${sample_name} PUBLIC
         ${SEEK_ENGINE_SOURCE_DIR}
         ${SEEK_SAMPLES_DIR}/common
+        "${VULKAN_SDK_DIR}/Include"
+        "${VULKAN_SDK_DIR}/Include/vma"
+        "${VULKAN_SDK_DIR}/Include/dxc"
     )
+    target_link_directories(${sample_name} PUBLIC "${VULKAN_SDK_DIR}/Lib")
+
+    # Debug config: add engine lib path since CMake doesn't propagate static lib deps
+    target_link_options(${sample_name} PRIVATE "$<$<CONFIG:Debug>:${CMAKE_BINARY_DIR}/engine/Debug/seek_engine-static.lib>")
 
 endfunction(add_sample_project)
 

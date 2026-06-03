@@ -25,6 +25,7 @@ SEEK_NAMESPACE_BEGIN
 extern "C"
 {
     void MakeD3D11Context(Context* context, RHIContextPtrUnique& out);
+    void MakeVulkanContext(Context* context, RHIContextPtrUnique& out);
 }
 
 #if defined(SEEK_PLATFORM_WINDOWS)
@@ -241,8 +242,19 @@ void Context::SetFpsLimitType(FPSLimitType b)
 
 SResult Context::InitRHIContext()
 {
+    // 通过环境变量 SEEK_RHI 在运行时覆盖 RHI 后端选择（不修改业务代码）
+    if (const char* env_rhi = std::getenv("SEEK_RHI"))
+    {
+        if (strcmp(env_rhi, "Vulkan") == 0)
+            m_InitInfo.rhi_type = RHIType::Vulkan;
+        else if (strcmp(env_rhi, "D3D11") == 0)
+            m_InitInfo.rhi_type = RHIType::D3D11;
+    }
+
     if (m_InitInfo.rhi_type == RHIType::D3D11)
         MakeD3D11Context(this, m_pRHIContext);
+    else if (m_InitInfo.rhi_type == RHIType::Vulkan)
+        MakeVulkanContext(this, m_pRHIContext);
     SResult ret = m_pRHIContext->Init();
     if (SEEK_CHECKFAILED(ret))
     {

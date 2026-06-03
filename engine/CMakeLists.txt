@@ -150,6 +150,37 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/rhi_texture.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/base/viewport.h
     
+    # vulkan_rhi
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_vma_impl.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_predeclare.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_context.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_context.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_context_factory.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_window.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_texture.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_texture.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_gpu_buffer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_gpu_buffer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_framebuffer.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_framebuffer.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_render_state.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_render_state.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_render_view.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_render_view.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_shader.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_shader.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_program.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_program.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_mesh.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_mesh.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_fence.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_fence.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_query.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_query.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_translate.h
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_translate.cpp
+    ${SEEK_ENGINE_SOURCE_DIR}/rhi/vulkan/vulkan_shader_param_assign_helper.h
+
     # d3d_rhi_common
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_common/d3d_common_predeclare.h
     ${SEEK_ENGINE_SOURCE_DIR}/rhi/d3d_common/d3d_adapter.h
@@ -244,13 +275,22 @@ source_group(TREE ${SEEK_ENGINE_SOURCE_DIR}/ FILES ${ENGINE_CODE})
 set(SEEK_SHAREDLIB_NAME ${PROJECT_NAME})
 set(SEEK_STATICLIB_NAME ${PROJECT_NAME}-static)
 
-set(SEEK_STATICLIB_DEPENDENT_LIBS dxgi d3d11 d3dcompiler dxguid Windowscodecs Ws2_32 Winmm)
+set(SEEK_STATICLIB_DEPENDENT_LIBS dxgi d3d11 d3dcompiler dxguid Windowscodecs Ws2_32 Winmm vulkan-1 dxcompiler)
+
+# Vulkan SDK 路径
+set(VULKAN_SDK_DIR "C:/VulkanSDK/1.4.313.2")
+if(NOT EXISTS "${VULKAN_SDK_DIR}")
+    message(WARNING "Vulkan SDK not found at ${VULKAN_SDK_DIR}, searching via environment...")
+    if(DEFINED ENV{VULKAN_SDK})
+        set(VULKAN_SDK_DIR "$ENV{VULKAN_SDK}")
+    endif()
+endif()
 
 
 ############################################ seek_engine static lib ############################################
 add_library(${SEEK_STATICLIB_NAME} STATIC ${ENGINE_CODE})
-# 使用 /Z7 将调试信息嵌入 .obj 文件，避免静态库 PDB 路径不一致导致的 LNK4099 警告
-target_compile_options(${SEEK_STATICLIB_NAME} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/Z7>)
+# /Z7 temporarily disabled for debug
+# target_compile_options(${SEEK_STATICLIB_NAME} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/Z7>)
 add_dependencies(${SEEK_STATICLIB_NAME} GenerateShaders)
 target_link_libraries(${SEEK_STATICLIB_NAME} PUBLIC
     turbojpeg
@@ -263,6 +303,12 @@ target_link_libraries(${SEEK_STATICLIB_NAME} PUBLIC
 target_include_directories(${SEEK_STATICLIB_NAME} PUBLIC
     ${SEEK_ENGINE_SOURCE_DIR}
     ${SEEK_ENGINE_SOURCE_DIR}/third_party/cgltf
+    "${VULKAN_SDK_DIR}/Include"
+    "${VULKAN_SDK_DIR}/Include/vma"
+    "${VULKAN_SDK_DIR}/Include/dxc"
+)
+target_link_directories(${SEEK_STATICLIB_NAME} PUBLIC
+    "${VULKAN_SDK_DIR}/Lib"
 )
 
 
@@ -270,3 +316,4 @@ target_include_directories(${SEEK_STATICLIB_NAME} PUBLIC
 ############################################ seek_engine shared lib ############################################
 add_library(${SEEK_SHAREDLIB_NAME} SHARED ${SEEK_ENGINE_SOURCE_DIR}/fake.cpp)
 target_link_libraries(${SEEK_SHAREDLIB_NAME} PUBLIC ${SEEK_STATICLIB_NAME})
+

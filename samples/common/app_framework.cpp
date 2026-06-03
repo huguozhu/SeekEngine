@@ -9,9 +9,12 @@
 #include "rhi/d3d11/d3d11_context.h"
 #include "rhi/d3d11/d3d11_framebuffer.h"
 
+#include "rhi/vulkan/vulkan_predeclare.h"
+#include "rhi/vulkan/vulkan_context.h"
+
 #include "imgui_impl_win32.h"
 #include "imgui_impl_dx11.h"
-#include "imgui_impl_dx12.h"
+#include "imgui_impl_vulkan.h"
 
 #define SEEK_MACRO_FILE_UID 46     // this code is auto generated, don't touch it!!!
 
@@ -35,20 +38,38 @@ SResult AppFramework::InitContext(void* device, void* native_wnd)
 }
 void AppFramework::IMGUI_Begin()
 {
-    ImGui_ImplDX11_NewFrame();
+    if (m_pContext->GetRHIType() == RHIType::Vulkan)
+    {
+        ImGui_ImplVulkan_NewFrame();
+    }
+    else
+    {
+        ImGui_ImplDX11_NewFrame();
+    }
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 }
 
 void AppFramework::IMGUI_Rendering()
 {
-    D3D11Context* rc_d3d = static_cast<D3D11Context*>(&m_pContext->RHIContextInstance());
-    D3D11FrameBuffer* fb = static_cast<D3D11FrameBuffer*>(rc_d3d->GetFinalRHIFrameBuffer().get());
-    ID3D11RenderTargetView* view = fb->GetRenderTargetView();
-
     ImGui::Render();
-    rc_d3d->GetD3D11DeviceContext()->OMSetRenderTargets(1, &view, NULL);
-    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+    if (m_pContext->GetRHIType() == RHIType::Vulkan)
+    {
+        VkContext* rc_vk = static_cast<VkContext*>(&m_pContext->RHIContextInstance());
+        // Vulkan ImGui 渲染 — 使用当前帧的 command buffer
+        VkCommandBuffer cmdBuf = rc_vk->GetCurrentCommandBuffer();
+        if (cmdBuf != VK_NULL_HANDLE)
+            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdBuf);
+    }
+    else
+    {
+        D3D11Context* rc_d3d = static_cast<D3D11Context*>(&m_pContext->RHIContextInstance());
+        D3D11FrameBuffer* fb = static_cast<D3D11FrameBuffer*>(rc_d3d->GetFinalRHIFrameBuffer().get());
+        ID3D11RenderTargetView* view = fb->GetRenderTargetView();
+        rc_d3d->GetD3D11DeviceContext()->OMSetRenderTargets(1, &view, NULL);
+        ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+    }
 }
 SResult AppFramework::RenderFrame()
 {
@@ -128,7 +149,27 @@ SResult AppFramework::Run()
         
     ImGui_ImplWin32_Init(wnd);
 
-    if (m_pContext->GetRHIType() == RHIType::D3D11)
+    if (m_pContext->GetRHIType() == RHIType::Vulkan)
+    {
+        VkContext* rc_vk = static_cast<VkContext*>(&m_pContext->RHIContextInstance());
+        VkWindow* window = static_cast<VkWindow*>(rc_vk->GetScreenRHIFrameBuffer().get());
+
+        ImGui_ImplVulkan_InitInfo init_info = {};
+        init_info.Instance = rc_vk->GetVkInstance();
+        init_info.PhysicalDevice = rc_vk->GetVkPhysicalDevice();
+        init_info.Device = rc_vk->GetVkDevice();
+        init_info.QueueFamily = rc_vk->GetGraphicsQueueFamily();
+        init_info.Queue = rc_vk->GetVkGraphicsQueue();
+        init_info.PipelineCache = VK_NULL_HANDLE;
+        init_info.DescriptorPool = rc_vk->GetVkDescriptorPool();
+        init_info.Subpass = 0;
+        init_info.MinImageCount = window->GetSwapchainImageCount();
+        init_info.ImageCount = window->GetSwapchainImageCount();
+        init_info.MSAASamples = window->GetSampleCount();
+
+        ImGui_ImplVulkan_Init(&init_info, window->GetVkRenderPass());
+    }
+    else if (m_pContext->GetRHIType() == RHIType::D3D11)
     {
         D3D11Context* rc_d3d = static_cast<D3D11Context*>(&m_pContext->RHIContextInstance());
         ImGui_ImplDX11_Init(rc_d3d->GetD3D11Device(), rc_d3d->GetD3D11DeviceContext());
@@ -154,8 +195,15 @@ SResult AppFramework::Run()
 
     this->OnDestroy();
 
-    // 释放 ImGui 的 D3D11 资源（字体纹理、Shader、Buffer、状态对象等），避免泄露
-    ImGui_ImplDX11_Shutdown();
+    // 释放 ImGui 资源（字体纹理、Shader、Buffer、状态对象等），避免泄露
+    if (m_pContext->GetRHIType() == RHIType::Vulkan)
+    {
+        ImGui_ImplVulkan_Shutdown();
+    }
+    else
+    {
+        ImGui_ImplDX11_Shutdown();
+    }
     ImGui_ImplWin32_Shutdown();
     ImGui::DestroyContext();
 
