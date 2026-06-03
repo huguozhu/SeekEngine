@@ -8,6 +8,7 @@
 #include "math/vector.h"
 #include "math/aabbox.h"
 #include "effect/technique.h"
+#include "effect/meshlet_data.h"
 #include "resource/resource_mgr.h"
 
 SEEK_NAMESPACE_BEGIN
@@ -94,6 +95,10 @@ public:
     void                                SetTechnique(Technique* tech) { m_pTechnique = tech; }
     Technique*                          GetTechnique() const { return m_pTechnique; }
     
+    // Meshlet 数据（供 Mesh Shader 渲染使用，在 glTF 加载阶段生成）
+    void                                SetMeshletGroup(std::shared_ptr<MeshletGroup> group) { m_meshletGroup = group; }
+    std::shared_ptr<MeshletGroup>        GetMeshletGroup() const { return m_meshletGroup; }
+
     // GPU Driven 替换 VB/IB 后需要标记 dirty，使 D3D11Mesh::Active 重新构建 InputAssembly
     void                                MarkDataDirty() { m_bDataDirty = true; }
 
@@ -149,6 +154,9 @@ protected:
     uint32_t                    m_uInstancCount = 1;
 
     Technique*                  m_pTechnique = nullptr;
+
+    // Meshlet 数据（供后续 GPU Mesh Shader 管线使用）
+    std::shared_ptr<MeshletGroup> m_meshletGroup;
 };
 
 SEEK_NAMESPACE_END

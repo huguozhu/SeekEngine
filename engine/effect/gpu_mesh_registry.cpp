@@ -271,6 +271,109 @@ void GpuMeshRegistry::Build()
             meshDataVec.size(), static_cast<uint32_t>(sizeof(GPUMeshData) * meshDataVec.size()));
     }
 
+    // === Step 3: 收集并上传 Meshlet 数据 ===
+    {
+        std::vector<GPUMeshletData> meshletDataVec;
+        std::vector<uint32_t>       meshletVertexVec;
+        std::vector<uint8_t>        meshletTriangleVec;
+
+        for (size_t i = 0; i < m_entries.size(); i++)
+        {
+            GpuMeshEntry& entry = m_entries[i];
+            if (!entry.mesh)
+                continue;
+
+            auto meshletGroup = entry.mesh->GetMeshletGroup();
+            if (!meshletGroup || meshletGroup->IsEmpty())
+            {
+                entry.meshletOffset = 0;
+                entry.meshletCount  = 0;
+                continue;
+            }
+
+            const auto& group = *meshletGroup;
+            entry.meshletOffset = static_cast<uint32_t>(meshletDataVec.size());
+            entry.meshletCount  = static_cast<uint32_t>(group.meshlets.size());
+
+            for (size_t m = 0; m < group.meshlets.size(); m++)
+            {
+                const Meshlet& ms = group.meshlets[m];
+                GPUMeshletData gpuMs = {};
+                gpuMs.vertexOffset    = ms.vertexOffset;
+                gpuMs.triangleOffset  = ms.triangleOffset;
+                gpuMs.vertexCount     = ms.vertexCount;
+                gpuMs.triangleCount   = ms.triangleCount;
+                gpuMs.boundingCenterX = ms.boundingCenter[0];
+                gpuMs.boundingCenterY = ms.boundingCenter[1];
+                gpuMs.boundingCenterZ = ms.boundingCenter[2];
+                gpuMs.boundingRadius  = ms.boundingRadius;
+                gpuMs.coneApexX       = ms.coneApex[0];
+                gpuMs.coneApexY       = ms.coneApex[1];
+                gpuMs.coneApexZ       = ms.coneApex[2];
+                gpuMs.coneAxisX       = ms.coneAxis[0];
+                gpuMs.coneAxisY       = ms.coneAxis[1];
+                gpuMs.coneAxisZ       = ms.coneAxis[2];
+                gpuMs.coneCutoff      = ms.coneCutoff;
+                meshletDataVec.push_back(gpuMs);
+            }
+
+            // 拼接 meshlet 顶点索引和图元索引
+            if (!group.meshletVertices.empty())
+            {
+                meshletVertexVec.insert(
+                    meshletVertexVec.end(),
+                    group.meshletVertices.begin(),
+                    group.meshletVertices.end());
+            }
+            if (!group.meshletTriangles.empty())
+            {
+                meshletTriangleVec.insert(
+                    meshletTriangleVec.end(),
+                    group.meshletTriangles.begin(),
+                    group.meshletTriangles.end());
+            }
+        }
+
+        if (!meshletDataVec.empty())
+        {
+            // StructuredBuffer<GPUMeshletData>
+            {
+                RHIGpuBufferData buf(sizeof(GPUMeshletData) * meshletDataVec.size(), meshletDataVec.data());
+                m_meshletDataBuffer = rc.CreateGpuBuffer(
+                    static_cast<uint32_t>(sizeof(GPUMeshletData) * meshletDataVec.size()),
+                    RESOURCE_FLAG_GPU_STRUCTURED | RESOURCE_FLAG_GPU_READ,
+                    sizeof(GPUMeshletData),
+                    &buf);
+            }
+
+            // 压缩顶点索引缓冲区
+            if (!meshletVertexVec.empty())
+            {
+                RHIGpuBufferData buf(sizeof(uint32_t) * meshletVertexVec.size(), meshletVertexVec.data());
+                m_meshletVertexBuffer = rc.CreateGpuBuffer(
+                    static_cast<uint32_t>(sizeof(uint32_t) * meshletVertexVec.size()),
+                    RESOURCE_FLAG_GPU_READ,
+                    sizeof(uint32_t),
+                    &buf);
+            }
+
+            // 压缩图元索引缓冲区
+            if (!meshletTriangleVec.empty())
+            {
+                RHIGpuBufferData buf(meshletTriangleVec.size(), meshletTriangleVec.data());
+                m_meshletTriangleBuffer = rc.CreateGpuBuffer(
+                    static_cast<uint32_t>(meshletTriangleVec.size()),
+                    RESOURCE_FLAG_GPU_READ,
+                    sizeof(uint8_t),
+                    &buf);
+            }
+
+            m_totalMeshletCount = static_cast<uint32_t>(meshletDataVec.size());
+            LOG_INFO("GpuMeshRegistry: Meshlet data built — %u meshlets, %zu vertex indices, %zu triangle bytes",
+                m_totalMeshletCount, meshletVertexVec.size(), meshletTriangleVec.size());
+        }
+    }
+
     m_built = true;
 }
 

@@ -4,6 +4,8 @@
 #include "rhi/base/rhi_gpu_buffer.h"
 #include "rhi/base/rhi_mesh.h"
 #include "rhi/base/rhi_definition.h"
+#include "effect/meshlet_data.h"
+#include "effect/gpu_culling_types.h"
 #include <vector>
 #include <unordered_map>
 
@@ -27,6 +29,10 @@ struct GpuMeshEntry
     MeshTopologyType topologyType = MeshTopologyType::Triangles;
     IndexBufferType  indexType = IndexBufferType::UInt16;
     AABBox          aabbLocal;
+
+    // Meshlet 数据（供后续 Mesh Shader 管线使用）
+    uint32_t meshletOffset = 0;
+    uint32_t meshletCount  = 0;
 
     // 为临时替换统一 VB/IB 保存原始引用（ExecuteIndirectDraws 结束时恢复）
     std::vector<RHIGpuBufferPtr> savedVBs;
@@ -94,6 +100,12 @@ public:
     // 获取 GPUMeshData 的 GPU Buffer（StructuredBuffer）
     RHIGpuBufferPtr GetMeshDataBuffer() const { return m_meshDataBuffer; }
 
+    // Meshlet 相关 GPU Buffer（供 Mesh Shader 管线使用）
+    RHIGpuBufferPtr GetMeshletDataBuffer() const      { return m_meshletDataBuffer; }      // StructuredBuffer<GPUMeshletData>
+    RHIGpuBufferPtr GetMeshletVertexBuffer() const    { return m_meshletVertexBuffer; }     // 压缩顶点索引缓冲区
+    RHIGpuBufferPtr GetMeshletTriangleBuffer() const  { return m_meshletTriangleBuffer; }   // 压缩图元索引缓冲区
+    uint32_t        GetTotalMeshletCount() const       { return m_totalMeshletCount; }
+
     // 检查是否已构建
     bool IsBuilt() const { return m_built; }
 
@@ -115,7 +127,13 @@ private:
     std::unordered_map<uint64_t, uint32_t> m_hashToGroup;  // formatHash → groupIndex
 
     // GPU 端数据缓冲
-    RHIGpuBufferPtr m_meshDataBuffer;  // StructuredBuffer<GPUMeshData>
+    RHIGpuBufferPtr m_meshDataBuffer;       // StructuredBuffer<GPUMeshData>
+
+    // Meshlet GPU 缓冲（供 Mesh Shader 管线使用，Build 时上传）
+    RHIGpuBufferPtr m_meshletDataBuffer;     // StructuredBuffer<GPUMeshletData>
+    RHIGpuBufferPtr m_meshletVertexBuffer;   // 压缩后的 meshlet 顶点索引（每 meshlet ≤ 64 个 uint32_t）
+    RHIGpuBufferPtr m_meshletTriangleBuffer;  // 压缩后的 meshlet 图元索引（每图元 3 字节）
+    uint32_t        m_totalMeshletCount = 0;
 };
 
 CLASS_PTR_UNIQUE(GpuMeshRegistry)

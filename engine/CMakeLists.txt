@@ -73,6 +73,7 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/effect/technique.h
     ${SEEK_ENGINE_SOURCE_DIR}/effect/technique.cpp
     ${SEEK_ENGINE_SOURCE_DIR}/effect/variable.h
+    ${SEEK_ENGINE_SOURCE_DIR}/effect/meshlet_data.h
 
     # importer
     ${SEEK_ENGINE_SOURCE_DIR}/importer/gltf2.h
@@ -256,6 +257,7 @@ target_link_libraries(${SEEK_STATICLIB_NAME} PUBLIC
     libpng
     rapidjson
     zlib
+    meshoptimizer
     ${SEEK_STATICLIB_DEPENDENT_LIBS}
 )
 target_include_directories(${SEEK_STATICLIB_NAME} PUBLIC

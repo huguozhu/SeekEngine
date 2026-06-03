@@ -44,3 +44,8 @@ target_include_directories(rapidjson INTERFACE ${SEEK_THIRDPARTY_DIR}/rapidjson/
 add_library(zlib INTERFACE)
 target_include_directories(zlib INTERFACE ${SEEK_THIRDPARTY_DIR}/zlib/include)
 target_link_libraries(zlib INTERFACE ${SEEK_THIRDPARTY_DIR}/zlib/libs/windows/Zlib_19.lib)
+
+################################################ meshoptimizer ################################################
+add_library(meshoptimizer INTERFACE)
+target_include_directories(meshoptimizer INTERFACE ${SEEK_THIRDPARTY_DIR}/meshoptimizer/include)
+target_link_libraries(meshoptimizer INTERFACE ${SEEK_THIRDPARTY_DIR}/meshoptimizer/libs/windows/meshoptimizer.lib)

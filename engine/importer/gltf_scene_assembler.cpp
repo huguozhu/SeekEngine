@@ -8,12 +8,14 @@
 #include "rhi/base/rhi_mesh.h"
 #include "rhi/base/rhi_gpu_buffer.h"
 #include "effect/gpu_mesh_registry.h"
+#include "effect/meshlet_data.h"
 #include "components/scene_component.h"
 #include "components/mesh_component.h"
 #include "components/skeletal_mesh_component.h"
 #include "components/light_component.h"
 #include "components/camera_component.h"
 #include "kernel/context.h"
+#include <meshoptimizer.h>
 
 using namespace std;
 using namespace seek_engine;
@@ -167,6 +169,125 @@ void GltfSceneAssembler::BuildMeshes(const GltfData& data)
     }
 }
 
+// ============================================================================
+// 从 GltfPrimitive 的原始数据生成 Meshlet（供后续 GPU Mesh Shader 管线使用）
+// ============================================================================
+static bool BuildMeshlets(const GltfPrimitive& prim, MeshletGroup& outGroup)
+{
+    // 需要有索引缓冲区
+    if (!prim.indexResource || prim.indexResource->_indexCount == 0)
+        return false;
+
+    // 查找位置顶点流
+    const float* positions = nullptr;
+    size_t       positionStride = 0;
+    size_t       vertexCount = 0;
+
+    for (size_t s = 0; s < prim.vertexStreams.size(); s++)
+    {
+        const VertexStream& vs = prim.vertexStreams[s];
+        for (const auto& layout : vs.layouts)
+        {
+            if (layout.usage == VertexElementUsage::Position)
+            {
+                size_t offset = layout.buffer_offset;
+                const auto& bufRes = prim.vertexBuffers[s];
+                positions = reinterpret_cast<const float*>(static_cast<const uint8_t*>(bufRes->_data) + offset);
+                positionStride = vs.stride;
+                vertexCount = bufRes->_size / vs.stride;
+                break;
+            }
+        }
+        if (positions)
+            break;
+    }
+
+    if (!positions || vertexCount == 0)
+        return false;
+
+    // 确定索引缓冲区参数
+    const void* indexData = prim.indexResource->_data;
+    size_t      indexCount = prim.indexResource->_indexCount;
+    bool        isUint32 = (prim.indexResource->_indexBufferType == IndexBufferType::UInt32);
+
+    // meshlet 生成参数
+    const size_t maxVertices  = 64;
+    const size_t maxTriangles = 84;
+    const size_t maxMeshlets  = meshopt_buildMeshletsBound(indexCount, maxVertices, maxTriangles);
+
+    if (maxMeshlets == 0)
+        return false;
+
+    // 分配临时缓冲区
+    std::vector<meshopt_Meshlet> rawMeshlets(maxMeshlets);
+    std::vector<uint32_t> meshletVertices(maxMeshlets * maxVertices);
+    std::vector<uint8_t>  meshletTriangles(maxMeshlets * maxTriangles * 3);
+
+    // 调用 meshoptimizer 生成 meshlet
+    size_t meshletCount = 0;
+    if (isUint32)
+    {
+        meshletCount = meshopt_buildMeshlets(
+            rawMeshlets.data(), meshletVertices.data(), meshletTriangles.data(),
+            static_cast<const uint32_t*>(indexData), indexCount,
+            positions, vertexCount, positionStride,
+            maxVertices, maxTriangles, 0.5f);
+    }
+    else
+    {
+        meshletCount = meshopt_buildMeshlets(
+            rawMeshlets.data(), meshletVertices.data(), meshletTriangles.data(),
+            static_cast<const uint16_t*>(indexData), indexCount,
+            positions, vertexCount, positionStride,
+            maxVertices, maxTriangles, 0.5f);
+    }
+
+    if (meshletCount == 0)
+        return false;
+
+    // 收缩数组到实际大小
+    rawMeshlets.resize(meshletCount);
+    meshletVertices.resize(meshletCount * maxVertices);
+    meshletTriangles.resize(meshletCount * maxTriangles * 3);
+
+    // 转换为引擎 Meshlet 格式并计算每个 meshlet 的包围体
+    outGroup.meshlets.resize(meshletCount);
+    for (size_t i = 0; i < meshletCount; i++)
+    {
+        const meshopt_Meshlet& in = rawMeshlets[i];
+        Meshlet& out = outGroup.meshlets[i];
+
+        out.vertexOffset   = in.vertex_offset;
+        out.triangleOffset = in.triangle_offset;
+        out.vertexCount    = in.vertex_count;
+        out.triangleCount  = in.triangle_count;
+
+        // 计算该 meshlet 的包围球和法线锥体
+        meshopt_Bounds bounds = meshopt_computeMeshletBounds(
+            &meshletVertices[in.vertex_offset],
+            &meshletTriangles[in.triangle_offset],
+            in.triangle_count,
+            positions, vertexCount, positionStride);
+
+        std::memcpy(out.boundingCenter, bounds.center, sizeof(float) * 3);
+        out.boundingRadius = bounds.radius;
+        std::memcpy(out.coneApex, bounds.cone_apex, sizeof(float) * 3);
+        std::memcpy(out.coneAxis, bounds.cone_axis, sizeof(float) * 3);
+        out.coneCutoff = bounds.cone_cutoff;
+    }
+
+    outGroup.meshletVertices  = std::move(meshletVertices);
+    outGroup.meshletTriangles = std::move(meshletTriangles);
+
+    LOG_INFO("BuildMeshlets: generated %zu meshlets (vtx=%zu, idx=%zu, %s index)",
+        meshletCount, vertexCount, indexCount,
+        isUint32 ? "uint32" : "uint16");
+    return true;
+}
+
+// ============================================================================
+// BuildPrimitive
+// ============================================================================
 RHIMeshPtr GltfSceneAssembler::BuildPrimitive(const GltfData& data,
                                                const GltfPrimitive& prim)
 {
@@ -214,6 +335,17 @@ RHIMeshPtr GltfSceneAssembler::BuildPrimitive(const GltfData& data,
     {
         MaterialPtr material = MakeSharedPtr<Material>();
         mesh->SetMaterial(material);
+    }
+
+    // Meshlet 生成（仅静态 Mesh，供后续 GPU Mesh Shader 管线使用）
+    if (prim.jointBindSize == SkinningJointBindSize::None && !prim.morphTargets &&
+        prim.topology == MeshTopologyType::Triangles)
+    {
+        auto meshletGroup = MakeSharedPtr<MeshletGroup>();
+        if (BuildMeshlets(prim, *meshletGroup))
+        {
+            mesh->SetMeshletGroup(meshletGroup);
+        }
     }
 
     // 静态 Mesh 注册到 GPU Mesh Registry（供后续 GPU Driven Rendering 使用）
