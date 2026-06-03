@@ -1,9 +1,3 @@
-set(VULKAN_SDK_DIR "C:/VulkanSDK/1.4.313.2")
-if(NOT EXISTS "${VULKAN_SDK_DIR}")
-    if(DEFINED ENV{VULKAN_SDK})
-        set(VULKAN_SDK_DIR "$ENV{VULKAN_SDK}")
-    endif()
-endif()
 
 ################################################ IMGUI ################################################
 set(IMGUI_FILES

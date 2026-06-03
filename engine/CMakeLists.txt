@@ -277,14 +277,6 @@ set(SEEK_STATICLIB_NAME ${PROJECT_NAME}-static)
 
 set(SEEK_STATICLIB_DEPENDENT_LIBS dxgi d3d11 d3dcompiler dxguid Windowscodecs Ws2_32 Winmm vulkan-1 dxcompiler)
 
-# Vulkan SDK 路径
-set(VULKAN_SDK_DIR "C:/VulkanSDK/1.4.313.2")
-if(NOT EXISTS "${VULKAN_SDK_DIR}")
-    message(WARNING "Vulkan SDK not found at ${VULKAN_SDK_DIR}, searching via environment...")
-    if(DEFINED ENV{VULKAN_SDK})
-        set(VULKAN_SDK_DIR "$ENV{VULKAN_SDK}")
-    endif()
-endif()
 
 
 ############################################ seek_engine static lib ############################################

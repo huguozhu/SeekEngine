@@ -31,6 +31,40 @@ set(SEEK_GENERATED_TAG_DIR       "${SEEK_GENERATED_SHADER_DIR}/${SHADER_TAG_FILE
 
 configure_file(${SEEK_ROOT_DIR}/seek.config.h.in ${SEEK_GENERATED_FILE_DIR}/seek.config.h @ONLY)
 
+######################### 自动查找 Vulkan SDK 路径 #########################
+# 优先使用环境变量 VULKAN_SDK，否则在常见安装目录下搜索最新版本
+if(DEFINED ENV{VULKAN_SDK} AND EXISTS "$ENV{VULKAN_SDK}")
+    set(VULKAN_SDK_DIR "$ENV{VULKAN_SDK}")
+else()
+    # 在 C:/VulkanSDK 目录下查找最新版本
+    set(_vulkan_sdk_base "C:/VulkanSDK")
+    if(EXISTS "${_vulkan_sdk_base}")
+        file(GLOB _vulkan_versions LIST_DIRECTORIES true "${_vulkan_sdk_base}/*")
+        set(_latest_version "")
+        foreach(_dir ${_vulkan_versions})
+            if(IS_DIRECTORY "${_dir}")
+                get_filename_component(_ver "${_dir}" NAME)
+                # 版本号格式: x.y.z.w 或 x.y.z
+                if(_ver MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+")
+                    if(NOT _latest_version OR _ver VERSION_GREATER _latest_version)
+                        set(_latest_version "${_ver}")
+                    endif()
+                endif()
+            endif()
+        endforeach()
+        if(_latest_version)
+            set(VULKAN_SDK_DIR "${_vulkan_sdk_base}/${_latest_version}")
+        endif()
+    endif()
+endif()
+
+# 验证找到的路径
+if(NOT VULKAN_SDK_DIR OR NOT EXISTS "${VULKAN_SDK_DIR}")
+    message(FATAL_ERROR "找不到 Vulkan SDK。请安装 Vulkan SDK 或设置 VULKAN_SDK 环境变量。")
+else()
+    message(STATUS "使用 Vulkan SDK: ${VULKAN_SDK_DIR}")
+endif()
+
 ######################### global include path #########################
 include_directories(${SEEK_ROOT_DIR})
 include_directories(${SEEK_GENERATED_FILE_DIR})

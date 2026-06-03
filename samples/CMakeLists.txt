@@ -24,13 +24,6 @@ target_link_libraries(${SAMPLE_COMMON_PROJECT_NAME}
         rapidjson
 )
 
-# Vulkan SDK path (same as engine)
-set(VULKAN_SDK_DIR "C:/VulkanSDK/1.4.313.2")
-if(NOT EXISTS "${VULKAN_SDK_DIR}")
-    if(DEFINED ENV{VULKAN_SDK})
-        set(VULKAN_SDK_DIR "$ENV{VULKAN_SDK}")
-    endif()
-endif()
 
 # include
 target_include_directories(${SAMPLE_COMMON_PROJECT_NAME} PUBLIC
