@@ -26,8 +26,10 @@ target_include_directories(ShaderCompiler PRIVATE
     ${RAPIDJSON_INCLUDE_DIR}
 )
 
-target_link_libraries(ShaderCompiler PRIVATE ${SEEK_THIRDPARTY_DIR}/slang/libs/windows/slang.lib)
-target_link_libraries(ShaderCompiler PRIVATE d3dcompiler)
+target_link_libraries(ShaderCompiler PRIVATE
+    ${SEEK_THIRDPARTY_DIR}/slang/libs/windows/slang.lib
+    d3dcompiler
+)
 
 
 add_custom_command(TARGET ShaderCompiler POST_BUILD

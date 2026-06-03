@@ -1,3 +1,9 @@
+function(create_directory folder_path)
+    if(NOT EXISTS ${folder_path})
+        file(MAKE_DIRECTORY ${folder_path})
+        message(STATUS "MAKE_DIRECTORY ${folder_path}")
+    endif()
+endfunction()
 
 create_directory(${SEEK_GENERATED_DEPEND_DIR})
 create_directory(${SEEK_GENERATED_META_DIR})

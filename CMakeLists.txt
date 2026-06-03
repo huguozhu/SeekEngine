@@ -12,7 +12,7 @@ set(SHADER_TAG_FILE_SUFFIX ".tag")
 set(SHADER_COMPILE_FILE_SUFFIX ".compile")
 set(SHADER_DEBUG_DIR_SUFFIX "_debug")
 
-add_compile_definitions(SEEK_PLATFORM_WINDOWS NOMINMAX)
+add_compile_definitions(SEEK_PLATFORM_WINDOWS NOMINMAX SEEK_CPP)
 
 
 # code path
@@ -34,18 +34,6 @@ configure_file(${SEEK_ROOT_DIR}/seek.config.h.in ${SEEK_GENERATED_FILE_DIR}/seek
 ######################### global include path #########################
 include_directories(${SEEK_ROOT_DIR})
 include_directories(${SEEK_GENERATED_FILE_DIR})
-
-
-add_compile_definitions(SEEK_CPP)
-
-
-######################### function definitions #########################
-function(create_directory folder_path)
-    if(NOT EXISTS ${folder_path})
-        file(MAKE_DIRECTORY ${folder_path})
-        message(STATUS "MAKE_DIRECTORY ${folder_path}")
-    endif()
-endfunction()
 
 
 
