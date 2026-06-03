@@ -11,23 +11,17 @@ set(SAMPLE_COMMON_SRCS
     ${SEEK_SAMPLES_DIR}/common/first_person_camera_controller.cpp
 )
 
-set(SAMPLE_DEPENDENT_LIBS)
-
 add_library(${SAMPLE_COMMON_PROJECT_NAME} STATIC ${SAMPLE_COMMON_SRCS})
 
 add_dependencies(${SAMPLE_COMMON_PROJECT_NAME} ${SEEK_SHAREDLIB_NAME})
 set_target_properties(${SAMPLE_COMMON_PROJECT_NAME} PROPERTIES FOLDER "samples")
 
 # link
-target_link_libraries(${SAMPLE_COMMON_PROJECT_NAME} PUBLIC ${SAMPLE_DEPENDENT_LIBS} ${SEEK_STATICLIB_NAME})
-#target_link_libraries(${SAMPLE_COMMON_PROJECT_NAME} PRIVATE IMGUI)
+target_link_libraries(${SAMPLE_COMMON_PROJECT_NAME} PUBLIC ${SEEK_STATICLIB_NAME})
 target_link_libraries(${SAMPLE_COMMON_PROJECT_NAME}
     PUBLIC
         IMGUI
         rapidjson
-        #ovrAvatar2
-        #openpnp_capture
-        ${SAMPLE_DEPENDENT_LIBS}
 )
 
 # include
@@ -38,25 +32,6 @@ target_include_directories(${SAMPLE_COMMON_PROJECT_NAME} PUBLIC
 )
 
 
-###############################  glTF 模型下载  ######################################
-set(GLTF_ASSET_DIR "${SEEK_SAMPLES_DIR}/asset/gltf")
-
-# BrainStem (Khronos glTF 官方示例模型)
-set(BRAINSTEM_DIR "${GLTF_ASSET_DIR}/BrainStem")
-if(NOT EXISTS "${BRAINSTEM_DIR}")
-    file(MAKE_DIRECTORY "${BRAINSTEM_DIR}")
-    set(BRAINSTEM_URL "https://cdn.jsdelivr.net/gh/KhronosGroup/glTF-Sample-Assets@main/Models/BrainStem/glTF-Binary/BrainStem.glb")
-    file(DOWNLOAD "${BRAINSTEM_URL}" "${BRAINSTEM_DIR}/BrainStem.glb"
-         STATUS download_status
-         SHOW_PROGRESS)
-    list(GET download_status 0 status_code)
-    if(NOT status_code EQUAL 0)
-        message(WARNING "BrainStem 模型下载失败，请手动下载到 ${BRAINSTEM_DIR}")
-    else()
-        message(STATUS "BrainStem 模型下载完成: ${BRAINSTEM_DIR}")
-    endif()
-endif()
-
 
 ##################################  sample  ##########################################
 function(add_sample_project sample_name)
@@ -65,14 +40,9 @@ function(add_sample_project sample_name)
         ${SEEK_SAMPLES_DIR}/${sample_name}/${sample_name}.cpp
     )
 
-    # resource file/dir
-    set(SAMPLE_RESOURCE_FILES "")
-    set(EMBED_FRAMEWORKS "")
-
-    source_group(Resources FILES ${SAMPLE_RESOURCE_FILES})
     source_group(TREE ${SEEK_SAMPLES_DIR}/${sample_name}/ FILES ${SAMPLE_CODE})
     # execute
-    add_executable(${sample_name} ${SAMPLE_CODE} ${SAMPLE_RESOURCE_FILES})
+    add_executable(${sample_name} ${SAMPLE_CODE})
     target_compile_definitions(${sample_name} PRIVATE _CRT_SECURE_NO_WARNINGS)
     target_link_libraries(${sample_name} PUBLIC ${SAMPLE_COMMON_PROJECT_NAME})
     # property

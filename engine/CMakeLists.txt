@@ -236,15 +236,13 @@ set(ENGINE_CODE
     ${SEEK_ENGINE_SOURCE_DIR}/thread/thread.h
     ${SEEK_ENGINE_SOURCE_DIR}/thread/thread.cpp
 
-    # wrapper
 )
 source_group(TREE ${SEEK_ENGINE_SOURCE_DIR}/ FILES ${ENGINE_CODE})
 
 ############################################ seek_engine target ############################################
-set(SEEK_SHAREDLIB_NAME ${PROJECT_NAME} CACHE STRING "" FORCE)
-set(SEEK_STATICLIB_NAME ${PROJECT_NAME}-static CACHE STRING "" FORCE)
+set(SEEK_SHAREDLIB_NAME ${PROJECT_NAME})
+set(SEEK_STATICLIB_NAME ${PROJECT_NAME}-static)
 
-set(SEEK_BUILD_SHAREDLIB TRUE)
 set(SEEK_STATICLIB_DEPENDENT_LIBS dxgi d3d11 d3dcompiler dxguid Windowscodecs Ws2_32 Winmm)
 
 
@@ -268,7 +266,5 @@ target_include_directories(${SEEK_STATICLIB_NAME} PUBLIC
 
 
 ############################################ seek_engine shared lib ############################################
-if(SEEK_BUILD_SHAREDLIB)
-    add_library(${SEEK_SHAREDLIB_NAME} SHARED ${SEEK_ENGINE_SOURCE_DIR}/fake.cpp)
-    target_link_libraries(${SEEK_SHAREDLIB_NAME} PUBLIC ${SEEK_STATICLIB_NAME})
-endif()
+add_library(${SEEK_SHAREDLIB_NAME} SHARED ${SEEK_ENGINE_SOURCE_DIR}/fake.cpp)
+target_link_libraries(${SEEK_SHAREDLIB_NAME} PUBLIC ${SEEK_STATICLIB_NAME})

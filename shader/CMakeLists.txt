@@ -120,8 +120,8 @@ set(multi_entry_output_names
     WaterMark_VS WaterMark_PS ParticleRender_VS ParticleRender_PS
 )
 
-message(STATUS ${CMAKE_CURRENT_LIST_DIR})
-include(${CMAKE_CURRENT_LIST_DIR}/CMakeListst.gnerate_header.cmake)
+
+include(${CMAKE_CURRENT_LIST_DIR}/CMakeLists.generate_header.cmake)
 
 # interface for engine
 add_custom_target(GenerateShaders
