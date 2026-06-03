@@ -5,6 +5,7 @@ function(create_directory folder_path)
     endif()
 endfunction()
 
+create_directory(${SEEK_GENERATED_SHADER_DIR})
 create_directory(${SEEK_GENERATED_DEPEND_DIR})
 create_directory(${SEEK_GENERATED_META_DIR})
 create_directory(${SEEK_GENERATED_TAG_DIR}/${SHADER_COMPILE_FILE_SUFFIX})
