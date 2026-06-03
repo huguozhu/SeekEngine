@@ -690,7 +690,7 @@ public:
         m_vScenes.push_back(MakeSharedPtr<SceneLighting>());
 
         // 直接创建首个场景，不经过 SwitchScene 的判等逻辑
-        m_iActiveSceneIndex = 1;
+        m_iActiveSceneIndex = 0;
         m_pCurScene = m_vScenes[m_iActiveSceneIndex];
         return m_pCurScene->OnCreate(m_pContext.get());
     }
@@ -740,6 +740,7 @@ public:
         info.enable_debug = true;
         info.renderer_type = RendererType::Forward;
         info.preferred_adapter = 0;
+        info.rhi_type = RHIType::Vulkan;
 
         m_pContext = MakeSharedPtr<Context>(info);
         SEEK_RETIF_FAIL(m_pContext->Init(device, native_wnd));

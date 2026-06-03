@@ -196,6 +196,10 @@ SResult Context::RenderFrame()
     SResult ret = S_Success;
     RendererReturnValue rrv;
 
+    // Vulkan 需要显式 begin/end command buffer
+    RHIContext& rc = this->RHIContextInstance();
+    SEEK_RETIF_FAIL(rc.BeginFrame());
+
     // Step2: 3D Scene
     SceneRenderer& sr_scene = this->SceneRendererInstance();
     sr_scene.BuildRenderJobList();
@@ -223,6 +227,7 @@ SResult Context::RenderFrame()
 	}
 
     m_FrameCount++;
+    SEEK_RETIF_FAIL(rc.EndFrame());
     return S_Success;
 }
 SResult Context::EndRender()

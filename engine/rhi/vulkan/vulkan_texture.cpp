@@ -93,7 +93,7 @@ SResult VkTexture2D::Create(std::span<BitmapBufferPtr> const& init_datas)
 
             VkBufferImageCopy region = {};
             region.bufferOffset = 0;
-            region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            region.imageSubresource.aspectMask = VkTranslate::GetImageAspectFromVkFormat(m_vkFormat);
             region.imageSubresource.mipLevel = 0;
             region.imageSubresource.layerCount = 1;
             region.imageExtent = { (uint32_t)m_desc.width, (uint32_t)m_desc.height, 1 };
@@ -117,7 +117,7 @@ SResult VkTexture2D::Create(std::span<BitmapBufferPtr> const& init_datas)
     viewInfo.image = m_vkImage;
     viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
     viewInfo.format = m_vkFormat;
-    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    viewInfo.subresourceRange.aspectMask = VkTranslate::GetImageAspectFromVkFormat(m_vkFormat);
     viewInfo.subresourceRange.levelCount = mipLevels;
     viewInfo.subresourceRange.layerCount = 1;
 
@@ -183,7 +183,7 @@ void VkTexture2D::TransitionLayout(VkCommandBuffer cmdBuf, VkImageLayout oldLayo
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.image = m_vkImage;
-    barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    barrier.subresourceRange.aspectMask = VkTranslate::GetImageAspectFromVkFormat(m_vkFormat);
     barrier.subresourceRange.baseMipLevel = baseMip;
     barrier.subresourceRange.levelCount = levelCount;
     barrier.subresourceRange.baseArrayLayer = baseLayer;
@@ -283,7 +283,7 @@ SResult VkTexture3D::Create(std::span<BitmapBufferPtr> const& init_datas)
     viewInfo.image = m_vkImage;
     viewInfo.viewType = VK_IMAGE_VIEW_TYPE_3D;
     viewInfo.format = m_vkFormat;
-    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    viewInfo.subresourceRange.aspectMask = VkTranslate::GetImageAspectFromVkFormat(m_vkFormat);
     viewInfo.subresourceRange.levelCount = 1;
     viewInfo.subresourceRange.layerCount = 1;
 
@@ -344,7 +344,7 @@ SResult VkTextureCube::Create(std::span<BitmapBufferPtr> const& init_datas)
     viewInfo.image = m_vkImage;
     viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
     viewInfo.format = m_vkFormat;
-    viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    viewInfo.subresourceRange.aspectMask = VkTranslate::GetImageAspectFromVkFormat(m_vkFormat);
     viewInfo.subresourceRange.levelCount = std::max(m_desc.num_mips, 1u);
     viewInfo.subresourceRange.layerCount = 6;
 

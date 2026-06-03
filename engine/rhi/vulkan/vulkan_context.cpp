@@ -93,12 +93,34 @@ bool VkContext::CreateVulkanInstance()
     std::vector<const char*> extensions;
     extensions.push_back(VK_KHR_SURFACE_EXTENSION_NAME);
     extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+    // Vulkan 1.2+ portability 枚举在某些平台（如 MoltenVK）需要，先查询是否支持
+    extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+
+    // 检查 validation layer 是否可用
+    const char* validationLayer = "VK_LAYER_KHRONOS_validation";
+    bool bValidationAvailable = false;
     if (m_bEnableDebug)
+    {
+        uint32_t layerCount;
+        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
+        std::vector<VkLayerProperties> availableLayers(layerCount);
+        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
+
+        for (const auto& layer : availableLayers)
+        {
+            if (strcmp(layer.layerName, validationLayer) == 0)
+            {
+                bValidationAvailable = true;
+                break;
+            }
+        }
+    }
+
+    // 仅在 validation layer 可用时启用 debug utils 扩展（避免无 validation 时崩溃）
+    if (bValidationAvailable)
     {
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
-    // Vulkan 1.2+ portability 枚举在某些平台（如 MoltenVK）需要，先查询是否支持
-    extensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
 
     VkInstanceCreateInfo createInfo = {};
     createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
@@ -106,34 +128,14 @@ bool VkContext::CreateVulkanInstance()
     createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
     createInfo.ppEnabledExtensionNames = extensions.data();
 
-    // Validation layers
-    const char* validationLayer = "VK_LAYER_KHRONOS_validation";
-    if (m_bEnableDebug)
+    if (bValidationAvailable)
     {
-        // 检查 validation layer 是否可用
-        uint32_t layerCount;
-        vkEnumerateInstanceLayerProperties(&layerCount, nullptr);
-        std::vector<VkLayerProperties> availableLayers(layerCount);
-        vkEnumerateInstanceLayerProperties(&layerCount, availableLayers.data());
-
-        bool layerFound = false;
-        for (const auto& layer : availableLayers)
-        {
-            if (strcmp(layer.layerName, validationLayer) == 0)
-            {
-                layerFound = true;
-                break;
-            }
-        }
-        if (layerFound)
-        {
-            createInfo.enabledLayerCount = 1;
-            createInfo.ppEnabledLayerNames = &validationLayer;
-        }
-        else
-        {
-            LOG_WARNING("Validation layer not available, debug mode will be limited");
-        }
+        createInfo.enabledLayerCount = 1;
+        createInfo.ppEnabledLayerNames = &validationLayer;
+    }
+    else if (m_bEnableDebug)
+    {
+        // 不可用但不报错，调试功能已静默降级
     }
 
     VkResult result = vkCreateInstance(&createInfo, nullptr, &m_vkInstance);
@@ -143,8 +145,8 @@ bool VkContext::CreateVulkanInstance()
         return false;
     }
 
-    // 设置调试回调
-    if (m_bEnableDebug)
+    // 设置调试回调（仅在 validation layer 可用时）
+    if (bValidationAvailable)
     {
         SetupValidationLayers();
     }
@@ -602,28 +604,34 @@ SResult VkContext::BeginFrame()
 {
     PerFrameResources& frame = m_perFrame[m_uCurrentFrame];
 
-    // 等待上一帧完成
+    // 等待上一帧完成（首帧 fence 为 signaled，立即返回）
     vkWaitForFences(m_vkDevice, 1, &frame.fence, VK_TRUE, UINT64_MAX);
     vkResetFences(m_vkDevice, 1, &frame.fence);
 
-    // 获取 swapchain image
-    if (m_pCurrentVkFrameBuffer)
+    // 确保 command buffer 未在 recording 状态（上帧异常中断时可能残留）
+    if (frame.commandBuffer == VK_NULL_HANDLE)
     {
-        SResult ret = m_pCurrentVkFrameBuffer->AcquireNextImage(
-            frame.imageAcquiredSemaphore, m_uCurrentSwapchainImageIndex);
-        if (SEEK_CHECKFAILED(ret))
-            return ret;
+        LOG_ERROR("Command buffer is null for frame %u", m_uCurrentFrame);
+        return ERR_SYSTEM_ERROR;
+    }
+
+    // 重置命令缓冲（必须在 begin 之前，任何状态均可重置）
+    VkResult resetResult = vkResetCommandBuffer(frame.commandBuffer, 0);
+    if (resetResult != VK_SUCCESS)
+    {
+        LOG_ERROR("vkResetCommandBuffer failed: %d", resetResult);
+        return ERR_SYSTEM_ERROR;
     }
 
     // 开始录制命令缓冲
-    vkResetCommandBuffer(frame.commandBuffer, 0);
     VkCommandBufferBeginInfo beginInfo = {};
     beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
     beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
 
-    if (vkBeginCommandBuffer(frame.commandBuffer, &beginInfo) != VK_SUCCESS)
+    VkResult beginResult = vkBeginCommandBuffer(frame.commandBuffer, &beginInfo);
+    if (beginResult != VK_SUCCESS)
     {
-        LOG_ERROR("Failed to begin command buffer");
+        LOG_ERROR("vkBeginCommandBuffer failed: %d for frame %u", beginResult, m_uCurrentFrame);
         return ERR_SYSTEM_ERROR;
     }
 
@@ -637,9 +645,10 @@ SResult VkContext::EndFrame()
     vkEndCommandBuffer(frame.commandBuffer);
 
     // 提交
-    VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     VkSubmitInfo submitInfo = {};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+    VkPipelineStageFlags waitStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     submitInfo.waitSemaphoreCount = 1;
     submitInfo.pWaitSemaphores = &frame.imageAcquiredSemaphore;
     submitInfo.pWaitDstStageMask = &waitStage;
@@ -677,16 +686,55 @@ SResult VkContext::BeginRenderPass(const RenderPassInfo& renderPassInfo)
     VkWindow* window = dynamic_cast<VkWindow*>(fb);
     if (!window)
     {
-        LOG_ERROR("FrameBuffer is not a VkWindow");
-        return ERR_SYSTEM_ERROR;
+        // 非 VkWindow 的 framebuffer（如 shadow map、GBuffer 等离屏渲染目标）
+        // 当前动态渲染路径仅支持 VkWindow，离屏渲染暂未实现
+        m_pCurrentVkFrameBuffer = nullptr;
+        return S_Success;
     }
     m_pCurrentVkFrameBuffer = window;
 
-    VkCommandBuffer cmdBuf = m_perFrame[m_uCurrentFrame].commandBuffer;
+    // 获取当前帧的 swapchain image
+    PerFrameResources& frame = m_perFrame[m_uCurrentFrame];
+    SResult acquireRet = window->AcquireNextImage(
+        frame.imageAcquiredSemaphore, m_uCurrentSwapchainImageIndex);
+    if (SEEK_CHECKFAILED(acquireRet))
+        return acquireRet;
+
+    VkCommandBuffer cmdBuf = frame.commandBuffer;
 
     if (m_bUseDynamicRendering)
     {
         // Vulkan 1.3 dynamic rendering
+        // 显式转换 swapchain 和 depth image 的 layout
+        {
+            VkImageMemoryBarrier barriers[2] = {};
+            // Color
+            barriers[0].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barriers[0].oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            barriers[0].newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            barriers[0].image = window->GetSwapchainImages()[m_uCurrentSwapchainImageIndex];
+            barriers[0].subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+            barriers[0].subresourceRange.levelCount = 1;
+            barriers[0].subresourceRange.layerCount = 1;
+            barriers[0].srcAccessMask = 0;
+            barriers[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+            // Depth
+            barriers[1].sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barriers[1].oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            barriers[1].newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            barriers[1].image = window->GetDepthImage();
+            barriers[1].subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+            barriers[1].subresourceRange.levelCount = 1;
+            barriers[1].subresourceRange.layerCount = 1;
+            barriers[1].srcAccessMask = 0;
+            barriers[1].dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+            vkCmdPipelineBarrier(cmdBuf,
+                VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
+                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+                0, 0, nullptr, 0, nullptr, 2, barriers);
+        }
+
         VkRenderingAttachmentInfo colorAttachment = {};
         colorAttachment.sType = VK_STRUCTURE_TYPE_RENDERING_ATTACHMENT_INFO;
         colorAttachment.imageView = window->GetSwapchainImageViews()[m_uCurrentSwapchainImageIndex];
@@ -802,11 +850,32 @@ SResult VkContext::Render(RHIProgram* program, RHIMeshPtr const& mesh)
 
 SResult VkContext::EndRenderPass()
 {
+    // 如果没有激活的 VkWindow（BeginRenderPass 失败或未调用），跳过
+    if (!m_pCurrentVkFrameBuffer)
+        return S_Success;
+
     VkCommandBuffer cmdBuf = m_perFrame[m_uCurrentFrame].commandBuffer;
 
     if (m_bUseDynamicRendering)
     {
         vkCmdEndRendering(cmdBuf);
+
+        // 转换 swapchain image 到 PRESENT 布局
+        VkImageMemoryBarrier presentBarrier = {};
+        presentBarrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+        presentBarrier.oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        presentBarrier.newLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        presentBarrier.image = m_pCurrentVkFrameBuffer->GetSwapchainImages()[m_uCurrentSwapchainImageIndex];
+        presentBarrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        presentBarrier.subresourceRange.levelCount = 1;
+        presentBarrier.subresourceRange.layerCount = 1;
+        presentBarrier.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        presentBarrier.dstAccessMask = 0;
+
+        vkCmdPipelineBarrier(cmdBuf,
+            VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+            VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+            0, 0, nullptr, 0, nullptr, 1, &presentBarrier);
     }
     else
     {

@@ -1,6 +1,8 @@
 ﻿#include "rhi/vulkan/vulkan_predeclare.h"
 #include "rhi/vulkan/vulkan_context.h"
 #include "rhi/vulkan/vulkan_translate.h"
+#include "rhi/vulkan/vulkan_texture.h"
+#include "rhi/vulkan/vulkan_render_view.h"
 #include "rhi/base/viewport.h"
 #include "utils/log.h"
 
@@ -44,6 +46,19 @@ SResult VkWindow::Create(std::string const& name, void* native_wnd, VkContext* c
 
     if (SEEK_CHECKFAILED(CreateSwapchain()))
         return ERR_SYSTEM_ERROR;
+
+    // 为每个 swapchain image 创建 RTV 并附加第一个到 framebuffer
+    if (!m_vSwapchainTextures.empty())
+    {
+        m_vSwapchainRtvs.resize(m_uSwapchainImageCount);
+        for (uint32_t i = 0; i < m_uSwapchainImageCount; i++)
+        {
+            m_vSwapchainRtvs[i] = MakeSharedPtr<VkTexture2DCubeRtv>(
+                m_pContext, m_vSwapchainTextures[i], 0, 1, 0);
+        }
+        // 附加第一个 swapchain image 的 RTV
+        this->AttachTargetView(Attachment::Color0, m_vSwapchainRtvs[0]);
+    }
 
     if (SEEK_CHECKFAILED(CreateRenderPass()))
         return ERR_SYSTEM_ERROR;
@@ -200,6 +215,15 @@ SResult VkWindow::CreateSwapchain()
         vkCreateImageView(m_pVkContext->GetVkDevice(), &viewInfo, nullptr, &m_vSwapchainImageViews[i]);
     }
 
+    // 为每个 swapchain image 创建纹理封装
+    m_vSwapchainTextures.resize(m_uSwapchainImageCount);
+    for (uint32_t i = 0; i < m_uSwapchainImageCount; i++)
+    {
+        m_vSwapchainTextures[i] = MakeSharedPtr<VkTexture2D>(
+            m_pContext, m_vSwapchainImages[i], m_vkColorFormat,
+            m_vkSwapchainExtent.width, m_vkSwapchainExtent.height, 1);
+    }
+
     // Set viewport
     m_stViewport.left = 0;
     m_stViewport.top = 0;
@@ -340,6 +364,10 @@ void VkWindow::DestroySwapchainResources()
     if (!m_pVkContext || m_pVkContext->GetVkDevice() == VK_NULL_HANDLE) return;
     VkDevice device = m_pVkContext->GetVkDevice();
 
+    // 清理 swapchain RTV（需在纹理前释放，因为 RTV 持有纹理引用）
+    m_vSwapchainRtvs.clear();
+    m_vSwapchainTextures.clear();
+
     for (auto& fb : m_vSwapchainFramebuffers)
     {
         if (fb != VK_NULL_HANDLE) vkDestroyFramebuffer(device, fb, nullptr);
@@ -391,6 +419,11 @@ SResult VkWindow::AcquireNextImage(VkSemaphore semaphore, uint32_t& outImageInde
         return ERR_SYSTEM_ERROR;
 
     m_uCurrentImageIndex = outImageIndex;
+    // 更新当前活跃的 swapchain RTV
+    if (outImageIndex < m_vSwapchainRtvs.size() && m_vSwapchainRtvs[outImageIndex])
+    {
+        this->AttachTargetView(Attachment::Color0, m_vSwapchainRtvs[outImageIndex]);
+    }
     return S_Success;
 }
 

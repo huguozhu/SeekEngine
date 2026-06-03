@@ -40,6 +40,14 @@ void AppFramework::IMGUI_Begin()
 {
     if (m_pContext->GetRHIType() == RHIType::Vulkan)
     {
+        // 确保 font texture 已构建（swapchain 重建后可能丢失）
+        if (!ImGui::GetIO().Fonts->IsBuilt())
+        {
+            VkContext* rc_vk = static_cast<VkContext*>(&m_pContext->RHIContextInstance());
+            VkCommandBuffer cmdBuf = rc_vk->BeginSingleTimeCommands();
+            ImGui_ImplVulkan_CreateFontsTexture(cmdBuf);
+            rc_vk->EndSingleTimeCommands(cmdBuf);
+        }
         ImGui_ImplVulkan_NewFrame();
     }
     else

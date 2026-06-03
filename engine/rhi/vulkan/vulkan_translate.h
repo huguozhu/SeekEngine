@@ -29,6 +29,8 @@ public:
     static VkBufferUsageFlags GetVkBufferUsageFlags(ResourceFlags flags);
     static VkShaderStageFlagBits ShaderTypeToVkStage(ShaderType type);
     static bool IsSamplerCompareEnabled(CompareFunction func) { return func != CompareFunction::Never; }
+    // 根据 VkFormat 返回正确的图像 aspect 标记（深度格式用 DEPTH_BIT，颜色格式用 COLOR_BIT）
+    static VkImageAspectFlags GetImageAspectFromVkFormat(VkFormat fmt);
 };
 
 SEEK_NAMESPACE_END

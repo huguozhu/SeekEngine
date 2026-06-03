@@ -19,6 +19,10 @@ VkTexture2DCubeRtv::VkTexture2DCubeRtv(Context* context, RHITexturePtr const& te
     m_Param.first_array_index = first_array;
     m_Param.num_arrays = array_size;
     m_Param.mip_level = mip;
+    m_iWidth = tex->Width();
+    m_iHeight = tex->Height();
+    m_Param.pixel_format = tex->Descriptor().format;
+    m_iNumSamples = tex->Descriptor().num_samples;
     VkTexture2D* vkTex = static_cast<VkTexture2D*>(tex.get());
     VkContext* vkCtx = static_cast<VkContext*>(&context->RHIContextInstance());
 
@@ -29,7 +33,7 @@ VkTexture2DCubeRtv::VkTexture2DCubeRtv(Context* context, RHITexturePtr const& te
         viewInfo.image = vkTex->GetVkImage();
         viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
         viewInfo.format = vkTex->GetVkFormat();
-        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.aspectMask = VkTranslate::GetImageAspectFromVkFormat(viewInfo.format);
         viewInfo.subresourceRange.baseMipLevel = mip;
         viewInfo.subresourceRange.levelCount = 1;
         viewInfo.subresourceRange.baseArrayLayer = first_array;
@@ -51,6 +55,10 @@ VkTextureCubeFaceRtv::VkTextureCubeFaceRtv(Context* context, RHITexturePtr const
     m_Param.first_face = face;
     m_Param.num_faces = 1;
     m_Param.mip_level = mip;
+    m_iWidth = tex->Width(mip);
+    m_iHeight = tex->Height(mip);
+    m_Param.pixel_format = tex->Descriptor().format;
+    m_iNumSamples = tex->Descriptor().num_samples;
 
     VkTextureCube* vkTex = static_cast<VkTextureCube*>(tex.get());
     VkContext* vkCtx = static_cast<VkContext*>(&context->RHIContextInstance());
@@ -62,7 +70,7 @@ VkTextureCubeFaceRtv::VkTextureCubeFaceRtv(Context* context, RHITexturePtr const
         viewInfo.image = vkTex->GetVkImage();
         viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
         viewInfo.format = vkTex->GetVkFormat();
-        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.aspectMask = VkTranslate::GetImageAspectFromVkFormat(viewInfo.format);
         viewInfo.subresourceRange.baseMipLevel = mip;
         viewInfo.subresourceRange.levelCount = 1;
         viewInfo.subresourceRange.baseArrayLayer = array_index * 6 + static_cast<uint32_t>(face);
@@ -84,6 +92,10 @@ VkTexture3DRtv::VkTexture3DRtv(Context* context, RHITexturePtr const& tex,
     m_Param.first_slice = first_slice;
     m_Param.num_slices = num_slices;
     m_Param.mip_level = mip;
+    m_iWidth = tex->Width(mip);
+    m_iHeight = tex->Height(mip);
+    m_Param.pixel_format = tex->Descriptor().format;
+    m_iNumSamples = tex->Descriptor().num_samples;
 
     VkTexture3D* vkTex = static_cast<VkTexture3D*>(tex.get());
     VkContext* vkCtx = static_cast<VkContext*>(&context->RHIContextInstance());
@@ -95,7 +107,7 @@ VkTexture3DRtv::VkTexture3DRtv(Context* context, RHITexturePtr const& tex,
         viewInfo.image = vkTex->GetVkImage();
         viewInfo.viewType = VK_IMAGE_VIEW_TYPE_3D;
         viewInfo.format = vkTex->GetVkFormat();
-        viewInfo.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        viewInfo.subresourceRange.aspectMask = VkTranslate::GetImageAspectFromVkFormat(viewInfo.format);
         viewInfo.subresourceRange.baseMipLevel = mip;
         viewInfo.subresourceRange.levelCount = 1;
         viewInfo.subresourceRange.baseArrayLayer = 0;
@@ -116,6 +128,10 @@ VkTexture2DDsv::VkTexture2DDsv(Context* context, RHITexturePtr const& tex,
     m_Param.first_array_index = first_array;
     m_Param.num_arrays = array_size;
     m_Param.mip_level = mip;
+    m_iWidth = tex->Width();
+    m_iHeight = tex->Height();
+    m_Param.pixel_format = tex->Descriptor().format;
+    m_iNumSamples = tex->Descriptor().num_samples;
 
     VkTexture2D* vkTex = static_cast<VkTexture2D*>(tex.get());
     VkContext* vkCtx = static_cast<VkContext*>(&context->RHIContextInstance());
@@ -149,6 +165,10 @@ VkTextureCubeFaceDsv::VkTextureCubeFaceDsv(Context* context, RHITexturePtr const
     m_Param.first_face = face;
     m_Param.num_faces = 1;
     m_Param.mip_level = mip;
+    m_iWidth = tex->Width(mip);
+    m_iHeight = tex->Height(mip);
+    m_Param.pixel_format = tex->Descriptor().format;
+    m_iNumSamples = tex->Descriptor().num_samples;
 
     VkTextureCube* vkTex = static_cast<VkTextureCube*>(tex.get());
     VkContext* vkCtx = static_cast<VkContext*>(&context->RHIContextInstance());

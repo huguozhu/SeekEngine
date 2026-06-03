@@ -195,7 +195,9 @@ public:
     VkSampleCountFlagBits GetSampleCount()  const { return m_vkSampleCount; }
     uint32_t         GetSwapchainImageCount() const { return m_uSwapchainImageCount; }
     VkExtent2D       GetExtent()            const { return m_vkSwapchainExtent; }
+    const std::vector<VkImage>&     GetSwapchainImages()    const { return m_vSwapchainImages; }
     const std::vector<VkImageView>& GetSwapchainImageViews() const { return m_vSwapchainImageViews; }
+    VkImage          GetDepthImage()        const { return m_vkDepthImage; }
     VkImageView      GetDepthImageView()    const { return m_vkDepthImageView; }
 
     SResult          AcquireNextImage(VkSemaphore semaphore, uint32_t& outImageIndex);
@@ -232,6 +234,8 @@ private:
     std::vector<VkImage>        m_vSwapchainImages;
     std::vector<VkImageView>    m_vSwapchainImageViews;
     std::vector<VkFramebuffer>  m_vSwapchainFramebuffers;
+    std::vector<RHITexturePtr>  m_vSwapchainTextures;       // swapchain image 纹理封装
+    std::vector<RHIRenderTargetViewPtr> m_vSwapchainRtvs;   // 每个 swapchain image 的 RTV
 
     //
     VkImage         m_vkDepthImage = VK_NULL_HANDLE;
