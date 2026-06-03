@@ -14,14 +14,12 @@ SEEK_NAMESPACE_BEGIN
 
 enum class RendererType : uint32_t
 {
-    Unknown,
     Forward,
     Deferred,
 };
 
 enum class RHIType : uint32_t
 {
-    Unknown,
     D3D11,
 };
 

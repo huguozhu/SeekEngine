@@ -20,8 +20,7 @@ LightComponent::LightComponent(Context* context, LightType type, std::string con
 {
     switch (type)
     {
-        case LightType::Num:
-        case LightType::Unknown:        m_sLightTypeStr = "unknown";        break;
+        case LightType::Num:            m_sLightTypeStr = "unknown";        break;
         case LightType::Ambient:        m_sLightTypeStr = "ambient";        break;
         case LightType::Directional:    m_sLightTypeStr = "directional";    break;
         case LightType::Point:          m_sLightTypeStr = "point";          break;
@@ -34,7 +33,7 @@ LightComponent::~LightComponent()
 }
 LightComponentPtr LightComponent::CreateLightComponent(Context* context, LightType lightType, std::string const& name)
 {
-    if (context == nullptr || uint32_t(lightType) >= uint32_t(LightType::Num) || lightType == LightType::Unknown)
+    if (context == nullptr || uint32_t(lightType) >= uint32_t(LightType::Num))
     {
         LOG_ERROR("LightComponent::CreateLightComponent invalid param");
         return nullptr;
@@ -54,7 +53,6 @@ LightComponentPtr LightComponent::CreateLightComponent(Context* context, LightTy
     case LightType::Point:
         pLightComponent = std::static_pointer_cast<LightComponent>(MakeSharedPtr<PointLightComponent>(context));
         break;
-    case LightType::Unknown:
     case LightType::Num:
         break;
     }
@@ -176,7 +174,6 @@ void LightComponent::SetIntensity(float intensity, LightIntensityUnit unit)
         break;
     }
     case LightType::Ambient:
-    case LightType::Unknown:
     case LightType::Num:
         break;
     }

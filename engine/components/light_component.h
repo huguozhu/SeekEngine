@@ -14,7 +14,6 @@ enum class LightType : uint32_t
     Spot,
     Point,
     Num,
-    Unknown = 0xffffffff,
 };
 enum class LightIntensityUnit : uint32_t
 {
@@ -83,7 +82,7 @@ public:
 protected:
     LightComponent(Context* context, LightType lightType, std::string const& name = "LightComponent");
 
-    LightType           m_eLightType = LightType::Unknown;
+    LightType           m_eLightType = LightType::Num;
     std::string         m_sLightTypeStr;
     Color               m_cColor = Color::White;
     uint32_t            m_iAttrib = 0;

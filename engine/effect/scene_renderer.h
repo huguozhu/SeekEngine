@@ -98,7 +98,7 @@ protected:
 
 protected:
     Context*                                        m_pContext = nullptr;
-    RendererType                                    m_eRendererType = RendererType::Unknown;
+    RendererType                                    m_eRendererType = RendererType::Forward;
 
     RenderStage                                     m_eCurRenderStage = RenderStage::None;
     std::vector<RenderingJobPtrUnique>              m_vRenderingJobs;

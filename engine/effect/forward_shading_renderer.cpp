@@ -335,8 +335,8 @@ void ForwardShadingRenderer::AppendShadowMapJobs(uint32_t light_index)
         break;
     }
     case LightType::Ambient:
-    case LightType::Unknown:
     case LightType::Num:
+    default:
         break;
     }
     return;

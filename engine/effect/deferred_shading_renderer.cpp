@@ -443,7 +443,6 @@ void DeferredShadingRenderer::AppendShadowMapJobs(uint32_t light_index)
         break;
     }
     case LightType::Ambient:
-    case LightType::Unknown:
     case LightType::Num:
         break;
     }
@@ -519,7 +518,6 @@ void DeferredShadingRenderer::AppendGIJobs(uint32_t light_index)
         break;
     }
     case LightType::Ambient:
-    case LightType::Unknown:
     case LightType::Num:
         break;
     }
@@ -554,7 +552,6 @@ RHIMeshPtr DeferredShadingRenderer::GetLightVolumeMesh(LightType type)
     case LightType::Spot:           pMesh = rc.GetConeMesh();       break;
     case LightType::Point:          pMesh = rc.GetCubeMesh();       break;
     case LightType::Ambient:        pMesh = m_pQuadMesh;            break;
-    case LightType::Unknown:
     case LightType::Num:            LOG_ERROR("Invalid LightType"); break;
     }
     return pMesh;
