@@ -4,18 +4,9 @@ set(COMPILER "${CMAKE_ARGV3}")
 set(TARGET "${CMAKE_ARGV4}")
 set(SOURCE_DIR "${CMAKE_ARGV5}")
 set(STAMP_FILE "${CMAKE_ARGV6}")
-# 从 stamp 文件路径推导 tag 目录和生成文件目录
-# stamp 路径格式: ${SEEK_GENERATED_SHADER_DIR}/.tag/.shaders_complete.tag
-if(NOT STAMP_FILE OR STAMP_FILE STREQUAL "")
-    # 兼容旧调用方式（未传 stamp 文件路径）：从 SOURCE_DIR 推导
-    get_filename_component(PROJECT_DIR "${SOURCE_DIR}" DIRECTORY)
-    set(GENERATED_DIR "${PROJECT_DIR}/build/generated/shader")
-    set(TAG_BASE_DIR "${GENERATED_DIR}/.tag")
-    message(STATUS "[warning] 未传入 stamp 文件路径，使用推导路径: ${GENERATED_DIR}")
-else()
-    get_filename_component(TAG_BASE_DIR "${STAMP_FILE}" DIRECTORY)
-    get_filename_component(GENERATED_DIR "${TAG_BASE_DIR}" DIRECTORY)
-endif()
+
+get_filename_component(TAG_BASE_DIR "${STAMP_FILE}" DIRECTORY)
+get_filename_component(GENERATED_DIR "${TAG_BASE_DIR}" DIRECTORY)
 set(TAG_COMPILE_DIR "${TAG_BASE_DIR}/.compile")
 set(META_DIR "${GENERATED_DIR}/.meta")
 set(TARGET_DIR "${GENERATED_DIR}/${TARGET}")

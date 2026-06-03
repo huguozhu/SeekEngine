@@ -17,9 +17,9 @@ add_dependencies(${SAMPLE_COMMON_PROJECT_NAME} ${SEEK_SHAREDLIB_NAME})
 set_target_properties(${SAMPLE_COMMON_PROJECT_NAME} PROPERTIES FOLDER "samples")
 
 # link
-target_link_libraries(${SAMPLE_COMMON_PROJECT_NAME} PUBLIC ${SEEK_STATICLIB_NAME})
 target_link_libraries(${SAMPLE_COMMON_PROJECT_NAME}
     PUBLIC
+        ${SEEK_STATICLIB_NAME}
         IMGUI
         rapidjson
 )
@@ -47,8 +47,6 @@ function(add_sample_project sample_name)
     target_link_libraries(${sample_name} PUBLIC ${SAMPLE_COMMON_PROJECT_NAME})
     # property
     set_target_properties(${sample_name} PROPERTIES FOLDER "samples")
-
-    set_target_properties(${sample_name} PROPERTIES LINK_FLAGS "/ignore:4099")
 
     target_include_directories(${sample_name} PUBLIC 
         ${SEEK_ENGINE_SOURCE_DIR}

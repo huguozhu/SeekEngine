@@ -90,15 +90,9 @@ set(shader_target_platform "hlsl")
 
 message(STATUS "generated target platform: ${shader_target_platform}")
 
-############################## path ##############################
-set(ShaderCompiler_working_dir "${SEEK_SHADER_SOURCE_DIR}")
 if(NOT DEFINED ShaderCompiler_bin)
     message(FATAL_ERROR "ShaderCompiler_bin not defined")
 endif()
-
-set(generated_shader_depend_dir         ${SEEK_GENERATED_DEPEND_DIR})
-set(generated_shader_tag_depend_dir     ${SEEK_GENERATED_TAG_DIR}/${SHADER_DEPEND_FILE_SUFFIX})
-set(generated_shader_tag_compile_dir    ${SEEK_GENERATED_TAG_DIR}/${SHADER_COMPILE_FILE_SUFFIX})
 
 ############################## 顺序着色器编译脚本 ##############################
 # ShaderCompiler.exe 多实例并行时存在 .tag/.meta 目录写入竞态
@@ -110,7 +104,7 @@ add_custom_command(
     OUTPUT ${SHADER_STAMP_FILE}
     COMMAND ${CMAKE_COMMAND} -P "${SHADER_BUILD_SCRIPT}" "${ShaderCompiler_bin}" "${shader_target_platform}" "${SEEK_SHADER_SOURCE_DIR}" "${SHADER_STAMP_FILE}"
     DEPENDS ${shader_sources_files} ${shader_header_files} ${shader_shared_files}
-    WORKING_DIRECTORY ${ShaderCompiler_working_dir}
+    WORKING_DIRECTORY ${SEEK_SHADER_SOURCE_DIR}
 )
 
 # 多入口点着色器输出名列表（供 generate_header.cmake 使用）

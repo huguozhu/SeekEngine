@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.30)
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 cmake_policy(SET CMP0054 NEW)
  
 project(seek_engine VERSION 0.0.1 DESCRIPTION "Seek Rendering Engine" HOMEPAGE_URL "https://github.com/huguozhu/SeekEngine")
@@ -11,8 +12,7 @@ set(SHADER_TAG_FILE_SUFFIX ".tag")
 set(SHADER_COMPILE_FILE_SUFFIX ".compile")
 set(SHADER_DEBUG_DIR_SUFFIX "_debug")
 
-add_definitions(-DSEEK_PLATFORM_WINDOWS)
-add_definitions(-DNOMINMAX) # 禁用 Windows.h 中的 min/max 宏
+add_compile_definitions(SEEK_PLATFORM_WINDOWS NOMINMAX)
 
 
 # code path
@@ -22,7 +22,6 @@ set(SEEK_ENGINE_SOURCE_DIR       "${SEEK_ROOT_DIR}/engine")
 set(SEEK_SAMPLES_DIR             "${SEEK_ROOT_DIR}/samples")
 set(SEEK_TOOLS_DIR               "${SEEK_ROOT_DIR}/tools")
 set(SEEK_THIRDPARTY_DIR          "${SEEK_ROOT_DIR}/third_party")
-set(SEEK_DEPENDENCIES_DIR        "${SEEK_ROOT_DIR}/dependencies")
 
 set(SEEK_GENERATED_FILE_DIR      "${CMAKE_CURRENT_BINARY_DIR}/generated")
 set(SEEK_GENERATED_SHADER_DIR    "${SEEK_GENERATED_FILE_DIR}/shader")
@@ -37,7 +36,7 @@ include_directories(${SEEK_ROOT_DIR})
 include_directories(${SEEK_GENERATED_FILE_DIR})
 
 
-add_definitions(-DSEEK_CPP)
+add_compile_definitions(SEEK_CPP)
 
 
 ######################### function definitions #########################

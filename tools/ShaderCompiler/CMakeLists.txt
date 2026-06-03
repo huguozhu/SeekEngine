@@ -1,8 +1,4 @@
 
-cmake_minimum_required(VERSION 3.15) 
-project(ShaderCompiler)
-cmake_policy(SET CMP0054 NEW)
-
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 
@@ -26,7 +22,7 @@ target_include_directories(ShaderCompiler PRIVATE
     ${SEEK_ROOT_DIR}
     ${SEEK_ROOT_DIR}/third_party/CLI11/include
     ${SEEK_ROOT_DIR}/third_party/slang/include
-    ${CMAKE_CURRENT_BINARY_DIR}/../../generated
+    ${SEEK_GENERATED_FILE_DIR}
     ${RAPIDJSON_INCLUDE_DIR}
 )
 
