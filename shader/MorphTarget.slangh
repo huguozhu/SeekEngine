@@ -37,7 +37,7 @@ void CalcMorphTargetPosition(uint vertex_id, inout float4 pos)
 // 计算 Morph Target 法线偏移（需 g_MorphType 包含 MORPH_COMPONENT_NORMAL 位）
 void CalcMorphTargetNormal(uint vertex_id, inout float4 normal)
 {
-    if (g_MorphType & MORPH_COMPONENT_NORMAL)
+    if ((g_MorphType & MORPH_COMPONENT_NORMAL) != 0)
     {
         int startIdx = (int)vertex_id * MORPH_SIZE * 2;
         int i;
@@ -60,7 +60,7 @@ void CalcPrevMorphTarget(uint vertex_id, inout float4 pos, inout float4 normal)
     }
 
     // 仅当 g_MorphType 包含法线分量时才处理法线 morph
-    if (g_MorphType & MORPH_COMPONENT_NORMAL)
+    if ((g_MorphType & MORPH_COMPONENT_NORMAL) != 0)
     {
         startIdx = vertex_id * MORPH_SIZE * 2;
         for (i = 0; i < MORPH_SIZE; i++)
