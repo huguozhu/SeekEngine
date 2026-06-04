@@ -999,6 +999,9 @@ int main(int argc, char** argv)
                 std::string outReflectSourceFilePath = outputFileDir + "/" + outputFileName + SHADER_REFLECT_FILE_SUFFIX;
                 ReflectInfo reflectInfo;
                 ParseSlangReflection(program.get(), stageName, entryPoint, reflectInfo);
+                // 根据目标语言设置 code_type：Hlsl 为源码，SpirV/Dxil 为预编译字节码
+                reflectInfo.code_type = (targetDesc[resultIdx].language == ShadingLanguage::Hlsl)
+                    ? CodeType::SourceCode : CodeType::ByteCode;
                 std::string reflectJsonContent;
                 int wr = WriteReflectJson(reflectInfo, tightJson, reflectJsonContent);
                 if (wr != 0)
