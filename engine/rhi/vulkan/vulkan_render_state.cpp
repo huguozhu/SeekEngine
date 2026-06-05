@@ -63,8 +63,8 @@ VkPipeline VkRenderState::CreateGraphicsPipeline(
     VkFormat colorFormat,
     VkFormat depthFormat,
     bool bUseDynamicRendering,
-        uint32_t shaderStageCount,
-        const VkPipelineShaderStageCreateInfo* pShaderStages)
+    uint32_t shaderStageCount,
+    const VkPipelineShaderStageCreateInfo* pShaderStages)
 {
     // Rasterizer state
     VkPipelineRasterizationStateCreateInfo rasterizer = {};
@@ -75,7 +75,7 @@ VkPipeline VkRenderState::CreateGraphicsPipeline(
     rasterizer.frontFace = m_stRenderStateDesc.rasterizer.bFrontFaceCCW ? VK_FRONT_FACE_COUNTER_CLOCKWISE : VK_FRONT_FACE_CLOCKWISE;
     rasterizer.lineWidth = m_stRenderStateDesc.rasterizer.fLineWidth;
 
-// (comment stripped)
+    // Depth stencil state
     VkPipelineDepthStencilStateCreateInfo depthStencil = {};
     depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     depthStencil.depthTestEnable = m_stRenderStateDesc.depthStencil.bDepthEnable;
@@ -91,7 +91,7 @@ VkPipeline VkRenderState::CreateGraphicsPipeline(
     depthStencil.front.reference = m_stRenderStateDesc.depthStencil.iFrontStencilRef;
     depthStencil.back = depthStencil.front;
 
-// (comment stripped)
+    // Color blend state
     VkPipelineColorBlendAttachmentState blendAttachment = {};
     const auto& target = m_stRenderStateDesc.blend.stTargetBlend[0];
     blendAttachment.blendEnable = target.bBlendEnable;
@@ -154,7 +154,8 @@ VkPipeline VkRenderState::CreateGraphicsPipeline(
 
     if (bUseDynamicRendering)
     {
-        // Vulkan 1.3 dynamic rendering — pipeline 不绑定 render pass
+        // Vulkan 1.3 dynamic rendering — renderPass 必须为 VK_NULL_HANDLE
+        pipelineInfo.renderPass = VK_NULL_HANDLE;
         VkPipelineRenderingCreateInfo renderingInfo = {};
         renderingInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RENDERING_CREATE_INFO;
         renderingInfo.colorAttachmentCount = 1;
