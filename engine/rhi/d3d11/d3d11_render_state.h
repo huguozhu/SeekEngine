@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "rhi/d3d11/d3d11_predeclare.h"
 #include "rhi/base/rhi_render_state.h"

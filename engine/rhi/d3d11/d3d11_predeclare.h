@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "rhi/d3d_common/d3d_common_predeclare.h"
 #include <d3d11.h>

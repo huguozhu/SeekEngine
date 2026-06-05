@@ -1,4 +1,4 @@
-﻿#include "rhi/vulkan/vulkan_mesh.h"
+#include "rhi/vulkan/vulkan_mesh.h"
 #include "rhi/vulkan/vulkan_gpu_buffer.h"
 #include "rhi/vulkan/vulkan_translate.h"
 

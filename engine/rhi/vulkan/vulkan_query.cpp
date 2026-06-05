@@ -1,4 +1,4 @@
-﻿#include "kernel/context.h"
+#include "kernel/context.h"
 #include "rhi/vulkan/vulkan_query.h"
 #include "rhi/vulkan/vulkan_context.h"
 #include "utils/log.h"

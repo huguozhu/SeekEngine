@@ -1,4 +1,4 @@
-﻿#include "kernel/context.h"
+#include "kernel/context.h"
 #include "rhi/vulkan/vulkan_gpu_buffer.h"
 #include "rhi/vulkan/vulkan_context.h"
 #include "rhi/vulkan/vulkan_translate.h"

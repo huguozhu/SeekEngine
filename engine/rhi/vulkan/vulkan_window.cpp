@@ -1,4 +1,4 @@
-﻿#include "rhi/vulkan/vulkan_predeclare.h"
+#include "rhi/vulkan/vulkan_predeclare.h"
 #include "rhi/vulkan/vulkan_context.h"
 #include "rhi/vulkan/vulkan_translate.h"
 #include "rhi/vulkan/vulkan_texture.h"

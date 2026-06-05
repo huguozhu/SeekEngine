@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "kernel/kernel.h"
 #include "rhi/d3d_common/d3d_adapter.h"

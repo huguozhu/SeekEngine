@@ -1,4 +1,4 @@
-﻿#include "effect/gpu_culling.h"
+#include "effect/gpu_culling.h"
 #include "effect/gpu_mesh_registry.h"
 #include "effect/effect.h"
 #include "kernel/context.h"

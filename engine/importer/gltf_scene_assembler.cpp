@@ -1,4 +1,4 @@
-﻿#include "importer/gltf_scene_assembler.h"
+#include "importer/gltf_scene_assembler.h"
 #include "importer/gltf2.h"
 #include "utils/image_decode.h"
 #include "utils/log.h"

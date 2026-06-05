@@ -1,4 +1,4 @@
-﻿#include "effect/effect.h"
+#include "effect/effect.h"
 #include "kernel/context.h"
 #include "rhi/base/rhi_render_state.h"
 #include "rhi/base/rhi_context.h"

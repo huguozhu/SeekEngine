@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "rhi/base/rhi_shader.h"
 #include "rhi/d3d11/d3d11_predeclare.h"
 

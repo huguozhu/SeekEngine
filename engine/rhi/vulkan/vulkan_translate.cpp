@@ -1,4 +1,4 @@
-﻿#include "rhi/vulkan/vulkan_translate.h"
+#include "rhi/vulkan/vulkan_translate.h"
 
 SEEK_NAMESPACE_BEGIN
 

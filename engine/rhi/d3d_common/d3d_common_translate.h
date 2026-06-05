@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "rhi/base/rhi_render_state.h"
 #include "rhi/base/rhi_definition.h"

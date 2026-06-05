@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include "kernel/kernel.h"
 #include "rhi/d3d11/d3d11_framebuffer.h"

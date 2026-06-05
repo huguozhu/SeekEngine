@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "rhi/base/rhi_program.h"
 
 SEEK_NAMESPACE_BEGIN

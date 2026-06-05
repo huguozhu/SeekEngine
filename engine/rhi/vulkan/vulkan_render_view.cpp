@@ -1,4 +1,4 @@
-﻿#include "kernel/context.h"
+#include "kernel/context.h"
 #include "rhi/vulkan/vulkan_render_view.h"
 #include "rhi/vulkan/vulkan_context.h"
 #include "rhi/vulkan/vulkan_texture.h"

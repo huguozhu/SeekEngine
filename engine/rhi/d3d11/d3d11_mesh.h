@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include <vector>
 #include <tuple>
 #include "rhi/base/rhi_mesh.h"
