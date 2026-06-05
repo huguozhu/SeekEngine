@@ -967,7 +967,13 @@ int main(int argc, char** argv)
                     std::cerr << "couldn't open file: " << outShaderSourceFilePath << std::endl;
                     return FAIL;
                 }
-                WriteMacroComment(outShaderSourceFile, fixed_macros, active_macros);
+                // 对于字节码格式（SpirV/Dxil），不能写入文本注释，否则会破坏二进制数据
+                bool isByteCode = (targetDesc[resultIdx].language == ShadingLanguage::SpirV ||
+                                   targetDesc[resultIdx].language == ShadingLanguage::Dxil);
+                if (!isByteCode)
+                {
+                    WriteMacroComment(outShaderSourceFile, fixed_macros, active_macros);
+                }
                 outShaderSourceFile.write(reinterpret_cast<const char*>(shaderSourceData), shaderSourceSize);
                 std::cout << "shader code - source file saved in: " << outShaderSourceFilePath << std::endl;
 
