@@ -24,6 +24,9 @@ public:
 
     VkRenderPass  GetVkRenderPass()  const { return m_vkRenderPass; }
     VkFramebuffer GetVkFramebuffer() const { return m_vkFramebuffer; }
+    VkFormat      GetColorFormat()   const { return m_vkColorFormat; }
+    VkFormat      GetDepthFormat()   const { return m_vkDepthFormat; }
+    VkSampleCountFlagBits GetSampleCount() const { return m_vkSampleCount; }
     uint32_t      GetWidth()         const { return m_uWidth; }
     uint32_t      GetHeight()        const { return m_uHeight; }
 
@@ -35,6 +38,9 @@ public:
 protected:
     VkRenderPass  m_vkRenderPass = VK_NULL_HANDLE;
     VkFramebuffer m_vkFramebuffer = VK_NULL_HANDLE;
+    VkFormat      m_vkColorFormat = VK_FORMAT_R8G8B8A8_UNORM;
+    VkFormat      m_vkDepthFormat = VK_FORMAT_D32_SFLOAT;
+    VkSampleCountFlagBits m_vkSampleCount = VK_SAMPLE_COUNT_1_BIT;
     uint32_t m_uWidth = 0;
     uint32_t m_uHeight = 0;
 };
@@ -42,4 +48,3 @@ protected:
 using VkFrameBufferPtr = std::shared_ptr<VkFrameBuffer>;
 
 SEEK_NAMESPACE_END
-
