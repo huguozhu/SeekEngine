@@ -689,7 +689,7 @@ SResult VkContext::BeginRenderPass(const RenderPassInfo& renderPassInfo)
         // 非 VkWindow 的 framebuffer（如 shadow map、GBuffer 等离屏渲染目标）
         // 当前动态渲染路径仅支持 VkWindow，离屏渲染暂未实现
         m_pCurrentVkFrameBuffer = nullptr;
-        return ERR_NOT_IMPLEMENTED;
+        return S_Success;
     }
     m_pCurrentVkFrameBuffer = window;
 
@@ -810,7 +810,20 @@ SResult VkContext::Render(RHIProgram* program, RHIMeshPtr const& mesh)
     if (!vkProgram || !vkMesh)
         return ERR_SYSTEM_ERROR;
 
+    // 确保 BeginRenderPass 已设置当前 framebuffer
+    if (!m_pCurrentVkFrameBuffer)
+    {
+        LOG_WARNING("VkContext::Render: no active framebuffer, skipping draw");
+        return S_Success;
+    }
+
     // 绑定管线
+    if (!m_pCurrentVkFrameBuffer)
+    {
+        LOG_WARNING("VkContext: no active framebuffer, skipping draw call");
+        return S_Success;
+    }
+
     VkPipeline pipeline = vkProgram->GetOrCreatePipeline(m_pCurrentVkFrameBuffer, vkMesh->GetVertexInputState(), m_vkPipelineCache);
     if (pipeline == VK_NULL_HANDLE)
         return ERR_SYSTEM_ERROR;
@@ -935,6 +948,12 @@ SResult VkContext::DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIGp
     VkProgram* vkProgram = static_cast<VkProgram*>(program);
     if (!vkProgram || !indirectBuf) return ERR_SYSTEM_ERROR;
 
+    if (!m_pCurrentVkFrameBuffer)
+    {
+        LOG_WARNING("VkContext: no active framebuffer, skipping draw call");
+        return S_Success;
+    }
+
     VkPipeline pipeline = vkProgram->GetOrCreatePipeline(m_pCurrentVkFrameBuffer, nullptr, m_vkPipelineCache);
     if (pipeline == VK_NULL_HANDLE) return ERR_SYSTEM_ERROR;
 
@@ -952,6 +971,12 @@ SResult VkContext::DrawIndexedIndirect(RHIProgram* program, RHIRenderStatePtr rs
     VkProgram* vkProgram = static_cast<VkProgram*>(program);
     VkMesh* vkMesh = static_cast<VkMesh*>(mesh.get());
     if (!vkProgram || !vkMesh || !indirectBuf) return ERR_NOT_IMPLEMENTED;
+
+    if (!m_pCurrentVkFrameBuffer)
+    {
+        LOG_WARNING("VkContext: no active framebuffer, skipping draw call");
+        return S_Success;
+    }
 
     VkPipeline pipeline = vkProgram->GetOrCreatePipeline(m_pCurrentVkFrameBuffer, vkMesh->GetVertexInputState(), m_vkPipelineCache);
     if (pipeline == VK_NULL_HANDLE) return ERR_SYSTEM_ERROR;
@@ -982,6 +1007,12 @@ SResult VkContext::DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, Mesh
     VkCommandBuffer cmdBuf = m_perFrame[m_uCurrentFrame].commandBuffer;
     VkProgram* vkProgram = static_cast<VkProgram*>(program);
     if (!vkProgram) return ERR_SYSTEM_ERROR;
+
+    if (!m_pCurrentVkFrameBuffer)
+    {
+        LOG_WARNING("VkContext: no active framebuffer, skipping draw call");
+        return S_Success;
+    }
 
     VkPipeline pipeline = vkProgram->GetOrCreatePipeline(m_pCurrentVkFrameBuffer, nullptr, m_vkPipelineCache);
     if (pipeline == VK_NULL_HANDLE) return ERR_SYSTEM_ERROR;

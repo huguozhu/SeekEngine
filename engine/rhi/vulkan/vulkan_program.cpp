@@ -108,7 +108,11 @@ VkPipeline VkProgram::GetOrCreatePipeline(VkWindow* window,
     const VkPipelineVertexInputStateCreateInfo* vertexInput, VkPipelineCache pipelineCache,
     const RenderStateDesc& renderStateDesc)
 {
-    if (!window) return VK_NULL_HANDLE;
+    if (!window)
+    {
+        LOG_ERROR("GetOrCreatePipeline: framebuffer is null, cannot create graphics pipeline");
+        return VK_NULL_HANDLE;
+    }
 
     VkContext* vkCtx = static_cast<VkContext*>(&m_pContext->RHIContextInstance());
     VkDevice device = vkCtx->GetVkDevice();
