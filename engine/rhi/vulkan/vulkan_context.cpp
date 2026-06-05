@@ -689,7 +689,7 @@ SResult VkContext::BeginRenderPass(const RenderPassInfo& renderPassInfo)
         // 非 VkWindow 的 framebuffer（如 shadow map、GBuffer 等离屏渲染目标）
         // 当前动态渲染路径仅支持 VkWindow，离屏渲染暂未实现
         m_pCurrentVkFrameBuffer = nullptr;
-        return S_Success;
+        return ERR_NOT_IMPLEMENTED;
     }
     m_pCurrentVkFrameBuffer = window;
 
