@@ -99,8 +99,14 @@ foreach(f ${SLANG_FILES})
     if(NOT r EQUAL 0)
         message(FATAL_ERROR "depend failed: ${rel}")
     endif()
+    # HLSL 目标时添加 SEEK_HLSL 宏，SPIR-V 等其他目标不需要
+    if(TARGET STREQUAL "hlsl")
+        set(COMPILE_ARGS "${COMPILER}" --input=${rel} --target=${TARGET} --define=SEEK_HLSL=1)
+    else()
+        set(COMPILE_ARGS "${COMPILER}" --input=${rel} --target=${TARGET})
+    endif()
     message(STATUS "[compile] ${rel}")
-    execute_process(COMMAND "${COMPILER}" --input=${rel} --target=${TARGET} --define=SEEK_HLSL=1
+    execute_process(COMMAND ${COMPILE_ARGS}
         WORKING_DIRECTORY "${SOURCE_DIR}" RESULT_VARIABLE r)
     if(NOT r EQUAL 0)
         message(FATAL_ERROR "compile failed: ${rel}")
@@ -155,8 +161,14 @@ foreach(entry ${MULTI_ENTRY_SHADERS})
         endif()
     endif()
 
+    # HLSL 目标时添加 SEEK_HLSL 宏，SPIR-V 等其他目标不需要
+    if(TARGET STREQUAL "hlsl")
+        set(MULTI_COMPILE_ARGS "${COMPILER}" --input=${src} --output=${out} --stage=${stage} --entry=${entry_name} --target=${TARGET} --define=SEEK_HLSL=1)
+    else()
+        set(MULTI_COMPILE_ARGS "${COMPILER}" --input=${src} --output=${out} --stage=${stage} --entry=${entry_name} --target=${TARGET})
+    endif()
     message(STATUS "[multi:${stage}] ${src} -> ${out}")
-    execute_process(COMMAND "${COMPILER}" --input=${src} --output=${out} --stage=${stage} --entry=${entry_name} --target=${TARGET} --define=SEEK_HLSL=1
+    execute_process(COMMAND ${MULTI_COMPILE_ARGS}
         WORKING_DIRECTORY "${SOURCE_DIR}" RESULT_VARIABLE r)
     if(NOT r EQUAL 0)
         message(FATAL_ERROR "multi-entry compile failed: ${src}/${out}")

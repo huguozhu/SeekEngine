@@ -54,7 +54,9 @@ public:
         VkSampleCountFlagBits samples,
         VkFormat colorFormat,
         VkFormat depthFormat,
-        bool bUseDynamicRendering);
+        bool bUseDynamicRendering,
+        uint32_t shaderStageCount,
+        const VkPipelineShaderStageCreateInfo* pShaderStages);
 };
 
 using VkRenderStatePtr = std::shared_ptr<VkRenderState>;

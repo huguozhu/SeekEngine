@@ -62,7 +62,9 @@ VkPipeline VkRenderState::CreateGraphicsPipeline(
     VkSampleCountFlagBits samples,
     VkFormat colorFormat,
     VkFormat depthFormat,
-    bool bUseDynamicRendering)
+    bool bUseDynamicRendering,
+        uint32_t shaderStageCount,
+        const VkPipelineShaderStageCreateInfo* pShaderStages)
 {
     // Rasterizer state
     VkPipelineRasterizationStateCreateInfo rasterizer = {};
@@ -146,6 +148,9 @@ VkPipeline VkRenderState::CreateGraphicsPipeline(
     pipelineInfo.layout = pipelineLayout;
     pipelineInfo.renderPass = renderPass;
     pipelineInfo.subpass = subpass;
+    // 设置着色器阶段
+    pipelineInfo.stageCount = shaderStageCount;
+    pipelineInfo.pStages = pShaderStages;
 
     if (bUseDynamicRendering)
     {

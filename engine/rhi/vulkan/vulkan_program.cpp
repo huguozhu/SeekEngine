@@ -5,6 +5,7 @@
 #include "rhi/vulkan/vulkan_mesh.h"
 #include "rhi/vulkan/vulkan_render_state.h"
 #include "utils/log.h"
+#include <vector>
 
 #define SEEK_MACRO_FILE_UID 78     //
 
@@ -112,6 +113,39 @@ VkPipeline VkProgram::GetOrCreatePipeline(VkWindow* window,
     VkContext* vkCtx = static_cast<VkContext*>(&m_pContext->RHIContextInstance());
     VkDevice device = vkCtx->GetVkDevice();
 
+    // 构建着色器阶段信息
+    std::vector<VkPipelineShaderStageCreateInfo> shaderStages;
+    {
+        // 定义 ShaderType 到 Vulkan stage 的映射
+        static const VkShaderStageFlagBits stageFlags[] = {
+            VK_SHADER_STAGE_VERTEX_BIT,
+            VK_SHADER_STAGE_FRAGMENT_BIT,
+            VK_SHADER_STAGE_GEOMETRY_BIT,
+            VK_SHADER_STAGE_TESSELLATION_CONTROL_BIT,
+            VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT,
+        };
+
+        for (int i = 0; i < static_cast<int>(ShaderType::Compute); i++)
+        {
+            VkShader* shader = static_cast<VkShader*>(m_vShaders[i]);
+            if (!shader || shader->GetVkShaderModule() == VK_NULL_HANDLE)
+                continue;
+
+            VkPipelineShaderStageCreateInfo stageInfo = {};
+            stageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+            stageInfo.stage = stageFlags[i];
+            stageInfo.module = shader->GetVkShaderModule();
+            stageInfo.pName = shader->GetEntryPoint().c_str();
+            shaderStages.push_back(stageInfo);
+        }
+    }
+
+    if (shaderStages.empty())
+    {
+        LOG_ERROR("No valid shader stages for pipeline creation");
+        return VK_NULL_HANDLE;
+    }
+
     // 构建 pipeline key（用于缓存）
     uint64_t key = 0;
     if (vertexInput)
@@ -121,6 +155,12 @@ VkPipeline VkProgram::GetOrCreatePipeline(VkWindow* window,
     }
     key ^= (uint64_t)(uintptr_t)this;
     key ^= renderStateDesc.Hash();
+    // 将着色器模块指针也纳入 key（防止不同 shader 变体碰撞）
+    for (const auto& stage : shaderStages)
+    {
+        key ^= (uint64_t)(uintptr_t)stage.module;
+        key ^= (uint64_t)stage.stage;
+    }
 
     auto it = m_GraphicsPipelineCache.find(key);
     if (it != m_GraphicsPipelineCache.end())
@@ -139,7 +179,9 @@ VkPipeline VkProgram::GetOrCreatePipeline(VkWindow* window,
         window->GetSampleCount(),
         window->GetColorFormat(),
         window->GetDepthFormat(),
-        vkCtx->UseDynamicRendering());
+        vkCtx->UseDynamicRendering(),
+        static_cast<uint32_t>(shaderStages.size()),
+        shaderStages.data());
 
     if (pipeline != VK_NULL_HANDLE)
         m_GraphicsPipelineCache[key] = pipeline;
@@ -207,7 +249,6 @@ void VkProgram::BindDescriptorSets(VkCommandBuffer cmdBuf, VkPipelineBindPoint b
 }
 
 SEEK_NAMESPACE_END
-
 
 
 
