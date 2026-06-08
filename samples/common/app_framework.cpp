@@ -65,10 +65,12 @@ void AppFramework::IMGUI_Rendering()
     if (m_pContext->GetRHIType() == RHIType::Vulkan)
     {
         VkContext* rc_vk = static_cast<VkContext*>(&m_pContext->RHIContextInstance());
-        // Vulkan ImGui 渲染 — 使用当前帧的 command buffer
-        VkCommandBuffer cmdBuf = rc_vk->GetCurrentCommandBuffer();
+        // ImGui 渲染使用独立的单次命令缓冲区，避免与帧命令缓冲区生命周期冲突
+        // （帧命令缓冲区已在 RenderFrame→EndFrame 中结束录制并提交）
+        VkCommandBuffer cmdBuf = rc_vk->BeginSingleTimeCommands();
         if (cmdBuf != VK_NULL_HANDLE)
             ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdBuf);
+        rc_vk->EndSingleTimeCommands(cmdBuf);
     }
     else
     {
