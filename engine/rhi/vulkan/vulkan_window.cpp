@@ -63,6 +63,9 @@ SResult VkWindow::Create(std::string const& name, void* native_wnd, VkContext* c
     if (SEEK_CHECKFAILED(CreateRenderPass()))
         return ERR_SYSTEM_ERROR;
 
+    if (SEEK_CHECKFAILED(CreateImGuiOverlayRenderPass()))
+        return ERR_SYSTEM_ERROR;
+
     if (SEEK_CHECKFAILED(CreateDepthBuffer()))
         return ERR_SYSTEM_ERROR;
 
@@ -286,6 +289,62 @@ SResult VkWindow::CreateRenderPass()
     return S_Success;
 }
 
+// ImGui 覆盖层专用 RenderPass — 使用 LOAD_OP_LOAD 保留场景渲染内容
+SResult VkWindow::CreateImGuiOverlayRenderPass()
+{
+    // 颜色附件：LOAD_OP_LOAD 保留已有场景内容，仅在上面叠加 ImGui
+    VkAttachmentDescription colorAttachment = {};
+    colorAttachment.format = m_vkColorFormat;
+    colorAttachment.samples = m_vkSampleCount;
+    colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;          // 保留场景内容
+    colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    colorAttachment.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+    colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+    // 深度附件：LOAD_OP_LOAD 保留场景深度（也可用 DONT_CARE，ImGui 不写深度）
+    VkAttachmentDescription depthAttachment = {};
+    depthAttachment.format = m_vkDepthFormat;
+    depthAttachment.samples = m_vkSampleCount;
+    depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+    depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+    depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+    depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+    depthAttachment.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+    depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentReference colorRef = {};
+    colorRef.attachment = 0;
+    colorRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+    VkAttachmentReference depthRef = {};
+    depthRef.attachment = 1;
+    depthRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+    VkSubpassDescription subpass = {};
+    subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+    subpass.colorAttachmentCount = 1;
+    subpass.pColorAttachments = &colorRef;
+    subpass.pDepthStencilAttachment = &depthRef;
+
+    std::array<VkAttachmentDescription, 2> attachments = { colorAttachment, depthAttachment };
+    VkRenderPassCreateInfo renderPassInfo = {};
+    renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+    renderPassInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+    renderPassInfo.pAttachments = attachments.data();
+    renderPassInfo.subpassCount = 1;
+    renderPassInfo.pSubpasses = &subpass;
+
+    if (vkCreateRenderPass(m_pVkContext->GetVkDevice(), &renderPassInfo, nullptr, &m_vkImGuiOverlayRenderPass) != VK_SUCCESS)
+    {
+        LOG_ERROR("Failed to create ImGui overlay render pass");
+        return ERR_SYSTEM_ERROR;
+    }
+
+    return S_Success;
+}
+
 SResult VkWindow::CreateDepthBuffer()
 {
     VkImageCreateInfo imageInfo = {};
@@ -396,6 +455,11 @@ void VkWindow::DestroySwapchainResources()
     {
         vkDestroyRenderPass(device, m_vkRenderPass, nullptr);
         m_vkRenderPass = VK_NULL_HANDLE;
+    }
+    if (m_vkImGuiOverlayRenderPass != VK_NULL_HANDLE)
+    {
+        vkDestroyRenderPass(device, m_vkImGuiOverlayRenderPass, nullptr);
+        m_vkImGuiOverlayRenderPass = VK_NULL_HANDLE;
     }
     if (m_vkSwapchain != VK_NULL_HANDLE)
     {

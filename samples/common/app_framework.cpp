@@ -65,12 +65,37 @@ void AppFramework::IMGUI_Rendering()
     if (m_pContext->GetRHIType() == RHIType::Vulkan)
     {
         VkContext* rc_vk = static_cast<VkContext*>(&m_pContext->RHIContextInstance());
-        // ImGui 渲染使用独立的单次命令缓冲区，避免与帧命令缓冲区生命周期冲突
-        // （帧命令缓冲区已在 RenderFrame→EndFrame 中结束录制并提交）
+        VkWindow* window = static_cast<VkWindow*>(rc_vk->GetScreenRHIFrameBuffer().get());
+
+        // 使用独立的单次命令缓冲区渲染 ImGui（帧命令缓冲区已在 RenderFrame→EndFrame 中提交）
         VkCommandBuffer cmdBuf = rc_vk->BeginSingleTimeCommands();
-        if (cmdBuf != VK_NULL_HANDLE)
-            ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdBuf);
+        if (cmdBuf != VK_NULL_HANDLE && window)
+        {
+            // 获取 ImGui 覆盖层专用 RenderPass（LOAD_OP_LOAD 保留场景内容）
+            VkRenderPass overlayRP = window->GetImGuiOverlayRenderPass();
+            VkFramebuffer framebuffer = window->GetVkFramebuffer();
+            if (overlayRP != VK_NULL_HANDLE && framebuffer != VK_NULL_HANDLE)
+            {
+                VkRenderPassBeginInfo rpBegin = {};
+                rpBegin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+                rpBegin.renderPass = overlayRP;
+                rpBegin.framebuffer = framebuffer;
+                rpBegin.renderArea = { {0, 0}, window->GetExtent() };
+                // 不清除颜色/深度（LOAD_OP_LOAD），直接在场景上叠加 ImGui
+                rpBegin.clearValueCount = 0;
+                rpBegin.pClearValues = nullptr;
+
+                vkCmdBeginRenderPass(cmdBuf, &rpBegin, VK_SUBPASS_CONTENTS_INLINE);
+                ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), cmdBuf);
+                vkCmdEndRenderPass(cmdBuf);
+            }
+        }
+        // EndSingleTimeCommands 内部调用 vkQueueSubmit + vkQueueWaitIdle，确保 GPU 完成后再 Present
         rc_vk->EndSingleTimeCommands(cmdBuf);
+
+        // 重新 Present（EndFrame 已 Present 过场景，这里再次 Present 带 ImGui 叠加的最终画面）
+        if (window)
+            window->Present(VK_NULL_HANDLE);
     }
     else
     {

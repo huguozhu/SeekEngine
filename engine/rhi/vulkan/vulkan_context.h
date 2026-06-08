@@ -189,6 +189,7 @@ public:
     SResult Create(std::string const& name, void* native_wnd, VkContext* context);
 
     VkRenderPass     GetVkRenderPass()      const { return m_vkRenderPass; }
+    VkRenderPass     GetImGuiOverlayRenderPass() const { return m_vkImGuiOverlayRenderPass; }
     VkFramebuffer    GetVkFramebuffer()     const;
     VkFormat         GetColorFormat()       const { return m_vkColorFormat; }
     VkFormat         GetDepthFormat()       const { return m_vkDepthFormat; }
@@ -212,6 +213,7 @@ private:
     SResult CreateSurface(void* native_wnd);
     SResult CreateSwapchain();
     SResult CreateRenderPass();
+    SResult CreateImGuiOverlayRenderPass();  // ImGui 覆盖层专用（LOAD_OP_LOAD 保留场景内容）
     SResult CreateFramebuffers();
     SResult CreateDepthBuffer();
     void    DestroySwapchainResources();
@@ -223,6 +225,7 @@ private:
     VkSurfaceKHR        m_vkSurface = VK_NULL_HANDLE;
     VkSwapchainKHR      m_vkSwapchain = VK_NULL_HANDLE;
     VkRenderPass        m_vkRenderPass = VK_NULL_HANDLE;
+    VkRenderPass        m_vkImGuiOverlayRenderPass = VK_NULL_HANDLE;  // ImGui 覆盖层专用（LOAD_OP_LOAD）
 
     uint32_t            m_uSwapchainImageCount = 0;
     VkFormat            m_vkColorFormat = VK_FORMAT_R8G8B8A8_UNORM;
