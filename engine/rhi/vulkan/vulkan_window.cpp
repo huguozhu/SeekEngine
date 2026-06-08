@@ -498,8 +498,9 @@ SResult VkWindow::Present(VkSemaphore waitSemaphore)
 
     VkPresentInfoKHR presentInfo = {};
     presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-    presentInfo.waitSemaphoreCount = 1;
-    presentInfo.pWaitSemaphores = waitSemaphores;
+    // 当 waitSemaphore 为 VK_NULL_HANDLE 时（如 ImGui 渲染后 GPU 已空闲），无需等待
+    presentInfo.waitSemaphoreCount = (waitSemaphore != VK_NULL_HANDLE) ? 1 : 0;
+    presentInfo.pWaitSemaphores = (waitSemaphore != VK_NULL_HANDLE) ? waitSemaphores : nullptr;
     presentInfo.swapchainCount = 1;
     presentInfo.pSwapchains = swapchains;
     presentInfo.pImageIndices = &m_uCurrentImageIndex;
