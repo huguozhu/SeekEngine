@@ -243,14 +243,14 @@ SResult SceneManager::Tick(float delta_time)
     CameraComponent* pActiveCamera = this->GetActiveCamera();
     ClipScene(pActiveCamera);
 
-    // TEST: 全部禁用，基线测试
-    // if (pActiveCamera && m_pContext->GpuMeshRegistryInstance().IsBuilt())
-    // {
-    //     GpuCullingManager& cullingMgr = m_pContext->GpuCullingManagerInstance();
-    //     cullingMgr.UploadObjectData(m_vMeshList);
-    //     cullingMgr.Cull(pActiveCamera);
-    //     cullingMgr.GenerateIndirectArgs();
-    // }
+    // GPU Driven 剔除和间接绘制参数生成
+    if (pActiveCamera && m_pContext->GpuMeshRegistryInstance().IsBuilt())
+    {
+        GpuCullingManager& cullingMgr = m_pContext->GpuCullingManagerInstance();
+        cullingMgr.UploadObjectData(m_vMeshList);
+        cullingMgr.Cull(pActiveCamera);
+        cullingMgr.GenerateIndirectArgs();
+    }
 
     return S_Success;
 }

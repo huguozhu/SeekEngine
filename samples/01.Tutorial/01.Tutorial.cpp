@@ -704,7 +704,7 @@ public:
 
         SEEK_RETIF_FAIL(m_pContext->Tick());
         SEEK_RETIF_FAIL(m_pContext->BeginRender());
-        //SEEK_RETIF_FAIL(m_pContext->RenderFrame());
+        SEEK_RETIF_FAIL(m_pContext->RenderFrame());
 
         // 延迟场景切换：在渲染循环开始前执行，确保与 Tick/RenderFrame 同步
         if (m_iPendingSceneIndex >= 0)
@@ -740,7 +740,7 @@ public:
         info.enable_debug = true;
         info.renderer_type = RendererType::Forward;
         info.preferred_adapter = 0;
-        info.rhi_type = RHIType::Vulkan;
+        //info.rhi_type = RHIType::Vulkan;
 
         m_pContext = MakeSharedPtr<Context>(info);
         SEEK_RETIF_FAIL(m_pContext->Init(device, native_wnd));
