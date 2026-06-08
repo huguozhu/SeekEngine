@@ -125,6 +125,9 @@ SResult Context::Init(void* device, void* native_wnd)
 }
 void Context::Uninit()
 {
+    // 等待 GPU 完成所有提交的工作，避免释放仍在命令缓冲区中的资源
+    this->RHIContextInstance().WaitIdle();
+
     // 先释放依赖 GPU 设备的上层对象（纹理/缓冲区/Shader等），
     // 最后再释放 RHIContext（D3D11 Device），避免 Device 先销毁导致泄露
     m_pSceneManager.reset();

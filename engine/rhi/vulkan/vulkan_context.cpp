@@ -430,13 +430,25 @@ SResult VkContext::Init()
     return S_Success;
 }
 
+void VkContext::WaitIdle()
+{
+    // 等待 GPU 完成所有已提交的工作
+    if (m_vkDevice != VK_NULL_HANDLE)
+        vkDeviceWaitIdle(m_vkDevice);
+
+    // 重置仍在录制中的命令缓冲区以释放 GPU 资源引用（避免退出时 vkDestroyBuffer 报错）
+    for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
+    {
+        if (m_perFrame[i].commandBuffer != VK_NULL_HANDLE)
+            vkResetCommandBuffer(m_perFrame[i].commandBuffer, 0);
+    }
+    m_bFrameRecording = false;
+}
+
 void VkContext::Uninit()
 {
-    // 等待设备空闲
-    if (m_vkDevice != VK_NULL_HANDLE)
-    {
-        vkDeviceWaitIdle(m_vkDevice);
-    }
+    // 确保 GPU 空闲并释放命令缓冲区中的资源引用
+    WaitIdle();
 
     // 清理 per-frame 资源
     for (uint32_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)

@@ -704,7 +704,7 @@ public:
 
         SEEK_RETIF_FAIL(m_pContext->Tick());
         SEEK_RETIF_FAIL(m_pContext->BeginRender());
-        SEEK_RETIF_FAIL(m_pContext->RenderFrame());
+        //SEEK_RETIF_FAIL(m_pContext->RenderFrame());
 
         // 延迟场景切换：在渲染循环开始前执行，确保与 Tick/RenderFrame 同步
         if (m_iPendingSceneIndex >= 0)
@@ -755,6 +755,9 @@ private:
             return;
         if (index == m_iActiveSceneIndex && m_pCurScene)
             return;
+
+        // 等待 GPU 完成所有提交的工作，避免销毁仍在命令缓冲区中的资源
+        m_pContext->RHIContextInstance().WaitIdle();
 
         // 销毁旧场景
         if (m_pCurScene)

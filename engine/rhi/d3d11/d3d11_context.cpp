@@ -178,6 +178,12 @@ SResult D3D11Context::Init()
     return ERR_NOT_SUPPORT;
 }
 
+void D3D11Context::WaitIdle()
+{
+    if (m_pDeviceContext)
+        m_pDeviceContext->Flush();
+}
+
 void D3D11Context::Uninit()
 {
     if (m_pDeviceContext)

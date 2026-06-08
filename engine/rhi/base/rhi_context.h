@@ -42,8 +42,9 @@ public:
 
 public: // virutal factory
     virtual ~RHIContext() {}
-    virtual SResult                 Init() = 0;    
+    virtual SResult                 Init() = 0;
     virtual void                    Uninit() = 0;
+    virtual void                    WaitIdle() = 0;     // 等待 GPU 完成所有提交的工作
     virtual SResult                 CheckCapabilitySetSupport() = 0;
     virtual SResult                 AttachNativeWindow(std::string const& name, void* native_wnd = nullptr) = 0;
     virtual RHIMeshPtr              CreateMesh() = 0;

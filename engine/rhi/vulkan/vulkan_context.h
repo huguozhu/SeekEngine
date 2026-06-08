@@ -67,6 +67,7 @@ protected:
 public:
     SResult             Init() override;
     void                Uninit() override;
+    void                WaitIdle() override;     // 等待 GPU 完成所有工作
     SResult             CheckCapabilitySetSupport() override;
     SResult             AttachNativeWindow(std::string const& name, void* native_wnd = nullptr) override;
     RHIMeshPtr          CreateMesh() override;
