@@ -71,6 +71,28 @@ void AppFramework::IMGUI_Rendering()
         VkCommandBuffer cmdBuf = rc_vk->BeginSingleTimeCommands();
         if (cmdBuf != VK_NULL_HANDLE && window)
         {
+            uint32_t imageIndex = rc_vk->GetCurrentSwapchainImageIndex();
+            const auto& swapchainImages = window->GetSwapchainImages();
+            if (imageIndex < swapchainImages.size())
+            {
+                // 场景 EndRenderPass 已将 swapchain image 转为 PRESENT 布局，
+                // 但 ImGui overlay RenderPass 要求 COLOR_ATTACHMENT_OPTIMAL，此处做布局转换
+                VkImageMemoryBarrier barrier = {};
+                barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+                barrier.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+                barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                barrier.image = swapchainImages[imageIndex];
+                barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+                barrier.subresourceRange.levelCount = 1;
+                barrier.subresourceRange.layerCount = 1;
+                barrier.srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+                barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+                vkCmdPipelineBarrier(cmdBuf,
+                    VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
+                    VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+                    0, 0, nullptr, 0, nullptr, 1, &barrier);
+            }
+
             // 获取 ImGui 覆盖层专用 RenderPass（LOAD_OP_LOAD 保留场景内容）
             VkRenderPass overlayRP = window->GetImGuiOverlayRenderPass();
             VkFramebuffer framebuffer = window->GetVkFramebuffer();

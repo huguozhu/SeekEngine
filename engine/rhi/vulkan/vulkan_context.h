@@ -37,6 +37,7 @@ public:
     VkDescriptorPool GetVkDescriptorPool() const { return m_vkDescriptorPool; }
     VkCommandBuffer  GetCurrentCommandBuffer() const { return m_perFrame[m_uCurrentFrame].commandBuffer; }
     bool             UseDynamicRendering()   const { return m_bUseDynamicRendering; }
+    uint32_t         GetCurrentSwapchainImageIndex() const { return m_uCurrentSwapchainImageIndex; }
 
 protected:
     //
