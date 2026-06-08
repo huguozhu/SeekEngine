@@ -227,12 +227,16 @@ SResult Context::RenderFrame()
 	}
 
     m_FrameCount++;
-    SEEK_RETIF_FAIL(rc.EndFrame());
+    // EndFrame 移至 EndRender，使 ImGui 等 UI 渲染可在同一命令缓冲区中、Present 之前完成
     return S_Success;
 }
 SResult Context::EndRender()
 {
-    RHIFrameBufferPtr final_fb = this->RHIContextInstance().GetFinalRHIFrameBuffer();
+    // 结束命令缓冲区录制并提交（必须在 SwapBuffers/Present 之前）
+    RHIContext& rc = this->RHIContextInstance();
+    SEEK_RETIF_FAIL(rc.EndFrame());
+
+    RHIFrameBufferPtr final_fb = rc.GetFinalRHIFrameBuffer();
     if (final_fb)
     {
         SEEK_RETIF_FAIL(final_fb->SwapBuffers());

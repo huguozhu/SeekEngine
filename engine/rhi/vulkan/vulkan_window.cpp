@@ -72,6 +72,9 @@ SResult VkWindow::Create(std::string const& name, void* native_wnd, VkContext* c
     if (SEEK_CHECKFAILED(CreateFramebuffers()))
         return ERR_SYSTEM_ERROR;
 
+    // 创建 per-swapchain-image 的 render complete 信号量（避免不同 image 复用冲突）
+    m_pVkContext->CreatePerImageRenderCompleteSemaphores(m_uSwapchainImageCount);
+
     LOG_INFO("VkWindow created: %dx%d", m_vkSwapchainExtent.width, m_vkSwapchainExtent.height);
     return S_Success;
 }

@@ -38,6 +38,7 @@ public:
     VkCommandBuffer  GetCurrentCommandBuffer() const { return m_perFrame[m_uCurrentFrame].commandBuffer; }
     bool             UseDynamicRendering()   const { return m_bUseDynamicRendering; }
     uint32_t         GetCurrentSwapchainImageIndex() const { return m_uCurrentSwapchainImageIndex; }
+    bool             IsFrameRecording()      const { return m_bFrameRecording; }
 
 protected:
     //
@@ -55,6 +56,7 @@ protected:
     VkDescriptorPool        m_vkDescriptorPool = VK_NULL_HANDLE;
 
     VkWindow*               m_pCurrentVkFrameBuffer = nullptr;
+    bool                     m_bFrameRecording = false;  // BeginFrame 后为 true，EndFrame 后为 false
 
     VkDebugUtilsMessengerEXT m_vkDebugMessenger = VK_NULL_HANDLE;
     bool                     m_bEnableDebug = false;
@@ -130,6 +132,8 @@ public:
     // 辅助方法（public 供 VkGpuBuffer/VkTexture 等调用）
     VkCommandBuffer     BeginSingleTimeCommands();
     void                EndSingleTimeCommands(VkCommandBuffer cmdBuf);
+    // 按 swapchain image 数量创建 render complete 信号量（VkWindow 创建 swapchain 后调用）
+    void                CreatePerImageRenderCompleteSemaphores(uint32_t imageCount);
 
 protected:
     friend class Context;
@@ -148,11 +152,14 @@ protected:
         VkCommandBuffer     commandBuffer = VK_NULL_HANDLE;
         VkFence             fence = VK_NULL_HANDLE;      //
         VkSemaphore         imageAcquiredSemaphore = VK_NULL_HANDLE;
-        VkSemaphore         renderCompleteSemaphore = VK_NULL_HANDLE;
+        // renderCompleteSemaphore 改为按 swapchain image 索引分配（见 m_vRenderCompleteSemaphores）
     };
     static constexpr uint32_t MAX_FRAMES_IN_FLIGHT = 2;
     PerFrameResources m_perFrame[MAX_FRAMES_IN_FLIGHT];
     uint32_t m_uCurrentFrame = 0;
+
+    // 按 swapchain image 索引的信号量（避免不同 image 复用同一信号量导致 presentation engine 冲突）
+    std::vector<VkSemaphore> m_vRenderCompleteSemaphores;
 
     //
     uint32_t m_uCurrentSwapchainImageIndex = 0;

@@ -67,16 +67,16 @@ void AppFramework::IMGUI_Rendering()
         VkContext* rc_vk = static_cast<VkContext*>(&m_pContext->RHIContextInstance());
         VkWindow* window = static_cast<VkWindow*>(rc_vk->GetScreenRHIFrameBuffer().get());
 
-        // 使用独立的单次命令缓冲区渲染 ImGui（帧命令缓冲区已在 RenderFrame→EndFrame 中提交）
-        VkCommandBuffer cmdBuf = rc_vk->BeginSingleTimeCommands();
-        if (cmdBuf != VK_NULL_HANDLE && window)
+        // 使用当前帧的命令缓冲区（EndFrame 已移至 EndRender，此时仍在录制状态）
+        VkCommandBuffer cmdBuf = rc_vk->GetCurrentCommandBuffer();
+        if (cmdBuf != VK_NULL_HANDLE && window && rc_vk->IsFrameRecording())
         {
             uint32_t imageIndex = rc_vk->GetCurrentSwapchainImageIndex();
             const auto& swapchainImages = window->GetSwapchainImages();
             if (imageIndex < swapchainImages.size())
             {
                 // 场景 EndRenderPass 已将 swapchain image 转为 PRESENT 布局，
-                // 但 ImGui overlay RenderPass 要求 COLOR_ATTACHMENT_OPTIMAL，此处做布局转换
+                // ImGui overlay RenderPass 要求 COLOR_ATTACHMENT_OPTIMAL，此处做布局转换
                 VkImageMemoryBarrier barrier = {};
                 barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
                 barrier.oldLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
@@ -103,7 +103,6 @@ void AppFramework::IMGUI_Rendering()
                 rpBegin.renderPass = overlayRP;
                 rpBegin.framebuffer = framebuffer;
                 rpBegin.renderArea = { {0, 0}, window->GetExtent() };
-                // 不清除颜色/深度（LOAD_OP_LOAD），直接在场景上叠加 ImGui
                 rpBegin.clearValueCount = 0;
                 rpBegin.pClearValues = nullptr;
 
@@ -112,12 +111,6 @@ void AppFramework::IMGUI_Rendering()
                 vkCmdEndRenderPass(cmdBuf);
             }
         }
-        // EndSingleTimeCommands 内部调用 vkQueueSubmit + vkQueueWaitIdle，确保 GPU 完成后再 Present
-        rc_vk->EndSingleTimeCommands(cmdBuf);
-
-        // 重新 Present（EndFrame 已 Present 过场景，这里再次 Present 带 ImGui 叠加的最终画面）
-        if (window)
-            window->Present(VK_NULL_HANDLE);
     }
     else
     {

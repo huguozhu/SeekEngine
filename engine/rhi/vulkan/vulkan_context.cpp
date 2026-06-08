@@ -421,7 +421,7 @@ SResult VkContext::Init()
         VkSemaphoreCreateInfo semaphoreInfo = {};
         semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
         vkCreateSemaphore(m_vkDevice, &semaphoreInfo, nullptr, &m_perFrame[i].imageAcquiredSemaphore);
-        vkCreateSemaphore(m_vkDevice, &semaphoreInfo, nullptr, &m_perFrame[i].renderCompleteSemaphore);
+        // renderCompleteSemaphore 在 swapchain 创建后按 image 数量分配（见 CreatePerImageRenderCompleteSemaphores）
     }
 
     CheckCapabilitySetSupport();
@@ -445,11 +445,17 @@ void VkContext::Uninit()
             vkDestroyFence(m_vkDevice, m_perFrame[i].fence, nullptr);
         if (m_perFrame[i].imageAcquiredSemaphore != VK_NULL_HANDLE)
             vkDestroySemaphore(m_vkDevice, m_perFrame[i].imageAcquiredSemaphore, nullptr);
-        if (m_perFrame[i].renderCompleteSemaphore != VK_NULL_HANDLE)
-            vkDestroySemaphore(m_vkDevice, m_perFrame[i].renderCompleteSemaphore, nullptr);
         if (m_perFrame[i].commandPool != VK_NULL_HANDLE)
             vkDestroyCommandPool(m_vkDevice, m_perFrame[i].commandPool, nullptr);
     }
+
+    // 清理 per-image render complete 信号量（在 swapchain 创建后分配）
+    for (auto& sem : m_vRenderCompleteSemaphores)
+    {
+        if (sem != VK_NULL_HANDLE)
+            vkDestroySemaphore(m_vkDevice, sem, nullptr);
+    }
+    m_vRenderCompleteSemaphores.clear();
 
     // 清理缓存
     m_Samplers.clear();
@@ -597,6 +603,26 @@ SResult VkContext::WaitForCommandBuffer(VkCommandBuffer cmdBuf)
     return S_Success;
 }
 
+// 按 swapchain image 数量创建 render complete 信号量（swapchain 创建后调用）
+void VkContext::CreatePerImageRenderCompleteSemaphores(uint32_t imageCount)
+{
+    // 先清理旧信号量
+    for (auto& sem : m_vRenderCompleteSemaphores)
+    {
+        if (sem != VK_NULL_HANDLE)
+            vkDestroySemaphore(m_vkDevice, sem, nullptr);
+    }
+    m_vRenderCompleteSemaphores.clear();
+
+    m_vRenderCompleteSemaphores.resize(imageCount, VK_NULL_HANDLE);
+    VkSemaphoreCreateInfo semaphoreInfo = {};
+    semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+    for (uint32_t i = 0; i < imageCount; i++)
+    {
+        vkCreateSemaphore(m_vkDevice, &semaphoreInfo, nullptr, &m_vRenderCompleteSemaphores[i]);
+    }
+}
+
 // ============================================================================
 // 渲染循环
 // ============================================================================
@@ -635,11 +661,17 @@ SResult VkContext::BeginFrame()
         return ERR_SYSTEM_ERROR;
     }
 
+    m_bFrameRecording = true;
     return S_Success;
 }
 
 SResult VkContext::EndFrame()
 {
+    // 防止重复调用（EndRender 可能被多次调用）
+    if (!m_bFrameRecording)
+        return S_Success;
+    m_bFrameRecording = false;
+
     PerFrameResources& frame = m_perFrame[m_uCurrentFrame];
 
     vkEndCommandBuffer(frame.commandBuffer);
@@ -655,7 +687,14 @@ SResult VkContext::EndFrame()
     submitInfo.commandBufferCount = 1;
     submitInfo.pCommandBuffers = &frame.commandBuffer;
     submitInfo.signalSemaphoreCount = 1;
-    submitInfo.pSignalSemaphores = &frame.renderCompleteSemaphore;
+
+    // 使用 per-swapchain-image 的 render complete 信号量，避免不同 image 复用同一信号量
+    VkSemaphore renderCompleteSem = VK_NULL_HANDLE;
+    if (m_uCurrentSwapchainImageIndex < m_vRenderCompleteSemaphores.size())
+        renderCompleteSem = m_vRenderCompleteSemaphores[m_uCurrentSwapchainImageIndex];
+    else
+        renderCompleteSem = frame.imageAcquiredSemaphore;  // fallback（不应用此路径）
+    submitInfo.pSignalSemaphores = &renderCompleteSem;
 
     if (vkQueueSubmit(m_vkGraphicsQueue, 1, &submitInfo, frame.fence) != VK_SUCCESS)
     {
@@ -666,7 +705,7 @@ SResult VkContext::EndFrame()
     // Present
     if (m_pCurrentVkFrameBuffer)
     {
-        m_pCurrentVkFrameBuffer->Present(frame.renderCompleteSemaphore);
+        m_pCurrentVkFrameBuffer->Present(renderCompleteSem);
     }
 
     m_uCurrentFrame = (m_uCurrentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
@@ -810,17 +849,10 @@ SResult VkContext::Render(RHIProgram* program, RHIMeshPtr const& mesh)
     if (!vkProgram || !vkMesh)
         return ERR_SYSTEM_ERROR;
 
-    // 确保 BeginRenderPass 已设置当前 framebuffer
+    // 确保 BeginRenderPass 已设置当前 VkWindow（离屏 FrameBuffer 暂未支持动态渲染）
     if (!m_pCurrentVkFrameBuffer)
     {
-        LOG_WARNING("VkContext::Render: no active framebuffer, skipping draw");
-        return S_Success;
-    }
-
-    // 绑定管线
-    if (!m_pCurrentVkFrameBuffer)
-    {
-        LOG_WARNING("VkContext: no active framebuffer, skipping draw call");
+        // 离屏渲染路径暂未实现，静默跳过（每帧大量 mesh 会触发，避免 WARNING 刷屏）
         return S_Success;
     }
 
@@ -949,10 +981,8 @@ SResult VkContext::DrawIndirect(RHIProgram* program, RHIRenderStatePtr rs, RHIGp
     if (!vkProgram || !indirectBuf) return ERR_SYSTEM_ERROR;
 
     if (!m_pCurrentVkFrameBuffer)
-    {
-        LOG_WARNING("VkContext: no active framebuffer, skipping draw call");
+        // 离屏渲染路径暂未支持，静默跳过
         return S_Success;
-    }
 
     VkPipeline pipeline = vkProgram->GetOrCreatePipeline(m_pCurrentVkFrameBuffer, nullptr, m_vkPipelineCache);
     if (pipeline == VK_NULL_HANDLE) return ERR_SYSTEM_ERROR;
@@ -973,10 +1003,8 @@ SResult VkContext::DrawIndexedIndirect(RHIProgram* program, RHIRenderStatePtr rs
     if (!vkProgram || !vkMesh || !indirectBuf) return ERR_NOT_IMPLEMENTED;
 
     if (!m_pCurrentVkFrameBuffer)
-    {
-        LOG_WARNING("VkContext: no active framebuffer, skipping draw call");
+        // 离屏渲染路径暂未支持，静默跳过
         return S_Success;
-    }
 
     VkPipeline pipeline = vkProgram->GetOrCreatePipeline(m_pCurrentVkFrameBuffer, vkMesh->GetVertexInputState(), m_vkPipelineCache);
     if (pipeline == VK_NULL_HANDLE) return ERR_SYSTEM_ERROR;
@@ -1009,10 +1037,8 @@ SResult VkContext::DrawInstanced(RHIProgram* program, RHIRenderStatePtr rs, Mesh
     if (!vkProgram) return ERR_SYSTEM_ERROR;
 
     if (!m_pCurrentVkFrameBuffer)
-    {
-        LOG_WARNING("VkContext: no active framebuffer, skipping draw call");
+        // 离屏渲染路径暂未支持，静默跳过
         return S_Success;
-    }
 
     VkPipeline pipeline = vkProgram->GetOrCreatePipeline(m_pCurrentVkFrameBuffer, nullptr, m_vkPipelineCache);
     if (pipeline == VK_NULL_HANDLE) return ERR_SYSTEM_ERROR;
